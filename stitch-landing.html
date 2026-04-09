@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F4DF33",
+                        "background-light": "#050505",
+                        "background-dark": "#050505",
+                        "deep-black": "#050505",
+                        "slate-950": "#020617",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "Helvetica", "Arial", "sans-serif"],
+                        "title": ["Impact", "Helvetica Neue", "Arial", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.75rem",
+                        "lg": "0.625rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .title-font { 
+            font-family: 'Impact', 'Arial Black', sans-serif; 
+            text-transform: uppercase; 
+            letter-spacing: -0.01em; 
+            font-stretch: condensed;
+            font-weight: 900;
+        }
+        .body-font { font-family: 'Manrope', 'Helvetica', 'Arial', sans-serif; }
+        
+        .section-header::after {
+            content: '.';
+            color: #F4DF33;
+        }
+
+        @keyframes beam-scan {
+            0% { transform: translateX(-50%) rotate(-10deg); opacity: 0; }
+            20% { opacity: 0.2; }
+            50% { transform: translateX(50%) rotate(10deg); opacity: 0.3; }
+            80% { opacity: 0.2; }
+            100% { transform: translateX(-50%) rotate(-10deg); opacity: 0; }
+        }
+
+        .hero-beam {
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            width: 150%;
+            height: 140%;
+            background: radial-gradient(circle at 50% 0%, rgba(244, 223, 51, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            animation: beam-scan 15s ease-in-out infinite;
+            z-index: 5;
+            transform-origin: top center;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(244, 223, 51, 0.15), transparent);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-deep-black text-slate-100 font-display selection:bg-primary selection:text-black">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 border-b border-white/5 bg-deep-black/80 backdrop-blur-xl px-6 lg:px-20 py-4">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex items-center text-primary">
+<img alt="Kolortec Logo" class="h-6 md:h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0ugl8MlXfLMl0dUuLxs9FRjdH2iSIekTyU2eKcP6W_gKyNoq_gDRdhDAVsV0SjuZSTcmdAsh9yb7gDBn66e3bIVlb8N8w14uxoF7r2djh18XF9ny7Hun8U7daJ6KtzQWdSrsFrz_tD9Ari-UkfPC6YZzpVaCc4YTwu1OI1-zaTBzTws7IQXG8p95lkN64ykh4OIzA9MN3tTLXanw_sYDJJzNcuOVeFagD5F70R2eknoYc42UiFHGeVi6myBG2vWwaGsu2pHQYUsLsQ"/>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-400 hover:text-primary text-xs font-bold uppercase tracking-widest transition-colors" href="#products">Products</a>
+<a class="text-slate-400 hover:text-primary text-xs font-bold uppercase tracking-widest transition-colors" href="#shop">Shop</a>
+<a class="text-slate-400 hover:text-primary text-xs font-bold uppercase tracking-widest transition-colors" href="#services">Services</a>
+<a class="text-slate-400 hover:text-primary text-xs font-bold uppercase tracking-widest transition-colors" href="#support">Support</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center bg-white/5 rounded-xl px-4 py-2 border border-white/10 group focus-within:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-slate-500 text-lg group-focus-within:text-primary transition-colors">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs text-slate-100 placeholder:text-slate-500 w-48" placeholder="Find equipment..."/>
+</div>
+<button class="bg-primary text-black px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition-all transform hover:-translate-y-0.5">
+                Contact
+            </button>
+</div>
+</div>
+</header>
+<main class="w-full">
+<!-- Hero Section -->
+<section class="relative h-[90vh] flex items-center overflow-hidden">
+<div class="hero-beam"></div>
+<div class="absolute inset-0 z-0">
+<div class="absolute inset-0 bg-gradient-to-r from-deep-black via-deep-black/60 to-transparent z-10"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-deep-black via-transparent to-transparent z-10"></div>
+<img class="w-full h-full object-cover" data-alt="Professional stage lighting in a high-stakes environment" src="https://lh3.googleusercontent.com/aida/ADBb0uilu7ZrKpr8BCaW84Mpn0m5I9t4p7hdpPggw7HhEdGOntTfW2VBmxyjM6ZUAJDJFA4KQ3cO34JrrKyRHo9uVWuflEuJm3RaSemhj_FvfqPUKjEL2bHHoSdNfzCU2LT9J0TX2oDuPExSACxamatpwuV15XU84B6J6UjYn7QWgAE7nseR5G5EeOY_-As3WANQAssucZ7Rz6N9QMY7ms8nhVUOELmL8BELMUAFqVEDHIK2Br9X9ukYmv95f0iFokC5ueNHVC0M4nIXdMY"/>
+</div>
+<div class="relative z-20 max-w-7xl mx-auto px-6 lg:px-20 w-full">
+<div class="max-w-3xl">
+<div class="flex items-center gap-3 mb-6">
+<span class="w-12 h-px bg-primary/50"></span>
+<span class="title-font text-primary tracking-[0.3em] text-sm">Est. 1998</span>
+</div>
+<h1 class="title-font text-7xl md:text-[10rem] text-white leading-[0.85] mb-8">
+                    ReadyTo<br/>Work.
+                </h1>
+<p class="body-font text-slate-400 text-lg md:text-xl max-w-xl mb-12 leading-relaxed">
+                    Industrial-grade illumination for high-stakes environments. When failure is not an option, the world's leading engineers choose Kolortec.
+                </p>
+<div class="flex flex-wrap gap-5">
+<button class="bg-primary text-black px-10 py-5 font-black text-sm uppercase tracking-[0.2em] hover:bg-white transition-all rounded-xl shadow-xl shadow-primary/10">
+                        Explore Equipment
+                    </button>
+<button class="glass-card text-white px-10 py-5 font-bold text-sm uppercase tracking-[0.2em] hover:bg-white/10 transition-all rounded-xl border border-white/20">
+                        Live Demo
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Social Proof Section -->
+<section class="bg-deep-black py-32 px-6 lg:px-20">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+<div>
+<h2 class="title-font section-header text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Kolortec on Instagram</h2>
+<p class="body-font text-slate-500 max-w-lg">Follow our latest projects and discover industrial-grade illumination in the field across global stages.</p>
+</div>
+<a class="group bg-white/5 hover:bg-primary hover:text-black px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all inline-flex items-center gap-3 border border-white/10" href="#">
+                    Follow @kolortec <span class="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform">add</span>
+</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+<div class="aspect-square bg-slate-900 rounded-xl overflow-hidden group cursor-pointer relative">
+<img alt="Stage Setup" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAk8xJE2XT1Foa5Ec4lOomjgNvVOZryqaHeSwwOZE7ZJ9zSC0kCC6wBBUWtZpERFTwjAL5Xs6zy_zBCz27Bhs8dQ6YL9bMmnIe01AJYhb0PjwH_Dc4Zwz7QlQI6CgeaEeoHI89r9msntrSnKdfeO7vZfdL27FkN0YB5cB8LDZsTrChmm2Zg3HzmFoDoj4E4ZtsaH5B8WnXVNmq7iXF7NPSaRqaL_Zm1p8qSOo-uIVU0lm7pyGyY2aR21RoVXxs4b-R3to5hzOGz9Rg"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="aspect-square bg-slate-900 rounded-xl overflow-hidden group cursor-pointer relative">
+<img alt="Concert Lighting" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCypef3PVjSV3YK6CepcWkWR0i8Bh-miz58lQCYRSVg0SgKpSKvsyc0p5NpwpjgTFSoPGHSdUPBbNUvjyz9PTbFGXuj_a5hFDW4sVPOTZayWpiNdtS9AFxmmK3I8-tOaQDgahmq0nzy4pnrths94QDPzYfXaXDf339TLXarQGh0VIHk49ZB6Dmjta4RHzxgizPZ-FFt1jfj5uOLzeUa-oTa_iwq5vJdkbC_UmP1pNDkXeZMRfLa_n5B545LjJGfsHks1QNbYjkvouDH"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="aspect-square bg-slate-900 rounded-xl overflow-hidden group cursor-pointer relative">
+<img alt="Event Architecture" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2EWe-uuSaf7i_LMP1tTYinCIl-CBhxio-9pyUreTXSFoNyHAXHOaEf2f3mAzxB1sdLnMRE0VSCTgThyVyV3FFxt-8LR-GvD5WAtlWfMkyVg20pbibyEHXGH6S0FpF3Pt6o8LOzr1WVr09_rVj4vDWMd0ABvDy1sy5NQKi1JqoUfo13IF4L8UNCyyi2Q5elAOmO-WFmuOH9h4Fzo79_tyOGjSBfvdn6_a594n7TwZxJLwBk7E9pmCmFn1R6uLs2LyksRel-4Qw3Mjw"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="aspect-square bg-slate-900 rounded-xl overflow-hidden group cursor-pointer relative">
+<img alt="Modern Stage" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuDWoYWFdPatIK7IKyR1lzoi6eeQcWUqLYdKTvvv7eV3IG_Z_fwdDtReS8AB5OPs33H9bwf6TgFh01MqFay6XE_xYQLC--Nc1yfVOiDA4KfIuUC_WEhFsPw36yz-CKtqb2xOC9R9ML6VIM2SJ4jCnSaXa_TN8mwvks8W8OTcI5QKjf6BzJlQ7GdLIvB83S05nywhqsgJO3Qc79J4qkSURkC3krHT1HY8DbSfAPhZc48EX4bAEdzKb5ksxNzHw7FZce3j7Z16OCyZjm"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="aspect-square bg-slate-900 rounded-xl overflow-hidden group cursor-pointer relative">
+<img alt="Production Scene" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVWdCnEpF7E5Fd-091qSyotNax06fw3gMA5HNd_gRK0DBjsnAjJVpVJ963q3lpIKcKg58eSnWvnpaiHrB5SwLPArUVdrs1gZj7HbIZ7EiCHqQqDsDiUObLI5V0gHF2asDZXl-aZp1D_NIC6UcO4iNa2xrfvYeG_aROQCltd9hK8_PfFJ8D1y16pZQZiyRcjFzGUqUSK8GnGeLaI1Vk8_nCvuSPLHGtza9HU30Zu5aL4X4IWrQFXZaA5Gb8nROZzR47rSbVcqc5a_2T"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="aspect-square bg-slate-900 rounded-xl overflow-hidden group cursor-pointer relative">
+<img alt="Lighting Gear" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWcNNqvhbO3-kWmHhlyIf67ZnRuenDR6Nke_atIH4P0iBTbbk3h1cUIppnokV_MguAoBV17cu80eWEFUny1UFmMARYd74eahe05y2QfjB5YYOJbuqTApJ0aHSS7kEI4_DBhdLSpF0yhBpNeW0YhXxk3Y4bCGmmaIDPrT9h6jUbEDpqpeKozkP5ksPOeXMTU5DRvxl3DwuyKqZF5CuDT05BEvR6iVbtyhdFVCBxdlAI-cvEVmwu4Lfi7SkXv6ccsmpWhVzPejxoZcwM"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+</div>
+</div>
+</section>
+<div class="max-w-7xl mx-auto px-6 lg:px-20"><div class="section-divider"></div></div>
+<!-- Featured Products -->
+<section class="px-6 lg:px-20 max-w-7xl mx-auto py-32" id="products">
+<div class="flex items-end justify-between mb-16 gap-4">
+<div>
+<h2 class="title-font section-header text-4xl md:text-5xl font-black text-white mb-2">Featured Collections</h2>
+<p class="body-font text-slate-500">Industry-standard performance across four core families.</p>
+</div>
+<a class="text-primary font-bold uppercase text-xs tracking-[0.2em] flex items-center gap-2 mb-2 hover:text-white transition-colors" href="#">
+                Catalog <span class="material-symbols-outlined text-sm">north_east</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="group cursor-pointer">
+<div class="aspect-square glass-card rounded-xl overflow-hidden relative border border-white/5 mb-6">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBs_u5ScsG151stbe91bIPaB0Jvv-xXi-7KK1xuRlhBP73LBJj1U2fl_mjy8WRMhVwu47tftgrw-UX-mwFF0sNbzHzCMh7xpPSsX6VC-1sxWgWTkP0Y01gJbWC-5NlW8G-JoGCX5upUVhxCtUkV2XtQGX0bvPO_Qu5aOZAsU3mTKHF2NAurMK_MTLc9djo54GE8l24_XdvPT6QWOOkMczainxugDiYX00gggrm77ol0QnQdGjzBihQfdknSXpjq6DqatqEBOb8LDqhY"/>
+<div class="absolute top-4 left-4 bg-primary text-black text-[10px] font-black px-2.5 py-1 rounded-md">NEW</div>
+</div>
+<h3 class="title-font text-xl text-white mb-1">KT-X1000 Flood</h3>
+<p class="body-font text-slate-500 uppercase text-[10px] font-bold tracking-widest">High-Output LED / IP67 Rating</p>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-square glass-card rounded-xl overflow-hidden relative border border-white/5 mb-6">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx8YoN4t0lhI80zAtcKUrXRR6mcy9pZysfVI5d9BcqwDtiKKrlCj-uTrUZzvcnImyZRQbTMtVWw-y0VmQNnJ3L9el7ez1qVCWeF1J-WCLitGvacv-Zd4ah7MbJJhBMVFMRp2fERIziaTACb9QI9tfi8W8xQtOxDCS7zK7PSlChuSQqP2TROCFjC9ox5qSdeKBHoiC_YfV-3_OtkktUfF6tDnvUTvwtpo9o0QgrLxjkUyCNyypfQDjXdoajAdmmRQYkKcfwmdcnZzDm"/>
+</div>
+<h3 class="title-font text-xl text-white mb-1">Precision Spot Z4</h3>
+<p class="body-font text-slate-500 uppercase text-[10px] font-bold tracking-widest">DMX Controlled / 4K Lumens</p>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-square glass-card rounded-xl overflow-hidden relative border border-white/5 mb-6">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUG67v1OmPpPH0UbaqtQLYnhq-uhWmjKtHQKqrNlZfiEi1sl-7aTEpoG2c-7-T6Ninhh0W7awG_mR1NVuWzgieUQqEpnfmDN0vTRb56hUB25PAaR2mYchOY77EMGnmWh4RgnwCLXZhPJ6QDtFLBDoHr1-WA_kPndjLUL2_i6-ZLd7YITeXY3zmSIKZYCnXuzwQHOy33apL9BYaIPcVqEVlCRbWrxRwDxO8Ux5MlH0cNLt2DsdhXaHM-h3Cf8_ZOh1F5deOWoa78Jvc"/>
+</div>
+<h3 class="title-font text-xl text-white mb-1">Modular Array L2</h3>
+<p class="body-font text-slate-500 uppercase text-[10px] font-bold tracking-widest">Interlocking Pro System</p>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-square glass-card rounded-xl overflow-hidden relative border border-white/5 mb-6">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBubahFHdIclCekklApbyAbqaHVGRJk_-XpfOsqYAk6Ni-zj3TRt33ZOSdC6DPMTpoUCkuUIJ_bQmiytQCdvcsCNlxufl2V6V3rVaRiHoAoof0TdsQ-OUpozQ4-D31AmvJTtASgmcT6DRCwvS08SyFLwKvVEchaQV7cEOvb_poFPiID5KeG2GDJDd--haSfOFRQaZ1uayQ61PmrbBC2yeh8RsfkbnFtvOsBFxRL_cP9aaOyP2g7N2vG1XPJniVOD-OqGNcAoOCD63m4"/>
+</div>
+<h3 class="title-font text-xl text-white mb-1">Compact Wash P8</h3>
+<p class="body-font text-slate-500 uppercase text-[10px] font-bold tracking-widest">Portable / Battery Series</p>
+</div>
+</div>
+</section>
+<!-- Shop Preview -->
+<section class="bg-primary py-32 px-6 lg:px-20 overflow-hidden" id="shop">
+<div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
+<div class="flex-1">
+<h2 class="title-font text-6xl md:text-8xl text-black leading-[0.85] mb-10">Pro Parts &amp; Accessories.</h2>
+<p class="body-font text-black/70 text-lg md:text-xl mb-12 font-medium max-w-lg">Get the professional accessories you need for your Kolortec rig. Original filters, mounting kits, and replacement parts available for next-day dispatch.</p>
+<div class="grid grid-cols-2 gap-4 mb-10">
+<div class="bg-black/5 border border-black/10 p-6 rounded-xl hover:bg-black/10 transition-colors cursor-default">
+<span class="material-symbols-outlined text-black text-4xl mb-3">construction</span>
+<h4 class="title-font text-xl text-black">Mounting Gear</h4>
+</div>
+<div class="bg-black/5 border border-black/10 p-6 rounded-xl hover:bg-black/10 transition-colors cursor-default">
+<span class="material-symbols-outlined text-black text-4xl mb-3">cable</span>
+<h4 class="title-font text-xl text-black">Cabling</h4>
+</div>
+</div>
+<button class="bg-black text-primary px-12 py-5 font-black text-sm uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all rounded-xl shadow-2xl">
+                    Go To Shop
+                </button>
+</div>
+<div class="flex-1 relative">
+<div class="bg-black p-3 rounded-2xl transform rotate-2 shadow-2xl shadow-black/20">
+<img class="w-full aspect-video object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9VzrQ5CA600Ypf3NZLPpd0Ad3dvuVLbsNeQnQn9j7XdSKAVKrZzLxiGmBoTBWcVDKm6qeek8GyeafPEIwRRf7N9KyVuce1NFr8DweWPlDJVBaQYBDLXPrDH66lq-mHqlcvBpy67CqwOhJwr_fBJQbv-ZiXVrMDeDbwPuBEcnV8oSj1nYfsEn1q8iz1HkIflH99DKYNLB48rm9uuvNYz2OHQQmuOXjFz9bLUH5SbhzuVKWlocyI5zwgJETVDNZiQ8ateFmnoiQeBaP"/>
+</div>
+<div class="absolute -bottom-10 -left-10 bg-black p-3 rounded-2xl transform -rotate-3 w-2/3 hidden lg:block border-4 border-primary shadow-2xl">
+<img class="w-full aspect-square object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrG7pBrntIqZdJuJweNnK7ObK2HLqWzR649rXGaLqsBZ7yyKsx78JqEslyNrKQ7o9ppduva_1xo6eWIYVEE3NrgUshITghX1zDBNc29K3sDksXG8rXb-_D9hUpkVXVuTFY5XuBJfiPvmxJXdVdoYX4VU4fqHQU4r4kl8dBydfxgRq9pqxEaAy2tEmLpCSN4NrrA0cTfych8ikqG52j_AYdfj20fw1t9WN0USnVZgjt8KAtG1sv1K2P-E44PJYjKcwUwzAVK9wVl2Dz"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Services Section -->
+<section class="px-6 lg:px-20 max-w-7xl mx-auto py-32" id="services">
+<h2 class="title-font section-header text-4xl md:text-5xl font-black mb-20 text-center text-white">Engineered Solutions</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+<div class="text-center group">
+<div class="w-24 h-24 glass-card rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-primary transition-all duration-500 group-hover:scale-110">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:text-black transition-colors">architecture</span>
+</div>
+<h3 class="title-font text-2xl mb-4 text-white">Custom Fabrication</h3>
+<p class="body-font text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">Tailored lighting arrays and enclosures designed for your specific structural requirements.</p>
+</div>
+<div class="text-center group">
+<div class="w-24 h-24 glass-card rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-primary transition-all duration-500 group-hover:scale-110">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:text-black transition-colors">settings_input_component</span>
+</div>
+<h3 class="title-font text-2xl mb-4 text-white">Network Integration</h3>
+<p class="body-font text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">Advanced DMX and Art-Net setup for large-scale architectural and stage control systems.</p>
+</div>
+<div class="text-center group">
+<div class="w-24 h-24 glass-card rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-primary transition-all duration-500 group-hover:scale-110">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:text-black transition-colors">verified_user</span>
+</div>
+<h3 class="title-font text-2xl mb-4 text-white">Rigging Certification</h3>
+<p class="body-font text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">On-site safety audits and certification for all overhead lighting installations.</p>
+</div>
+</div>
+</section>
+<div class="max-w-7xl mx-auto px-6 lg:px-20"><div class="section-divider"></div></div>
+<!-- Support Section -->
+<section class="bg-deep-black px-6 lg:px-20 py-32" id="support">
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24">
+<div>
+<h2 class="title-font section-header text-4xl md:text-5xl font-black mb-10 text-white">Technical Center</h2>
+<p class="body-font text-slate-500 text-lg mb-12">Access the latest firmware, technical manuals, and photometrics for our entire product line.</p>
+<div class="space-y-4">
+<div class="glass-card p-5 flex items-center justify-between hover:border-primary/40 transition-all cursor-pointer group rounded-xl">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div>
+<h5 class="body-font font-bold text-slate-200 text-sm">X-Series Full Product Catalog</h5>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">PDF (24MB) • Updated Feb 2024</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary group-hover:translate-x-1 transition-all">download</span>
+</div>
+<div class="glass-card p-5 flex items-center justify-between hover:border-primary/40 transition-all cursor-pointer group rounded-xl">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">terminal</span>
+</div>
+<div>
+<h5 class="body-font font-bold text-slate-200 text-sm">DMX Profile Drivers v4.2</h5>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">ZIP (2.4MB) • GDTF Compatible</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary group-hover:translate-x-1 transition-all">download</span>
+</div>
+<div class="glass-card p-5 flex items-center justify-between hover:border-primary/40 transition-all cursor-pointer group rounded-xl">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">history_edu</span>
+</div>
+<div>
+<h5 class="body-font font-bold text-slate-200 text-sm">Warranty Registration Portal</h5>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Official Licensing Service</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary group-hover:translate-x-1 transition-all">open_in_new</span>
+</div>
+</div>
+</div>
+<div class="bg-slate-900/40 p-12 border border-white/5 flex flex-col justify-center rounded-2xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+<h3 class="title-font text-3xl mb-6 text-white relative">Need Immediate Help?</h3>
+<p class="body-font text-slate-500 mb-10 relative">Our senior technical support engineers are available 24/7 for critical site failures and architectural emergencies.</p>
+<div class="space-y-8 relative">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 rounded-xl bg-primary flex items-center justify-center text-black">
+<span class="material-symbols-outlined font-black">call</span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 mb-1">Emergency Line</p>
+<span class="body-font text-xl font-black text-white">+1 (800) KLR-TECH</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-primary border border-white/10 group-hover:border-primary/30 transition-colors">
+<span class="material-symbols-outlined">mail</span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 mb-1">Support Email</p>
+<span class="body-font text-xl font-black text-white">support@kolortec.pro</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Grid Section -->
+<section class="py-32 bg-deep-black">
+<div class="px-6 lg:px-20 mb-12 flex items-baseline gap-6">
+<h2 class="title-font section-header text-3xl text-white">Kolortec In Action</h2>
+<span class="body-font text-slate-600 font-bold tracking-widest text-sm">#READYTOWORK</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 px-1">
+<img class="aspect-square object-cover grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-700 cursor-pointer rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAk8xJE2XT1Foa5Ec4lOomjgNvVOZryqaHeSwwOZE7ZJ9zSC0kCC6wBBUWtZpERFTwjAL5Xs6zy_zBCz27Bhs8dQ6YL9bMmnIe01AJYhb0PjwH_Dc4Zwz7QlQI6CgeaEeoHI89r9msntrSnKdfeO7vZfdL27FkN0YB5cB8LDZsTrChmm2Zg3HzmFoDoj4E4ZtsaH5B8WnXVNmq7iXF7NPSaRqaL_Zm1p8qSOo-uIVU0lm7pyGyY2aR21RoVXxs4b-R3to5hzOGz9Rg"/>
+<img class="aspect-square object-cover grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-700 cursor-pointer rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCypef3PVjSV3YK6CepcWkWR0i8Bh-miz58lQCYRSVg0SgKpSKvsyc0p5NpwpjgTFSoPGHSdUPBbNUvjyz9PTbFGXuj_a5hFDW4sVPOTZayWpiNdtS9AFxmmK3I8-tOaQDgahmq0nzy4pnrths94QDPzYfXaXDf339TLXarQGh0VIHk49ZB6Dmjta4RHzxgizPZ-FFt1jfj5uOLzeUa-oTa_iwq5vJdkbC_UmP1pNDkXeZMRfLa_n5B545LjJGfsHks1QNbYjkvouDH"/>
+<img class="aspect-square object-cover grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-700 cursor-pointer rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2EWe-uuSaf7i_LMP1tTYinCIl-CBhxio-9pyUreTXSFoNyHAXHOaEf2f3mAzxB1sdLnMRE0VSCTgThyVyV3FFxt-8LR-GvD5WAtlWfMkyVg20pbibyEHXGH6S0FpF3Pt6o8LOzr1WVr09_rVj4vDWMd0ABvDy1sy5NQKi1JqoUfo13IF4L8UNCyyi2Q5elAOmO-WFmuOH9h4Fzo79_tyOGjSBfvdn6_a594n7TwZxJLwBk7E9pmCmFn1R6uLs2LyksRel-4Qw3Mjw"/>
+<img class="aspect-square object-cover grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-700 cursor-pointer rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuDWoYWFdPatIK7IKyR1lzoi6eeQcWUqLYdKTvvv7eV3IG_Z_fwdDtReS8AB5OPs33H9bwf6TgFh01MqFay6XE_xYQLC--Nc1yfVOiDA4KfIuUC_WEhFsPw36yz-CKtqb2xOC9R9ML6VIM2SJ4jCnSaXa_TN8mwvks8W8OTcI5QKjf6BzJlQ7GdLIvB83S05nywhqsgJO3Qc79J4qkSURkC3krHT1HY8DbSfAPhZc48EX4bAEdzKb5ksxNzHw7FZce3j7Z16OCyZjm"/>
+<img class="aspect-square object-cover grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-700 cursor-pointer rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVWdCnEpF7E5Fd-091qSyotNax06fw3gMA5HNd_gRK0DBjsnAjJVpVJ963q3lpIKcKg58eSnWvnpaiHrB5SwLPArUVdrs1gZj7HbIZ7EiCHqQqDsDiUObLI5V0gHF2asDZXl-aZp1D_NIC6UcO4iNa2xrfvYeG_aROQCltd9hK8_PfFJ8D1y16pZQZiyRcjFzGUqUSK8GnGeLaI1Vk8_nCvuSPLHGtza9HU30Zu5aL4X4IWrQFXZaA5Gb8nROZzR47rSbVcqc5a_2T"/>
+<img class="aspect-square object-cover grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-700 cursor-pointer rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWcNNqvhbO3-kWmHhlyIf67ZnRuenDR6Nke_atIH4P0iBTbbk3h1cUIppnokV_MguAoBV17cu80eWEFUny1UFmMARYd74eahe05y2QfjB5YYOJbuqTApJ0aHSS7kEI4_DBhdLSpF0yhBpNeW0YhXxk3Y4bCGmmaIDPrT9h6jUbEDpqpeKozkP5ksPOeXMTU5DRvxl3DwuyKqZF5CuDT05BEvR6iVbtyhdFVCBxdlAI-cvEVmwu4Lfi7SkXv6ccsmpWhVzPejxoZcwM"/>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-deep-black border-t border-white/5 py-24 px-6 lg:px-20">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-16">
+<div class="md:col-span-4">
+<div class="flex items-center text-primary mb-10">
+<img alt="Kolortec Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0ugl8MlXfLMl0dUuLxs9FRjdH2iSIekTyU2eKcP6W_gKyNoq_gDRdhDAVsV0SjuZSTcmdAsh9yb7gDBn66e3bIVlb8N8w14uxoF7r2djh18XF9ny7Hun8U7daJ6KtzQWdSrsFrz_tD9Ari-UkfPC6YZzpVaCc4YTwu1OI1-zaTBzTws7IQXG8p95lkN64ykh4OIzA9MN3tTLXanw_sYDJJzNcuOVeFagD5F70R2eknoYc42UiFHGeVi6myBG2vWwaGsu2pHQYUsLsQ"/>
+</div>
+<p class="body-font text-slate-500 text-sm leading-relaxed max-w-sm">Global leaders in high-output industrial lighting solutions. Built for power, engineered for precision, designed for the world's most demanding stages.</p>
+</div>
+<div class="md:col-span-2">
+<h4 class="title-font text-white mb-8 text-sm tracking-widest font-black uppercase">Products</h4>
+<ul class="body-font text-slate-500 space-y-4 text-xs font-bold uppercase tracking-wider">
+<li><a class="hover:text-primary transition-colors" href="#">X-Series Floods</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Precision Spots</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Architectural</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Portable Gear</a></li>
+</ul>
+</div>
+<div class="md:col-span-2">
+<h4 class="title-font text-white mb-8 text-sm tracking-widest font-black uppercase">Company</h4>
+<ul class="body-font text-slate-500 space-y-4 text-xs font-bold uppercase tracking-wider">
+<li><a class="hover:text-primary transition-colors" href="#">Our Story</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Projects</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div class="md:col-span-4">
+<h4 class="title-font text-white mb-8 text-sm tracking-widest font-black uppercase">Updates</h4>
+<div class="flex gap-2">
+<input class="bg-white/5 border border-white/10 text-white text-xs focus:ring-1 focus:ring-primary/50 w-full px-4 rounded-xl placeholder:text-slate-600" placeholder="Email address" type="email"/>
+<button class="bg-primary text-black px-5 py-3.5 font-black rounded-xl hover:bg-white transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] text-slate-600 font-bold tracking-[0.2em] uppercase">
+<p>© 2024 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.</p>
+<div class="flex gap-10 mt-6 md:mt-0">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+<!-- Floating WhatsApp Button -->
+<a class="fixed bottom-8 right-8 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 hover:rotate-6 transition-all z-50 flex items-center justify-center ring-4 ring-black/20" href="#">
+<svg class="w-7 h-7" fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.94 3.659 1.437 5.634 1.437h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path>
+</svg>
+</a>
+</body></html>
