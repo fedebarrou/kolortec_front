@@ -208,6 +208,23 @@ function ProductDetailPage() {
     return [specs.slice(0, mid), specs.slice(mid)]
   }, [product])
 
+  const galleryImages = useMemo(() => {
+    const baseGallery = (product?.gallery ?? []).filter(Boolean)
+    const primaryCandidate = selectedVariant?.image || product?.heroImage
+
+    if (primaryCandidate && !baseGallery.includes(primaryCandidate)) {
+      return [primaryCandidate, ...baseGallery]
+    }
+
+    return baseGallery.length > 0 ? baseGallery : [primaryCandidate].filter(Boolean)
+  }, [product, selectedVariant])
+
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  useEffect(() => {
+    setActiveImageIndex(0)
+  }, [slug, galleryImages.length])
+
   const goToSection = (id) => {
     const node = document.getElementById(id)
     if (node) {
@@ -236,7 +253,7 @@ function ProductDetailPage() {
         <header className="kt-detail-fixed-header">
           <nav className="kt-detail-tabs" aria-label="Product detail sections">
             <div className="kt-detail-tabs-name">
-              <strong className="title-font text-[9px] leading-none tracking-[0.12em]">{product.name}</strong>
+              <strong className="title-font text-[12px] md:text-[13px] leading-none tracking-[0.14em]">{product.name}</strong>
             </div>
             <div className="kt-detail-tabs-links">
               {tabs.map((tab) => (
@@ -266,14 +283,21 @@ function ProductDetailPage() {
         <div ref={detailBodyRef} className="kt-detail-body">
           <div className="kt-container">
             <section className="kt-detail-hero kt-detail-anim" id="about">
-              <figure className="kt-detail-image">
-                <img src={selectedVariant?.image || product.heroImage} alt={product.name} />
+              <figure className="kt-detail-image" id="gallery">
+                <button
+                  type="button"
+                  className="block w-full cursor-zoom-in border-0 bg-transparent p-0"
+                  onClick={() => setGalleryLightboxIndex(activeImageIndex)}
+                  aria-label={`Abrir imagen principal de ${product.name}`}
+                >
+                  <img src={galleryImages[activeImageIndex] || product.heroImage} alt={product.name} />
+                </button>
               </figure>
 
               <div className="kt-detail-summary">
                 <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95] tracking-[0]">{product.name}</h1>
                 <p className="kt-detail-intro">{product.shortDescription}</p>
-                <div className="mt-6 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
+                <div className="mt-8 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
                   {HERO_FACTS.map((item) => (
                     <article key={item.label} className="kt-reveal-item flex items-center gap-3 py-3.5">
                       <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(244,223,51,0.45)] text-primary" aria-hidden="true">
@@ -290,23 +314,25 @@ function ProductDetailPage() {
                 </div>
 
               </div>
-            </section>
 
-            <section className="kt-detail-gallery-carousel-wrap kt-detail-anim" id="gallery" aria-label="Product pictures">
-              <div className="kt-detail-gallery-carousel">
-                {product.gallery.map((img, index) => (
+              <div className="kt-reveal-item kt-detail-preview-strip-wrap mt-4 lg:col-span-2">
+                <div className="kt-detail-preview-strip">
+                {galleryImages.map((img, index) => (
                   <button
+                    key={`${img}-${index}`}
                     type="button"
-                    key={img}
-                    className="kt-detail-gallery-item-btn"
-                    onClick={() => setGalleryLightboxIndex(index)}
-                    aria-label={`Abrir imagen ${index + 1} de ${product.name}`}
+                    className={`kt-detail-preview-btn ${activeImageIndex === index ? 'is-active' : ''}`}
+                    onClick={() => setActiveImageIndex(index)}
+                    aria-label={`Ver imagen ${index + 1} de ${product.name}`}
+                    aria-current={activeImageIndex === index ? 'true' : undefined}
                   >
-                    <img src={img} alt={`${product.name} gallery`} loading="lazy" />
+                    <img src={img} alt={`${product.name} vista ${index + 1}`} loading="lazy" />
                   </button>
                 ))}
+                </div>
               </div>
             </section>
+
             <div className="kt-graphene-separator" aria-hidden="true" />
 
             <section className="kt-detail-video-shell kt-detail-anim" id="video">
@@ -328,7 +354,7 @@ function ProductDetailPage() {
               </button>
 
               {isVideoOpen && (
-                <div className="kt-detail-video-content mt-6">
+                <div className="kt-detail-video-content mt-8">
                   <div className="kt-detail-video-list">
                     {(product.videos?.slice(0, 1) ?? []).map((video) => (
                       <a
@@ -371,7 +397,7 @@ function ProductDetailPage() {
               </button>
 
               {isDownloadsOpen && (
-                <div className="kt-detail-downloads-content mt-6">
+                <div className="kt-detail-downloads-content mt-8">
                   <p className="kt-detail-downloads-copy">
                     Find and download all technical and marketing documents related to this product.
                   </p>
@@ -470,7 +496,7 @@ function ProductDetailPage() {
               </button>
 
               {isAccessoriesOpen && (
-                <div className="kt-detail-accessories-grid mt-6">
+                <div className="kt-detail-accessories-grid mt-8">
                   {product.accessories.map((item, index) => (
                     <ProductCard
                       key={item.name}
@@ -492,7 +518,7 @@ function ProductDetailPage() {
                 {t('productDetail.sections.technicalSpecs', 'Technical Specification')}
                 <span className="kt-title-dot">.</span>
               </h3>
-              <div className="kt-detail-tech-columns mt-6">
+              <div className="kt-detail-tech-columns mt-8">
                 {technicalSpecColumns.map((column, columnIndex) => (
                   <div key={`tech-col-${columnIndex}`} className="kt-tech-list">
                     {column.map(([label, value]) => (
@@ -510,7 +536,7 @@ function ProductDetailPage() {
       </main>
 
       <ImageLightbox
-        images={product.gallery}
+        images={galleryImages}
         initialIndex={galleryLightboxIndex < 0 ? 0 : galleryLightboxIndex}
         isOpen={galleryLightboxIndex >= 0}
         onClose={() => setGalleryLightboxIndex(-1)}
