@@ -1,0 +1,523 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { getProductDetailBySlug } from '../data/productDetails'
+import ImageLightbox from '../../../shared/components/ImageLightbox'
+import ProductCard from '../../catalog/components/ProductCard'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+
+const HERO_FACTS = [
+  {
+    icon: 'light-source',
+    label: 'Light source',
+    value: 'Osram Sirius HRI 470 W RO',
+  },
+  {
+    icon: 'light-output',
+    label: 'Light output',
+    value: 'MEGA bright 2.200.000 lx @ 5',
+  },
+  {
+    icon: 'zoom-range',
+    label: 'Zoom range',
+    value: '1.8°-21° beam mode, 3°-42° spot mode',
+  },
+  {
+    icon: 'effects',
+    label: 'Effects',
+    value: 'CMY mixing, rotating and static gobo wheel, animation wheel, 12 beam and flower effects',
+  },
+]
+
+function HeroFactIcon({ type }) {
+  if (type === 'light-source') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+        <path d="M9 18h6M10 21h4M8 10a4 4 0 118 0c0 1.6-.9 2.7-1.8 3.6-.7.7-1.2 1.4-1.2 2.4h-2c0-1-.5-1.7-1.2-2.4C8.9 12.7 8 11.6 8 10z" />
+      </svg>
+    )
+  }
+
+  if (type === 'light-output') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+        <path d="M12 3v3M4.8 7.8l2.1 2.1M3 12h3m12 0h3m-2.9-4.2-2.1 2.1M7 17h10M9 21h6" />
+      </svg>
+    )
+  }
+
+  if (type === 'zoom-range') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+        <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M9 9h6v6H9z" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+      <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3zm7 10l.9 2.1L22 16l-2.1.9L19 19l-.9-2.1L16 16l2.1-.9L19 13zM5 14l.7 1.6L7.3 16l-1.6.7L5 18.3l-.7-1.6L2.7 16l1.6-.7L5 14z" />
+    </svg>
+  )
+}
+
+const FALLBACK_MANUAL_DOWNLOADS = [
+  { label: 'User Manual', size: '11 MB', type: 'PDF' },
+  { label: 'Service Manual', size: '14 MB', type: 'PDF' },
+]
+
+const FALLBACK_SOFTWARE_DOWNLOADS = [
+  { label: 'Firmware Update Pack', size: '132 MB', type: 'ZIP' },
+  { label: 'Fixture Config Utility', size: '28 MB', type: 'EXE / DMG' },
+]
+
+function ProductDetailPage() {
+  const { t } = useLanguage()
+  const { slug } = useParams()
+  const product = getProductDetailBySlug(slug)
+  const detailBodyRef = useRef(null)
+  const [selectedVariantId] = useState(product?.variants?.[0]?.id ?? '')
+  const [activeTab, setActiveTab] = useState('about')
+  const [isVideoOpen, setIsVideoOpen] = useState(true)
+  const [isDownloadsOpen, setIsDownloadsOpen] = useState(true)
+  const [isAccessoriesOpen, setIsAccessoriesOpen] = useState(true)
+  const [activeDownloadPanel, setActiveDownloadPanel] = useState('manuals')
+  const [galleryLightboxIndex, setGalleryLightboxIndex] = useState(-1)
+  const tabs = useMemo(
+    () => [
+      { id: 'about', label: t('productDetail.tabs.about', 'About') },
+      { id: 'gallery', label: t('productDetail.tabs.gallery', 'Pictures') },
+      { id: 'video', label: t('productDetail.tabs.video', 'Product Video') },
+      { id: 'downloads', label: t('productDetail.tabs.downloads', 'Downloads') },
+      { id: 'accessories', label: t('productDetail.tabs.accessories', 'Accessories') },
+      { id: 'technical-specs', label: t('productDetail.tabs.technicalSpecs', 'Technical Specification') },
+    ],
+    [t],
+  )
+
+  const getStickyOffset = () => {
+    const mainHeader = window.innerWidth <= 640 ? 74 : 88
+    const detailHeader = window.innerWidth <= 640 ? 40 : 44
+    return mainHeader + detailHeader + 8
+  }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [slug])
+
+  useEffect(() => {
+    const onScroll = () => {
+      const offset = getStickyOffset()
+      let current = 'about'
+
+      tabs.forEach((tab) => {
+        const section = document.getElementById(tab.id)
+        if (section && section.getBoundingClientRect().top - offset <= 0) {
+          current = tab.id
+        }
+      })
+
+      setActiveTab(current)
+    }
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [tabs])
+
+  useEffect(() => {
+    const scope = detailBodyRef.current
+    if (!scope) return undefined
+
+    const animatedNodes = Array.from(
+      scope.querySelectorAll('.kt-detail-anim, .kt-graphene-separator'),
+    )
+
+    if (animatedNodes.length === 0) return undefined
+
+    animatedNodes.forEach((node, index) => {
+      node.style.setProperty('--reveal-delay', `${index * 85}ms`)
+    })
+
+    const revealNode = (node) => {
+      if (node.classList.contains('is-visible')) return
+      node.classList.add('is-visible')
+    }
+
+    const checkNodesInView = () => {
+      const triggerLine = window.innerHeight * 0.88
+      animatedNodes.forEach((node) => {
+        if (node.classList.contains('is-visible')) return
+        const rect = node.getBoundingClientRect()
+        if (rect.top <= triggerLine && rect.bottom >= 0) {
+          revealNode(node)
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          revealNode(entry.target)
+          observer.unobserve(entry.target)
+        })
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -6% 0px' },
+    )
+
+    animatedNodes.forEach((node) => observer.observe(node))
+    checkNodesInView()
+    const raf = window.requestAnimationFrame(checkNodesInView)
+    window.addEventListener('scroll', checkNodesInView, { passive: true })
+
+    return () => {
+      window.cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', checkNodesInView)
+      observer.disconnect()
+    }
+  }, [product])
+
+  const selectedVariant = useMemo(
+    () => product?.variants?.find((variant) => variant.id === selectedVariantId) ?? product?.variants?.[0],
+    [product, selectedVariantId],
+  )
+
+  const manualDownloads = useMemo(() => {
+    const list = (product?.downloads ?? []).filter(
+      (item) =>
+        item.label.toLowerCase().includes('manual') ||
+        item.label.toLowerCase().includes('brochure'),
+    )
+    return list.length > 0 ? list : FALLBACK_MANUAL_DOWNLOADS
+  }, [product])
+
+  const softwareDownloads = useMemo(() => {
+    const list = (product?.downloads ?? []).filter((item) =>
+      item.label.toLowerCase().includes('software') ||
+      item.label.toLowerCase().includes('firmware'),
+    )
+    return list.length > 0 ? list : FALLBACK_SOFTWARE_DOWNLOADS
+  }, [product])
+
+  const technicalSpecColumns = useMemo(() => {
+    const specs = product?.technicalSpecs ?? []
+    const mid = Math.ceil(specs.length / 2)
+    return [specs.slice(0, mid), specs.slice(mid)]
+  }, [product])
+
+  const goToSection = (id) => {
+    const node = document.getElementById(id)
+    if (node) {
+      const top = node.getBoundingClientRect().top + window.scrollY - getStickyOffset()
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+
+  if (!product) {
+    return (
+      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+        <div>
+          <h1 className="title-font m-0 mb-2 text-[clamp(3.8rem,10vw,7rem)] leading-[1.02] tracking-[0]">
+            {t('productDetail.notFoundTitle', 'Producto no encontrado')}
+          </h1>
+          <p className="mb-3 text-[#a0a0a0]">{t('productDetail.notFoundSubtitle', 'Este detalle aun no esta publicado.')}</p>
+          <Link className="font-bold text-primary" to="/tienda">Volver a tienda</Link>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="kt-detail-page">
+      <main className="kt-detail-main">
+        <header className="kt-detail-fixed-header">
+          <nav className="kt-detail-tabs" aria-label="Product detail sections">
+            <div className="kt-detail-tabs-name">
+              <strong className="title-font text-[9px] leading-none tracking-[0.12em]">{product.name}</strong>
+            </div>
+            <div className="kt-detail-tabs-links">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={activeTab === tab.id ? 'is-active' : ''}
+                  aria-current={activeTab === tab.id ? 'true' : undefined}
+                  onClick={() => {
+                    setActiveTab(tab.id)
+                    goToSection(tab.id)
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <Link
+              className="hidden lg:inline-flex self-stretch h-full items-center bg-primary text-black font-extrabold uppercase tracking-[0.08em] text-[10px] px-3 border border-primary rounded-none m-0 hover:brightness-105 transition"
+              to="/contacto"
+            >
+              {t('productDetail.inquiry', 'Inquiry')}
+            </Link>
+          </nav>
+        </header>
+
+        <div ref={detailBodyRef} className="kt-detail-body">
+          <div className="kt-container">
+            <section className="kt-detail-hero kt-detail-anim" id="about">
+              <figure className="kt-detail-image">
+                <img src={selectedVariant?.image || product.heroImage} alt={product.name} />
+              </figure>
+
+              <div className="kt-detail-summary">
+                <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95] tracking-[0]">{product.name}</h1>
+                <p className="kt-detail-intro">{product.shortDescription}</p>
+                <div className="mt-6 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
+                  {HERO_FACTS.map((item) => (
+                    <article key={item.label} className="kt-reveal-item flex items-center gap-3 py-3.5">
+                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(244,223,51,0.45)] text-primary" aria-hidden="true">
+                        <span className="h-5 w-5">
+                          <HeroFactIcon type={item.icon} />
+                        </span>
+                      </span>
+                      <div className="grid gap-0.5">
+                        <span className="text-[11px] font-bold uppercase tracking-[0.09em] text-[#aeb4bf]">{item.label}</span>
+                        <strong className="text-[0.95rem] font-bold leading-[1.45] text-[#f0f2f5]">{item.value}</strong>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+              </div>
+            </section>
+
+            <section className="kt-detail-gallery-carousel-wrap kt-detail-anim" id="gallery" aria-label="Product pictures">
+              <div className="kt-detail-gallery-carousel">
+                {product.gallery.map((img, index) => (
+                  <button
+                    type="button"
+                    key={img}
+                    className="kt-detail-gallery-item-btn"
+                    onClick={() => setGalleryLightboxIndex(index)}
+                    aria-label={`Abrir imagen ${index + 1} de ${product.name}`}
+                  >
+                    <img src={img} alt={`${product.name} gallery`} loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            </section>
+            <div className="kt-graphene-separator" aria-hidden="true" />
+
+            <section className="kt-detail-video-shell kt-detail-anim" id="video">
+              <button
+                type="button"
+                className="kt-detail-video-head"
+                aria-expanded={isVideoOpen}
+                onClick={() => setIsVideoOpen((prev) => !prev)}
+              >
+                <h3 className="kt-detail-video-title text-[clamp(2.1rem,3.3vw,3.1rem)] leading-[1.05]">
+                  {t('productDetail.sections.video', 'Product Video')}
+                  <span className="kt-title-dot">.</span>
+                </h3>
+                <span className={`kt-detail-video-chevron ${isVideoOpen ? 'is-open' : ''}`} aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                    <path fill="#1e1e1e" d="M8 9.586l6.293-6.293a1 1 0 011.414 1.414l-7 7a1 1 0 01-1.414 0l-7-7a1 1 0 111.414-1.414L8 9.586z" />
+                  </svg>
+                </span>
+              </button>
+
+              {isVideoOpen && (
+                <div className="kt-detail-video-content mt-6">
+                  <div className="kt-detail-video-list">
+                    {(product.videos?.slice(0, 1) ?? []).map((video) => (
+                      <a
+                        key={video.title}
+                        className="kt-detail-video-feature"
+                        href={video.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <img src={video.thumbnail} alt={video.title} loading="lazy" />
+                        <div className="kt-detail-video-play">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="#fff" d="M5.54 2.16l14 9a1 1 0 010 1.683l-14 9A1 1 0 014 21.002v-18a1 1 0 011.54-.842z" />
+                          </svg>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+            <div className="kt-graphene-separator" aria-hidden="true" />
+
+            <section className="kt-detail-downloads-shell kt-detail-anim" id="downloads">
+              <button
+                type="button"
+                className="kt-detail-downloads-head"
+                aria-expanded={isDownloadsOpen}
+                onClick={() => setIsDownloadsOpen((prev) => !prev)}
+              >
+                <h3 className="kt-detail-downloads-title text-[clamp(2.1rem,3.3vw,3.1rem)] leading-[1.05]">
+                  {t('productDetail.sections.downloads', 'Downloads')}
+                  <span className="kt-title-dot">.</span>
+                </h3>
+                <span className={`kt-detail-downloads-chevron ${isDownloadsOpen ? 'is-open' : ''}`} aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                    <path fill="#1e1e1e" d="M8 9.586l6.293-6.293a1 1 0 011.414 1.414l-7 7a1 1 0 01-1.414 0l-7-7a1 1 0 111.414-1.414L8 9.586z" />
+                  </svg>
+                </span>
+              </button>
+
+              {isDownloadsOpen && (
+                <div className="kt-detail-downloads-content mt-6">
+                  <p className="kt-detail-downloads-copy">
+                    Find and download all technical and marketing documents related to this product.
+                  </p>
+
+                  <div className="kt-detail-downloads-cards">
+                    <button
+                      type="button"
+                      className={`grid justify-items-center gap-2 border px-4 py-6 transition ${
+                        activeDownloadPanel === 'software'
+                          ? 'border-primary bg-[rgba(244,223,51,0.08)]'
+                          : 'border-[#2f2f2f] bg-transparent hover:border-[rgba(244,223,51,0.55)]'
+                      } kt-reveal-item`}
+                      onClick={() => setActiveDownloadPanel('software')}
+                    >
+                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-black" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+                          <path d="M20 12a8 8 0 11-2.3-5.6M20 4v5h-5" />
+                        </svg>
+                      </span>
+                      <strong className="title-font text-[1.25rem] leading-[1.05] text-center">{t('productDetail.downloads.softwareUpdates', 'Software Updates')}</strong>
+                    </button>
+                    <button
+                      type="button"
+                      className={`grid justify-items-center gap-2 border px-4 py-6 transition ${
+                        activeDownloadPanel === 'manuals'
+                          ? 'border-primary bg-[rgba(244,223,51,0.08)]'
+                          : 'border-[#2f2f2f] bg-transparent hover:border-[rgba(244,223,51,0.55)]'
+                      } kt-reveal-item`}
+                      onClick={() => setActiveDownloadPanel('manuals')}
+                    >
+                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-black" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+                          <path d="M6 4h9l3 3v13H6zM9 11h6M9 15h6M9 7h3" />
+                        </svg>
+                      </span>
+                      <strong className="title-font text-[1.25rem] leading-[1.05] text-center">{t('productDetail.downloads.manuals', 'Manuals')}</strong>
+                    </button>
+                  </div>
+
+                  <div className="kt-detail-downloads-panel">
+                    {activeDownloadPanel === 'software' ? (
+                      <div className="border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
+                        {softwareDownloads.map((item) => (
+                          <article key={item.label} className="kt-reveal-item flex items-center justify-between gap-4 py-3.5">
+                            <div className="grid gap-1">
+                              <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
+                              <strong className="text-[0.82rem] font-semibold text-[#aeb2ba]">
+                                {item.size} - {item.type}
+                              </strong>
+                            </div>
+                            <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
+                              Descargar
+                            </button>
+                          </article>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
+                        {manualDownloads.map((item) => (
+                          <article key={item.label} className="kt-reveal-item flex items-center justify-between gap-4 py-3.5">
+                            <div className="grid gap-1">
+                              <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
+                              <strong className="text-[0.82rem] font-semibold text-[#aeb2ba]">
+                                {item.size} - {item.type}
+                              </strong>
+                            </div>
+                            <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
+                              Descargar
+                            </button>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+            <div className="kt-graphene-separator" aria-hidden="true" />
+
+            <section className="kt-detail-accessories-shell kt-detail-anim" id="accessories">
+              <button
+                type="button"
+                className="kt-detail-accessories-head"
+                aria-expanded={isAccessoriesOpen}
+                onClick={() => setIsAccessoriesOpen((prev) => !prev)}
+              >
+                <h3 className="kt-detail-accessories-title text-[clamp(2.1rem,3.3vw,3.1rem)] leading-[1.05]">
+                  {t('productDetail.sections.accessories', 'Accessories')}
+                  <span className="kt-title-dot">.</span>
+                </h3>
+                <span className={`kt-detail-accessories-chevron ${isAccessoriesOpen ? 'is-open' : ''}`} aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                    <path fill="#1e1e1e" d="M8 9.586l6.293-6.293a1 1 0 011.414 1.414l-7 7a1 1 0 01-1.414 0l-7-7a1 1 0 111.414-1.414L8 9.586z" />
+                  </svg>
+                </span>
+              </button>
+
+              {isAccessoriesOpen && (
+                <div className="kt-detail-accessories-grid mt-6">
+                  {product.accessories.map((item, index) => (
+                    <ProductCard
+                      key={item.name}
+                      item={{
+                        name: item.name,
+                        description: item.description || 'Accessory',
+                        image: product.gallery[index % product.gallery.length],
+                      }}
+                      className="kt-reveal-item"
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+            <div className="kt-graphene-separator" aria-hidden="true" />
+
+            <section className="kt-detail-tech-shell kt-detail-anim" id="technical-specs">
+              <h3 className="kt-detail-tech-title text-[clamp(2.1rem,3.3vw,3.1rem)] leading-[1.05]">
+                {t('productDetail.sections.technicalSpecs', 'Technical Specification')}
+                <span className="kt-title-dot">.</span>
+              </h3>
+              <div className="kt-detail-tech-columns mt-6">
+                {technicalSpecColumns.map((column, columnIndex) => (
+                  <div key={`tech-col-${columnIndex}`} className="kt-tech-list">
+                    {column.map(([label, value]) => (
+                      <article key={label} className="kt-tech-row">
+                        <span>{label}</span>
+                        <strong>{value}</strong>
+                      </article>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <ImageLightbox
+        images={product.gallery}
+        initialIndex={galleryLightboxIndex < 0 ? 0 : galleryLightboxIndex}
+        isOpen={galleryLightboxIndex >= 0}
+        onClose={() => setGalleryLightboxIndex(-1)}
+        label={product.name}
+      />
+    </section>
+  )
+}
+
+export default ProductDetailPage
