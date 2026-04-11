@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { defaultLandingContent } from '../data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
@@ -217,6 +218,9 @@ function HeaderSection() {
   useEffect(() => {
     if (!isLoginDialogOpen) return undefined
 
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
         setIsLoginDialogOpen(false)
@@ -225,6 +229,7 @@ function HeaderSection() {
 
     document.addEventListener('keydown', onKeyDown)
     return () => {
+      document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [isLoginDialogOpen])
@@ -243,6 +248,64 @@ function HeaderSection() {
   }, [searchTerm, suggestions.length])
 
   const isPredictOpen = isSearchFocused && searchTerm.trim().length > 0
+  const loginDialog = isLoginDialogOpen
+    ? createPortal(
+        <div
+          className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/70 p-4 backdrop-blur-[3px]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Opciones de inicio de sesion"
+          onClick={() => setIsLoginDialogOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#101012] p-6 shadow-[0_22px_54px_rgba(0,0,0,0.5)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="title-font text-[1.35rem] leading-none text-white">Iniciar sesion</h3>
+                <p className="mt-2 text-[0.84rem] text-[#aeb4bf]">Accede con tu cuenta de Google.</p>
+              </div>
+              <button
+                type="button"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(255,255,255,0.18)] text-[#c8ced8] transition hover:border-primary hover:text-primary"
+                onClick={() => setIsLoginDialogOpen(false)}
+                aria-label="Cerrar dialogo"
+              >
+                <span className="material-symbols-outlined text-[18px] leading-none" aria-hidden="true">close</span>
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <button
+                type="button"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-black uppercase tracking-[0.08em] text-[#0b0b0b] transition hover:brightness-105"
+                onClick={() => {
+                  setIsLoginDialogOpen(false)
+                  navigate('/login')
+                }}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[17px] w-[17px] text-black">
+                  <path
+                    fill="currentColor"
+                    d="M21.35 11.1H12v2.92h5.35c-.23 1.5-1.74 4.4-5.35 4.4-3.22 0-5.84-2.67-5.84-5.96s2.62-5.96 5.84-5.96c1.84 0 3.07.78 3.77 1.46l2.57-2.48C16.69 3.89 14.57 3 12 3 6.92 3 2.8 7.16 2.8 12.25S6.92 21.5 12 21.5c6.93 0 9.2-4.86 9.2-7.37 0-.5-.05-.86-.12-1.23z"
+                  />
+                </svg>
+                Continuar con Google
+              </button>
+              <button
+                type="button"
+                className="text-center text-[0.73rem] font-semibold uppercase tracking-[0.1em] text-[#9ea6b3] transition hover:text-white"
+                onClick={() => setIsLoginDialogOpen(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )
+    : null
 
   return (
     <header className="sticky top-0 z-50 bg-[#050505]/82 backdrop-blur-xl supports-[backdrop-filter]:bg-[#050505]/76 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-40 py-4">
@@ -389,10 +452,17 @@ function HeaderSection() {
 
       <div
         ref={mobileMenuRef}
-        className={`absolute top-[calc(100%+0.45rem)] left-6 right-6 z-[70] rounded-[10px] border border-white/12 bg-[rgba(5,5,5,0.92)] p-[0.65rem] shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-[12px] transition md:hidden ${isMobileOpen ? 'pointer-events-auto translate-y-0 opacity-100 scale-100' : 'pointer-events-none -translate-y-1.5 opacity-0 scale-[0.985]'}`}
+        className={`absolute top-[calc(100%+0.45rem)] left-6 right-6 z-[70] overflow-hidden rounded-[10px] border border-white/12 bg-[rgba(5,5,5,0.92)] p-[0.65rem] shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-[12px] transition md:hidden ${isMobileOpen ? 'pointer-events-auto translate-y-0 opacity-100 scale-100' : 'pointer-events-none -translate-y-1.5 opacity-0 scale-[0.985]'}`}
         id="mobileMenuPanel"
       >
-        <div className="mb-2 inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5 md:hidden">
+        <img
+          src="/assets/logo_minimal.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-2 top-1/2 h-28 w-28 -translate-y-1/2 opacity-[0.1]"
+        />
+
+        <div className="relative z-10 mb-2 inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5 md:hidden">
           <button
             type="button"
             className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
@@ -413,7 +483,7 @@ function HeaderSection() {
 
         {navItems.map((item) => (
           item.hash ? (
-            <a key={`${item.to}${item.hash}`} href={`${item.to}${item.hash}`} onClick={handleSupportNav} className="block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]">
+            <a key={`${item.to}${item.hash}`} href={`${item.to}${item.hash}`} onClick={handleSupportNav} className="relative z-10 block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]">
               {item.label}
             </a>
           ) : (
@@ -421,7 +491,7 @@ function HeaderSection() {
               key={item.to}
               to={item.to}
               onClick={item.to === '/tienda' ? handleCatalogNav : () => setIsMobileOpen(false)}
-              className="block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
+              className="relative z-10 block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
             >
               {item.label}
             </Link>
@@ -429,50 +499,7 @@ function HeaderSection() {
         ))}
       </div>
 
-      {isLoginDialogOpen ? (
-        <div
-          className="fixed inset-0 z-[1800] grid place-items-center bg-black/60 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Opciones de inicio de sesion"
-          onClick={() => setIsLoginDialogOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm rounded-xl border border-[#2a2a2a] bg-[#111] p-5"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 className="title-font text-[1.3rem] text-white">Iniciar sesion</h3>
-            <p className="mt-1 text-sm text-[#aeb5bf]">Elegi un proveedor:</p>
-            <div className="mt-4 grid gap-2">
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-[#0b0b0b]"
-                onClick={() => {
-                  setIsLoginDialogOpen(false)
-                  navigate('/login')
-                }}
-              >
-                Continuar con Google
-              </button>
-              <button
-                type="button"
-                disabled
-                className="cursor-not-allowed rounded-lg border border-[#2a2a2a] bg-[#181818] px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-[#7c838f] opacity-80"
-                title="Proximamente"
-              >
-                Continuar con Outlook (Proximamente)
-              </button>
-            </div>
-            <button
-              type="button"
-              className="mt-3 w-full rounded-lg border border-[#2a2a2a] px-4 py-2 text-xs uppercase tracking-[0.1em] text-[#c6ccd7]"
-              onClick={() => setIsLoginDialogOpen(false)}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      ) : null}
+      {loginDialog}
     </header>
   )
 }

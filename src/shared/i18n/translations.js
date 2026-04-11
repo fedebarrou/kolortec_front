@@ -38,6 +38,7 @@ export const translations = {
       inquiry: 'Inquiry',
       notFoundTitle: 'Product not found',
       notFoundSubtitle: 'This detail is not published yet.',
+      backToShop: 'Back to shop',
       tabs: {
         about: 'About',
         gallery: 'Pictures',
@@ -53,9 +54,26 @@ export const translations = {
         technicalSpecs: 'Technical Specification',
       },
       downloads: {
+        description:
+          'Find and download all technical and marketing documents related to this product.',
         softwareUpdates: 'Software Updates',
         manuals: 'Manuals',
+        downloadCta: 'Download',
       },
+    },
+    footer: {
+      about:
+        'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.',
+      productsTitle: 'Products',
+      productsLinks: ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'],
+      companyTitle: 'Company',
+      companyLinks: ['Our Story', 'Projects', 'Careers', 'Contact'],
+      updatesTitle: 'Updates',
+      emailPlaceholder: 'Email address',
+      privacyPolicy: 'Privacy Policy',
+      termsOfService: 'Terms of Service',
+      copyright: '© 2024 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.',
+      galleryLabel: 'Footer gallery',
     },
   },
   es: {
@@ -97,6 +115,7 @@ export const translations = {
       inquiry: 'Consulta',
       notFoundTitle: 'Producto no encontrado',
       notFoundSubtitle: 'Este detalle aún no está publicado.',
+      backToShop: 'Volver a tienda',
       tabs: {
         about: 'Acerca de',
         gallery: 'Imágenes',
@@ -112,9 +131,26 @@ export const translations = {
         technicalSpecs: 'Especificación Técnica',
       },
       downloads: {
+        description:
+          'Encontrá y descargá toda la documentación técnica y comercial relacionada con este producto.',
         softwareUpdates: 'Actualizaciones de Software',
         manuals: 'Manuales',
+        downloadCta: 'Descargar',
       },
+    },
+    footer: {
+      about:
+        'Lideres globales en soluciones de iluminacion industrial de alto rendimiento. Potencia y performance para entornos exigentes.',
+      productsTitle: 'Productos',
+      productsLinks: ['Floods Serie X', 'Spots de Precision', 'Washes Arquitecturales', 'Equipos Portatiles'],
+      companyTitle: 'Empresa',
+      companyLinks: ['Nuestra Historia', 'Proyectos', 'Carreras', 'Contacto'],
+      updatesTitle: 'Novedades',
+      emailPlaceholder: 'Correo electronico',
+      privacyPolicy: 'Politica de Privacidad',
+      termsOfService: 'Terminos de Servicio',
+      copyright: '© 2024 KOLORTEC LIGHTING SYSTEMS. TODOS LOS DERECHOS RESERVADOS.',
+      galleryLabel: 'Galeria del footer',
     },
   },
 }

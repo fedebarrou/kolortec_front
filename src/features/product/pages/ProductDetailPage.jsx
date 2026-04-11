@@ -82,6 +82,8 @@ function ProductDetailPage() {
   const [isAccessoriesOpen, setIsAccessoriesOpen] = useState(true)
   const [activeDownloadPanel, setActiveDownloadPanel] = useState('manuals')
   const [galleryLightboxIndex, setGalleryLightboxIndex] = useState(-1)
+  const [previewActivePage, setPreviewActivePage] = useState(0)
+  const [accessoriesActivePage, setAccessoriesActivePage] = useState(0)
   const tabs = useMemo(
     () => [
       { id: 'about', label: t('productDetail.tabs.about', 'About') },
@@ -220,10 +222,37 @@ function ProductDetailPage() {
   }, [product, selectedVariant])
 
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const previewStripRef = useRef(null)
+  const accessoriesStripRef = useRef(null)
 
   useEffect(() => {
     setActiveImageIndex(0)
+    setPreviewActivePage(0)
+    setAccessoriesActivePage(0)
   }, [slug, galleryImages.length])
+
+  const scrollToPage = (ref, pageIndex) => {
+    const viewport = ref.current
+    if (!viewport) return
+    viewport.scrollTo({
+      left: viewport.clientWidth * pageIndex,
+      behavior: 'smooth',
+    })
+  }
+
+  const onPreviewScroll = () => {
+    const viewport = previewStripRef.current
+    if (!viewport) return
+    const current = Math.round(viewport.scrollLeft / Math.max(viewport.clientWidth, 1))
+    setPreviewActivePage(Math.max(0, Math.min(current, galleryImages.length - 1)))
+  }
+
+  const onAccessoriesScroll = () => {
+    const viewport = accessoriesStripRef.current
+    if (!viewport) return
+    const current = Math.round(viewport.scrollLeft / Math.max(viewport.clientWidth, 1))
+    setAccessoriesActivePage(Math.max(0, Math.min(current, product.accessories.length - 1)))
+  }
 
   const goToSection = (id) => {
     const node = document.getElementById(id)
@@ -241,7 +270,7 @@ function ProductDetailPage() {
             {t('productDetail.notFoundTitle', 'Producto no encontrado')}
           </h1>
           <p className="mb-3 text-[#a0a0a0]">{t('productDetail.notFoundSubtitle', 'Este detalle aun no esta publicado.')}</p>
-          <Link className="font-bold text-primary" to="/tienda">Volver a tienda</Link>
+          <Link className="font-bold text-primary" to="/tienda">{t('productDetail.backToShop', 'Volver a tienda')}</Link>
         </div>
       </section>
     )
@@ -316,7 +345,7 @@ function ProductDetailPage() {
               </div>
 
               <div className="kt-reveal-item kt-detail-preview-strip-wrap mt-4 lg:col-span-2">
-                <div className="kt-detail-preview-strip">
+                <div ref={previewStripRef} className="kt-detail-preview-strip" onScroll={onPreviewScroll}>
                 {galleryImages.map((img, index) => (
                   <button
                     key={`${img}-${index}`}
@@ -330,6 +359,20 @@ function ProductDetailPage() {
                   </button>
                 ))}
                 </div>
+                {galleryImages.length > 1 ? (
+                  <div className="mt-3 flex justify-center gap-2 md:hidden" aria-label="Paginacion galeria">
+                    {galleryImages.map((_, index) => (
+                      <button
+                        key={`gallery-dot-${index}`}
+                        type="button"
+                        className={`h-2.5 w-2.5 rounded-full transition ${index === previewActivePage ? 'bg-primary' : 'bg-white/35'}`}
+                        onClick={() => scrollToPage(previewStripRef, index)}
+                        aria-label={`Ir a imagen ${index + 1}`}
+                        aria-current={index === previewActivePage ? 'true' : undefined}
+                      />
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </section>
 
@@ -399,10 +442,10 @@ function ProductDetailPage() {
               {isDownloadsOpen && (
                 <div className="kt-detail-downloads-content mt-8">
                   <p className="kt-detail-downloads-copy">
-                    Find and download all technical and marketing documents related to this product.
+                    {t('productDetail.downloads.description', 'Find and download all technical and marketing documents related to this product.')}
                   </p>
 
-                  <div className="kt-detail-downloads-cards">
+                  <div className="kt-detail-downloads-cards mt-8">
                     <button
                       type="button"
                       className={`grid justify-items-center gap-2 border px-4 py-6 transition ${
@@ -449,7 +492,7 @@ function ProductDetailPage() {
                               </strong>
                             </div>
                             <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
-                              Descargar
+                              {t('productDetail.downloads.downloadCta', 'Descargar')}
                             </button>
                           </article>
                         ))}
@@ -465,7 +508,7 @@ function ProductDetailPage() {
                               </strong>
                             </div>
                             <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
-                              Descargar
+                              {t('productDetail.downloads.downloadCta', 'Descargar')}
                             </button>
                           </article>
                         ))}
@@ -496,7 +539,8 @@ function ProductDetailPage() {
               </button>
 
               {isAccessoriesOpen && (
-                <div className="kt-detail-accessories-grid mt-8">
+                <>
+                <div className="kt-detail-accessories-grid mt-8 hidden md:grid">
                   {product.accessories.map((item, index) => (
                     <ProductCard
                       key={item.name}
@@ -509,6 +553,41 @@ function ProductDetailPage() {
                     />
                   ))}
                 </div>
+                <div className="mt-8 md:hidden">
+                  <div
+                    ref={accessoriesStripRef}
+                    className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    onScroll={onAccessoriesScroll}
+                  >
+                    {product.accessories.map((item, index) => (
+                      <div key={`acc-mobile-${item.name}`} className="min-w-full snap-start pr-1">
+                        <ProductCard
+                          item={{
+                            name: item.name,
+                            description: item.description || 'Accessory',
+                            image: product.gallery[index % product.gallery.length],
+                          }}
+                          className="kt-reveal-item"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  {product.accessories.length > 1 ? (
+                    <div className="mt-3 flex justify-center gap-2" aria-label="Paginacion accesorios">
+                      {product.accessories.map((_, index) => (
+                        <button
+                          key={`acc-dot-${index}`}
+                          type="button"
+                          className={`h-2.5 w-2.5 rounded-full transition ${index === accessoriesActivePage ? 'bg-primary' : 'bg-white/35'}`}
+                          onClick={() => scrollToPage(accessoriesStripRef, index)}
+                          aria-label={`Ir a accesorio ${index + 1}`}
+                          aria-current={index === accessoriesActivePage ? 'true' : undefined}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                </>
               )}
             </section>
             <div className="kt-graphene-separator" aria-hidden="true" />

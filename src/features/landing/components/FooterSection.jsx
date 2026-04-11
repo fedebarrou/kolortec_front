@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 const galleryImages = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuBAk8xJE2XT1Foa5Ec4lOomjgNvVOZryqaHeSwwOZE7ZJ9zSC0kCC6wBBUWtZpERFTwjAL5Xs6zy_zBCz27Bhs8dQ6YL9bMmnIe01AJYhb0PjwH_Dc4Zwz7QlQI6CgeaEeoHI89r9msntrSnKdfeO7vZfdL27FkN0YB5cB8LDZsTrChmm2Zg3HzmFoDoj4E4ZtsaH5B8WnXVNmq7iXF7NPSaRqaL_Zm1p8qSOo-uIVU0lm7pyGyY2aR21RoVXxs4b-R3to5hzOGz9Rg',
@@ -14,7 +15,10 @@ const galleryImages = [
 const loopImages = [...galleryImages, ...galleryImages]
 
 function FooterSection() {
+  const { t } = useLanguage()
   const [lightboxIndex, setLightboxIndex] = useState(-1)
+  const productLinks = t('footer.productsLinks', ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'])
+  const companyLinks = t('footer.companyLinks', ['Our Story', 'Projects', 'Careers', 'Contact'])
 
   return (
     <footer className="bg-deep-black border-t border-slate-800 py-16 px-6 lg:px-20">
@@ -46,38 +50,39 @@ function FooterSection() {
             <img alt="Kolortec Logo" className="h-28 w-28 object-contain" src="/assets/footer-logo.jpeg" />
           </div>
           <p className="body-font text-slate-500 text-sm leading-relaxed">
-            Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.
+            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-8 md:contents">
           <div>
-            <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">Products</h4>
+            <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.productsTitle', 'Products')}</h4>
             <ul className="body-font text-slate-400 space-y-4 text-sm">
-              <li><Link className="hover:text-primary transition-colors" to="/tienda">X-Series Floods</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/tienda">Precision Spots</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/tienda">Architectural Washes</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/tienda">Portable Gear</Link></li>
+              {productLinks.map((label) => (
+                <li key={`footer-product-${label}`}>
+                  <Link className="hover:text-primary transition-colors" to="/tienda">{label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">Company</h4>
+            <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.companyTitle', 'Company')}</h4>
             <ul className="body-font text-slate-400 space-y-4 text-sm">
-              <li><Link className="hover:text-primary transition-colors" to="/">Our Story</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/servicios">Projects</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/servicios">Careers</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/contacto">Contact</Link></li>
+              <li><Link className="hover:text-primary transition-colors" to="/">{companyLinks[0] ?? 'Our Story'}</Link></li>
+              <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[1] ?? 'Projects'}</Link></li>
+              <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[2] ?? 'Careers'}</Link></li>
+              <li><Link className="hover:text-primary transition-colors" to="/contacto">{companyLinks[3] ?? 'Contact'}</Link></li>
             </ul>
           </div>
         </div>
 
         <div>
-          <h4 className="title-font text-white mb-4 text-base md:text-lg font-black">Updates</h4>
+          <h4 className="title-font text-white mb-4 text-base md:text-lg font-black">{t('footer.updatesTitle', 'Updates')}</h4>
           <div className="flex gap-2">
             <input
               className="h-10 bg-slate-800 border-none text-white text-xs focus:ring-1 focus:ring-primary w-full px-3 rounded-lg"
-              placeholder="Email address"
+              placeholder={t('footer.emailPlaceholder', 'Email address')}
               type="email"
             />
             <button className="h-10 bg-primary text-background-dark px-4 font-black text-xs hover:bg-white transition-all rounded-lg" type="button">
@@ -88,10 +93,10 @@ function FooterSection() {
       </div>
 
       <div className="w-full mt-16 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600">
-        <p>© 2024 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.</p>
+        <p>{t('footer.copyright', '© 2024 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
         <div className="flex gap-6 mt-4 md:mt-0">
-          <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-          <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
+          <a className="hover:text-primary transition-colors" href="#">{t('footer.privacyPolicy', 'Privacy Policy')}</a>
+          <a className="hover:text-primary transition-colors" href="#">{t('footer.termsOfService', 'Terms of Service')}</a>
         </div>
       </div>
 
@@ -100,10 +105,11 @@ function FooterSection() {
         initialIndex={lightboxIndex < 0 ? 0 : lightboxIndex}
         isOpen={lightboxIndex >= 0}
         onClose={() => setLightboxIndex(-1)}
-        label="Galeria de footer"
+        label={t('footer.galleryLabel', 'Footer gallery')}
       />
     </footer>
   )
 }
 
 export default FooterSection
+
