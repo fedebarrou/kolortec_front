@@ -57,7 +57,7 @@ function SupportSection({ support }) {
             src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            className="h-full min-h-[320px] w-full border-0 [filter:grayscale(0.2)_contrast(1.05)]"
+            className="h-full min-h-[320px] w-full border-0"
           />
         </div>
       </div>

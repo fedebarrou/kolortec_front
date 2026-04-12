@@ -308,7 +308,7 @@ function HeaderSection() {
     : null
 
   return (
-    <header className="sticky top-0 z-50 bg-[#050505]/82 backdrop-blur-xl supports-[backdrop-filter]:bg-[#050505]/76 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-40 py-4">
+    <header className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-40 py-4">
       <div className="w-full flex items-center justify-between relative">
         <div className="flex items-center">
           <div className="flex items-center gap-2 text-primary">

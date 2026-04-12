@@ -4,6 +4,7 @@ import { getProductDetailBySlug } from '../data/productDetails'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import ProductCard from '../../catalog/components/ProductCard'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
 
 const HERO_FACTS = [
   {
@@ -71,7 +72,7 @@ const FALLBACK_SOFTWARE_DOWNLOADS = [
 ]
 
 function ProductDetailPage() {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const { slug } = useParams()
   const product = getProductDetailBySlug(slug)
   const detailBodyRef = useRef(null)
@@ -84,6 +85,7 @@ function ProductDetailPage() {
   const [galleryLightboxIndex, setGalleryLightboxIndex] = useState(-1)
   const [previewActivePage, setPreviewActivePage] = useState(0)
   const [accessoriesActivePage, setAccessoriesActivePage] = useState(0)
+  const [translatedShortDescription, setTranslatedShortDescription] = useState(product?.shortDescription ?? '')
   const tabs = useMemo(
     () => [
       { id: 'about', label: t('productDetail.tabs.about', 'About') },
@@ -105,6 +107,37 @@ function ProductDetailPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [slug])
+
+  useEffect(() => {
+    const sourceDescription = product?.shortDescription ?? ''
+    if (!sourceDescription) {
+      setTranslatedShortDescription('')
+      return undefined
+    }
+    const { normalized, sourceLang } = getAutoTranslatedTextTarget(sourceDescription, lang)
+    if (!normalized) {
+      setTranslatedShortDescription('')
+      return undefined
+    }
+
+    if (sourceLang === lang) {
+      setTranslatedShortDescription(normalized)
+      return undefined
+    }
+
+    let cancelled = false
+    setTranslatedShortDescription(normalized)
+
+    autoTranslateText({ text: normalized, from: sourceLang, to: lang }).then((translated) => {
+      if (!cancelled) {
+        setTranslatedShortDescription(translated || normalized)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [lang, product?.shortDescription, slug])
 
   useEffect(() => {
     const onScroll = () => {
@@ -140,23 +173,13 @@ function ProductDetailPage() {
     if (animatedNodes.length === 0) return undefined
 
     animatedNodes.forEach((node, index) => {
-      node.style.setProperty('--reveal-delay', `${index * 85}ms`)
+      const delay = Math.min(index * 55, 280)
+      node.style.setProperty('--reveal-delay', `${delay}ms`)
     })
 
     const revealNode = (node) => {
       if (node.classList.contains('is-visible')) return
       node.classList.add('is-visible')
-    }
-
-    const checkNodesInView = () => {
-      const triggerLine = window.innerHeight * 0.88
-      animatedNodes.forEach((node) => {
-        if (node.classList.contains('is-visible')) return
-        const rect = node.getBoundingClientRect()
-        if (rect.top <= triggerLine && rect.bottom >= 0) {
-          revealNode(node)
-        }
-      })
     }
 
     const observer = new IntersectionObserver(
@@ -167,17 +190,12 @@ function ProductDetailPage() {
           observer.unobserve(entry.target)
         })
       },
-      { threshold: 0.08, rootMargin: '0px 0px -6% 0px' },
+      { threshold: 0.08, rootMargin: '0px 0px -14% 0px' },
     )
 
     animatedNodes.forEach((node) => observer.observe(node))
-    checkNodesInView()
-    const raf = window.requestAnimationFrame(checkNodesInView)
-    window.addEventListener('scroll', checkNodesInView, { passive: true })
 
     return () => {
-      window.cancelAnimationFrame(raf)
-      window.removeEventListener('scroll', checkNodesInView)
       observer.disconnect()
     }
   }, [product])
@@ -221,6 +239,8 @@ function ProductDetailPage() {
     return baseGallery.length > 0 ? baseGallery : [primaryCandidate].filter(Boolean)
   }, [product, selectedVariant])
 
+  const previewImages = useMemo(() => galleryImages.slice(1), [galleryImages])
+
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const previewStripRef = useRef(null)
   const accessoriesStripRef = useRef(null)
@@ -244,7 +264,7 @@ function ProductDetailPage() {
     const viewport = previewStripRef.current
     if (!viewport) return
     const current = Math.round(viewport.scrollLeft / Math.max(viewport.clientWidth, 1))
-    setPreviewActivePage(Math.max(0, Math.min(current, galleryImages.length - 1)))
+    setPreviewActivePage(Math.max(0, Math.min(current, previewImages.length - 1)))
   }
 
   const onAccessoriesScroll = () => {
@@ -325,11 +345,11 @@ function ProductDetailPage() {
 
               <div className="kt-detail-summary">
                 <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95] tracking-[0]">{product.name}</h1>
-                <p className="kt-detail-intro">{product.shortDescription}</p>
+                <p className="kt-detail-intro">{translatedShortDescription}</p>
                 <div className="mt-8 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
                   {HERO_FACTS.map((item) => (
                     <article key={item.label} className="kt-reveal-item flex items-center gap-3 py-3.5">
-                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(244,223,51,0.45)] text-primary" aria-hidden="true">
+                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-black" aria-hidden="true">
                         <span className="h-5 w-5">
                           <HeroFactIcon type={item.icon} />
                         </span>
@@ -346,28 +366,28 @@ function ProductDetailPage() {
 
               <div className="kt-reveal-item kt-detail-preview-strip-wrap mt-4 lg:col-span-2">
                 <div ref={previewStripRef} className="kt-detail-preview-strip" onScroll={onPreviewScroll}>
-                {galleryImages.map((img, index) => (
+                {previewImages.map((img, index) => (
                   <button
                     key={`${img}-${index}`}
                     type="button"
-                    className={`kt-detail-preview-btn ${activeImageIndex === index ? 'is-active' : ''}`}
-                    onClick={() => setActiveImageIndex(index)}
-                    aria-label={`Ver imagen ${index + 1} de ${product.name}`}
-                    aria-current={activeImageIndex === index ? 'true' : undefined}
+                    className={`kt-detail-preview-btn ${activeImageIndex === index + 1 ? 'is-active' : ''}`}
+                    onClick={() => setActiveImageIndex(index + 1)}
+                    aria-label={`Ver imagen ${index + 2} de ${product.name}`}
+                    aria-current={activeImageIndex === index + 1 ? 'true' : undefined}
                   >
-                    <img src={img} alt={`${product.name} vista ${index + 1}`} loading="lazy" />
+                    <img src={img} alt={`${product.name} vista ${index + 2}`} loading="lazy" />
                   </button>
                 ))}
                 </div>
-                {galleryImages.length > 1 ? (
+                {previewImages.length > 1 ? (
                   <div className="mt-3 flex justify-center gap-2 md:hidden" aria-label="Paginacion galeria">
-                    {galleryImages.map((_, index) => (
+                    {previewImages.map((_, index) => (
                       <button
                         key={`gallery-dot-${index}`}
                         type="button"
                         className={`h-2.5 w-2.5 rounded-full transition ${index === previewActivePage ? 'bg-primary' : 'bg-white/35'}`}
                         onClick={() => scrollToPage(previewStripRef, index)}
-                        aria-label={`Ir a imagen ${index + 1}`}
+                        aria-label={`Ir a imagen ${index + 2}`}
                         aria-current={index === previewActivePage ? 'true' : undefined}
                       />
                     ))}
