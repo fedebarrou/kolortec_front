@@ -10,7 +10,7 @@ function HeroSection({ hero }) {
     <section className="relative flex min-h-[calc(100svh-72px)] md:min-h-[calc(100svh-80px)] items-end overflow-hidden kt-section-reveal" style={{ '--reveal-delay': '10ms' }}>
       <img src={hero.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.8)] to-[rgba(5,5,5,0.4)]" />
-      <div className="kt-hero-beam absolute -top-[20%] left-1/2 h-[140%] w-[150%] -translate-x-1/2 bg-[radial-gradient(circle_at_50%_0%,rgba(244,223,51,0.16)_0%,transparent_65%)]" />
+      <div className="kt-hero-beam absolute -top-[20%] left-1/2 hidden h-[140%] w-[150%] -translate-x-1/2 bg-[radial-gradient(circle_at_50%_0%,rgba(244,223,51,0.16)_0%,transparent_65%)] md:block" />
       <div className="relative z-[2] px-6 pb-[100px] lg:px-40 kt-hero-content-enter">
         <div className="kt-landing-reveal-item mb-3 inline-block bg-primary px-3.5 py-1.5 text-sm font-black text-[#090909]">{hero.badge}</div>
         <h1 className="title-font m-0 mb-4 text-[clamp(3.6rem,10vw,8.4rem)] leading-[0.95] tracking-[0]">

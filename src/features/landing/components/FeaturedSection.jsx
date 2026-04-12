@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ProductCard from '../../catalog/components/ProductCard'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
@@ -32,9 +33,9 @@ function FeaturedSection({ products }) {
           {sectionTitle}
           <span className="text-primary">.</span>
         </h2>
-        <a href="#shop" className="kt-landing-reveal-item text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
+        <Link to="/tienda" className="kt-landing-reveal-item text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
           {products.cta}
-        </a>
+        </Link>
       </div>
         <div className="hidden md:grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {products.items.map((item) => (
