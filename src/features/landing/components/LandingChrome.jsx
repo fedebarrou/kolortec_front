@@ -18,7 +18,7 @@ function LandingChrome({ loading, children }) {
   }, [isWhatsAppDialogOpen])
 
   return (
-    <div className="bg-[#050505]">
+    <div className="bg-[rgba(5,5,5,0.9)]">
       <HeaderSection />
       <main>{children ?? <Outlet />}</main>
       <FooterSection />
