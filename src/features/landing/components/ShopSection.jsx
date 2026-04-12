@@ -36,8 +36,8 @@ function ShopSection({ shop }) {
           </button>
         </div>
 
-        <div className="kt-landing-reveal-item relative w-full max-w-[280px] md:max-w-[333px] lg:ml-auto lg:max-w-[387px]">
-          <div className="absolute right-full top-0 bottom-0 mr-2 grid w-max grid-rows-3 gap-2">
+        <div className="kt-landing-reveal-item relative w-full max-w-none justify-self-start lg:ml-auto lg:justify-self-auto lg:max-w-[387px]">
+          <div className="grid w-full grid-cols-3 gap-3 pb-4 lg:absolute lg:right-full lg:top-0 lg:bottom-0 lg:mr-2 lg:w-max lg:grid-cols-1 lg:grid-rows-3 lg:pb-0">
             {sideImages.map((imageSrc, index) => (
               <div key={imageSrc} className="relative h-full aspect-square overflow-hidden rounded-[8px] border border-[#111] bg-black/10">
                 <img
@@ -49,7 +49,7 @@ function ShopSection({ shop }) {
               </div>
             ))}
             <img
-              className="kt-minimal-logo-spin pointer-events-none absolute bottom-0 right-full mr-10 w-[42px] select-none md:w-[50px]"
+              className="kt-minimal-logo-spin pointer-events-none absolute bottom-0 right-full mr-10 hidden w-[42px] select-none md:w-[50px] lg:block"
               src="/assets/logo_minimal.png"
               alt=""
               aria-hidden="true"
@@ -58,12 +58,22 @@ function ShopSection({ shop }) {
             />
           </div>
 
-          <div className="relative overflow-hidden rounded-[8px] border border-[#111] bg-black/10">
+          <div className="relative pb-10 pr-12 lg:pb-0 lg:pr-0">
+            <div className="relative overflow-hidden rounded-[8px] border border-[#111] bg-black/10">
+              <img
+                className="block h-auto w-full"
+                src="/assets/shop-section-product.jpeg"
+                alt="Cabeza movil Kolortec bajo lluvia"
+                loading="lazy"
+              />
+            </div>
             <img
-              className="block h-auto w-full"
-              src="/assets/shop-section-product.jpeg"
-              alt="Cabeza movil Kolortec bajo lluvia"
+              className="kt-minimal-logo-spin pointer-events-none absolute bottom-0 right-0 w-[42px] select-none md:w-[50px] lg:hidden"
+              src="/assets/logo_minimal.png"
+              alt=""
+              aria-hidden="true"
               loading="lazy"
+              style={{ filter: 'brightness(0) saturate(100%)' }}
             />
           </div>
         </div>

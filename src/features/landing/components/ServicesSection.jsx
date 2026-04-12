@@ -10,15 +10,15 @@ function ServicesSection({ services }) {
         {sectionTitle}
         <span className="text-primary">.</span>
       </h2>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
         {services.items.map((item) => (
-          <article key={item.title} className="kt-landing-reveal-item kt-landing-float-card overflow-hidden rounded-[10px] border border-[#2a2a2a] bg-[#111]">
-            <div className="aspect-[16/10] w-full overflow-hidden border-b border-[#2a2a2a]">
+          <article key={item.title} className="kt-landing-reveal-item kt-landing-float-card overflow-hidden rounded-[10px] border border-[#2a2a2a] bg-[#111] md:rounded-[12px]">
+            <div className="aspect-[16/10] w-full overflow-hidden border-b border-[#2a2a2a] sm:aspect-[16/9]">
               <img src={item.image} alt={item.title} loading="lazy" className="h-full w-full object-cover transition duration-500 ease-out hover:scale-105" />
             </div>
-            <div className="px-4 py-4">
-              <h3 className="title-font mb-2 text-[1.35rem]">{item.title}</h3>
-              <p className="text-[0.9rem] leading-[1.55] text-[#c4c8ce]">{item.description}</p>
+            <div className="px-4 py-4 sm:px-5 sm:py-5">
+              <h3 className="title-font mb-2 text-[1.1rem] sm:text-[1.25rem] md:text-[1.35rem]">{item.title}</h3>
+              <p className="text-[0.85rem] leading-[1.55] text-[#c4c8ce] sm:text-[0.9rem]">{item.description}</p>
             </div>
           </article>
         ))}
