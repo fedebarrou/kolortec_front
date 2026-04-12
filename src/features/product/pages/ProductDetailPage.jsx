@@ -302,7 +302,7 @@ function ProductDetailPage() {
         <header className="kt-detail-fixed-header">
           <nav className="kt-detail-tabs" aria-label="Product detail sections">
             <div className="kt-detail-tabs-name">
-              <strong className="title-font text-[12px] md:text-[13px] leading-none tracking-[0.14em]">{product.name}</strong>
+              <strong className="title-font text-[13px] md:text-[14px] leading-none tracking-[0.14em]">{product.name}</strong>
             </div>
             <div className="kt-detail-tabs-links">
               {tabs.map((tab) => (
@@ -320,12 +320,14 @@ function ProductDetailPage() {
                 </button>
               ))}
             </div>
-            <Link
+            <a
               className="hidden lg:inline-flex self-stretch h-full items-center bg-primary text-black font-extrabold uppercase tracking-[0.08em] text-[10px] px-3 border border-primary rounded-none m-0 hover:brightness-105 transition"
-              to="/contacto"
+              href={`https://wa.me/5491155555555?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}`)}`}
+              target="_blank"
+              rel="noreferrer"
             >
               {t('productDetail.inquiry', 'Inquiry')}
-            </Link>
+            </a>
           </nav>
         </header>
 
