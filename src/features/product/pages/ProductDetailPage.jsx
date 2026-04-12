@@ -569,6 +569,7 @@ function ProductDetailPage() {
                         description: item.description || 'Accessory',
                         image: product.gallery[index % product.gallery.length],
                       }}
+                      detailHref={`/producto/${product.slug || slug}`}
                       className="kt-reveal-item"
                     />
                   ))}
@@ -587,6 +588,7 @@ function ProductDetailPage() {
                             description: item.description || 'Accessory',
                             image: product.gallery[index % product.gallery.length],
                           }}
+                          detailHref={`/producto/${product.slug || slug}`}
                           className="kt-reveal-item"
                         />
                       </div>

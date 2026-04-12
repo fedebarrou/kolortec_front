@@ -36,9 +36,9 @@ function FeaturedSection({ products }) {
           {products.cta}
         </a>
       </div>
-      <div className="hidden md:grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="hidden md:grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {products.items.map((item) => (
-          <ProductCard key={item.name} item={item} className="kt-landing-reveal-item kt-landing-float-card" />
+          <ProductCard key={item.name} item={item} className="kt-landing-reveal-item" />
         ))}
       </div>
 
@@ -50,7 +50,7 @@ function FeaturedSection({ products }) {
         >
           {products.items.map((item) => (
             <div key={`featured-mobile-${item.name}`} className="min-w-full snap-start pr-1">
-              <ProductCard item={item} className="kt-landing-reveal-item kt-landing-float-card" />
+              <ProductCard item={item} className="kt-landing-reveal-item" />
             </div>
           ))}
         </div>

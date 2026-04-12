@@ -1,6 +1,13 @@
-export const translations = {
+﻿export const translations = {
   en: {
     lang: { es: 'Spanish', en: 'English' },
+    header: {
+      nav: {
+        home: 'Home',
+        catalog: 'Catalog',
+        support: 'Support',
+      },
+    },
     landing: {
       hero: {
         title: 'READYTOWORK.',
@@ -77,17 +84,24 @@ export const translations = {
     },
   },
   es: {
-    lang: { es: 'Español', en: 'Inglés' },
+    lang: { es: 'Espanol', en: 'Ingles' },
+    header: {
+      nav: {
+        home: 'Inicio',
+        catalog: 'Catalogo',
+        support: 'Soporte',
+      },
+    },
     landing: {
       hero: {
         title: 'READYTOWORK.',
         subtitle:
-          'Iluminación industrial para entornos de alta exigencia. Cuando fallar no es opción, los equipos líderes eligen Kolortec.',
+          'Iluminacion industrial para entornos de alta exigencia. Cuando fallar no es opcion, los equipos lideres eligen Kolortec.',
       },
       instagram: {
         title: 'KOLORTEC en Instagram',
         subtitle:
-          'Seguí nuestros proyectos y descubrí iluminación de alta exigencia en campo real.',
+          'Segui nuestros proyectos y descubri iluminacion de alta exigencia en campo real.',
       },
       products: {
         title: 'Colecciones Destacadas',
@@ -95,44 +109,44 @@ export const translations = {
       shop: {
         title: 'Partes y Accesorios Pro',
         subtitle:
-          'Conseguí los accesorios para tu setup Kolortec. Filtros originales, kits de montaje y repuestos.',
+          'Consegui los accesorios para tu setup Kolortec. Filtros originales, kits de montaje y repuestos.',
       },
       services: {
-        title: 'Soluciones de Ingeniería',
+        title: 'Soluciones de Ingenieria',
       },
       support: {
-        title: 'Centro Técnico',
+        title: 'Centro Tecnico',
         subtitle:
-          'Accedé al firmware más reciente, manuales técnicos y fotometría de toda nuestra línea.',
+          'Accede al firmware mas reciente, manuales tecnicos y fotometria de toda nuestra linea.',
       },
     },
     shop: {
-      title: 'Catálogo',
+      title: 'Catalogo',
       subtitle:
-        'Explorá nuestra línea completa con fichas técnicas, imágenes y acceso directo al detalle de cada producto.',
+        'Explora nuestra linea completa con fichas tecnicas, imagenes y acceso directo al detalle de cada producto.',
     },
     productDetail: {
       inquiry: 'Consulta',
       notFoundTitle: 'Producto no encontrado',
-      notFoundSubtitle: 'Este detalle aún no está publicado.',
+      notFoundSubtitle: 'Este detalle aun no esta publicado.',
       backToShop: 'Volver a tienda',
       tabs: {
         about: 'Acerca de',
-        gallery: 'Imágenes',
+        gallery: 'Imagenes',
         video: 'Video del Producto',
         downloads: 'Descargas',
         accessories: 'Accesorios',
-        technicalSpecs: 'Especificación Técnica',
+        technicalSpecs: 'Especificacion Tecnica',
       },
       sections: {
         video: 'Video del Producto',
         downloads: 'Descargas',
         accessories: 'Accesorios',
-        technicalSpecs: 'Especificación Técnica',
+        technicalSpecs: 'Especificacion Tecnica',
       },
       downloads: {
         description:
-          'Encontrá y descargá toda la documentación técnica y comercial relacionada con este producto.',
+          'Encontra y descarga toda la documentacion tecnica y comercial relacionada con este producto.',
         softwareUpdates: 'Actualizaciones de Software',
         manuals: 'Manuales',
         downloadCta: 'Descargar',
@@ -154,3 +168,4 @@ export const translations = {
     },
   },
 }
+

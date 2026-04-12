@@ -5,12 +5,6 @@ import { defaultLandingContent } from '../data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-const navItems = [
-  { label: 'Home', to: '/' },
-  { label: 'Catalogo', to: '/tienda' },
-  { label: 'Support', to: '/', hash: '#support' },
-]
-
 const normalizeText = (value) =>
   value
     .normalize('NFD')
@@ -49,7 +43,7 @@ const scoreProductMatch = (product, query) => {
 }
 
 function HeaderSection() {
-  const { lang, setLang } = useLanguage()
+  const { lang, setLang, t } = useLanguage()
   const { pathname, hash } = useLocation()
   const navigate = useNavigate()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -79,6 +73,15 @@ function HeaderSection() {
       .slice(0, 6)
       .map((entry) => entry.item)
   }, [products, searchTerm])
+
+  const navItems = useMemo(
+    () => [
+      { label: t('header.nav.home', 'Home'), to: '/' },
+      { label: t('header.nav.catalog', 'Catalogo'), to: '/tienda' },
+      { label: t('header.nav.support', 'Support'), to: '/', hash: '#support' },
+    ],
+    [t],
+  )
 
   useEffect(() => {
     if (hash !== '#support') return

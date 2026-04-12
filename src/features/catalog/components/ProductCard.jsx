@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { DEMO_PRODUCT_ROUTE } from '../../product/helpers/productDetailDemoHelper'
+import { getProductDetailBySlug } from '../../product/data/productDetails'
 
 const slugifyProductName = (value) =>
   value
@@ -6,9 +8,10 @@ const slugifyProductName = (value) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
 
-function ProductCard({ item, className = '', style, showDetailLink = true }) {
-  const slug = slugifyProductName(item.name)
-  const detailHref = `/producto/${slug}`
+function ProductCard({ item, className = '', style, showDetailLink = true, detailHref }) {
+  const slug = item.slug || slugifyProductName(item.name)
+  const fallbackDetailHref = getProductDetailBySlug(slug) ? `/producto/${slug}` : DEMO_PRODUCT_ROUTE
+  const resolvedDetailHref = detailHref || fallbackDetailHref
   const articleClassName = [
     'group relative overflow-hidden rounded-[10px] border border-[#2a2a2a] bg-[#0f0f10] transition-all duration-300 ease-out md:hover:-translate-y-1 md:hover:border-[rgba(244,223,51,0.5)] md:focus-within:-translate-y-1',
     className,
@@ -18,7 +21,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true }) {
     <article className={articleClassName} style={style}>
       {showDetailLink ? (
         <Link
-          to={detailHref}
+          to={resolvedDetailHref}
           className="absolute inset-0 z-10 hidden md:block"
           aria-label={`Ver detalle de ${item.name}`}
         />
@@ -47,7 +50,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true }) {
               </div>
               {showDetailLink ? (
                 <Link
-                  to={detailHref}
+                  to={resolvedDetailHref}
                   className="relative z-20 inline-flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full border border-[rgba(244,223,51,0.6)] bg-[rgba(244,223,51,0.14)] text-primary transition hover:bg-primary hover:text-black"
                   aria-label={`Abrir detalle de ${item.name}`}
                 >

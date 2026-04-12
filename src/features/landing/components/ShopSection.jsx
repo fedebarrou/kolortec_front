@@ -24,6 +24,14 @@ function ShopSection({ shop }) {
         />
         <div className="absolute inset-0 bg-[rgba(244,223,51,0.74)]" />
       </div>
+      <img
+        className="pointer-events-none absolute -bottom-[34%] -right-[14%] z-[5] w-[clamp(320px,42vw,760px)] select-none opacity-[0.2]"
+        src="/assets/logo_minimal.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        style={{ filter: 'brightness(0) saturate(100%)' }}
+      />
 
       <div className="relative z-10 grid items-start gap-8 px-6 lg:grid-cols-2 lg:gap-[34px] lg:px-40">
         <div className="self-start">
