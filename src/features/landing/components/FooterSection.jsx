@@ -19,22 +19,23 @@ function FooterSection() {
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   const productLinks = t('footer.productsLinks', ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'])
   const companyLinks = t('footer.companyLinks', ['Our Story', 'Projects', 'Careers', 'Contact'])
+  const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Firmware', 'Fotometria', 'Soporte Tecnico'])
 
   return (
     <footer className="bg-deep-black border-t border-slate-800 py-16 px-6 lg:px-20">
       <div className="mb-12 w-full border-b border-slate-800 pb-10">
-        <div className="kt-footer-marquee">
-          <div className="kt-footer-marquee-track">
+        <div className="kt-marquee">
+          <div className="kt-marquee-track">
             {loopImages.map((src, index) => (
               <button
                 key={`${src}-${index}`}
                 type="button"
-                className="m-0 cursor-pointer border-0 bg-transparent p-0"
+                className="kt-marquee-item kt-marquee-item-square m-0 cursor-pointer border-0 bg-transparent p-0"
                 onClick={() => setLightboxIndex(index % galleryImages.length)}
                 aria-label={`Abrir imagen ${index + 1} del footer`}
               >
                 <img
-                  className="kt-footer-marquee-item cursor-pointer object-cover grayscale transition-all hover:grayscale-0"
+                  className="h-full w-full cursor-pointer object-cover"
                   src={src}
                   alt="Kolortec action"
                 />
@@ -44,7 +45,7 @@ function FooterSection() {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
         <div>
           <div className="flex items-center gap-2 text-primary mb-6">
             <img alt="Kolortec Logo" className="h-28 w-28 object-contain" src="/assets/footer-logo.jpeg" />
@@ -54,27 +55,36 @@ function FooterSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 md:contents">
-          <div>
-            <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.productsTitle', 'Products')}</h4>
-            <ul className="body-font text-slate-400 space-y-4 text-sm">
-              {productLinks.map((label) => (
-                <li key={`footer-product-${label}`}>
-                  <Link className="hover:text-primary transition-colors" to="/tienda">{label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div>
+          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.productsTitle', 'Products')}</h4>
+          <ul className="body-font text-slate-400 space-y-4 text-sm">
+            {productLinks.map((label) => (
+              <li key={`footer-product-${label}`}>
+                <Link className="hover:text-primary transition-colors" to="/tienda">{label}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          <div>
-            <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.companyTitle', 'Company')}</h4>
-            <ul className="body-font text-slate-400 space-y-4 text-sm">
-              <li><Link className="hover:text-primary transition-colors" to="/">{companyLinks[0] ?? 'Our Story'}</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[1] ?? 'Projects'}</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[2] ?? 'Careers'}</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/contacto">{companyLinks[3] ?? 'Contact'}</Link></li>
-            </ul>
-          </div>
+        <div>
+          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.companyTitle', 'Company')}</h4>
+          <ul className="body-font text-slate-400 space-y-4 text-sm">
+            <li><Link className="hover:text-primary transition-colors" to="/">{companyLinks[0] ?? 'Our Story'}</Link></li>
+            <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[1] ?? 'Projects'}</Link></li>
+            <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[2] ?? 'Careers'}</Link></li>
+            <li><Link className="hover:text-primary transition-colors" to="/contacto">{companyLinks[3] ?? 'Contact'}</Link></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.libraryTitle', 'Libreria y Manuales')}</h4>
+          <ul className="body-font text-slate-400 space-y-4 text-sm">
+            {libraryLinks.map((label) => (
+              <li key={`footer-library-${label}`}>
+                <Link className="hover:text-primary transition-colors" to="/soporte">{label}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div>

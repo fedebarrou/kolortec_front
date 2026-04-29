@@ -6,6 +6,8 @@ import LoginPage from './features/auth/pages/LoginPage'
 import ProductDetailPage from './features/product/pages/ProductDetailPage'
 import ServicesPage from './features/services/pages/ServicesPage'
 import ShopPage from './features/catalog/pages/ShopPage'
+import CategoryPage from './features/catalog/pages/CategoryPage'
+import SupportPage from './features/support/pages/SupportPage'
 
 function App() {
   return (
@@ -13,8 +15,10 @@ function App() {
       <Route element={<LandingChrome />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<ShopPage />} />
+        <Route path="/tienda/:categorySlug" element={<CategoryPage />} />
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/soporte" element={<SupportPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
       </Route>

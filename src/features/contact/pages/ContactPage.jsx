@@ -4,7 +4,7 @@ function ContactPage() {
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
       <div className="mb-5">
-        <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(4.2rem,11.2vw,8.8rem)] leading-[1.02] tracking-[0]">
+        <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(4.2rem,11.2vw,8.8rem)] leading-[1.02]">
           Contacto
           <span className="text-primary">.</span>
         </h1>

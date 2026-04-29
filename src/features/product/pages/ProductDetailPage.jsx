@@ -79,12 +79,12 @@ function ProductDetailPage() {
   const [selectedVariantId] = useState(product?.variants?.[0]?.id ?? '')
   const [activeTab, setActiveTab] = useState('about')
   const [isVideoOpen, setIsVideoOpen] = useState(true)
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isDownloadsOpen, setIsDownloadsOpen] = useState(true)
   const [isAccessoriesOpen, setIsAccessoriesOpen] = useState(true)
   const [activeDownloadPanel, setActiveDownloadPanel] = useState('manuals')
   const [galleryLightboxIndex, setGalleryLightboxIndex] = useState(-1)
   const [previewActivePage, setPreviewActivePage] = useState(0)
-  const [accessoriesActivePage, setAccessoriesActivePage] = useState(0)
   const [translatedShortDescription, setTranslatedShortDescription] = useState(product?.shortDescription ?? '')
   const tabs = useMemo(
     () => [
@@ -243,12 +243,11 @@ function ProductDetailPage() {
 
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const previewStripRef = useRef(null)
-  const accessoriesStripRef = useRef(null)
 
   useEffect(() => {
     setActiveImageIndex(0)
     setPreviewActivePage(0)
-    setAccessoriesActivePage(0)
+    setCurrentVideoIndex(0)
   }, [slug, galleryImages.length])
 
   const scrollToPage = (ref, pageIndex) => {
@@ -267,13 +266,6 @@ function ProductDetailPage() {
     setPreviewActivePage(Math.max(0, Math.min(current, previewImages.length - 1)))
   }
 
-  const onAccessoriesScroll = () => {
-    const viewport = accessoriesStripRef.current
-    if (!viewport) return
-    const current = Math.round(viewport.scrollLeft / Math.max(viewport.clientWidth, 1))
-    setAccessoriesActivePage(Math.max(0, Math.min(current, product.accessories.length - 1)))
-  }
-
   const goToSection = (id) => {
     const node = document.getElementById(id)
     if (node) {
@@ -286,7 +278,7 @@ function ProductDetailPage() {
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
         <div>
-          <h1 className="title-font m-0 mb-2 text-[clamp(3.8rem,10vw,7rem)] leading-[1.02] tracking-[0]">
+          <h1 className="title-font m-0 mb-2 text-[clamp(3.8rem,10vw,7rem)] leading-[1.02]">
             {t('productDetail.notFoundTitle', 'Producto no encontrado')}
           </h1>
           <p className="mb-3 text-[#a0a0a0]">{t('productDetail.notFoundSubtitle', 'Este detalle aun no esta publicado.')}</p>
@@ -346,7 +338,7 @@ function ProductDetailPage() {
               </figure>
 
               <div className="kt-detail-summary">
-                <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95] tracking-[0]">{product.name}</h1>
+                <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]">{product.name}</h1>
                 <p className="kt-detail-intro">{translatedShortDescription}</p>
                 <div className="mt-8 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
                   {HERO_FACTS.map((item) => (
@@ -418,28 +410,72 @@ function ProductDetailPage() {
                 </span>
               </button>
 
-              {isVideoOpen && (
-                <div className="kt-detail-video-content mt-8">
-                  <div className="kt-detail-video-list">
-                    {(product.videos?.slice(0, 1) ?? []).map((video) => (
-                      <a
-                        key={video.title}
-                        className="kt-detail-video-feature"
-                        href={video.url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <img src={video.thumbnail} alt={video.title} loading="lazy" />
-                        <div className="kt-detail-video-play">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                            <path fill="#fff" d="M5.54 2.16l14 9a1 1 0 010 1.683l-14 9A1 1 0 014 21.002v-18a1 1 0 011.54-.842z" />
-                          </svg>
-                        </div>
-                      </a>
-                    ))}
+              {isVideoOpen && (() => {
+                const videos = product.videos ?? []
+                if (videos.length === 0) return null
+                const safeIndex = Math.min(currentVideoIndex, videos.length - 1)
+                const currentVideo = videos[safeIndex]
+                const hasMultiple = videos.length > 1
+                const goPrev = (event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)
+                }
+                const goNext = (event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
+                }
+                return (
+                  <div className="kt-detail-video-content mt-8">
+                    <div className="kt-detail-video-list">
+                      <div className="relative">
+                        <a
+                          key={currentVideo.title}
+                          className="kt-detail-video-feature"
+                          href={currentVideo.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <img src={currentVideo.thumbnail} alt={currentVideo.title} loading="lazy" />
+                          <div className="kt-detail-video-play">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                              <path fill="#fff" d="M5.54 2.16l14 9a1 1 0 010 1.683l-14 9A1 1 0 014 21.002v-18a1 1 0 011.54-.842z" />
+                            </svg>
+                          </div>
+                        </a>
+                        {hasMultiple && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={goPrev}
+                              aria-label="Video anterior"
+                              className="absolute left-2 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black sm:left-4 sm:h-12 sm:w-12"
+                            >
+                              <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+                                <path d="M15 6l-6 6 6 6" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={goNext}
+                              aria-label="Video siguiente"
+                              className="absolute right-2 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black sm:right-4 sm:h-12 sm:w-12"
+                            >
+                              <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+                                <path d="M9 6l6 6-6 6" />
+                              </svg>
+                            </button>
+                            <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm">
+                              {safeIndex + 1} / {videos.length}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              })()}
             </section>
             <div className="kt-graphene-separator" aria-hidden="true" />
 
@@ -561,29 +597,13 @@ function ProductDetailPage() {
               </button>
 
               {isAccessoriesOpen && (
-                <>
-                <div className="kt-detail-accessories-grid mt-8 hidden md:grid">
-                  {product.accessories.map((item, index) => (
-                    <ProductCard
-                      key={item.name}
-                      item={{
-                        name: item.name,
-                        description: item.description || 'Accessory',
-                        image: product.gallery[index % product.gallery.length],
-                      }}
-                      detailHref={`/producto/${product.slug || slug}`}
-                      className="kt-reveal-item"
-                    />
-                  ))}
-                </div>
-                <div className="mt-8 md:hidden">
-                  <div
-                    ref={accessoriesStripRef}
-                    className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                    onScroll={onAccessoriesScroll}
-                  >
-                    {product.accessories.map((item, index) => (
-                      <div key={`acc-mobile-${item.name}`} className="min-w-full snap-start pr-1">
+                <div className="mt-8 kt-marquee" style={{ '--kt-marquee-duration': '70s' }}>
+                  <div className="kt-marquee-track">
+                    {[...product.accessories, ...product.accessories].map((item, index) => (
+                      <div
+                        key={`acc-marquee-${item.name}-${index}`}
+                        className="kt-marquee-item kt-marquee-item-product"
+                      >
                         <ProductCard
                           item={{
                             name: item.name,
@@ -596,22 +616,7 @@ function ProductDetailPage() {
                       </div>
                     ))}
                   </div>
-                  {product.accessories.length > 1 ? (
-                    <div className="mt-3 flex justify-center gap-2" aria-label="Paginacion accesorios">
-                      {product.accessories.map((_, index) => (
-                        <button
-                          key={`acc-dot-${index}`}
-                          type="button"
-                          className={`h-2.5 w-2.5 rounded-full transition ${index === accessoriesActivePage ? 'bg-primary' : 'bg-white/35'}`}
-                          onClick={() => scrollToPage(accessoriesStripRef, index)}
-                          aria-label={`Ir a accesorio ${index + 1}`}
-                          aria-current={index === accessoriesActivePage ? 'true' : undefined}
-                        />
-                      ))}
-                    </div>
-                  ) : null}
                 </div>
-                </>
               )}
             </section>
             <div className="kt-graphene-separator" aria-hidden="true" />

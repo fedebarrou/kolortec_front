@@ -52,7 +52,7 @@
   .title-font {
     font-family: 'FuturaExtraBlackCondensed', 'Arial Narrow', Impact, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.06em;
     line-height: 1.06;
     font-weight: 900;
   }
@@ -196,7 +196,7 @@
     box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
   }
 
-  .kt-footer-marquee {
+  .kt-marquee {
     overflow: hidden;
     position: relative;
     width: 100%;
@@ -210,21 +210,33 @@
     );
   }
 
-  .kt-footer-marquee-track {
+  .kt-marquee-track {
     display: flex;
     width: max-content;
     gap: 0.5rem;
-    animation: kt-footer-scroll 68s linear infinite;
+    animation: kt-marquee-scroll var(--kt-marquee-duration, 68s) linear infinite;
   }
 
-  .kt-footer-marquee:hover .kt-footer-marquee-track {
+  .kt-marquee:hover .kt-marquee-track {
     animation-play-state: paused;
   }
 
-  .kt-footer-marquee-item {
+  .kt-marquee-item {
+    flex: 0 0 auto;
+  }
+
+  .kt-marquee-item-square {
     width: clamp(170px, 14vw, 240px);
     aspect-ratio: 1 / 1;
-    flex: 0 0 auto;
+  }
+
+  .kt-marquee-item-portrait {
+    width: clamp(180px, 14vw, 240px);
+    aspect-ratio: 4 / 5;
+  }
+
+  .kt-marquee-item-product {
+    width: clamp(220px, 22vw, 300px);
   }
 
   .kt-container {
@@ -394,7 +406,8 @@
     margin: 0;
     font-size: clamp(4.6rem, 9vw, 8.6rem);
     line-height: 0.95;
-    letter-spacing: 0;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .kt-detail-summary {
@@ -742,7 +755,8 @@
     margin: 0;
     font-size: clamp(2.6rem, 4.2vw, 4rem);
     font-family: 'FuturaExtraBlackCondensed', 'Arial Narrow', Impact, sans-serif;
-    text-transform: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     line-height: 1.05;
     display: inline-flex;
     align-items: baseline;
@@ -1093,7 +1107,7 @@
     }
   }
 
-  @keyframes kt-footer-scroll {
+  @keyframes kt-marquee-scroll {
     0% {
       transform: translateX(0);
     }
@@ -1136,6 +1150,7 @@
     will-change: transform;
     animation: kt-minimal-logo-orbit 14s ease-in-out infinite;
   }
+
   @media (max-width: 960px) {
     .kt-detail-tabs {
       grid-template-columns: auto minmax(0, 1fr);
@@ -1255,7 +1270,7 @@
     }
 
     .kt-hero-beam,
-    .kt-footer-marquee-track {
+    .kt-marquee-track {
       animation: none;
     }
   }
@@ -1286,7 +1301,7 @@
     }
 
     .kt-hero-beam,
-    .kt-footer-marquee-track,
+    .kt-marquee-track,
     .kt-minimal-logo-spin {
       animation: none;
       transform: none;

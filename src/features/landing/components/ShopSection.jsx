@@ -4,6 +4,7 @@ function ShopSection({ shop }) {
   const { t } = useLanguage()
   const sectionTitle = t('landing.shop.title', shop.title)
   const sectionSubtitle = t('landing.shop.subtitle', shop.subtitle)
+  const sectionCta = t('landing.shop.cta', shop.cta || 'Ir a Productos')
   const sideImages = [
     '/assets/hero-bg-kolortec-rain.jpeg',
     '/assets/kolortec-star-logo.jpeg',
@@ -11,7 +12,7 @@ function ShopSection({ shop }) {
   ]
 
   return (
-    <section className="relative overflow-hidden bg-primary py-[clamp(56px,8vw,88px)] text-[#0b0b0b] kt-section-reveal" id="shop" style={{ '--reveal-delay': '160ms' }}>
+    <section className="relative overflow-hidden bg-primary py-[clamp(56px,8vw,88px)] text-[#0b0b0b] kt-section-reveal shadow-[0_0_45px_2px_rgba(244,223,51,0.55),0_0_90px_8px_rgba(244,223,51,0.22)]" id="shop" style={{ '--reveal-delay': '160ms' }}>
       <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
         <video
           className="h-full w-full object-cover"
@@ -26,13 +27,13 @@ function ShopSection({ shop }) {
       </div>
       <div className="relative z-10 grid items-start gap-8 px-6 lg:grid-cols-2 lg:gap-[34px] lg:px-40">
         <div className="self-start">
-          <h2 className="title-font mb-3 text-left text-[clamp(2.4rem,6.8vw,5.4rem)] leading-[0.88] tracking-[0]">
+          <h2 className="title-font mb-3 text-left text-[clamp(2.4rem,6.8vw,5.4rem)] leading-[0.88]">
             {sectionTitle}
             <span className="text-[#0b0b0b]">.</span>
           </h2>
           <p className="kt-landing-reveal-item mb-[18px] max-w-[60ch] text-[1.1rem] text-[rgba(5,5,5,0.84)]">{sectionSubtitle}</p>
           <button className="kt-landing-reveal-item rounded-[8px] bg-[#0d0d0d] px-6 py-3.5 text-sm font-extrabold uppercase tracking-[0.12em] text-primary transition hover:-translate-y-0.5" type="button">
-            Go to Catalog
+            {sectionCta}
           </button>
         </div>
 

@@ -31,7 +31,19 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
         <img
           src={item.image}
           alt={item.name}
-          className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.18] group-focus-within:scale-[1.18]"
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-0 transition duration-500 group-hover:opacity-100 group-focus-within:opacity-100"
+          style={{
+            background:
+              'radial-gradient(circle at 50% 45%, rgba(244,223,51,0.22) 0%, rgba(244,223,51,0.08) 38%, transparent 70%)',
+          }}
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 ring-0 ring-primary/0 transition duration-300 group-hover:ring-2 group-hover:ring-primary/40 group-focus-within:ring-2 group-focus-within:ring-primary/40"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070707f5] via-[#0707078a] to-transparent" />
 
