@@ -14,8 +14,8 @@ function App() {
     <Routes>
       <Route element={<LandingChrome />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/tienda" element={<ShopPage />} />
-        <Route path="/tienda/:categorySlug" element={<CategoryPage />} />
+        <Route path="/products" element={<ShopPage />} />
+        <Route path="/products/:categorySlug" element={<CategoryPage />} />
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/soporte" element={<SupportPage />} />

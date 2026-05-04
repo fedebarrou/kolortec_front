@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ProductCard from '../../catalog/components/ProductCard'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
@@ -6,27 +7,92 @@ function FeaturedSection({ products }) {
   const { t } = useLanguage()
   const sectionTitle = t('landing.products.title', products.title)
   const sectionCta = t('landing.products.cta', products.cta || 'Ver Productos')
-  const loopItems = [...products.items, ...products.items]
+
+  const trackRef = useRef(null)
+  const [canPrev, setCanPrev] = useState(false)
+  const [canNext, setCanNext] = useState(false)
+
+  const updateBounds = useCallback(() => {
+    const el = trackRef.current
+    if (!el) return
+    const maxScroll = el.scrollWidth - el.clientWidth
+    setCanPrev(el.scrollLeft > 4)
+    setCanNext(el.scrollLeft < maxScroll - 4)
+  }, [])
+
+  useEffect(() => {
+    const el = trackRef.current
+    if (!el) return undefined
+    updateBounds()
+    el.addEventListener('scroll', updateBounds, { passive: true })
+    window.addEventListener('resize', updateBounds)
+    return () => {
+      el.removeEventListener('scroll', updateBounds)
+      window.removeEventListener('resize', updateBounds)
+    }
+  }, [updateBounds, products.items.length])
+
+  const scrollByStep = (direction) => {
+    const el = trackRef.current
+    if (!el) return
+    const firstItem = el.querySelector('[data-featured-item]')
+    const itemWidth = firstItem ? firstItem.getBoundingClientRect().width + 16 : el.clientWidth * 0.8
+    el.scrollBy({ left: direction * itemWidth, behavior: 'smooth' })
+  }
 
   return (
     <section className="px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" id="products" style={{ '--reveal-delay': '120ms' }}>
       <div className="mb-7 flex flex-col items-start justify-between gap-3 text-left md:flex-row md:items-end">
-        <h2 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
-          {sectionTitle}
-          <span className="text-primary">.</span>
-        </h2>
-        <Link to="/tienda" className="kt-landing-reveal-item text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
+        <div className="kt-landing-reveal-item border-l border-[rgba(244,223,51,0.5)] pl-4">
+          <h2 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
+            {sectionTitle}
+            <span className="text-primary">.</span>
+          </h2>
+        </div>
+        <Link to="/products" className="kt-landing-reveal-item text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
           {sectionCta}
         </Link>
       </div>
-      <div className="kt-marquee" style={{ '--kt-marquee-duration': '70s' }}>
-        <div className="kt-marquee-track">
-          {loopItems.map((item, index) => (
-            <div key={`featured-${item.name}-${index}`} className="kt-marquee-item kt-marquee-item-product">
-              <ProductCard item={item} className="kt-landing-reveal-item" />
+
+      <div className="relative">
+        <div
+          ref={trackRef}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {products.items.map((item) => (
+            <div
+              key={`featured-${item.name}`}
+              data-featured-item
+              className="kt-landing-reveal-item flex-none snap-start basis-[78%] sm:basis-[44%] md:basis-[32%] xl:basis-[23%]"
+            >
+              <ProductCard item={item} />
             </div>
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={() => scrollByStep(-1)}
+          aria-label="Anterior"
+          disabled={!canPrev}
+          className="absolute -left-6 top-1/2 z-10 hidden -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/20 disabled:hover:bg-black/55 disabled:hover:text-white md:grid md:h-12 md:w-12 lg:-left-12"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => scrollByStep(1)}
+          aria-label="Siguiente"
+          disabled={!canNext}
+          className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/20 disabled:hover:bg-black/55 disabled:hover:text-white md:grid md:h-12 md:w-12 lg:-right-12"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
       </div>
     </section>
   )

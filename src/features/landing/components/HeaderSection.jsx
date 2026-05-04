@@ -77,7 +77,7 @@ function HeaderSection() {
   const navItems = useMemo(
     () => [
       { label: t('header.nav.home', 'Inicio'), to: '/' },
-      { label: t('header.nav.catalog', 'Productos'), to: '/tienda' },
+      { label: t('header.nav.catalog', 'Productos'), to: '/products' },
       { label: t('header.nav.support', 'Soporte'), to: '/soporte' },
     ],
     [t],
@@ -158,12 +158,12 @@ function HeaderSection() {
     setIsSearchFocused(false)
     setActiveSuggestionIndex(-1)
 
-    if (pathname === '/tienda' && !window.location.search) {
+    if (pathname === '/products' && !window.location.search) {
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
 
-    navigate('/tienda')
+    navigate('/products')
   }
 
   const handleSearchSubmit = (event) => {
@@ -179,7 +179,7 @@ function HeaderSection() {
 
     const term = searchTerm.trim()
     if (!term) {
-      navigate('/tienda')
+      navigate('/products')
       setIsSearchFocused(false)
       setActiveSuggestionIndex(-1)
       return
@@ -187,7 +187,7 @@ function HeaderSection() {
 
     setIsSearchFocused(false)
     setActiveSuggestionIndex(-1)
-    navigate(`/tienda?q=${encodeURIComponent(term)}`)
+    navigate(`/products?q=${encodeURIComponent(term)}`)
   }
 
   const openPredict = () => {
@@ -392,7 +392,7 @@ function HeaderSection() {
                 key={item.to}
                 className="text-center text-slate-100 hover:text-primary text-sm font-bold uppercase tracking-wider"
                 to={item.to}
-                onClick={item.to === '/tienda' ? handleCatalogNav : undefined}
+                onClick={item.to === '/products' ? handleCatalogNav : undefined}
               >
                 {item.label}
               </Link>
@@ -420,7 +420,7 @@ function HeaderSection() {
             </button>
           </div>
 
-          <div className="hidden md:inline-flex items-center gap-1.5">
+          <div className="inline-flex items-center gap-1 md:gap-1.5">
             {socialLinks.map((item) => (
               <a
                 key={item.key}
@@ -429,7 +429,7 @@ function HeaderSection() {
                 rel="noreferrer"
                 aria-label={item.label}
                 title={item.label}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary md:h-8 md:w-8"
               >
                 {item.icon}
               </a>
@@ -493,7 +493,7 @@ function HeaderSection() {
                     const term = searchTerm.trim()
                     setIsSearchFocused(false)
                     setActiveSuggestionIndex(-1)
-                    navigate(term ? `/tienda?q=${encodeURIComponent(term)}` : '/tienda')
+                    navigate(term ? `/products?q=${encodeURIComponent(term)}` : '/products')
                   }}
                 >
                   {t('header.searchAll', 'Ver todos en Productos')}
@@ -566,7 +566,7 @@ function HeaderSection() {
             <Link
               key={item.to}
               to={item.to}
-              onClick={item.to === '/tienda' ? handleCatalogNav : () => setIsMobileOpen(false)}
+              onClick={item.to === '/products' ? handleCatalogNav : () => setIsMobileOpen(false)}
               className="relative z-10 block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
             >
               {item.label}

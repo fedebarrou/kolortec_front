@@ -55,7 +55,7 @@ function CategoryPage() {
           <span className="text-primary">.</span>
         </h1>
         <p className="mb-3 text-[#a0a0a0]">Esta categoria no existe en el catalogo.</p>
-        <Link to="/tienda" className="font-bold text-primary">Volver a productos</Link>
+        <Link to="/products" className="font-bold text-primary">Volver a productos</Link>
       </section>
     )
   }
@@ -67,19 +67,23 @@ function CategoryPage() {
     <section className="min-h-screen bg-[#050505]">
       <div className="relative h-[clamp(220px,32vw,360px)] w-full overflow-hidden">
         <img src={category.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.7)] to-[rgba(5,5,5,0.35)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.85)] to-[rgba(5,5,5,0.45)]" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[rgba(5,5,5,0.92)] via-[rgba(5,5,5,0.55)] to-transparent"
+        />
         <div className="relative z-[1] flex h-full flex-col justify-end px-6 pb-8 lg:px-40">
-          <nav className="mb-3 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]">
-            <Link to="/tienda" className="transition hover:text-primary">{t('catalog.breadcrumbProducts', 'Productos')}</Link>
+          <nav className="mb-3 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be] drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
+            <Link to="/products" className="transition hover:text-primary">{t('catalog.breadcrumbProducts', 'Productos')}</Link>
             <span aria-hidden="true">/</span>
             <span className="text-white">{displayName}</span>
           </nav>
-          <h1 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.02]">
+          <h1 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.02] drop-shadow-[0_3px_14px_rgba(0,0,0,0.75)]">
             {displayName}
             <span className="text-primary">.</span>
           </h1>
           {displayDescription ? (
-            <p className="mt-2 max-w-[60ch] text-[#cfd4dc]">{displayDescription}</p>
+            <p className="mt-2 max-w-[60ch] text-[#cfd4dc] drop-shadow-[0_1px_3px_rgba(0,0,0,0.65)]">{displayDescription}</p>
           ) : null}
         </div>
       </div>
@@ -121,7 +125,7 @@ function CategoryPage() {
             <p className="mx-auto mt-2 max-w-[48ch] text-[0.9rem] text-[#aeb5bf]">
               {t('catalog.emptyBody', 'Estamos sumando productos a esta categoria. Volve pronto.')}
             </p>
-            <Link to="/tienda" className="mt-4 inline-block font-bold text-primary hover:underline">
+            <Link to="/products" className="mt-4 inline-block font-bold text-primary hover:underline">
               {t('catalog.backToCategories', 'Volver a categorias')}
             </Link>
           </div>
@@ -146,7 +150,7 @@ function CategoryPage() {
             {PRODUCT_CATEGORIES.filter((c) => c.slug !== category.slug).map((c) => (
               <Link
                 key={c.slug}
-                to={`/tienda/${c.slug}`}
+                to={`/products/${c.slug}`}
                 className="rounded-full border border-[#303743] bg-transparent px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-[#c8ced8] transition hover:border-[rgba(244,223,51,0.48)] hover:text-white"
               >
                 {lang === 'en' ? c.nameEn || c.name : c.name}

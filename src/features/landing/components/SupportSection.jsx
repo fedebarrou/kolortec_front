@@ -1,4 +1,13 @@
+import { useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+
+const CAROUSEL_IMAGES = [
+  '/assets/products/prod-001.png',
+  '/assets/products/prod-005.png',
+  '/assets/products/prod-009.png',
+  '/assets/products/prod-013.png',
+  '/assets/products/prod-016.png',
+]
 
 function SupportSection({ support }) {
   const { t } = useLanguage()
@@ -6,11 +15,23 @@ function SupportSection({ support }) {
   const sectionSubtitle = t('landing.support.subtitle', support.subtitle)
 
   const contactOptions = support.contacts ?? []
-  const sideImage = support.sideImage
+
+  const [activeId, setActiveId] = useState(0)
+  const len = CAROUSEL_IMAGES.length
+
+  const goPrev = () => setActiveId((i) => (i - 1 + len) % len)
+  const goNext = () => setActiveId((i) => (i + 1) % len)
+
+  const getRelativePos = (i, current, total) => {
+    let p = i - current
+    if (p > total / 2) p -= total
+    if (p < -total / 2) p += total
+    return p
+  }
 
   return (
     <section className="px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" id="support" style={{ '--reveal-delay': '240ms' }}>
-      <div className="grid gap-8 lg:grid-cols-[1.22fr_1fr] lg:items-start">
+      <div className="grid gap-8 lg:grid-cols-[1.22fr_1fr] lg:items-stretch">
         <div className="grid gap-5">
           <div className="kt-landing-reveal-item border-l border-[rgba(244,223,51,0.5)] pl-4">
             <h2 className="title-font mb-2 text-left text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
@@ -41,25 +62,62 @@ function SupportSection({ support }) {
           </ul>
         </div>
 
-        <div className="kt-landing-reveal-item relative min-h-[340px] overflow-hidden">
-          {sideImage ? (
-            <img
-              src={sideImage}
-              alt=""
-              loading="lazy"
+        <div className="kt-landing-reveal-item relative min-h-[400px] lg:min-h-0 lg:h-full">
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label="Imagen anterior"
+            className="absolute -top-9 left-1/2 z-10 inline-flex -translate-x-1/2 items-center justify-center text-primary transition hover:scale-110"
+          >
+            <svg viewBox="0 0 24 24" className="h-8 w-8 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
+              <path d="M6 15l6-6 6 6" />
+            </svg>
+          </button>
+
+          <div className="absolute inset-0 overflow-hidden">
+            {CAROUSEL_IMAGES.map((src, i) => {
+              const pos = getRelativePos(i, activeId, len)
+              const isVisible = Math.abs(pos) <= 1
+              return (
+                <img
+                  key={src}
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{
+                    transform: `translateY(${pos * 100}%)`,
+                    opacity: isVisible ? 1 : 0,
+                    transition:
+                      'transform 700ms cubic-bezier(0.4, 0, 0.2, 1), opacity 700ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    maskImage: 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
+                  }}
+                />
+              )
+            })}
+
+            <div
               aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ maskImage: 'linear-gradient(180deg, transparent 0%, black 22%, black 78%, transparent 100%)', WebkitMaskImage: 'linear-gradient(180deg, transparent 0%, black 22%, black 78%, transparent 100%)' }}
+              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-transparent"
             />
-          ) : null}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]"
-          />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label="Imagen siguiente"
+            className="absolute -bottom-9 left-1/2 z-10 inline-flex -translate-x-1/2 items-center justify-center text-primary transition hover:scale-110"
+          >
+            <svg viewBox="0 0 24 24" className="h-8 w-8 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
         </div>
       </div>
     </section>

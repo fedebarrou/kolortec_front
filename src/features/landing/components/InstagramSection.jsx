@@ -6,6 +6,7 @@ function InstagramSection({ gallery }) {
   const { t } = useLanguage()
   const title = t('landing.instagram.title', 'KOLORTEC on Instagram')
   const subtitle = t('landing.instagram.subtitle', gallery.subtitle)
+  const eyebrow = t('landing.instagram.eyebrow', 'Follow Us')
 
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   const loopImages = [...gallery.images, ...gallery.images]
@@ -14,7 +15,13 @@ function InstagramSection({ gallery }) {
     <section className="px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" style={{ '--reveal-delay': '80ms' }}>
       <div>
         <div className="mb-7 flex flex-col items-start justify-between gap-3 text-left md:flex-row md:items-end">
-          <div className="kt-landing-reveal-item">
+          <div className="kt-landing-reveal-item flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
+              <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
+                {eyebrow}
+              </span>
+            </div>
             <h2 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
               {title}
               <span className="text-primary">.</span>

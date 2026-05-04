@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
+import SocialLinks from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 const galleryImages = [
@@ -18,8 +19,8 @@ function FooterSection() {
   const { t } = useLanguage()
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   const productLinks = t('footer.productsLinks', ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'])
-  const companyLinks = t('footer.companyLinks', ['Our Story', 'Projects', 'Careers', 'Contact'])
-  const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Firmware', 'Fotometria', 'Soporte Tecnico'])
+  const companyLinks = t('footer.companyLinks', ['Our Story', 'Projects', 'Contact'])
+  const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
 
   return (
     <footer className="bg-deep-black border-t border-slate-800 py-16 px-6 lg:px-20">
@@ -45,25 +46,15 @@ function FooterSection() {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+      <div className="w-full grid grid-cols-2 lg:grid-cols-6 gap-8 md:gap-12">
         <div>
-          <div className="flex items-center gap-2 text-primary mb-6">
-            <img alt="Kolortec Logo" className="h-28 w-28 object-contain" src="/assets/footer-logo.jpeg" />
-          </div>
-          <p className="body-font text-slate-500 text-sm leading-relaxed">
-            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
-          </p>
+          <img alt="Kolortec Logo" className="h-32 w-32 object-contain md:h-36 md:w-36" src="/assets/footer-logo.jpeg" />
         </div>
 
         <div>
-          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.productsTitle', 'Products')}</h4>
-          <ul className="body-font text-slate-400 space-y-4 text-sm">
-            {productLinks.map((label) => (
-              <li key={`footer-product-${label}`}>
-                <Link className="hover:text-primary transition-colors" to="/tienda">{label}</Link>
-              </li>
-            ))}
-          </ul>
+          <p className="body-font text-slate-500 text-sm leading-relaxed">
+            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
+          </p>
         </div>
 
         <div>
@@ -71,13 +62,23 @@ function FooterSection() {
           <ul className="body-font text-slate-400 space-y-4 text-sm">
             <li><Link className="hover:text-primary transition-colors" to="/">{companyLinks[0] ?? 'Our Story'}</Link></li>
             <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[1] ?? 'Projects'}</Link></li>
-            <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[2] ?? 'Careers'}</Link></li>
-            <li><Link className="hover:text-primary transition-colors" to="/contacto">{companyLinks[3] ?? 'Contact'}</Link></li>
+            <li><Link className="hover:text-primary transition-colors" to="/contacto">{companyLinks[2] ?? 'Contact'}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.libraryTitle', 'Libreria y Manuales')}</h4>
+          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.productsTitle', 'Products')}</h4>
+          <ul className="body-font text-slate-400 space-y-4 text-sm">
+            {productLinks.map((label) => (
+              <li key={`footer-product-${label}`}>
+                <Link className="hover:text-primary transition-colors" to="/products">{label}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.libraryTitle', 'Soporte')}</h4>
           <ul className="body-font text-slate-400 space-y-4 text-sm">
             {libraryLinks.map((label) => (
               <li key={`footer-library-${label}`}>
@@ -91,14 +92,19 @@ function FooterSection() {
           <h4 className="title-font text-white mb-4 text-base md:text-lg font-black">{t('footer.updatesTitle', 'Updates')}</h4>
           <div className="flex gap-2">
             <input
-              className="h-10 bg-slate-800 border-none text-white text-xs focus:ring-1 focus:ring-primary w-full px-3 rounded-lg"
+              className="h-10 bg-slate-800 border-none text-white text-xs focus:ring-1 focus:ring-primary w-full min-w-0 px-3 rounded-lg"
               placeholder={t('footer.emailPlaceholder', 'Email address')}
               type="email"
             />
-            <button className="h-10 bg-primary text-background-dark px-4 font-black text-xs hover:bg-white transition-all rounded-lg" type="button">
+            <button className="h-10 bg-primary text-background-dark px-3 font-black text-xs hover:bg-white transition-all rounded-lg shrink-0" type="button">
               <span className="material-symbols-outlined">send</span>
             </button>
           </div>
+          <SocialLinks
+            className="mt-5 inline-flex items-center gap-2"
+            itemClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary"
+            iconSize={16}
+          />
         </div>
       </div>
 

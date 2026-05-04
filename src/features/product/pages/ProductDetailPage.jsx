@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getProductDetailBySlug } from '../data/productDetails'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
+import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
@@ -85,6 +86,7 @@ function ProductDetailPage() {
   const [activeDownloadPanel, setActiveDownloadPanel] = useState('manuals')
   const [galleryLightboxIndex, setGalleryLightboxIndex] = useState(-1)
   const [previewActivePage, setPreviewActivePage] = useState(0)
+  const [downloadIntent, setDownloadIntent] = useState(null)
   const [translatedShortDescription, setTranslatedShortDescription] = useState(product?.shortDescription ?? '')
   const tabs = useMemo(
     () => [
@@ -282,7 +284,7 @@ function ProductDetailPage() {
             {t('productDetail.notFoundTitle', 'Producto no encontrado')}
           </h1>
           <p className="mb-3 text-[#a0a0a0]">{t('productDetail.notFoundSubtitle', 'Este detalle aun no esta publicado.')}</p>
-          <Link className="font-bold text-primary" to="/tienda">{t('productDetail.backToShop', 'Volver a tienda')}</Link>
+          <Link className="font-bold text-primary" to="/products">{t('productDetail.backToShop', 'Volver a tienda')}</Link>
         </div>
       </section>
     )
@@ -549,7 +551,11 @@ function ProductDetailPage() {
                                 {item.size} - {item.type}
                               </strong>
                             </div>
-                            <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
+                            <button
+                              type="button"
+                              onClick={() => setDownloadIntent(item.label)}
+                              className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]"
+                            >
                               {t('productDetail.downloads.downloadCta', 'Descargar')}
                             </button>
                           </article>
@@ -565,7 +571,11 @@ function ProductDetailPage() {
                                 {item.size} - {item.type}
                               </strong>
                             </div>
-                            <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
+                            <button
+                              type="button"
+                              onClick={() => setDownloadIntent(item.label)}
+                              className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]"
+                            >
                               {t('productDetail.downloads.downloadCta', 'Descargar')}
                             </button>
                           </article>
@@ -649,6 +659,12 @@ function ProductDetailPage() {
         isOpen={galleryLightboxIndex >= 0}
         onClose={() => setGalleryLightboxIndex(-1)}
         label={product.name}
+      />
+
+      <LoginRequiredDialog
+        isOpen={Boolean(downloadIntent)}
+        onClose={() => setDownloadIntent(null)}
+        fileName={downloadIntent}
       />
     </section>
   )

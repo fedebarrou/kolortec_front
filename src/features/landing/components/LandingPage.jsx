@@ -40,7 +40,7 @@ function LandingPage() {
       <InstagramSection gallery={content.gallery} />
       <Divider />
       <FeaturedSection products={content.products} />
-      <ShopSection shop={content.shop} />
+      <ShopSection shop={content.shop} products={content.products.items} />
       <ServicesSection services={content.services} />
       <SupportSection support={content.support} />
     </>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 
 const FALLBACK_MANUALS = [
   { label: 'Manual de Usuario - KT-X1000 Flood', size: '11 MB', type: 'PDF' },
@@ -33,6 +34,7 @@ function filterByQuery(items, query) {
 function SupportPage() {
   const { t } = useLanguage()
   const [query, setQuery] = useState('')
+  const [downloadIntent, setDownloadIntent] = useState(null)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -100,7 +102,11 @@ function SupportPage() {
                       {item.size} - {item.type}
                     </strong>
                   </div>
-                  <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
+                  <button
+                    type="button"
+                    onClick={() => setDownloadIntent(item.label)}
+                    className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]"
+                  >
                     {downloadCta}
                   </button>
                 </li>
@@ -130,7 +136,11 @@ function SupportPage() {
                       {item.size} - {item.type}
                     </strong>
                   </div>
-                  <button type="button" className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]">
+                  <button
+                    type="button"
+                    onClick={() => setDownloadIntent(item.label)}
+                    className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]"
+                  >
                     {downloadCta}
                   </button>
                 </li>
@@ -163,6 +173,12 @@ function SupportPage() {
           </Link>
         </div>
       </div>
+
+      <LoginRequiredDialog
+        isOpen={Boolean(downloadIntent)}
+        onClose={() => setDownloadIntent(null)}
+        fileName={downloadIntent}
+      />
     </section>
   )
 }

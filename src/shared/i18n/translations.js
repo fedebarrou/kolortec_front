@@ -39,13 +39,29 @@ export const translations = {
         cta: 'View Products',
       },
       shop: {
-        title: 'Pro Parts & Accessories',
+        title: 'Guaranteed Products',
         subtitle:
-          'Get the accessories you need for your Kolortec rig. Original filters, mounting kits, and replacement diodes.',
+          'Factory-backed warranty, original spare parts, and technical support to keep your Kolortec gear running season after season.',
         cta: 'Go to Products',
       },
       services: {
-        title: 'About Us',
+        title: 'Three Pillars, One Promise',
+        eyebrow: 'Why Kolortec',
+        pillarLabels: ['First Pillar', 'Second Pillar', 'Third Pillar'],
+        items: [
+          {
+            title: 'LIGHTING',
+            subtitle: 'Professional lighting equipment for stage, broadcast, and architecture.',
+          },
+          {
+            title: 'QUALITY',
+            subtitle: 'Carefully selected and tested components built to withstand intensive use.',
+          },
+          {
+            title: 'SUPPORT',
+            subtitle: 'Local technical support, original spare parts, and factory warranty.',
+          },
+        ],
       },
       support: {
         title: 'Contact Us',
@@ -121,9 +137,9 @@ export const translations = {
       productsTitle: 'Products',
       productsLinks: ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'],
       companyTitle: 'Company',
-      companyLinks: ['Our Story', 'Projects', 'Careers', 'Contact'],
-      libraryTitle: 'Library & Manuals',
-      libraryLinks: ['Manuals', 'Firmware', 'Photometrics', 'Technical Support'],
+      companyLinks: ['Our Story', 'Projects', 'Contact'],
+      libraryTitle: 'Support',
+      libraryLinks: ['Manuals', 'Libraries'],
       updatesTitle: 'Updates',
       emailPlaceholder: 'Email address',
       privacyPolicy: 'Privacy Policy',
@@ -172,13 +188,29 @@ export const translations = {
         cta: 'Ver Productos',
       },
       shop: {
-        title: 'Partes y Accesorios Pro',
+        title: 'Productos Garantizados',
         subtitle:
-          'Consegui los accesorios para tu setup Kolortec. Filtros originales, kits de montaje y repuestos.',
+          'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
         cta: 'Ir a Productos',
       },
       services: {
-        title: 'Nosotros',
+        title: 'Tres Pilares, Una Promesa',
+        eyebrow: 'Por que Kolortec',
+        pillarLabels: ['Primer Pilar', 'Segundo Pilar', 'Tercer Pilar'],
+        items: [
+          {
+            title: 'LIGHTING',
+            subtitle: 'Equipos de iluminacion profesional para escenario, broadcast y arquitectura.',
+          },
+          {
+            title: 'QUALITY',
+            subtitle: 'Componentes seleccionados y testeados para resistir uso intensivo.',
+          },
+          {
+            title: 'SUPPORT',
+            subtitle: 'Soporte tecnico local, repuestos originales y garantia de fabrica.',
+          },
+        ],
       },
       support: {
         title: 'Contactanos',
@@ -254,9 +286,9 @@ export const translations = {
       productsTitle: 'Productos',
       productsLinks: ['Floods Serie X', 'Spots de Precision', 'Washes Arquitecturales', 'Equipos Portatiles'],
       companyTitle: 'Empresa',
-      companyLinks: ['Nuestra Historia', 'Proyectos', 'Carreras', 'Contacto'],
-      libraryTitle: 'Libreria y Manuales',
-      libraryLinks: ['Manuales', 'Firmware', 'Fotometria', 'Soporte Tecnico'],
+      companyLinks: ['Nuestra Historia', 'Proyectos', 'Contacto'],
+      libraryTitle: 'Soporte',
+      libraryLinks: ['Manuales', 'Librerias'],
       updatesTitle: 'Novedades',
       emailPlaceholder: 'Correo electronico',
       privacyPolicy: 'Politica de Privacidad',
