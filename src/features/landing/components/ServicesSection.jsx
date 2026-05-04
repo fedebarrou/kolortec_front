@@ -162,7 +162,7 @@ function ServicesSection({ services }) {
       </div>
 
       <div
-        className="kt-stair-trail pointer-events-none relative -mx-6 mt-16 hidden h-8 sm:block sm:mt-20 lg:-mx-40 lg:mt-24 lg:h-10"
+        className="kt-stair-trail pointer-events-none relative -mx-6 mt-12 h-8 sm:mt-20 lg:-mx-40 lg:mt-24 lg:h-10"
         aria-hidden="true"
       >
         <svg
