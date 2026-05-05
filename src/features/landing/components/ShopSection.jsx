@@ -72,7 +72,7 @@ function ShopSection({ shop, products = [] }) {
     const isInternal = cta.href.startsWith('/')
     const isExternal = /^https?:\/\//.test(cta.href)
     const baseClass =
-      'kt-landing-reveal-item inline-flex items-center justify-center gap-2 rounded-[10px] px-5 py-3.5 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] transition hover:-translate-y-0.5'
+      'inline-flex items-center justify-center gap-2 rounded-[10px] px-5 py-3.5 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] transition hover:-translate-y-0.5'
     const variantClass =
       cta.variant === 'primary'
         ? 'bg-[#0b0b0b] text-primary shadow-[0_8px_22px_rgba(0,0,0,0.3)] hover:bg-[#1a1a1a]'

@@ -12,7 +12,9 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <div className="kt-app-shell">
           <MatrixBackground />
-          <App />
+          <div className="kt-zoom-canvas">
+            <App />
+          </div>
         </div>
       </BrowserRouter>
     </LanguageProvider>
