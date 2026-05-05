@@ -93,6 +93,31 @@ function FeaturedSection({ products }) {
             <path d="M9 6l6 6-6 6" />
           </svg>
         </button>
+
+        <div className="mt-4 flex items-center justify-center gap-3 md:hidden">
+          <button
+            type="button"
+            onClick={() => scrollByStep(-1)}
+            aria-label="Anterior"
+            disabled={!canPrev}
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/55 text-white transition disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollByStep(1)}
+            aria-label="Siguiente"
+            disabled={!canNext}
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/55 text-white transition disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   )
