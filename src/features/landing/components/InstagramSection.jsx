@@ -1,36 +1,49 @@
 import { useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
+
+const INSTAGRAM = SOCIAL_LINKS.find((s) => s.key === 'instagram')
 
 function InstagramSection({ gallery }) {
   const { t } = useLanguage()
-  const title = t('landing.instagram.title', 'KOLORTEC on Instagram')
-  const subtitle = t('landing.instagram.subtitle', gallery.subtitle)
-  const eyebrow = t('landing.instagram.eyebrow', 'Follow Us')
+  const followText = t(
+    'landing.instagram.followText',
+    'Follow {handle} on Instagram and never miss a story again!',
+  )
+  const handle = t('landing.instagram.handle', '@kolortec')
+  const [followBefore, followAfter = ''] = followText.split('{handle}')
 
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   const loopImages = [...gallery.images, ...gallery.images]
 
   return (
-    <section className="px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" style={{ '--reveal-delay': '80ms' }}>
+    <section className="px-6 pt-[clamp(40px,6vw,72px)] pb-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" style={{ '--reveal-delay': '80ms' }}>
       <div>
-        <div className="mb-7 flex flex-col items-start justify-between gap-3 text-left md:flex-row md:items-end">
-          <div className="kt-landing-reveal-item flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-              <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
-                {eyebrow}
-              </span>
-            </div>
-            <h2 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
-              {title}
-              <span className="text-primary">.</span>
-            </h2>
-            <p className="m-0 text-[#a0a0a0]">{subtitle}</p>
-          </div>
-          <a className="kt-landing-reveal-item mt-3 inline-flex items-center gap-2 text-[0.82rem] font-extrabold uppercase tracking-[0.18em] text-primary underline underline-offset-4" href="#">
-            {gallery.cta}
+        <div className="kt-landing-reveal-item mb-9 flex flex-col items-center gap-4 text-center sm:mb-12">
+          <a
+            href={INSTAGRAM?.href ?? '#'}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="text-white transition hover:text-primary"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-9 w-9 fill-current">
+              <path d={INSTAGRAM?.path} />
+            </svg>
           </a>
+          <p className="m-0 max-w-[60ch] text-[clamp(0.95rem,1.6vw,1.15rem)] leading-[1.45] text-[#cfd2d8]">
+            {followBefore}
+            <a
+              href={INSTAGRAM?.href ?? '#'}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary underline decoration-2 underline-offset-[6px] transition hover:opacity-80"
+            >
+              {handle}
+            </a>
+            {followAfter}
+          </p>
         </div>
 
         <div className="kt-marquee" style={{ '--kt-marquee-duration': '60s' }}>

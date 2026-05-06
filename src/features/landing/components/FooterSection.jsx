@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
-import SocialLinks from '../../../shared/components/SocialLinks'
+import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 const galleryImages = [
@@ -15,16 +15,38 @@ const galleryImages = [
 
 const loopImages = [...galleryImages, ...galleryImages]
 
+const CLIENT_LOGOS = [
+  { name: 'AURORA', mark: <circle cx="12" cy="12" r="7" /> },
+  { name: 'BLACKLINE', mark: <><rect x="3" y="9" width="18" height="2" /><rect x="3" y="13" width="12" height="2" /></> },
+  { name: 'CONCRETE LIVE', mark: <><rect x="3" y="3" width="8" height="8" /><rect x="13" y="3" width="8" height="8" /><rect x="3" y="13" width="8" height="8" /><rect x="13" y="13" width="8" height="8" /></> },
+  { name: 'DAYLIGHT STUDIO', mark: <><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" /></> },
+  { name: 'ECHO ARENA', mark: <path d="M3 12c3-6 6-6 9 0s6 6 9 0" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" /> },
+  { name: 'FRAMEWORKS', mark: <path d="M5 5h6v6H5zm8 0h6v6h-6zm-8 8h6v6H5zm8 0h6v6h-6z" stroke="currentColor" strokeWidth="1.6" fill="none" /> },
+  { name: 'HEMISPHERE', mark: <path d="M12 3l9 5.2v7.6L12 21l-9-5.2V8.2z" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinejoin="round" /> },
+  { name: 'IGNITE PRO', mark: <path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z" /> },
+  { name: 'NORTHWAVE', mark: <path d="M3 19l5-9 4 6 4-9 5 12z" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinejoin="round" /> },
+  { name: 'PRISMA STAGE', mark: <path d="M12 3l9 16H3z" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinejoin="round" /> },
+]
+
+const loopClientLogos = [...CLIENT_LOGOS, ...CLIENT_LOGOS]
+
 function FooterSection() {
   const { t } = useLanguage()
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   const productLinks = t('footer.productsLinks', ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'])
-  const companyLinks = t('footer.companyLinks', ['Our Story', 'Projects', 'Contact'])
   const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
+  const listsLinks = t('footer.listsLinks', ['Lista 146', 'Lista 145', 'Lista 144'])
+
+  const renderTitle = (label) => (
+    <h4 className="title-font mb-4 text-base md:text-lg font-black text-white">
+      {label}
+      <span className="text-primary">.</span>
+    </h4>
+  )
 
   return (
-    <footer className="bg-deep-black border-t border-slate-800 py-16 px-6 lg:px-20">
-      <div className="mb-12 w-full border-b border-slate-800 pb-10">
+    <footer className="bg-deep-black border-t border-slate-800 py-16">
+      <div className="mb-12 w-full px-6 lg:px-40">
         <div className="kt-marquee">
           <div className="kt-marquee-track">
             {loopImages.map((src, index) => (
@@ -46,28 +68,9 @@ function FooterSection() {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-2 lg:grid-cols-6 gap-8 md:gap-12">
+      <div className="w-full grid grid-cols-2 gap-10 px-6 md:grid-cols-4 md:gap-12 lg:px-40">
         <div>
-          <img alt="Kolortec Logo" className="h-32 w-32 object-contain md:h-36 md:w-36" src="/assets/footer-logo.jpeg" />
-        </div>
-
-        <div>
-          <p className="body-font text-slate-500 text-sm leading-relaxed">
-            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
-          </p>
-        </div>
-
-        <div>
-          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.companyTitle', 'Company')}</h4>
-          <ul className="body-font text-slate-400 space-y-4 text-sm">
-            <li><Link className="hover:text-primary transition-colors" to="/">{companyLinks[0] ?? 'Our Story'}</Link></li>
-            <li><Link className="hover:text-primary transition-colors" to="/servicios">{companyLinks[1] ?? 'Projects'}</Link></li>
-            <li><Link className="hover:text-primary transition-colors" to="/contacto">{companyLinks[2] ?? 'Contact'}</Link></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.productsTitle', 'Products')}</h4>
+          {renderTitle(t('footer.productsTitle', 'Products'))}
           <ul className="body-font text-slate-400 space-y-4 text-sm">
             {productLinks.map((label) => (
               <li key={`footer-product-${label}`}>
@@ -78,7 +81,7 @@ function FooterSection() {
         </div>
 
         <div>
-          <h4 className="title-font text-white mb-3 text-base md:text-lg font-black">{t('footer.libraryTitle', 'Soporte')}</h4>
+          {renderTitle(t('footer.libraryTitle', 'Soporte'))}
           <ul className="body-font text-slate-400 space-y-4 text-sm">
             {libraryLinks.map((label) => (
               <li key={`footer-library-${label}`}>
@@ -89,30 +92,76 @@ function FooterSection() {
         </div>
 
         <div>
-          <h4 className="title-font text-white mb-4 text-base md:text-lg font-black">{t('footer.updatesTitle', 'Updates')}</h4>
-          <div className="flex gap-2">
-            <input
-              className="h-10 bg-slate-800 border-none text-white text-xs focus:ring-1 focus:ring-primary w-full min-w-0 px-3 rounded-lg"
-              placeholder={t('footer.emailPlaceholder', 'Email address')}
-              type="email"
-            />
-            <button className="h-10 bg-primary text-background-dark px-3 font-black text-xs hover:bg-white transition-all rounded-lg shrink-0" type="button">
-              <span className="material-symbols-outlined">send</span>
-            </button>
-          </div>
-          <SocialLinks
-            className="mt-5 inline-flex items-center gap-2"
-            itemClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary"
-            iconSize={16}
-          />
+          {renderTitle(t('footer.listsTitle', 'Listas'))}
+          <ul className="body-font text-slate-400 space-y-4 text-sm">
+            {listsLinks.map((label) => (
+              <li key={`footer-list-${label}`}>
+                <a className="hover:text-primary transition-colors" href="#">{label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          {renderTitle(t('footer.updatesTitle', 'Follow Us'))}
+          <ul className="body-font text-slate-400 space-y-4 text-sm">
+            {SOCIAL_LINKS.map((social) => {
+              const showHandle = social.key === 'instagram' || social.key === 'facebook'
+              return (
+              <li key={`footer-social-${social.key}`}>
+                <a
+                  className="inline-flex items-center gap-2 hover:text-primary transition-colors"
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
+                    <path d={social.path} />
+                  </svg>
+                  <span>{social.label}</span>
+                  {showHandle ? (
+                    <span className="text-primary">@kolortec</span>
+                  ) : null}
+                </a>
+              </li>
+              )
+            })}
+          </ul>
         </div>
       </div>
 
-      <div className="w-full mt-16 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600">
-        <p>{t('footer.copyright', '© 2024 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
-        <div className="flex gap-6 mt-4 md:mt-0">
-          <a className="hover:text-primary transition-colors" href="#">{t('footer.privacyPolicy', 'Privacy Policy')}</a>
-          <a className="hover:text-primary transition-colors" href="#">{t('footer.termsOfService', 'Terms of Service')}</a>
+      <div className="mt-14 w-full border-t border-slate-800 pt-8 px-6 lg:px-40">
+        <div className="kt-marquee kt-marquee-reverse" style={{ '--kt-marquee-duration': '52s' }}>
+          <div className="kt-marquee-track">
+            {loopClientLogos.map((logo, index) => (
+              <span
+                key={`${logo.name}-${index}`}
+                className="kt-marquee-item-clientlogo"
+                aria-hidden={index >= CLIENT_LOGOS.length ? 'true' : undefined}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" className="kt-clientlogo-mark">
+                  {logo.mark}
+                </svg>
+                <span>{logo.name}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full mt-10 px-6 pt-8 border-t border-slate-800 flex flex-col gap-6 md:flex-row md:items-center md:justify-between lg:px-40">
+        <div className="flex items-center gap-4">
+          <img alt="Kolortec Logo" className="h-20 w-20 object-contain shrink-0 md:h-24 md:w-24" src="/assets/footer-logo.jpeg" />
+          <p className="body-font max-w-[42ch] text-[0.78rem] leading-relaxed text-slate-500">
+            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 text-xs text-slate-600 md:items-end md:text-right">
+          <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
+          <div className="flex gap-5">
+            <a className="hover:text-primary transition-colors" href="#">{t('footer.privacyPolicy', 'Privacy Policy')}</a>
+            <a className="hover:text-primary transition-colors" href="#">{t('footer.termsOfService', 'Terms of Service')}</a>
+          </div>
         </div>
       </div>
 

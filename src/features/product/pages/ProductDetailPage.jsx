@@ -77,6 +77,30 @@ function ProductDetailPage() {
   const { slug } = useParams()
   const product = getProductDetailBySlug(slug)
   const detailBodyRef = useRef(null)
+  const heroImageRef = useRef(null)
+
+  const handleHeroMouseMove = (event) => {
+    const el = heroImageRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const x = (event.clientX - rect.left) / rect.width
+    const y = (event.clientY - rect.top) / rect.height
+    const rotY = (x - 0.5) * 10
+    const rotX = -(y - 0.5) * 10
+    el.style.setProperty('--kt-tilt-rx', `${rotX}deg`)
+    el.style.setProperty('--kt-tilt-ry', `${rotY}deg`)
+    el.style.setProperty('--kt-glow-x', `${x * 100}%`)
+    el.style.setProperty('--kt-glow-y', `${y * 100}%`)
+    el.style.setProperty('--kt-tilt-active', '1')
+  }
+
+  const handleHeroMouseLeave = () => {
+    const el = heroImageRef.current
+    if (!el) return
+    el.style.setProperty('--kt-tilt-rx', '0deg')
+    el.style.setProperty('--kt-tilt-ry', '0deg')
+    el.style.setProperty('--kt-tilt-active', '0')
+  }
   const [selectedVariantId] = useState(product?.variants?.[0]?.id ?? '')
   const [activeTab, setActiveTab] = useState('about')
   const [isVideoOpen, setIsVideoOpen] = useState(true)
@@ -328,7 +352,13 @@ function ProductDetailPage() {
         <div ref={detailBodyRef} className="kt-detail-body">
           <div className="kt-container">
             <section className="kt-detail-hero kt-detail-anim" id="about">
-              <figure className="kt-detail-image" id="gallery">
+              <figure
+                ref={heroImageRef}
+                className="kt-detail-image kt-detail-hero-tilt"
+                id="gallery"
+                onMouseMove={handleHeroMouseMove}
+                onMouseLeave={handleHeroMouseLeave}
+              >
                 <button
                   type="button"
                   className="block w-full cursor-zoom-in border-0 bg-transparent p-0"
@@ -337,6 +367,7 @@ function ProductDetailPage() {
                 >
                   <img src={galleryImages[activeImageIndex] || product.heroImage} alt={product.name} />
                 </button>
+                <span aria-hidden="true" className="kt-detail-hero-glow" />
               </figure>
 
               <div className="kt-detail-summary">

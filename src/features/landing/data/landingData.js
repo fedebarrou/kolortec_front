@@ -56,7 +56,7 @@ export const defaultLandingContent = {
     ],
   },
   products: {
-    title: 'Featured Collections',
+    title: 'Featured Products',
     cta: 'View Products',
     items: [
       {
@@ -135,16 +135,16 @@ export const defaultLandingContent = {
       'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
     ctas: [
       {
-        label: 'Chat WhatsApp',
-        href: 'https://wa.me/5491166666666?text=Hola%20Kolortec%2C%20necesito%20soporte%20tecnico.',
+        label: 'Descargas',
+        href: '/soporte',
         variant: 'primary',
-        icon: 'chat',
+        icon: 'download',
       },
       {
-        label: 'Ir a Soporte',
-        href: '/soporte',
+        label: 'Chat WhatsApp',
+        href: 'https://wa.me/5491166666666?text=Hola%20Kolortec%2C%20necesito%20soporte%20tecnico.',
         variant: 'outline',
-        icon: 'support_agent',
+        icon: 'chat',
       },
       {
         label: 'Email Soporte',
@@ -246,6 +246,6 @@ export const defaultLandingContent = {
       { title: 'Products', links: ['X-Series Floods', 'Precision Spots', 'Architectural Washes'] },
       { title: 'Company', links: ['Our Story', 'Projects', 'Careers'] },
     ],
-    copyright: '© 2024 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.',
+    copyright: '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.',
   },
 }

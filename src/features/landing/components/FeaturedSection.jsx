@@ -41,7 +41,7 @@ function FeaturedSection({ products }) {
   }
 
   return (
-    <section className="px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" id="products" style={{ '--reveal-delay': '120ms' }}>
+    <section className="px-6 pt-[clamp(84px,11vw,128px)] pb-[clamp(40px,6vw,72px)] lg:px-40 kt-section-reveal" id="products" style={{ '--reveal-delay': '120ms' }}>
       <div className="mb-7 flex flex-col items-start justify-between gap-3 text-left md:flex-row md:items-end">
         <div className="kt-landing-reveal-item border-l border-[rgba(244,223,51,0.5)] pl-4">
           <h2 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">

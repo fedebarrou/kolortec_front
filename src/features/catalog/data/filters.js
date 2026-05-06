@@ -3,8 +3,8 @@ export const FILTER_AXES = [
     id: 'tipo',
     eyebrow: 'Por categoria',
     eyebrowEn: 'By category',
-    label: 'Tipo de fixture',
-    labelEn: 'Fixture type',
+    label: 'Tipo de producto',
+    labelEn: 'Product type',
     options: [
       { id: 'cabezal-movil', label: 'Cabezal movil', labelEn: 'Moving head' },
       { id: 'wash', label: 'Wash', labelEn: 'Wash' },
@@ -21,8 +21,8 @@ export const FILTER_AXES = [
     id: 'aplicacion',
     eyebrow: 'Por uso',
     eyebrowEn: 'By use',
-    label: 'Aplicacion',
-    labelEn: 'Application',
+    label: 'Clase de producto',
+    labelEn: 'Product class',
     options: [
       { id: 'tour', label: 'Tour', labelEn: 'Tour' },
       { id: 'teatro', label: 'Teatro', labelEn: 'Theater' },
@@ -35,8 +35,8 @@ export const FILTER_AXES = [
     id: 'fuente',
     eyebrow: 'Por tecnologia',
     eyebrowEn: 'By technology',
-    label: 'Fuente',
-    labelEn: 'Light source',
+    label: 'Tipo de haz',
+    labelEn: 'Beam type',
     options: [
       { id: 'led', label: 'LED', labelEn: 'LED' },
       { id: 'discharge', label: 'Discharge', labelEn: 'Discharge' },

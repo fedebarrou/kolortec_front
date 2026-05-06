@@ -78,7 +78,7 @@ function HeaderSection() {
     () => [
       { label: t('header.nav.home', 'Inicio'), to: '/' },
       { label: t('header.nav.catalog', 'Productos'), to: '/products' },
-      { label: t('header.nav.support', 'Soporte'), to: '/soporte' },
+      { label: t('header.nav.support', 'Soporte'), to: '/', hash: '#shop' },
     ],
     [t],
   )
@@ -129,8 +129,8 @@ function HeaderSection() {
   )
 
   useEffect(() => {
-    if (hash !== '#support') return
-    const target = document.getElementById('support')
+    if (hash !== '#shop') return
+    const target = document.getElementById('shop')
     if (!target) return
     target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [hash, pathname])
@@ -142,14 +142,14 @@ function HeaderSection() {
     setActiveSuggestionIndex(-1)
 
     if (pathname === '/') {
-      const target = document.getElementById('support')
+      const target = document.getElementById('shop')
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
       return
     }
 
-    navigate('/#support')
+    navigate('/#shop')
   }
 
   const handleCatalogNav = (event) => {
@@ -400,8 +400,8 @@ function HeaderSection() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden md:inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5">
             <button
               type="button"
               className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
@@ -420,7 +420,7 @@ function HeaderSection() {
             </button>
           </div>
 
-          <div className="inline-flex items-center gap-1 md:gap-1.5">
+          <div className="hidden md:inline-flex items-center gap-1 md:gap-1.5">
             {socialLinks.map((item) => (
               <a
                 key={item.key}
@@ -441,7 +441,7 @@ function HeaderSection() {
             className="relative hidden lg:flex h-9 min-w-[230px] items-center bg-slate-800/50 rounded-lg px-2.5 border border-slate-700"
             onSubmit={handleSearchSubmit}
           >
-            <span className="material-symbols-outlined text-slate-400 text-base">search</span>
+            <span className="material-symbols-outlined inline-flex items-center text-slate-400 text-base leading-none">search</span>
             <input
               className="h-full bg-transparent border-none focus:ring-0 text-xs text-slate-100 placeholder:text-slate-500 w-36 rounded-lg pl-2"
               placeholder="Buscar producto..."

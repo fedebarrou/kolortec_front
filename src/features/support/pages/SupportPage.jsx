@@ -69,7 +69,7 @@ function SupportPage() {
       <div className="mb-10">
         <label className="relative block">
           <span className="sr-only">{searchPlaceholder}</span>
-          <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-[#aeb2ba]" aria-hidden="true">
+          <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-4 inline-flex items-center text-[20px] leading-none text-[#aeb2ba]" aria-hidden="true">
             search
           </span>
           <input
