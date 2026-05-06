@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import MatrixBackground from './shared/components/MatrixBackground.jsx'
+import HeaderSection from './features/landing/components/HeaderSection.jsx'
 import { LanguageProvider } from './shared/i18n/LanguageProvider.jsx'
 
 function CanvasScaler() {
@@ -50,6 +51,7 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <div className="kt-app-shell">
           <MatrixBackground />
+          <HeaderSection />
           <div className="kt-zoom-canvas">
             <App />
           </div>

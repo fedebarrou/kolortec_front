@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import HeaderSection from './HeaderSection'
 import FooterSection from './FooterSection'
 
 function LandingChrome({ loading, children }) {
@@ -19,7 +18,6 @@ function LandingChrome({ loading, children }) {
 
   return (
     <div className="bg-[rgba(5,5,5,0.9)]">
-      <HeaderSection />
       <main>{children ?? <Outlet />}</main>
       <FooterSection />
 
