@@ -54,12 +54,12 @@ function ShopSection({ shop, products = [] }) {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIntroPhase('playing')
-            window.setTimeout(() => setIntroPhase('done'), 2100)
+            window.setTimeout(() => setIntroPhase('done'), 1500)
             obs.unobserve(entry.target)
           }
         })
       },
-      { threshold: 0.45, rootMargin: '0px 0px -10% 0px' },
+      { threshold: 0.2, rootMargin: '0px 0px 12% 0px' },
     )
     obs.observe(el)
     return () => obs.disconnect()

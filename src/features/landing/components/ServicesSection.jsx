@@ -30,7 +30,7 @@ function PillarCard({ item, index, eyebrowLabel }) {
       onFocus={play}
       onBlur={pause}
       tabIndex={0}
-      className="kt-landing-reveal-item group flex flex-col gap-3 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
+      className="kt-pillar-card kt-landing-reveal-item group flex flex-col gap-3 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[10px] bg-[#0a0a0a]">
         {item.video ? (
@@ -133,11 +133,11 @@ function ServicesSection({ services }) {
 
   return (
     <section
-      className="px-6 pt-[clamp(72px,10vw,112px)] pb-[clamp(8px,1.5vw,20px)] lg:px-40 kt-section-reveal"
+      className="kt-pillars-section px-6 pt-[clamp(72px,10vw,112px)] pb-[clamp(8px,1.5vw,20px)] lg:px-40 kt-section-reveal"
       id="services"
       style={{ '--reveal-delay': '200ms' }}
     >
-      <div className="kt-landing-reveal-item mb-10 flex flex-col gap-2 sm:mb-14">
+      <div className="kt-pillar-title kt-landing-reveal-item mb-10 flex flex-col gap-2 sm:mb-14">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
