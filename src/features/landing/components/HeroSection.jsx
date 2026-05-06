@@ -34,6 +34,10 @@ function HeroSection({ hero }) {
     >
       {slides.map((slide, index) => {
         const isActive = index === activeIndex
+        const isGoldenLine = slide.translationKey === 'hero3'
+        const overlayClass = isGoldenLine
+          ? 'absolute inset-0 bg-gradient-to-t from-[#1a0d04] via-[rgba(26,13,4,0.55)] to-[rgba(26,13,4,0.15)]'
+          : 'absolute inset-0 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.8)] to-[rgba(5,5,5,0.4)]'
         return (
           <div
             key={`bg-${slide.translationKey || slide.imageUrl || index}`}
@@ -54,7 +58,7 @@ function HeroSection({ hero }) {
             ) : (
               <img src={slide.imageUrl} alt="" className="h-full w-full object-cover" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.8)] to-[rgba(5,5,5,0.4)]" />
+            <div className={overlayClass} />
           </div>
         )
       })}
@@ -62,6 +66,7 @@ function HeroSection({ hero }) {
       {slides.map((slide, index) => {
         const isActive = index === activeIndex
         const tKey = slide.translationKey || 'hero'
+        const isGolden = tKey === 'hero3'
         const heroTitle = t(`landing.${tKey}.title`, slide.title)
         const heroSubtitle = t(`landing.${tKey}.subtitle`, slide.subtitle)
         const primaryCta = t(`landing.${tKey}.primaryCta`, slide.primaryCta)
@@ -130,14 +135,46 @@ function HeroSection({ hero }) {
             aria-hidden={!isActive}
           >
             <div className={`flex max-w-[760px] flex-col ${alignmentClasses}`}>
-              <div className="kt-landing-reveal-item mb-3 inline-block self-start bg-primary px-3.5 py-1.5 text-sm font-black text-[#090909]" style={isRight ? { alignSelf: 'flex-end' } : undefined}>
+              <div
+                className={`kt-landing-reveal-item mb-3 inline-block self-start px-3.5 py-1.5 text-sm font-black ${isGolden ? 'bg-[#f5e9c8] text-[#0a0a0a]' : 'bg-primary text-[#090909]'}`}
+                style={isRight ? { alignSelf: 'flex-end' } : undefined}
+              >
                 {slide.badge}
               </div>
-              <h1 className="title-font m-0 mb-4 text-[clamp(3.6rem,10vw,8.4rem)] leading-[0.95]">
-                {heroTitleBase}
-                <span className="text-primary">.</span>
-              </h1>
-              <p className="kt-landing-reveal-item m-0 max-w-[680px] text-[clamp(1rem,2.5vw,1.2rem)] text-[#d4d4d4]">{heroSubtitle}</p>
+
+              {isGolden ? (
+                <>
+                  <div
+                    aria-hidden="true"
+                    className={`kt-landing-reveal-item mb-2 flex w-full max-w-[420px] flex-col gap-[3px] ${isRight ? 'self-end' : 'self-start'}`}
+                  >
+                    <span className="block h-[3px] bg-[#f4b860]" />
+                    <span className="block h-[3px] bg-[#e57b3a]" />
+                    <span className="block h-[3px] bg-[#b94e1f]" />
+                  </div>
+                  <h1
+                    className="m-0 mb-4 italic leading-[0.92] text-[#f5e9c8] text-[clamp(4rem,11vw,9rem)]"
+                    style={{ fontFamily: "'Pacifico', 'Lobster', cursive" }}
+                  >
+                    {heroTitleBase}
+                  </h1>
+                  <div
+                    aria-hidden="true"
+                    className={`kt-landing-reveal-item -mt-2 mb-3 flex w-full max-w-[420px] flex-col gap-[3px] ${isRight ? 'self-end' : 'self-start'}`}
+                  >
+                    <span className="block h-[3px] bg-[#b94e1f]" />
+                    <span className="block h-[3px] bg-[#e57b3a]" />
+                    <span className="block h-[3px] bg-[#f4b860]" />
+                  </div>
+                </>
+              ) : (
+                <h1 className="title-font m-0 mb-4 text-[clamp(3.6rem,10vw,8.4rem)] leading-[0.95]">
+                  {heroTitleBase}
+                  <span className="text-primary">.</span>
+                </h1>
+              )}
+
+              <p className={`kt-landing-reveal-item m-0 max-w-[680px] text-[clamp(1rem,2.5vw,1.2rem)] ${isGolden ? 'text-[#e8dcb8]' : 'text-[#d4d4d4]'}`}>{heroSubtitle}</p>
               <div className={`mt-6 flex flex-wrap gap-3 ${isRight ? 'justify-end' : 'justify-start'}`}>
                 {renderCta(primaryCta, slide.primaryCtaHref, true)}
                 {renderCta(secondaryCta, slide.secondaryCtaHref, false)}

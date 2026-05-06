@@ -56,3 +56,9 @@ out
 *.njsproj
 *.sln
 *.sw?
+
+# Local Claude config
+.claude/
+
+# Source assets for one-off processing (large PNGs)
+GOLDENLINE/

@@ -14,7 +14,7 @@ function ShopSection({ shop, products = [] }) {
     ? products
     : [{ name: 'Kolortec', image: fallbackImage }]
 
-  const ROTATE_MS = 4500
+  const ROTATE_MS = 3500
   const [activeId, setActiveId] = useState(0)
   const sectionRef = useRef(null)
   const [introPhase, setIntroPhase] = useState('priming')
@@ -161,6 +161,7 @@ function ShopSection({ shop, products = [] }) {
           ) : null}
         </div>
 
+        <div className="flex flex-col gap-7">
         <div className="kt-shop-from-right relative h-[280px] w-full sm:h-[clamp(420px,68vw,560px)]">
           {carouselItems.map((item, i) => {
             const pos = getRelativePos(i, activeId, carouselItems.length)
@@ -252,6 +253,23 @@ function ShopSection({ shop, products = [] }) {
               </article>
             )
           })}
+
+        </div>
+
+          {carouselItems.length > 1 ? (
+            <div className="flex justify-center gap-2" aria-label="Paginacion del carrusel">
+              {carouselItems.map((item, i) => (
+                <button
+                  key={`dot-${item.name}-${i}`}
+                  type="button"
+                  onClick={() => setActiveId(i)}
+                  aria-label={`Ir al producto ${i + 1} de ${carouselItems.length}`}
+                  aria-current={i === activeId ? 'true' : undefined}
+                  className={`h-2 rounded-full transition-all ${i === activeId ? 'w-6 bg-[#0b0b0b]' : 'w-2 bg-[#0b0b0b]/30 hover:bg-[#0b0b0b]/55'}`}
+                />
+              ))}
+            </div>
+          ) : null}
 
         </div>
       </div>

@@ -58,12 +58,43 @@ function SupportPage() {
 
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
-      <div className="mb-8 grid gap-3">
-        <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
-          {title}
-          <span className="text-primary">.</span>
-        </h1>
-        <p className="m-0 max-w-[70ch] text-[#b7bbc4] leading-[1.55]">{subtitle}</p>
+      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10">
+        <div className="grid gap-3">
+          <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
+            {title}
+            <span className="text-primary">.</span>
+          </h1>
+          <p className="m-0 max-w-[70ch] text-[#b7bbc4] leading-[1.55]">{subtitle}</p>
+        </div>
+
+        <aside className="w-full rounded-[10px] border border-[rgba(244,223,51,0.35)] bg-[#0f0f10] p-5 shadow-[0_8px_22px_rgba(0,0,0,0.28)] md:w-auto md:min-w-[260px] md:max-w-[320px] md:shrink-0">
+          <div className="mb-3 flex items-center gap-2.5">
+            <span aria-hidden="true" className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-black">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+                <path d="M12 2a8 8 0 00-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 00-8-8zm0 5v3m0 3h.01" />
+              </svg>
+            </span>
+            <h3 className="title-font m-0 text-[1.05rem] leading-[1.05]">{contactTitle}</h3>
+          </div>
+          <div className="flex flex-col gap-2">
+            <a
+              href="https://wa.me/5491155555555?text=Hola%20equipo%20de%20soporte%2C%20necesito%20ayuda%20tecnica."
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-4 py-2.5 text-[0.78rem] font-extrabold uppercase tracking-[0.1em] text-[#090909] transition hover:-translate-y-0.5"
+            >
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">chat</span>
+              {contactCta}
+            </a>
+            <Link
+              to="/contacto"
+              className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-white/30 bg-transparent px-4 py-2.5 text-[0.78rem] font-extrabold uppercase tracking-[0.1em] text-white transition hover:border-white hover:bg-white hover:text-[#090909]"
+            >
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">mail</span>
+              Email
+            </Link>
+          </div>
+        </aside>
       </div>
 
       <div className="mb-10">
@@ -150,28 +181,6 @@ function SupportPage() {
             <p className="m-0 py-8 text-center text-[0.9rem] text-[#aeb2ba]">{emptyResults}</p>
           )}
         </article>
-      </div>
-
-      <div className="mt-12 border-t border-[#2a2a2a] pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h3 className="title-font m-0 text-[1.4rem] leading-[1.05]">{contactTitle}</h3>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="https://wa.me/5491155555555?text=Hola%20equipo%20de%20soporte%2C%20necesito%20ayuda%20tecnica."
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-5 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
-          >
-            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chat</span>
-            {contactCta}
-          </a>
-          <Link
-            to="/contacto"
-            className="inline-flex items-center gap-2 rounded-[8px] border-2 border-white/40 bg-transparent px-5 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-white transition hover:border-white hover:bg-white hover:text-[#090909]"
-          >
-            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">mail</span>
-            Email
-          </Link>
-        </div>
       </div>
 
       <LoginRequiredDialog

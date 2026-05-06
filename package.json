@@ -8,7 +8,9 @@
     "dev:api": "node mock-api/server.mjs",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "compress:golden-line": "node scripts/compress-golden-line.mjs",
+    "extract:golden-line-pdf": "node scripts/extract-pdf.mjs"
   },
   "dependencies": {
     "react": "^19.2.4",
@@ -27,5 +29,9 @@
     "globals": "^17.4.0",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.4"
+  },
+  "optionalDependencies": {
+    "pdf-parse": "^2.4.5",
+    "sharp": "^0.34.5"
   }
 }

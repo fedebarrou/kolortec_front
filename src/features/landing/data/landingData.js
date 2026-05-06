@@ -25,6 +25,19 @@ export const defaultLandingContent = {
         textPosition: 'left',
       },
       {
+        translationKey: 'hero3',
+        badge: 'LIMITED EDITION',
+        title: 'Golden Line.',
+        subtitle:
+          'Vintage warmth meets touring-grade engineering. A theatrical line of blinders, pars and bars built to glow night after night.',
+        primaryCta: 'Explorar la linea',
+        primaryCtaHref: '/products',
+        secondaryCta: null,
+        imageUrl: '/assets/golden-line/starpar.webp',
+        videoUrl: null,
+        textPosition: 'right',
+      },
+      {
         translationKey: 'hero2',
         badge: 'IN ACTION',
         title: 'POWER ON STAGE.',

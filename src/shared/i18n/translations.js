@@ -29,6 +29,12 @@ export const translations = {
         primaryCta: 'Support',
         secondaryCta: 'Contact support',
       },
+      hero3: {
+        title: 'Golden Line.',
+        subtitle:
+          'Vintage warmth meets touring-grade engineering. A theatrical line of blinders, pars and bars built to glow night after night.',
+        primaryCta: 'Explore the line',
+      },
       instagram: {
         title: 'KOLORTEC on Instagram',
         subtitle:
@@ -181,6 +187,12 @@ export const translations = {
           'Elegidos por giras, broadcasters e integradores arquitectonicos en toda LATAM. Diseñados para rendir noche tras noche.',
         primaryCta: 'Soporte',
         secondaryCta: 'Contactate con soporte',
+      },
+      hero3: {
+        title: 'Golden Line.',
+        subtitle:
+          'Calidez vintage con ingenieria de gira. Una linea teatral de blinders, pares y barras pensada para brillar noche tras noche.',
+        primaryCta: 'Explorar la linea',
       },
       instagram: {
         title: 'KOLORTEC en Instagram',
