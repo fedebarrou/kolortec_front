@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.jsx'
 import MatrixBackground from './shared/components/MatrixBackground.jsx'
 import HeaderSection from './features/landing/components/HeaderSection.jsx'
+import WhatsAppFab from './shared/components/WhatsAppFab.jsx'
 import { LanguageProvider } from './shared/i18n/LanguageProvider.jsx'
 
 function CanvasScaler() {
@@ -55,6 +56,7 @@ createRoot(document.getElementById('root')).render(
           <div className="kt-zoom-canvas">
             <App />
           </div>
+          <WhatsAppFab />
           <CanvasScaler />
         </div>
       </BrowserRouter>
