@@ -6,6 +6,7 @@ import InstagramSection from './InstagramSection'
 import ServicesSection from './ServicesSection'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
+import DistributorTeaserSection from './DistributorTeaserSection'
 import { useLandingContent } from '../hooks/useLandingContent'
 
 function LandingPage() {
@@ -43,6 +44,7 @@ function LandingPage() {
       <ShopSection shop={content.shop} products={content.products.items} />
       <ServicesSection services={content.services} />
       <SupportSection support={content.support} />
+      <DistributorTeaserSection />
     </>
   )
 }

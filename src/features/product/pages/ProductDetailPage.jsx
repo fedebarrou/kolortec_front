@@ -112,6 +112,63 @@ function ProductDetailPage() {
   const [previewActivePage, setPreviewActivePage] = useState(0)
   const [downloadIntent, setDownloadIntent] = useState(null)
   const [translatedShortDescription, setTranslatedShortDescription] = useState(product?.shortDescription ?? '')
+  const accessoriesTrackRef = useRef(null)
+  const [accCanPrev, setAccCanPrev] = useState(false)
+  const [accCanNext, setAccCanNext] = useState(false)
+  const [accPaused, setAccPaused] = useState(false)
+
+  const accessoriesCount = product?.accessories?.length ?? 0
+
+  const updateAccessoriesBounds = () => {
+    const el = accessoriesTrackRef.current
+    if (!el) return
+    const maxScroll = el.scrollWidth - el.clientWidth
+    setAccCanPrev(el.scrollLeft > 4)
+    setAccCanNext(el.scrollLeft < maxScroll - 4)
+  }
+
+  useEffect(() => {
+    if (!isAccessoriesOpen) return undefined
+    const el = accessoriesTrackRef.current
+    if (!el) return undefined
+    updateAccessoriesBounds()
+    el.addEventListener('scroll', updateAccessoriesBounds, { passive: true })
+    window.addEventListener('resize', updateAccessoriesBounds)
+    return () => {
+      el.removeEventListener('scroll', updateAccessoriesBounds)
+      window.removeEventListener('resize', updateAccessoriesBounds)
+    }
+  }, [isAccessoriesOpen, accessoriesCount])
+
+  useEffect(() => {
+    if (!isAccessoriesOpen) return undefined
+    if (accPaused) return undefined
+    if (accessoriesCount <= 1) return undefined
+
+    const id = window.setInterval(() => {
+      const el = accessoriesTrackRef.current
+      if (!el) return
+      const maxScroll = el.scrollWidth - el.clientWidth
+      if (maxScroll <= 0) return
+      if (el.scrollLeft >= maxScroll - 4) {
+        el.scrollTo({ left: 0, behavior: 'smooth' })
+        return
+      }
+      const firstItem = el.querySelector('[data-acc-item]')
+      const itemWidth = firstItem ? firstItem.getBoundingClientRect().width + 16 : el.clientWidth * 0.8
+      el.scrollBy({ left: itemWidth, behavior: 'smooth' })
+    }, 4000)
+
+    return () => window.clearInterval(id)
+  }, [isAccessoriesOpen, accPaused, accessoriesCount])
+
+  const scrollAccessoriesBy = (direction) => {
+    const el = accessoriesTrackRef.current
+    if (!el) return
+    const firstItem = el.querySelector('[data-acc-item]')
+    const itemWidth = firstItem ? firstItem.getBoundingClientRect().width + 16 : el.clientWidth * 0.8
+    el.scrollBy({ left: direction * itemWidth, behavior: 'smooth' })
+  }
   const tabs = useMemo(
     () => [
       { id: 'about', label: t('productDetail.tabs.about', 'About') },
@@ -638,12 +695,20 @@ function ProductDetailPage() {
               </button>
 
               {isAccessoriesOpen && (
-                <div className="mt-8 kt-marquee" style={{ '--kt-marquee-duration': '70s' }}>
-                  <div className="kt-marquee-track">
-                    {[...product.accessories, ...product.accessories].map((item, index) => (
+                <div
+                  className="relative mt-8"
+                  onMouseEnter={() => setAccPaused(true)}
+                  onMouseLeave={() => setAccPaused(false)}
+                >
+                  <div
+                    ref={accessoriesTrackRef}
+                    className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    {product.accessories.map((item, index) => (
                       <div
-                        key={`acc-marquee-${item.name}-${index}`}
-                        className="kt-marquee-item kt-marquee-item-product"
+                        key={`acc-${item.name}-${index}`}
+                        data-acc-item
+                        className="flex-none snap-start basis-[78%] sm:basis-[44%] md:basis-[32%] xl:basis-[23%]"
                       >
                         <ProductCard
                           item={{
@@ -652,10 +717,58 @@ function ProductDetailPage() {
                             image: product.gallery[index % product.gallery.length],
                           }}
                           detailHref={`/producto/${product.slug || slug}`}
-                          className="kt-reveal-item"
                         />
                       </div>
                     ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => scrollAccessoriesBy(-1)}
+                    aria-label="Anterior"
+                    disabled={!accCanPrev}
+                    className="absolute -left-6 top-1/2 z-10 hidden -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/20 disabled:hover:bg-black/55 disabled:hover:text-white md:grid md:h-12 md:w-12 lg:-left-12"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+                      <path d="M15 6l-6 6 6 6" />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => scrollAccessoriesBy(1)}
+                    aria-label="Siguiente"
+                    disabled={!accCanNext}
+                    className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/20 disabled:hover:bg-black/55 disabled:hover:text-white md:grid md:h-12 md:w-12 lg:-right-12"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  </button>
+
+                  <div className="mt-4 flex items-center justify-center gap-3 md:hidden">
+                    <button
+                      type="button"
+                      onClick={() => scrollAccessoriesBy(-1)}
+                      aria-label="Anterior"
+                      disabled={!accCanPrev}
+                      className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/55 text-white transition disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+                        <path d="M15 6l-6 6 6 6" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollAccessoriesBy(1)}
+                      aria-label="Siguiente"
+                      disabled={!accCanNext}
+                      className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/55 text-white transition disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
+                        <path d="M9 6l6 6-6 6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               )}

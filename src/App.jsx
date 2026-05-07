@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LandingChrome from './features/landing/components/LandingChrome'
 import ContactPage from './features/contact/pages/ContactPage'
+import DistributorsPage from './features/distributors/pages/DistributorsPage'
 import HomePage from './features/home/pages/HomePage'
 import LoginPage from './features/auth/pages/LoginPage'
 import ProductDetailPage from './features/product/pages/ProductDetailPage'
@@ -20,6 +21,7 @@ function App() {
         <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/soporte" element={<SupportPage />} />
         <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/distribuidores" element={<DistributorsPage />} />
         <Route path="/login" element={<LoginPage />} />
       </Route>
       <Route path="/editable" element={<Navigate to="/" replace />} />

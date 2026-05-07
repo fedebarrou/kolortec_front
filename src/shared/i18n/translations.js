@@ -78,6 +78,13 @@ export const translations = {
         salesCategory: 'Sales',
         supportCategory: 'Support',
       },
+      distributor: {
+        eyebrow: 'Distributor Program',
+        title: 'Want to join the Kolortec distributor network?',
+        subtitle:
+          'Apply to our authorized partner network — product access, factory technical support, and preferred commercial terms.',
+        cta: 'Apply now',
+      },
     },
     shop: {
       title: 'Products',
@@ -113,20 +120,38 @@ export const translations = {
       sections: {
         video: 'Product Video',
         downloads: 'Downloads',
-        accessories: 'Other Related Products',
+        accessories: 'Related Products',
         technicalSpecs: 'Technical Specification',
       },
       downloads: {
         description:
           'Find and download all technical and marketing documents related to this product.',
-        softwareUpdates: 'Library & Manuals',
+        softwareUpdates: 'Libraries',
         manuals: 'Manuals',
         downloadCta: 'Download',
       },
     },
+    distributors: {
+      eyebrow: 'Distributor Program',
+      title: 'Join the team',
+      subtitle:
+        'Fill out the form and our commercial team will get in touch within the next 48 business hours.',
+      fields: {
+        nombre: 'First name',
+        apellido: 'Last name',
+        telefono: 'Phone',
+        email: 'Email',
+        mensaje: 'Tell us about your business',
+      },
+      submit: 'Send application',
+      submittedTitle: 'We received your application',
+      submittedBody:
+        'Thanks for your interest. We will be in touch shortly through the email and phone you provided.',
+      back: 'Back to home',
+    },
     support: {
       page: {
-        title: 'Library & Manuals',
+        title: 'Libraries',
         subtitle:
           'Find technical manuals, firmware updates, photometric files, and reference material for the entire Kolortec line.',
         manualsTitle: 'Manuals',
@@ -237,6 +262,13 @@ export const translations = {
         salesCategory: 'Ventas',
         supportCategory: 'Soporte',
       },
+      distributor: {
+        eyebrow: 'Programa de distribuidores',
+        title: 'Queres formar parte del equipo de distribuidores Kolortec?',
+        subtitle:
+          'Sumate a la red de partners autorizados — acceso a productos, soporte tecnico de fabrica y condiciones comerciales preferenciales.',
+        cta: 'Quiero postularme',
+      },
     },
     shop: {
       title: 'Productos',
@@ -272,20 +304,38 @@ export const translations = {
       sections: {
         video: 'Video del Producto',
         downloads: 'Descargas',
-        accessories: 'Otros Productos Relacionados',
+        accessories: 'Productos Relacionados',
         technicalSpecs: 'Especificacion Tecnica',
       },
       downloads: {
         description:
           'Encontra y descarga toda la documentacion tecnica y comercial relacionada con este producto.',
-        softwareUpdates: 'Libreria y Manuales',
+        softwareUpdates: 'Librerias',
         manuals: 'Manuales',
         downloadCta: 'Descargar',
       },
     },
+    distributors: {
+      eyebrow: 'Programa de distribuidores',
+      title: 'Sumate al equipo',
+      subtitle:
+        'Completa el formulario y nuestro equipo comercial se va a poner en contacto en las proximas 48 horas habiles.',
+      fields: {
+        nombre: 'Nombre',
+        apellido: 'Apellido',
+        telefono: 'Telefono',
+        email: 'Email',
+        mensaje: 'Contanos sobre tu negocio',
+      },
+      submit: 'Enviar postulacion',
+      submittedTitle: 'Recibimos tu postulacion',
+      submittedBody:
+        'Gracias por tu interes en sumarte. Vamos a estar contactandote pronto al email y telefono que dejaste.',
+      back: 'Volver al inicio',
+    },
     support: {
       page: {
-        title: 'Libreria y Manuales',
+        title: 'Librerias',
         subtitle:
           'Encontra manuales tecnicos, actualizaciones de firmware, fotometria y material de referencia de toda la linea Kolortec.',
         manualsTitle: 'Manuales',

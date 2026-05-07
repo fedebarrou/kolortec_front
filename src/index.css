@@ -48,6 +48,22 @@
 }
 
 @layer base {
+  :root {
+    color-scheme: dark;
+    forced-color-adjust: none;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  img,
+  video {
+    color-interpolation-filters: sRGB;
+  }
+
   .material-symbols-outlined {
     font-family: 'Material Symbols Outlined';
     font-weight: normal;
@@ -1506,19 +1522,33 @@
   }
 
   .kt-pillars-section.is-visible .kt-pillar-title.kt-landing-reveal-item {
-    animation: kt-pillar-drop 900ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 100ms both;
+    animation: kt-pillar-title-drop 480ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 80ms both;
   }
 
   .kt-pillars-section.is-visible .kt-pillar-card.kt-landing-reveal-item:nth-of-type(1) {
-    animation: kt-pillar-drop 900ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1000ms both;
+    animation: kt-pillar-drop 620ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 600ms both;
   }
 
   .kt-pillars-section.is-visible .kt-pillar-card.kt-landing-reveal-item:nth-of-type(2) {
-    animation: kt-pillar-drop 900ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1850ms both;
+    animation: kt-pillar-drop 620ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1100ms both;
   }
 
   .kt-pillars-section.is-visible .kt-pillar-card.kt-landing-reveal-item:nth-of-type(3) {
-    animation: kt-pillar-drop 900ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 2700ms both;
+    animation: kt-pillar-drop 620ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1600ms both;
+  }
+
+  @keyframes kt-pillar-title-drop {
+    0% {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    14% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes kt-pillar-drop {
@@ -1546,7 +1576,7 @@
     }
     /* First bounce up */
     74% {
-      transform: translateY(-22px);
+      transform: translateY(-16px);
       filter: brightness(1) drop-shadow(0 0 0 rgba(244, 223, 51, 0));
     }
     /* Second landing - softer glow */
@@ -1557,7 +1587,7 @@
         drop-shadow(0 0 12px rgba(244, 223, 51, 0.28))
         drop-shadow(0 3px 0 rgba(244, 223, 51, 0.18));
     }
-    /* Settle - no third bounce */
+    /* Settle */
     100% {
       opacity: 1;
       transform: translateY(0);

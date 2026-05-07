@@ -11,6 +11,8 @@ function FeaturedSection({ products }) {
   const trackRef = useRef(null)
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const ROTATE_MS = 4000
 
   const updateBounds = useCallback(() => {
     const el = trackRef.current
@@ -31,6 +33,27 @@ function FeaturedSection({ products }) {
       window.removeEventListener('resize', updateBounds)
     }
   }, [updateBounds, products.items.length])
+
+  useEffect(() => {
+    if (isPaused) return undefined
+    if (!products.items || products.items.length <= 1) return undefined
+
+    const id = window.setInterval(() => {
+      const el = trackRef.current
+      if (!el) return
+      const maxScroll = el.scrollWidth - el.clientWidth
+      if (maxScroll <= 0) return
+      if (el.scrollLeft >= maxScroll - 4) {
+        el.scrollTo({ left: 0, behavior: 'smooth' })
+        return
+      }
+      const firstItem = el.querySelector('[data-featured-item]')
+      const itemWidth = firstItem ? firstItem.getBoundingClientRect().width + 16 : el.clientWidth * 0.8
+      el.scrollBy({ left: itemWidth, behavior: 'smooth' })
+    }, ROTATE_MS)
+
+    return () => window.clearInterval(id)
+  }, [isPaused, products.items?.length])
 
   const scrollByStep = (direction) => {
     const el = trackRef.current
@@ -54,7 +77,11 @@ function FeaturedSection({ products }) {
         </Link>
       </div>
 
-      <div className="relative">
+      <div
+        className="relative"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <div
           ref={trackRef}
           className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"

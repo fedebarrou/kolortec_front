@@ -40,7 +40,7 @@ function SupportPage() {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [])
 
-  const title = t('support.page.title', 'Libreria y Manuales')
+  const title = t('support.page.title', 'Librerias')
   const subtitle = t(
     'support.page.subtitle',
     'Encontra manuales tecnicos, actualizaciones de firmware, fotometria y material de referencia de toda la linea Kolortec.',

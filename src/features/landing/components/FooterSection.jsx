@@ -35,7 +35,6 @@ function FooterSection() {
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   const productLinks = t('footer.productsLinks', ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'])
   const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
-  const listsLinks = t('footer.listsLinks', ['Lista 146', 'Lista 145', 'Lista 144'])
 
   const renderTitle = (label) => (
     <h4 className="title-font mb-4 text-base md:text-lg font-black text-white">
@@ -69,6 +68,13 @@ function FooterSection() {
       </div>
 
       <div className="w-full grid grid-cols-2 gap-10 px-6 md:grid-cols-4 md:gap-12 lg:px-40">
+        <div className="flex flex-col gap-4">
+          <img alt="Kolortec Logo" className="h-20 w-20 object-contain shrink-0 md:h-24 md:w-24" src="/assets/footer-logo.jpeg" />
+          <p className="body-font max-w-[34ch] text-[0.78rem] leading-relaxed text-slate-500">
+            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
+          </p>
+        </div>
+
         <div>
           {renderTitle(t('footer.productsTitle', 'Products'))}
           <ul className="body-font text-slate-400 space-y-4 text-sm">
@@ -86,17 +92,6 @@ function FooterSection() {
             {libraryLinks.map((label) => (
               <li key={`footer-library-${label}`}>
                 <Link className="hover:text-primary transition-colors" to="/soporte">{label}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          {renderTitle(t('footer.listsTitle', 'Listas'))}
-          <ul className="body-font text-slate-400 space-y-4 text-sm">
-            {listsLinks.map((label) => (
-              <li key={`footer-list-${label}`}>
-                <a className="hover:text-primary transition-colors" href="#">{label}</a>
               </li>
             ))}
           </ul>
@@ -149,19 +144,11 @@ function FooterSection() {
         </div>
       </div>
 
-      <div className="w-full mt-10 px-6 pt-8 border-t border-slate-800 flex flex-col gap-6 md:flex-row md:items-center md:justify-between lg:px-40">
-        <div className="flex items-center gap-4">
-          <img alt="Kolortec Logo" className="h-20 w-20 object-contain shrink-0 md:h-24 md:w-24" src="/assets/footer-logo.jpeg" />
-          <p className="body-font max-w-[42ch] text-[0.78rem] leading-relaxed text-slate-500">
-            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 text-xs text-slate-600 md:items-end md:text-right">
-          <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
-          <div className="flex gap-5">
-            <a className="hover:text-primary transition-colors" href="#">{t('footer.privacyPolicy', 'Privacy Policy')}</a>
-            <a className="hover:text-primary transition-colors" href="#">{t('footer.termsOfService', 'Terms of Service')}</a>
-          </div>
+      <div className="w-full mt-10 px-6 pt-8 border-t border-slate-800 flex flex-col gap-3 text-xs text-slate-600 md:flex-row md:items-center md:justify-between lg:px-40">
+        <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
+        <div className="flex gap-5">
+          <a className="hover:text-primary transition-colors" href="#">{t('footer.privacyPolicy', 'Privacy Policy')}</a>
+          <a className="hover:text-primary transition-colors" href="#">{t('footer.termsOfService', 'Terms of Service')}</a>
         </div>
       </div>
 
