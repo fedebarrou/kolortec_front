@@ -27,7 +27,7 @@ function HeroSection({ hero }) {
 
   return (
     <section
-      className="relative min-h-[calc(100dvh-72px)] md:min-h-[calc(100dvh-80px)] overflow-hidden kt-section-reveal"
+      className="relative min-h-[calc((100dvh-72px)/var(--kt-canvas-scale,1))] md:min-h-[calc((100dvh-80px)/var(--kt-canvas-scale,1))] overflow-hidden kt-section-reveal"
       style={{ '--reveal-delay': '10ms' }}
       onMouseEnter={() => { isPausedRef.current = true }}
       onMouseLeave={() => { isPausedRef.current = false }}

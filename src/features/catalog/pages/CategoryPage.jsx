@@ -4,6 +4,7 @@ import ProductCard from '../components/ProductCard'
 import { defaultLandingContent } from '../../landing/data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import usePageTitle from '../../../shared/hooks/usePageTitle'
 import { getCategoryBySlug, PRODUCT_CATEGORIES } from '../data/categories'
 
 function CategoryPage() {
@@ -12,6 +13,8 @@ function CategoryPage() {
   const [products, setProducts] = useState(defaultLandingContent.products.items)
   const [selectedBadge, setSelectedBadge] = useState('all')
   const category = getCategoryBySlug(categorySlug)
+  const categoryLabel = category ? (lang === 'en' ? category.nameEn : category.name) : t('pageTitle.products', 'Productos')
+  usePageTitle(categoryLabel)
 
   useEffect(() => {
     let mounted = true

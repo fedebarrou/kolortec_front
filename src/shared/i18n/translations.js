@@ -47,7 +47,7 @@ export const translations = {
         cta: 'View Products',
       },
       shop: {
-        title: 'Guaranteed Products',
+        title: 'Products\nGuaranteed',
         subtitle:
           'Factory-backed warranty, original spare parts, and technical support to keep your Kolortec gear running season after season.',
         cta: 'Go to Products',
@@ -83,7 +83,14 @@ export const translations = {
         title: 'Want to join the Kolortec distributor network?',
         subtitle:
           'Apply to our authorized partner network — product access, factory technical support, and preferred commercial terms.',
-        cta: 'Apply now',
+        cta: 'Account request',
+      },
+      rental: {
+        eyebrow: 'Rental Program',
+        title: 'Pitch your project and we will light it up together',
+        subtitle:
+          'Bring us your event or production — we work with active rental partners across LATAM to put Kolortec gear on stage with you.',
+        cta: 'Pitch your project',
       },
     },
     shop: {
@@ -148,10 +155,35 @@ export const translations = {
       submittedBody:
         'Thanks for your interest. We will be in touch shortly through the email and phone you provided.',
       back: 'Back to home',
+      networkEyebrow: 'Official network',
+      networkTitle: 'Trusted distributors',
+      networkBlurb:
+        'Authorized partners with stock, technical support, and live demos of our full catalog.',
+      visitSite: 'Visit site',
+    },
+    rentals: {
+      eyebrow: 'Rental Program',
+      title: 'Pitch your project',
+      subtitle:
+        'Tell us about your event or production and our rental team will come back within the next 48 business hours.',
+      fields: {
+        nombre: 'First name',
+        apellido: 'Last name',
+        telefono: 'Phone',
+        email: 'Email',
+        mensaje: 'Tell us about your project',
+      },
+      submit: 'Send pitch',
+      submittedTitle: 'We received your pitch',
+      submittedBody:
+        'Thanks for sharing. Our rental crew will get in touch shortly through the email and phone you provided.',
+      back: 'Back to home',
+      networkTitle: 'Active rental partners',
+      visitSite: 'Visit site',
     },
     support: {
       page: {
-        title: 'Libraries',
+        title: 'Manuals & Libraries',
         subtitle:
           'Find technical manuals, firmware updates, photometric files, and reference material for the entire Kolortec line.',
         manualsTitle: 'Manuals',
@@ -181,6 +213,17 @@ export const translations = {
       termsOfService: 'Terms of Service',
       copyright: '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.',
       galleryLabel: 'Footer gallery',
+    },
+    pageTitle: {
+      home: 'Home',
+      products: 'Products',
+      productFallback: 'Product',
+      services: 'Services',
+      support: 'Support',
+      contact: 'Contact',
+      distributors: 'Distributors',
+      rentals: 'Rentals',
+      login: 'Sign in',
     },
   },
   es: {
@@ -267,7 +310,14 @@ export const translations = {
         title: 'Queres formar parte del equipo de distribuidores Kolortec?',
         subtitle:
           'Sumate a la red de partners autorizados — acceso a productos, soporte tecnico de fabrica y condiciones comerciales preferenciales.',
-        cta: 'Quiero postularme',
+        cta: 'Solicitud de cuenta',
+      },
+      rental: {
+        eyebrow: 'Programa de rental',
+        title: 'Presenta tu proyecto y lo iluminamos juntos',
+        subtitle:
+          'Traenos tu evento o produccion — trabajamos con partners de rental activos en toda LATAM para llevar equipos Kolortec a tu escenario.',
+        cta: 'Presenta tu proyecto',
       },
     },
     shop: {
@@ -332,10 +382,35 @@ export const translations = {
       submittedBody:
         'Gracias por tu interes en sumarte. Vamos a estar contactandote pronto al email y telefono que dejaste.',
       back: 'Volver al inicio',
+      networkEyebrow: 'Red oficial',
+      networkTitle: 'Distribuidores autorizados',
+      networkBlurb:
+        'Partners con stock, soporte tecnico y demos en vivo de todo el catalogo Kolortec.',
+      visitSite: 'Visitar sitio',
+    },
+    rentals: {
+      eyebrow: 'Programa de rental',
+      title: 'Presenta tu proyecto',
+      subtitle:
+        'Contanos sobre tu evento o produccion y nuestro equipo de rental se va a poner en contacto en las proximas 48 horas habiles.',
+      fields: {
+        nombre: 'Nombre',
+        apellido: 'Apellido',
+        telefono: 'Telefono',
+        email: 'Email',
+        mensaje: 'Contanos sobre tu proyecto',
+      },
+      submit: 'Enviar propuesta',
+      submittedTitle: 'Recibimos tu propuesta',
+      submittedBody:
+        'Gracias por sumarte. Nuestro equipo de rental se va a poner en contacto pronto al email y telefono que dejaste.',
+      back: 'Volver al inicio',
+      networkTitle: 'Partners de rental activos',
+      visitSite: 'Visitar sitio',
     },
     support: {
       page: {
-        title: 'Librerias',
+        title: 'Manuales y librerias',
         subtitle:
           'Encontra manuales tecnicos, actualizaciones de firmware, fotometria y material de referencia de toda la linea Kolortec.',
         manualsTitle: 'Manuales',
@@ -365,6 +440,17 @@ export const translations = {
       termsOfService: 'Terminos de Servicio',
       copyright: '© 2010 KOLORTEC LIGHTING SYSTEMS. TODOS LOS DERECHOS RESERVADOS.',
       galleryLabel: 'Galeria del footer',
+    },
+    pageTitle: {
+      home: 'Inicio',
+      products: 'Productos',
+      productFallback: 'Producto',
+      services: 'Servicios',
+      support: 'Soporte',
+      contact: 'Contacto',
+      distributors: 'Distribuidores',
+      rentals: 'Rentals',
+      login: 'Iniciar sesión',
     },
   },
 }

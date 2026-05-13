@@ -5,59 +5,67 @@ import usePageTitle from '../../../shared/hooks/usePageTitle'
 
 const PARTNERS = [
   {
-    name: 'Sonora Pro Lighting',
-    domain: 'sonorapro.mx',
-    region: 'Mexico',
-    accent: '#f4df33',
-    url: 'https://example.com/sonora-pro',
-    mark: (
-      <>
-        <circle cx="12" cy="12" r="3.5" fill="currentColor" />
-        <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none">
-          <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.4 4.4l2.1 2.1M17.5 17.5l2.1 2.1M4.4 19.6l2.1-2.1M17.5 6.5l2.1-2.1" />
-        </g>
-      </>
-    ),
-  },
-  {
-    name: 'ProStage LATAM',
-    domain: 'prostagelatam.com.ar',
+    name: 'Vortex Productions',
+    domain: 'vortexpro.com.ar',
     region: 'Argentina',
-    accent: '#9efad4',
-    url: 'https://example.com/prostage',
+    accent: '#f4df33',
+    url: 'https://example.com/vortex',
     mark: (
-      <path d="M3 20l9-15 9 15H3z" stroke="currentColor" strokeWidth="1.7" fill="none" strokeLinejoin="round" />
-    ),
-  },
-  {
-    name: 'Espectro Brasil',
-    domain: 'espectro.com.br',
-    region: 'Brasil',
-    accent: '#a9c4ff',
-    url: 'https://example.com/espectro',
-    mark: (
-      <g stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round">
-        <path d="M2 12c2.5-4 5-4 7.5 0s5 4 7.5 0S22 8 22 8" />
-        <path d="M2 17c2.5-4 5-4 7.5 0s5 4 7.5 0S22 13 22 13" opacity="0.5" />
-        <path d="M2 7c2.5-4 5-4 7.5 0s5 4 7.5 0S22 3 22 3" opacity="0.5" />
+      <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3a9 9 0 0 1 9 9 6 6 0 0 1-6 6 4 4 0 0 1-4-4 2.5 2.5 0 0 1 2.5-2.5" />
+        <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
       </g>
     ),
   },
   {
-    name: 'Andes Lighting Co.',
-    domain: 'andeslighting.cl',
+    name: 'Stage Republic',
+    domain: 'stagerepublic.com.br',
+    region: 'Brasil',
+    accent: '#9efad4',
+    url: 'https://example.com/stagerepublic',
+    mark: (
+      <g stroke="currentColor" strokeWidth="1.7" fill="none" strokeLinejoin="round">
+        <path d="M4 21V5l8-2 8 2v16" />
+        <path d="M4 9h16M4 14h16" />
+      </g>
+    ),
+  },
+  {
+    name: 'Lumin Live',
+    domain: 'luminlive.mx',
+    region: 'Mexico',
+    accent: '#a9c4ff',
+    url: 'https://example.com/luminlive',
+    mark: (
+      <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round">
+        <path d="M12 2v6" />
+        <path d="M5 8l3 4M19 8l-3 4M2.5 14l4.5-1M21.5 14l-4.5-1" />
+        <path d="M7 20h10l-1.5-7h-7z" strokeLinejoin="round" />
+      </g>
+    ),
+  },
+  {
+    name: 'Pulse Events',
+    domain: 'pulseevents.cl',
     region: 'Chile',
     accent: '#ffb37a',
-    url: 'https://example.com/andes',
+    url: 'https://example.com/pulse',
     mark: (
-      <path d="M2 20l5.5-10 3.5 5 3-6 8 11H2z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
+      <path
+        d="M2 12h3l2-6 3 12 3-9 2 6 2-3h5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     ),
   },
 ]
 
-function DistributorsPage() {
+function RentalsPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.distributors', 'Distribuidores'))
+  usePageTitle(t('pageTitle.rentals', 'Rentals'))
   const [form, setForm] = useState({ nombre: '', apellido: '', telefono: '', email: '', mensaje: '' })
   const [submitted, setSubmitted] = useState(false)
   const [partnerIndex, setPartnerIndex] = useState(0)
@@ -75,29 +83,29 @@ function DistributorsPage() {
     return () => clearInterval(id)
   }, [partnerPaused])
 
-  const eyebrow = t('distributors.eyebrow', 'Programa de distribuidores')
-  const title = t('distributors.title', 'Sumate al equipo')
+  const eyebrow = t('rentals.eyebrow', 'Programa de rental')
+  const title = t('rentals.title', 'Presenta tu proyecto')
   const subtitle = t(
-    'distributors.subtitle',
-    'Completá el formulario y nuestro equipo comercial se va a poner en contacto en las proximas 48 horas habiles.',
+    'rentals.subtitle',
+    'Contanos sobre tu evento o produccion y nuestro equipo de rental se va a poner en contacto en las proximas 48 horas habiles.',
   )
-  const visitSiteLabel = t('distributors.visitSite', 'Visitar sitio')
-  const networkTitle = t('distributors.networkTitle', 'Distribuidores autorizados')
+  const visitSiteLabel = t('rentals.visitSite', 'Visitar sitio')
+  const networkTitle = t('rentals.networkTitle', 'Partners de rental activos')
 
   const labels = {
-    nombre: t('distributors.fields.nombre', 'Nombre'),
-    apellido: t('distributors.fields.apellido', 'Apellido'),
-    telefono: t('distributors.fields.telefono', 'Telefono'),
-    email: t('distributors.fields.email', 'Email'),
-    mensaje: t('distributors.fields.mensaje', 'Contanos sobre tu negocio'),
+    nombre: t('rentals.fields.nombre', 'Nombre'),
+    apellido: t('rentals.fields.apellido', 'Apellido'),
+    telefono: t('rentals.fields.telefono', 'Telefono'),
+    email: t('rentals.fields.email', 'Email'),
+    mensaje: t('rentals.fields.mensaje', 'Contanos sobre tu proyecto'),
   }
-  const submitCta = t('distributors.submit', 'Enviar postulacion')
-  const submittedTitle = t('distributors.submittedTitle', 'Recibimos tu postulacion')
+  const submitCta = t('rentals.submit', 'Enviar propuesta')
+  const submittedTitle = t('rentals.submittedTitle', 'Recibimos tu propuesta')
   const submittedBody = t(
-    'distributors.submittedBody',
-    'Gracias por tu interes en sumarte. Vamos a estar contactandote pronto al email y telefono que dejaste.',
+    'rentals.submittedBody',
+    'Gracias por sumarte. Nuestro equipo de rental se va a poner en contacto pronto al email y telefono que dejaste.',
   )
-  const backCta = t('distributors.back', 'Volver al inicio')
+  const backCta = t('rentals.back', 'Volver al inicio')
 
   const handleChange = (key) => (event) => {
     setForm((prev) => ({ ...prev, [key]: event.target.value }))
@@ -114,119 +122,20 @@ function DistributorsPage() {
 
   return (
     <section className="flex min-h-screen flex-col bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
-      <div className="mb-8 grid max-w-[760px] gap-3">
-        <div className="flex items-center gap-2">
+      <div className="mb-8 grid max-w-[760px] gap-3 lg:ml-auto lg:text-right">
+        <div className="flex items-center gap-2 lg:flex-row-reverse">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
         </div>
-        <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
+        <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02] lg:self-end">
           {title}
           <span className="text-primary">.</span>
         </h1>
-        <p className="m-0 max-w-[68ch] text-[#b7bbc4] leading-[1.55]">{subtitle}</p>
+        <p className="m-0 max-w-[68ch] text-[#b7bbc4] leading-[1.55] lg:self-end">{subtitle}</p>
       </div>
 
-      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,760px)_minmax(360px,1fr)] lg:gap-14">
-      {submitted ? (
-        <article className="max-w-[640px] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-8">
-          <div className="mb-4 flex items-center gap-3">
-            <span aria-hidden="true" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black">
-              <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.6]">
-                <path d="M5 12.5l4 4 10-10" />
-              </svg>
-            </span>
-            <h2 className="title-font m-0 text-[1.55rem] leading-[1.05]">{submittedTitle}</h2>
-          </div>
-          <p className="m-0 mb-5 text-[#b7bbc4]">{submittedBody}</p>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-[8px] border-2 border-white/30 bg-transparent px-5 py-3 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:border-white hover:bg-white hover:text-[#090909]"
-          >
-            {backCta}
-          </Link>
-        </article>
-      ) : (
-        <form
-          onSubmit={handleSubmit}
-          className="grid gap-5 rounded-[12px] border border-[#2a2a2a] bg-[#0a0a0a] p-6 md:p-8"
-        >
-          <div className="grid gap-5 md:grid-cols-2">
-            <div>
-              <label htmlFor="distrib-nombre" className={labelClass}>{labels.nombre}</label>
-              <input
-                id="distrib-nombre"
-                type="text"
-                required
-                value={form.nombre}
-                onChange={handleChange('nombre')}
-                className={inputClass}
-                autoComplete="given-name"
-              />
-            </div>
-            <div>
-              <label htmlFor="distrib-apellido" className={labelClass}>{labels.apellido}</label>
-              <input
-                id="distrib-apellido"
-                type="text"
-                required
-                value={form.apellido}
-                onChange={handleChange('apellido')}
-                className={inputClass}
-                autoComplete="family-name"
-              />
-            </div>
-            <div>
-              <label htmlFor="distrib-telefono" className={labelClass}>{labels.telefono}</label>
-              <input
-                id="distrib-telefono"
-                type="tel"
-                required
-                value={form.telefono}
-                onChange={handleChange('telefono')}
-                className={inputClass}
-                autoComplete="tel"
-              />
-            </div>
-            <div>
-              <label htmlFor="distrib-email" className={labelClass}>{labels.email}</label>
-              <input
-                id="distrib-email"
-                type="email"
-                required
-                value={form.email}
-                onChange={handleChange('email')}
-                className={inputClass}
-                autoComplete="email"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="distrib-mensaje" className={labelClass}>{labels.mensaje}</label>
-            <textarea
-              id="distrib-mensaje"
-              rows={5}
-              value={form.mensaje}
-              onChange={handleChange('mensaje')}
-              className={`${inputClass} resize-none`}
-            />
-          </div>
-
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-7 py-3.5 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
-            >
-              <span>{submitCta}</span>
-              <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </button>
-          </div>
-        </form>
-      )}
-
-        <aside className="hidden lg:block lg:sticky lg:top-24">
+      <div className="grid items-start gap-10 lg:grid-cols-[minmax(360px,1fr)_minmax(0,760px)] lg:gap-14">
+        <aside className="hidden lg:block lg:sticky lg:top-24 lg:order-1 lg:col-start-1 lg:row-start-1">
           <div
             className="rounded-[6px] border border-white/15 bg-[#0a0a0a] p-6"
             onMouseEnter={() => setPartnerPaused(true)}
@@ -329,6 +238,107 @@ function DistributorsPage() {
             </div>
           </div>
         </aside>
+
+        <div className="lg:order-2 lg:col-start-2 lg:row-start-1">
+          {submitted ? (
+            <article className="max-w-[640px] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-8 lg:ml-auto">
+              <div className="mb-4 flex items-center gap-3">
+                <span aria-hidden="true" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.6]">
+                    <path d="M5 12.5l4 4 10-10" />
+                  </svg>
+                </span>
+                <h2 className="title-font m-0 text-[1.55rem] leading-[1.05]">{submittedTitle}</h2>
+              </div>
+              <p className="m-0 mb-5 text-[#b7bbc4]">{submittedBody}</p>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 rounded-[8px] border-2 border-white/30 bg-transparent px-5 py-3 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:border-white hover:bg-white hover:text-[#090909]"
+              >
+                {backCta}
+              </Link>
+            </article>
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="grid gap-5 rounded-[12px] border border-[#2a2a2a] bg-[#0a0a0a] p-6 md:p-8"
+            >
+              <div className="grid gap-5 md:grid-cols-2">
+                <div>
+                  <label htmlFor="rental-nombre" className={labelClass}>{labels.nombre}</label>
+                  <input
+                    id="rental-nombre"
+                    type="text"
+                    required
+                    value={form.nombre}
+                    onChange={handleChange('nombre')}
+                    className={inputClass}
+                    autoComplete="given-name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rental-apellido" className={labelClass}>{labels.apellido}</label>
+                  <input
+                    id="rental-apellido"
+                    type="text"
+                    required
+                    value={form.apellido}
+                    onChange={handleChange('apellido')}
+                    className={inputClass}
+                    autoComplete="family-name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rental-telefono" className={labelClass}>{labels.telefono}</label>
+                  <input
+                    id="rental-telefono"
+                    type="tel"
+                    required
+                    value={form.telefono}
+                    onChange={handleChange('telefono')}
+                    className={inputClass}
+                    autoComplete="tel"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rental-email" className={labelClass}>{labels.email}</label>
+                  <input
+                    id="rental-email"
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={handleChange('email')}
+                    className={inputClass}
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="rental-mensaje" className={labelClass}>{labels.mensaje}</label>
+                <textarea
+                  id="rental-mensaje"
+                  rows={5}
+                  value={form.mensaje}
+                  onChange={handleChange('mensaje')}
+                  className={`${inputClass} resize-none`}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-7 py-3.5 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
+                >
+                  <span>{submitCta}</span>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
 
       <div className="mt-auto -mx-6 pt-16 lg:hidden">
@@ -381,4 +391,4 @@ function DistributorsPage() {
   )
 }
 
-export default DistributorsPage
+export default RentalsPage

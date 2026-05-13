@@ -6,11 +6,13 @@ import CatalogFilterBar from '../components/CatalogFilterBar'
 import { defaultLandingContent } from '../../landing/data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import usePageTitle from '../../../shared/hooks/usePageTitle'
 import { PRODUCT_CATEGORIES } from '../data/categories'
 import { categoryMatchesFilters } from '../data/filters'
 
 function ShopPage() {
   const { t } = useLanguage()
+  usePageTitle(t('pageTitle.products', 'Productos'))
   const [products, setProducts] = useState(defaultLandingContent.products.items)
   const [searchParams] = useSearchParams()
   const [activeFilters, setActiveFilters] = useState({})

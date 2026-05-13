@@ -7,6 +7,7 @@ import ServicesSection from './ServicesSection'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
 import DistributorTeaserSection from './DistributorTeaserSection'
+import RentalTeaserSection from './RentalTeaserSection'
 import { useLandingContent } from '../hooks/useLandingContent'
 
 function LandingPage() {
@@ -45,6 +46,7 @@ function LandingPage() {
       <ServicesSection services={content.services} />
       <SupportSection support={content.support} />
       <DistributorTeaserSection />
+      <RentalTeaserSection />
     </>
   )
 }

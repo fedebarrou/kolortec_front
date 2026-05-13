@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import usePageTitle from '../../../shared/hooks/usePageTitle'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 
 const FALLBACK_MANUALS = [
@@ -33,6 +34,7 @@ function filterByQuery(items, query) {
 
 function SupportPage() {
   const { t } = useLanguage()
+  usePageTitle(t('pageTitle.support', 'Soporte'))
   const [query, setQuery] = useState('')
   const [downloadIntent, setDownloadIntent] = useState(null)
 
@@ -40,7 +42,7 @@ function SupportPage() {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [])
 
-  const title = t('support.page.title', 'Librerias')
+  const title = t('support.page.title', 'Manuales y librerias')
   const subtitle = t(
     'support.page.subtitle',
     'Encontra manuales tecnicos, actualizaciones de firmware, fotometria y material de referencia de toda la linea Kolortec.',

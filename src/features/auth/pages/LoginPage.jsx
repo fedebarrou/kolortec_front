@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import usePageTitle from '../../../shared/hooks/usePageTitle'
 
 function LoginPage() {
+  const { t } = useLanguage()
+  usePageTitle(t('pageTitle.login', 'Iniciar sesión'))
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
       <div className="mb-5">

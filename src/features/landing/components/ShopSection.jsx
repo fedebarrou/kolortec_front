@@ -16,17 +16,31 @@ function ShopSection({ shop, products = [] }) {
 
   const ROTATE_MS = 3500
   const [activeId, setActiveId] = useState(0)
+  const [expandedId, setExpandedId] = useState(null)
+  const isAnyExpanded = expandedId !== null
   const sectionRef = useRef(null)
   const [introPhase, setIntroPhase] = useState('priming')
+
+  const goPrev = () => {
+    const next = (activeId - 1 + carouselItems.length) % carouselItems.length
+    setActiveId(next)
+    if (isAnyExpanded) setExpandedId(next)
+  }
+  const goNext = () => {
+    const next = (activeId + 1) % carouselItems.length
+    setActiveId(next)
+    if (isAnyExpanded) setExpandedId(next)
+  }
 
   useEffect(() => {
     if (carouselItems.length <= 1) return undefined
     if (introPhase !== 'done') return undefined
+    if (isAnyExpanded) return undefined
     const tick = window.setInterval(() => {
       setActiveId((i) => (i + 1) % carouselItems.length)
     }, ROTATE_MS)
     return () => window.clearInterval(tick)
-  }, [carouselItems.length, introPhase])
+  }, [carouselItems.length, introPhase, isAnyExpanded])
 
   const getRelativePos = (i, current, len) => {
     let p = i - current
@@ -147,7 +161,7 @@ function ShopSection({ shop, products = [] }) {
             </span>
           </div>
 
-          <h2 className="title-font m-0 text-left text-[clamp(2.4rem,7vw,5.4rem)] leading-[0.88]">
+          <h2 className="title-font m-0 whitespace-pre-line text-left text-[clamp(2.4rem,7vw,5.4rem)] leading-[0.88]">
             {sectionTitle}
             <span className="text-[#0b0b0b]">.</span>
           </h2>
@@ -162,7 +176,11 @@ function ShopSection({ shop, products = [] }) {
         </div>
 
         <div className="flex flex-col gap-7">
-        <div className="kt-shop-from-right relative h-[280px] w-full sm:h-[clamp(420px,68vw,560px)]">
+        <div
+          className="kt-shop-from-right group relative h-[280px] w-full sm:h-[clamp(420px,68vw,560px)]"
+          onMouseEnter={() => setExpandedId(activeId)}
+          onMouseLeave={() => setExpandedId(null)}
+        >
           {carouselItems.map((item, i) => {
             const pos = getRelativePos(i, activeId, carouselItems.length)
             const isActive = pos === 0
@@ -191,22 +209,47 @@ function ShopSection({ shop, products = [] }) {
               zIndex = 1
             }
 
+            const isCardExpanded = isActive && expandedId === i
+            const dimmedForExpansion = isAnyExpanded && !isCardExpanded
+
             return (
               <article
                 key={item.name + i}
-                className="absolute top-1/2 left-1/2 h-[94%] w-[50%] overflow-hidden rounded-[14px] border border-[rgba(11,11,11,0.3)] bg-[#0b0b0b] sm:h-full sm:w-[64%]"
+                onFocus={() => { if (isActive) setExpandedId(i) }}
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) setExpandedId(null)
+                }}
+                onClick={() => {
+                  if (isActive) {
+                    setExpandedId(i)
+                  } else if (isPrev) {
+                    goPrev()
+                  } else if (isNext) {
+                    goNext()
+                  }
+                }}
+                tabIndex={isActive ? 0 : -1}
+                className="absolute top-1/2 left-1/2 h-[94%] w-[50%] overflow-hidden rounded-[14px] border border-[rgba(11,11,11,0.3)] bg-[#0b0b0b] outline-none focus-visible:ring-2 focus-visible:ring-[#0b0b0b]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:h-full sm:w-[64%]"
                 style={{
-                  transform: `translate(-50%, -50%) translateX(${translatePct}%) scale(${scale})`,
-                  zIndex,
-                  opacity,
+                  width: isCardExpanded ? 'min(125%, 92vw)' : undefined,
+                  height: isCardExpanded ? 'min(155%, 72vh, 700px)' : undefined,
+                  transform: isCardExpanded
+                    ? 'translate(-50%, -50%)'
+                    : `translate(-50%, -50%) translateX(${translatePct}%) scale(${scale})`,
+                  zIndex: isCardExpanded ? 20 : (dimmedForExpansion ? 0 : zIndex),
+                  opacity: dimmedForExpansion ? 0 : opacity,
                   transition:
-                    'transform 720ms cubic-bezier(0.22, 0.7, 0.25, 1), opacity 720ms cubic-bezier(0.22, 0.7, 0.25, 1)',
+                    'transform 600ms cubic-bezier(0.22, 0.7, 0.25, 1), opacity 500ms cubic-bezier(0.22, 0.7, 0.25, 1), width 600ms cubic-bezier(0.22, 0.7, 0.25, 1), height 600ms cubic-bezier(0.22, 0.7, 0.25, 1), box-shadow 500ms ease',
                   pointerEvents: isVisible ? 'auto' : 'none',
-                  boxShadow: isActive
-                    ? '0 28px 60px rgba(0,0,0,0.55)'
-                    : '0 14px 32px rgba(0,0,0,0.45)',
+                  boxShadow: isCardExpanded
+                    ? '0 40px 80px rgba(0,0,0,0.6)'
+                    : isActive
+                      ? '0 28px 60px rgba(0,0,0,0.55)'
+                      : '0 14px 32px rgba(0,0,0,0.45)',
+                  cursor: isActive ? 'pointer' : 'default',
                 }}
                 aria-hidden={!isActive}
+                aria-expanded={isCardExpanded || undefined}
               >
                 <img
                   src={item.image}
@@ -240,7 +283,13 @@ function ShopSection({ shop, products = [] }) {
                   </span>
                 </div>
 
-                <div className="absolute inset-x-4 bottom-4 flex flex-col gap-1.5 sm:inset-x-5 sm:bottom-5">
+                <div
+                  className="absolute inset-x-4 bottom-4 flex flex-col gap-1.5 sm:inset-x-5 sm:bottom-5"
+                  style={{
+                    opacity: isCardExpanded ? 0 : 1,
+                    transition: 'opacity 280ms ease',
+                  }}
+                >
                   <h3 className="title-font m-0 text-[clamp(1.3rem,2.4vw,1.85rem)] leading-[0.95] text-white">
                     {item.name}
                   </h3>
@@ -250,19 +299,75 @@ function ShopSection({ shop, products = [] }) {
                     </p>
                   ) : null}
                 </div>
+
+                <div
+                  aria-hidden={!isCardExpanded}
+                  className="absolute inset-x-0 bottom-0 flex flex-col gap-2 border-t-2 border-primary bg-gradient-to-b from-[rgba(11,11,11,0.97)] to-[#050505] px-5 py-4 sm:px-7 sm:py-5"
+                  style={{
+                    transform: isCardExpanded ? 'translateY(0)' : 'translateY(100%)',
+                    transition: 'transform 600ms cubic-bezier(0.22, 0.7, 0.25, 1)',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span aria-hidden="true" className="block h-[2px] w-6 bg-primary" />
+                    <span className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-primary">
+                      {item.description}
+                    </span>
+                  </div>
+                  <h3 className="title-font m-0 text-[clamp(1.4rem,2.4vw,2.1rem)] leading-[1] text-white">
+                    {item.name}
+                    <span className="text-primary">.</span>
+                  </h3>
+                  {item.longDescription ? (
+                    <p className="m-0 text-[0.86rem] leading-[1.5] text-[#aeb5bf] sm:text-[0.95rem]">
+                      {item.longDescription}
+                    </p>
+                  ) : null}
+                </div>
               </article>
             )
           })}
 
+          {carouselItems.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={goPrev}
+                aria-label="Producto anterior"
+                className="absolute top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-primary/40 bg-black/60 text-primary opacity-0 backdrop-blur-sm transition duration-300 hover:scale-105 hover:border-primary hover:bg-primary hover:text-black group-hover:opacity-100 group-focus-within:opacity-100 sm:-left-16 lg:-left-32 sm:grid"
+              >
+                <span className="material-symbols-outlined text-[22px] leading-none" aria-hidden="true">chevron_left</span>
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                aria-label="Producto siguiente"
+                className="absolute top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-primary/40 bg-black/60 text-primary opacity-0 backdrop-blur-sm transition duration-300 hover:scale-105 hover:border-primary hover:bg-primary hover:text-black group-hover:opacity-100 group-focus-within:opacity-100 sm:-right-16 lg:-right-32 sm:grid"
+              >
+                <span className="material-symbols-outlined text-[22px] leading-none" aria-hidden="true">chevron_right</span>
+              </button>
+            </>
+          ) : null}
+
         </div>
 
           {carouselItems.length > 1 ? (
-            <div className="flex justify-center gap-2" aria-label="Paginacion del carrusel">
+            <div
+              className="flex justify-center gap-2"
+              aria-label="Paginacion del carrusel"
+              style={{
+                transform: isAnyExpanded ? 'translateY(56px)' : undefined,
+                transition: 'transform 600ms cubic-bezier(0.22, 0.7, 0.25, 1)',
+              }}
+            >
               {carouselItems.map((item, i) => (
                 <button
                   key={`dot-${item.name}-${i}`}
                   type="button"
-                  onClick={() => setActiveId(i)}
+                  onClick={() => {
+                    setActiveId(i)
+                    if (isAnyExpanded) setExpandedId(i)
+                  }}
                   aria-label={`Ir al producto ${i + 1} de ${carouselItems.length}`}
                   aria-current={i === activeId ? 'true' : undefined}
                   className={`h-2 rounded-full transition-all ${i === activeId ? 'w-6 bg-[#0b0b0b]' : 'w-2 bg-[#0b0b0b]/30 hover:bg-[#0b0b0b]/55'}`}

@@ -5,6 +5,7 @@ import DistributorsPage from './features/distributors/pages/DistributorsPage'
 import HomePage from './features/home/pages/HomePage'
 import LoginPage from './features/auth/pages/LoginPage'
 import ProductDetailPage from './features/product/pages/ProductDetailPage'
+import RentalsPage from './features/rentals/pages/RentalsPage'
 import ServicesPage from './features/services/pages/ServicesPage'
 import ShopPage from './features/catalog/pages/ShopPage'
 import CategoryPage from './features/catalog/pages/CategoryPage'
@@ -22,6 +23,7 @@ function App() {
         <Route path="/soporte" element={<SupportPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/distribuidores" element={<DistributorsPage />} />
+        <Route path="/rentals" element={<RentalsPage />} />
         <Route path="/login" element={<LoginPage />} />
       </Route>
       <Route path="/editable" element={<Navigate to="/" replace />} />

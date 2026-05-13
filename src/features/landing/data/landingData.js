@@ -75,6 +75,8 @@ export const defaultLandingContent = {
       {
         name: 'KT-X1000 Flood',
         description: 'High-Output LED / IP67',
+        longDescription:
+          'Flood de alta potencia con LEDs de ultima generacion y proteccion IP67 para uso en exterior. Listo para tours, broadcast y montajes arquitectonicos exigentes.',
         image: '/assets/products/prod-009.png',
         badge: 'NEW',
         category: 'wash-flood',
@@ -82,30 +84,40 @@ export const defaultLandingContent = {
       {
         name: 'Precision Spot Z4',
         description: 'DMX Controlled / 4K Lumens',
+        longDescription:
+          'Spot de precision controlado por DMX con 4.000 lumenes de salida. Optica afilada para gobos y patrones nitidos en cualquier escenario.',
         image: '/assets/products/prod-010.png',
         category: 'beam-spot',
       },
       {
         name: 'Modular Array L2',
         description: 'Interlocking System',
+        longDescription:
+          'Sistema modular interconectable: armar fila o matriz en minutos sin cableado externo. Ideal para video walls, washes lineales y proyectos a medida.',
         image: '/assets/products/prod-011.png',
         category: 'barras-led',
       },
       {
         name: 'Compact Wash P8',
         description: 'Portable Series / Battery Powered',
+        longDescription:
+          'Wash compacto con bateria recargable y autonomia para uso continuo en locaciones sin energia. Listo para set, fashion y eventos moviles.',
         image: '/assets/products/prod-012.png',
         category: 'wash-flood',
       },
       {
         name: 'KT-Beam B7',
         description: 'Sharp Beam / Discharge Lamp',
+        longDescription:
+          'Beam de descarga con haz afilado de alta intensidad. Genera columnas de luz que cortan la atmosfera para grandes escenarios y arenas.',
         image: '/assets/products/prod-013.png',
         category: 'beam-spot',
       },
       {
         name: 'KT-Spot S5',
         description: 'Moving Head Spot / 380W',
+        longDescription:
+          'Cabezal movil spot de 380W con rueda de gobos giratoria, prisma y zoom. La herramienta para disenadores de iluminacion que buscan precision y caracter.',
         image: '/assets/products/prod-014.png',
         badge: 'NEW',
         category: 'cabezales-moviles',
@@ -113,37 +125,47 @@ export const defaultLandingContent = {
       {
         name: 'KT-Wash W12',
         description: 'Moving Head Wash / 19x40W RGBW',
+        longDescription:
+          'Cabezal movil wash de 19 LEDs RGBW de 40W con zoom motorizado. Cobertura uniforme, color mezclable y consumo eficiente para giras y festivales.',
         image: '/assets/products/prod-015.png',
         category: 'cabezales-moviles',
       },
       {
         name: 'KT-Laser RGB-15',
         description: '15W RGB / ILDA Network',
+        longDescription:
+          'Laser RGB de 15W con red ILDA para coreografias multilaser sincronizadas. Compatible con software estandar y montaje rapido en clubes y producciones.',
         image: '/assets/products/prod-016.png',
         category: 'laser',
       },
       {
         name: 'KT-Strobe ST-32',
         description: '32 LED Pixel Strobe / Audience Wash',
+        longDescription:
+          'Strobe de 32 LEDs con control individual por pixel y modo audience wash. Combina destellos puros con bano caliente sobre la audiencia.',
         image: '/assets/products/prod-017.png',
         category: 'estrobos-blinders',
       },
       {
         name: 'KT-Arch A8',
         description: 'IP65 Linear Wash / DMX-RDM',
+        longDescription:
+          'Wash lineal arquitectonico IP65 con control DMX-RDM. Pensado para fachadas, integraciones permanentes y resaltado de volumenes urbanos.',
         image: '/assets/products/prod-018.png',
         category: 'arquitectural',
       },
       {
         name: 'KT-Splitter 8x',
         description: '8-Way DMX/RDM Optical Splitter',
+        longDescription:
+          'Splitter optico DMX/RDM de 8 vias con aislamiento galvanico. Protege la cadena DMX en montajes grandes y elimina problemas de loop o ruido.',
         image: '/assets/products/prod-019.png',
         category: 'control-accesorios',
       },
     ],
   },
   shop: {
-    title: 'Productos Garantizados',
+    title: 'Productos\nGarantizados',
     subtitle:
       'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
     ctas: [
