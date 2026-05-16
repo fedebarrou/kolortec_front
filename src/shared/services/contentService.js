@@ -32,6 +32,8 @@ export async function getLandingContent() {
     services,
     support,
     action,
+    distributor,
+    rental,
     footer,
   ] = await Promise.all([
     fetchWithFallback('/landing/brand', defaultLandingContent.brand),
@@ -43,6 +45,8 @@ export async function getLandingContent() {
     fetchWithFallback('/landing/services', defaultLandingContent.services),
     fetchWithFallback('/landing/support', defaultLandingContent.support),
     fetchWithFallback('/landing/action', defaultLandingContent.action),
+    fetchWithFallback('/landing/distributor', defaultLandingContent.distributor),
+    fetchWithFallback('/landing/rental', defaultLandingContent.rental),
     fetchWithFallback('/landing/footer', defaultLandingContent.footer),
   ])
 
@@ -56,10 +60,16 @@ export async function getLandingContent() {
     services,
     support,
     action,
+    distributor,
+    rental,
     footer,
   }
 }
 
 export async function getShopProducts() {
   return fetchWithFallback('/products', defaultLandingContent.products.items)
+}
+
+export async function getProductDetail(slug) {
+  return fetchWithFallback(`/products/${slug}`, null)
 }

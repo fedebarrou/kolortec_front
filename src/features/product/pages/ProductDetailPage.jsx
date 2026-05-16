@@ -85,23 +85,33 @@ function ProductDetailPage() {
     const el = heroImageRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const x = (event.clientX - rect.left) / rect.width
-    const y = (event.clientY - rect.top) / rect.height
-    const rotY = (x - 0.5) * 10
-    const rotX = -(y - 0.5) * 10
-    el.style.setProperty('--kt-tilt-rx', `${rotX}deg`)
-    el.style.setProperty('--kt-tilt-ry', `${rotY}deg`)
-    el.style.setProperty('--kt-glow-x', `${x * 100}%`)
-    el.style.setProperty('--kt-glow-y', `${y * 100}%`)
-    el.style.setProperty('--kt-tilt-active', '1')
+    const x = ((event.clientX - rect.left) / rect.width) * 100
+    const y = ((event.clientY - rect.top) / rect.height) * 100
+    el.style.setProperty('--kt-zoom-x', `${Math.max(0, Math.min(100, x))}%`)
+    el.style.setProperty('--kt-zoom-y', `${Math.max(0, Math.min(100, y))}%`)
+    el.style.setProperty('--kt-zoom-active', '1')
   }
 
   const handleHeroMouseLeave = () => {
     const el = heroImageRef.current
     if (!el) return
-    el.style.setProperty('--kt-tilt-rx', '0deg')
-    el.style.setProperty('--kt-tilt-ry', '0deg')
-    el.style.setProperty('--kt-tilt-active', '0')
+    el.style.setProperty('--kt-zoom-active', '0')
+  }
+
+  const relatedMarqueeCallbackRef = (node) => {
+    if (!node) return
+    if (node.__ktInfiniteCleanup) return
+    const onScroll = () => {
+      const half = node.scrollWidth / 2
+      if (half <= 0) return
+      if (node.scrollLeft >= half) {
+        node.scrollLeft -= half
+      } else if (node.scrollLeft <= 0) {
+        node.scrollLeft += half
+      }
+    }
+    node.addEventListener('scroll', onScroll, { passive: true })
+    node.__ktInfiniteCleanup = () => node.removeEventListener('scroll', onScroll)
   }
   const [selectedVariantId] = useState(product?.variants?.[0]?.id ?? '')
   const [activeTab, setActiveTab] = useState('about')
@@ -356,7 +366,7 @@ function ProductDetailPage() {
             <section className="kt-detail-hero kt-detail-anim" id="about">
               <figure
                 ref={heroImageRef}
-                className="kt-detail-image kt-detail-hero-tilt"
+                className="kt-detail-image kt-detail-hero-zoom"
                 id="gallery"
                 onMouseMove={handleHeroMouseMove}
                 onMouseLeave={handleHeroMouseLeave}
@@ -369,7 +379,6 @@ function ProductDetailPage() {
                 >
                   <img src={galleryImages[activeImageIndex] || product.heroImage} alt={product.name} />
                 </button>
-                <span aria-hidden="true" className="kt-detail-hero-glow" />
               </figure>
 
               <div className="kt-detail-summary">
@@ -640,7 +649,7 @@ function ProductDetailPage() {
               </button>
 
               {isAccessoriesOpen && (
-                <div className="kt-marquee mt-8" style={{ '--kt-marquee-duration': '38s' }}>
+                <div ref={relatedMarqueeCallbackRef} className="kt-marquee mt-8" style={{ '--kt-marquee-duration': '38s' }}>
                   <div className="kt-marquee-track">
                     {[...product.accessories, ...product.accessories].map((item, index) => (
                       <div

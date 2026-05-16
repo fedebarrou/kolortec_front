@@ -1,16 +1,18 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-function DistributorTeaserSection() {
+function DistributorTeaserSection({ distributor }) {
   const { t } = useLanguage()
+  const data = distributor ?? {}
 
-  const eyebrow = t('landing.distributor.eyebrow', 'Programa de distribuidores')
-  const title = t('landing.distributor.title', 'Quieres formar parte del equipo de distribuidores Kolortec?')
-  const subtitle = t(
+  const eyebrow = data.eyebrow ?? t('landing.distributor.eyebrow', 'Programa de distribuidores')
+  const title = data.title ?? t('landing.distributor.title', 'Quieres formar parte del equipo de distribuidores Kolortec?')
+  const subtitle = data.subtitle ?? t(
     'landing.distributor.subtitle',
     'Sumate a la red de partners autorizados — acceso a productos, soporte tecnico de fabrica y condiciones comerciales preferenciales.',
   )
-  const cta = t('landing.distributor.cta', 'Solicitud de cuenta')
+  const cta = data.cta ?? t('landing.distributor.cta', 'Solicitud de cuenta')
+  const href = data.href ?? '/distribuidores'
 
   return (
     <section
@@ -36,16 +38,15 @@ function DistributorTeaserSection() {
             <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
             <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
           </div>
-          <h2 className="title-font m-0 text-left text-[clamp(1.7rem,4.4vw,3.4rem)] leading-[1.02]">
-            {title}
-            <span className="text-primary">.</span>
+          <h2 className="title-font m-0 max-w-[18ch] text-left text-[clamp(1.25rem,4.4vw,3.4rem)] leading-[1.04] sm:max-w-none">
+            {title}<span className="text-primary">.</span>
           </h2>
           <p className="m-0 max-w-[60ch] text-[1rem] leading-[1.55] text-[#b7bbc4]">{subtitle}</p>
         </div>
 
         <div className="kt-landing-reveal-item flex md:justify-end">
           <Link
-            to="/distribuidores"
+            to={href}
             className="group inline-flex items-center gap-3 rounded-[10px] bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0b0b0b] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(244,223,51,0.25)]"
           >
             <span>{cta}</span>

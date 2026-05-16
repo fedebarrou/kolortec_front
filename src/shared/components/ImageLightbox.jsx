@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useLanguage } from '../i18n/LanguageProvider'
 
 function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Imagen' }) {
+  const { t } = useLanguage()
   const safeImages = useMemo(() => images?.filter(Boolean) ?? [], [images])
   const [offset, setOffset] = useState(0)
 
@@ -46,7 +48,7 @@ function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Ima
       className="fixed inset-0 z-[1800] grid place-items-center bg-[rgba(0,0,0,0.9)] p-2 md:p-3"
       role="dialog"
       aria-modal="true"
-      aria-label={`${label} en pantalla completa`}
+      aria-label={`${label} ${t('common.fullscreen', 'en pantalla completa')}`}
       onClick={handleClose}
     >
       <div className="relative grid h-[94vh] w-[min(1040px,94vw)] place-items-center overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(10,10,10,0.98)]" onClick={(event) => event.stopPropagation()}>
@@ -54,13 +56,13 @@ function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Ima
           type="button"
           className="absolute right-3 top-3 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(255,255,255,0.22)] bg-[rgba(10,10,10,0.9)] text-white shadow-[0_8px_18px_rgba(0,0,0,0.34)] transition hover:scale-[1.03] hover:bg-primary hover:text-black"
           onClick={handleClose}
-          aria-label="Cerrar"
+          aria-label={t('common.close', 'Cerrar')}
         >
           <span className="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
 
         {safeImages.length > 1 ? (
-          <button type="button" className="absolute left-3 top-1/2 z-20 inline-flex h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-[rgba(255,255,255,0.22)] bg-[rgba(18,18,18,0.88)] text-[#f2f4f8]" onClick={goPrev} aria-label="Imagen anterior">
+          <button type="button" className="absolute left-3 top-1/2 z-20 inline-flex h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-[rgba(255,255,255,0.22)] bg-[rgba(18,18,18,0.88)] text-[#f2f4f8]" onClick={goPrev} aria-label={t('common.previousImage', 'Imagen anterior')}>
             <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
           </button>
         ) : null}
@@ -75,7 +77,7 @@ function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Ima
         </figure>
 
         {safeImages.length > 1 ? (
-          <button type="button" className="absolute right-3 top-1/2 z-20 inline-flex h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-[rgba(255,255,255,0.22)] bg-[rgba(18,18,18,0.88)] text-[#f2f4f8]" onClick={goNext} aria-label="Imagen siguiente">
+          <button type="button" className="absolute right-3 top-1/2 z-20 inline-flex h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-[rgba(255,255,255,0.22)] bg-[rgba(18,18,18,0.88)] text-[#f2f4f8]" onClick={goNext} aria-label={t('common.nextImage', 'Imagen siguiente')}>
             <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
           </button>
         ) : null}

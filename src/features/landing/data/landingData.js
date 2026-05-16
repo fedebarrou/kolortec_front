@@ -165,7 +165,7 @@ export const defaultLandingContent = {
     ],
   },
   shop: {
-    title: 'Productos\nGarantizados',
+    title: 'Guia de\nMantenimiento',
     subtitle:
       'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
     ctas: [
@@ -176,16 +176,16 @@ export const defaultLandingContent = {
         icon: 'download',
       },
       {
-        label: 'Chat WhatsApp',
-        href: 'https://wa.me/5491166666666?text=Hola%20Kolortec%2C%20necesito%20soporte%20tecnico.',
+        label: 'Comunicate con nosotros',
+        href: '/#support',
         variant: 'outline',
-        icon: 'chat',
+        icon: 'forum',
       },
       {
-        label: 'Email Soporte',
-        href: 'mailto:soporte@kolortec.pro',
+        label: 'Soporte',
+        href: '/garantias',
         variant: 'outline',
-        icon: 'mail',
+        icon: 'verified',
       },
     ],
     cards: [
@@ -237,6 +237,13 @@ export const defaultLandingContent = {
     title: 'Contact Us',
     subtitle:
       'Reach out via WhatsApp or email - our sales and technical support team is here to help you.',
+    carouselImages: [
+      '/assets/products/prod-001.png',
+      '/assets/products/prod-005.png',
+      '/assets/products/prod-009.png',
+      '/assets/products/prod-013.png',
+      '/assets/products/prod-016.png',
+    ],
     contacts: [
       {
         label: 'WhatsApp Ventas',
@@ -274,6 +281,22 @@ export const defaultLandingContent = {
       'https://lh3.googleusercontent.com/aida-public/AB6AXuDWcNNqvhbO3-kWmHhlyIf67ZnRuenDR6Nke_atIH4P0iBTbbk3h1cUIppnokV_MguAoBV17cu80eWEFUny1UFmMARYd74eahe05y2QfjB5YYOJbuqTApJ0aHSS7kEI4_DBhdLSpF0yhBpNeW0YhXxk3Y4bCGmmaIDPrT9h6jUbEDpqpeKozkP5ksPOeXMTU5DRvxl3DwuyKqZF5CuDT05BEvR6iVbtyhdFVCBxdlAI-cvEVmwu4Lfi7SkXv6ccsmpWhVzPejxoZcwM',
     ],
   },
+  distributor: {
+    eyebrow: 'Programa de distribuidores',
+    title: 'Queres formar parte del equipo de distribuidores Kolortec?',
+    subtitle:
+      'Sumate a la red de partners autorizados — acceso a productos, soporte tecnico de fabrica y condiciones comerciales preferenciales.',
+    cta: 'Solicitud de cuenta',
+    href: '/distribuidores',
+  },
+  rental: {
+    eyebrow: 'Programa de rental',
+    title: 'Presenta tu proyecto y lo iluminamos juntos',
+    subtitle:
+      'Traenos tu evento o produccion — trabajamos con partners de rental activos en toda LATAM para llevar equipos Kolortec a tu escenario.',
+    cta: 'Presenta tu proyecto',
+    href: '/rentals',
+  },
   footer: {
     about:
       'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.',
@@ -282,5 +305,25 @@ export const defaultLandingContent = {
       { title: 'Company', links: ['Our Story', 'Projects', 'Careers'] },
     ],
     copyright: '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.',
+    gallery: [
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBAk8xJE2XT1Foa5Ec4lOomjgNvVOZryqaHeSwwOZE7ZJ9zSC0kCC6wBBUWtZpERFTwjAL5Xs6zy_zBCz27Bhs8dQ6YL9bMmnIe01AJYhb0PjwH_Dc4Zwz7QlQI6CgeaEeoHI89r9msntrSnKdfeO7vZfdL27FkN0YB5cB8LDZsTrChmm2Zg3HzmFoDoj4E4ZtsaH5B8WnXVNmq7iXF7NPSaRqaL_Zm1p8qSOo-uIVU0lm7pyGyY2aR21RoVXxs4b-R3to5hzOGz9Rg',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCypef3PVjSV3YK6CepcWkWR0i8Bh-miz58lQCYRSVg0SgKpSKvsyc0p5NpwpjgTFSoPGHSdUPBbNUvjyz9PTbFGXuj_a5hFDW4sVPOTZayWpiNdtS9AFxmmK3I8-tOaQDgahmq0nzy4pnrths94QDPzYfXaXDf339TLXarQGh0VIHk49ZB6Dmjta4RHzxgizPZ-FFt1jfj5uOLzeUa-oTa_iwq5vJdkbC_UmP1pNDkXeZMRfLa_n5B545LjJGfsHks1QNbYjkvouDH',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuC2EWe-uuSaf7i_LMP1tTYinCIl-CBhxio-9pyUreTXSFoNyHAXHOaEf2f3mAzxB1sdLnMRE0VSCTgThyVyV3FFxt-8LR-GvD5WAtlWfMkyVg20pbibyEHXGH6S0FpF3Pt6o8LOzr1WVr09_rVj4vDWMd0ABvDy1sy5NQKi1JqoUfo13IF4L8UNCyyi2Q5elAOmO-WFmuOH9h4Fzo79_tyOGjSBfvdn6_a594n7TwZxJLwBk7E9pmCmFn1R6uLs2LyksRel-4Qw3Mjw',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDuDWoYWFdPatIK7IKyR1lzoi6eeQcWUqLYdKTvvv7eV3IG_Z_fwdDtReS8AB5OPs33H9bwf6TgFh01MqFay6XE_xYQLC--Nc1yfVOiDA4KfIuUC_WEhFsPw36yz-CKtqb2xOC9R9ML6VIM2SJ4jCnSaXa_TN8mwvks8W8OTcI5QKjf6BzJlQ7GdLIvB83S05nywhqsgJO3Qc79J4qkSURkC3krHT1HY8DbSfAPhZc48EX4bAEdzKb5ksxNzHw7FZce3j7Z16OCyZjm',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAVWdCnEpF7E5Fd-091qSyotNax06fw3gMA5HNd_gRK0DBjsnAjJVpVJ963q3lpIKcKg58eSnWvnpaiHrB5SwLPArUVdrs1gZj7HbIZ7EiCHqQqDsDiUObLI5V0gHF2asDZXl-aZp1D_NIC6UcO4iNa2xrfvYeG_aROQCltd9hK8_PfFJ8D1y16pZQZiyRcjFzGUqUSK8GnGeLaI1Vk8_nCvuSPLHGtza9HU30Zu5aL4X4IWrQFXZaA5Gb8nROZzR47rSbVcqc5a_2T',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDWcNNqvhbO3-kWmHhlyIf67ZnRuenDR6Nke_atIH4P0iBTbbk3h1cUIppnokV_MguAoBV17cu80eWEFUny1UFmMARYd74eahe05y2QfjB5YYOJbuqTApJ0aHSS7kEI4_DBhdLSpF0yhBpNeW0YhXxk3Y4bCGmmaIDPrT9h6jUbEDpqpeKozkP5ksPOeXMTU5DRvxl3DwuyKqZF5CuDT05BEvR6iVbtyhdFVCBxdlAI-cvEVmwu4Lfi7SkXv6ccsmpWhVzPejxoZcwM',
+    ],
+    clientLogos: [
+      { name: 'AURORA', shapes: [{ type: 'circle', cx: 12, cy: 12, r: 7 }] },
+      { name: 'BLACKLINE', shapes: [{ type: 'rect', x: 3, y: 9, width: 18, height: 2 }, { type: 'rect', x: 3, y: 13, width: 12, height: 2 }] },
+      { name: 'CONCRETE LIVE', shapes: [{ type: 'rect', x: 3, y: 3, width: 8, height: 8 }, { type: 'rect', x: 13, y: 3, width: 8, height: 8 }, { type: 'rect', x: 3, y: 13, width: 8, height: 8 }, { type: 'rect', x: 13, y: 13, width: 8, height: 8 }] },
+      { name: 'DAYLIGHT STUDIO', shapes: [{ type: 'circle', cx: 12, cy: 12, r: 4 }, { type: 'path', d: 'M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }] },
+      { name: 'ECHO ARENA', shapes: [{ type: 'path', d: 'M3 12c3-6 6-6 9 0s6 6 9 0', stroke: 'currentColor', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }] },
+      { name: 'FRAMEWORKS', shapes: [{ type: 'path', d: 'M5 5h6v6H5zm8 0h6v6h-6zm-8 8h6v6H5zm8 0h6v6h-6z', stroke: 'currentColor', strokeWidth: 1.6, fill: 'none' }] },
+      { name: 'HEMISPHERE', shapes: [{ type: 'path', d: 'M12 3l9 5.2v7.6L12 21l-9-5.2V8.2z', stroke: 'currentColor', strokeWidth: 1.8, fill: 'none', strokeLinejoin: 'round' }] },
+      { name: 'IGNITE PRO', shapes: [{ type: 'path', d: 'M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z' }] },
+      { name: 'NORTHWAVE', shapes: [{ type: 'path', d: 'M3 19l5-9 4 6 4-9 5 12z', stroke: 'currentColor', strokeWidth: 1.8, fill: 'none', strokeLinejoin: 'round' }] },
+      { name: 'PRISMA STAGE', shapes: [{ type: 'path', d: 'M12 3l9 16H3z', stroke: 'currentColor', strokeWidth: 1.8, fill: 'none', strokeLinejoin: 'round' }] },
+    ],
   },
 }

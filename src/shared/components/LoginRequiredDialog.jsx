@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useLanguage } from '../i18n/LanguageProvider'
 
 function GoogleIcon({ className }) {
   return (
@@ -24,6 +25,7 @@ function OutlookIcon({ className }) {
 }
 
 function LoginRequiredDialog({ isOpen, onClose, fileName }) {
+  const { t } = useLanguage()
   useEffect(() => {
     if (!isOpen) return undefined
     const onKey = (event) => {
@@ -57,7 +59,7 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
     >
       <button
         type="button"
-        aria-label="Cerrar"
+        aria-label={t('loginDialog.close', 'Cerrar')}
         onClick={onClose}
         className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
       />
@@ -65,7 +67,7 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
         <button
           type="button"
           onClick={onClose}
-          aria-label="Cerrar"
+          aria-label={t('loginDialog.close', 'Cerrar')}
           className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full text-[#aeb2ba] transition hover:bg-white/10 hover:text-white"
         >
           <span className="material-symbols-outlined text-[20px]">close</span>
@@ -77,15 +79,14 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
 
         <h2
           id="login-required-title"
-          className="title-font m-0 mt-3 inline-flex items-baseline gap-[0.04em] text-[1.55rem] leading-[1.1]"
+          className="title-font m-0 mt-3 text-[1.55rem] leading-[1.1]"
         >
-          Inicia sesion para descargar
-          <span className="text-primary">.</span>
+          {t('loginDialog.title', 'Inicia sesion para descargar')}<span className="text-primary">.</span>
         </h2>
         <p className="mt-2 mb-6 text-[0.95rem] leading-[1.5] text-[#aeb2ba]">
           {fileName
-            ? <>Necesitamos confirmar tu cuenta antes de descargar <span className="font-bold text-white">{fileName}</span>.</>
-            : 'Necesitamos confirmar tu cuenta para acceder a esta descarga.'}
+            ? <>{t('loginDialog.bodyWithFile', 'Necesitamos confirmar tu cuenta antes de descargar')} <span className="font-bold text-white">{fileName}</span>.</>
+            : t('loginDialog.body', 'Necesitamos confirmar tu cuenta para acceder a esta descarga.')}
         </p>
 
         <div className="grid gap-2.5">
@@ -95,7 +96,7 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
             className="inline-flex items-center justify-center gap-3 rounded-[10px] border border-[#dadce0] bg-white py-3 px-4 text-[0.9rem] font-bold text-[#1f1f1f] transition hover:bg-[#f7f7f7]"
           >
             <GoogleIcon className="h-5 w-5" />
-            Continuar con Google
+            {t('loginDialog.continueGoogle', 'Continuar con Google')}
           </button>
           <button
             type="button"
@@ -103,12 +104,12 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
             className="inline-flex items-center justify-center gap-3 rounded-[10px] bg-[#0a3a6b] py-3 px-4 text-[0.9rem] font-bold text-white transition hover:bg-[#0d4682]"
           >
             <OutlookIcon className="h-5 w-5" />
-            Continuar con Outlook
+            {t('loginDialog.continueOutlook', 'Continuar con Outlook')}
           </button>
         </div>
 
         <p className="mt-5 text-center text-[0.72rem] leading-[1.4] text-[#7a7e87]">
-          Al continuar aceptas nuestros Terminos y Politica de Privacidad.
+          {t('loginDialog.terms', 'Al continuar aceptas nuestros Terminos y Politica de Privacidad.')}
         </p>
       </div>
     </div>

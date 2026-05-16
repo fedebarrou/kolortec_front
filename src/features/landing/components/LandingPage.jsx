@@ -39,14 +39,14 @@ function LandingPage() {
     <>
       <HeroSection hero={content.hero} />
       <Divider />
-      <FeaturedSection products={content.products} />
-      <Divider />
       <InstagramSection gallery={content.gallery} />
+      <Divider />
+      <FeaturedSection products={content.products} />
       <ShopSection shop={content.shop} products={content.products.items} />
       <ServicesSection services={content.services} />
       <SupportSection support={content.support} />
-      <DistributorTeaserSection />
-      <RentalTeaserSection />
+      <DistributorTeaserSection distributor={content.distributor} />
+      <RentalTeaserSection rental={content.rental} />
     </>
   )
 }

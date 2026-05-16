@@ -1,5 +1,5 @@
 import http from 'node:http'
-import { defaultLandingContent } from '../src/data/landingData.js'
+import { defaultLandingContent } from '../src/features/landing/data/landingData.js'
 
 const PORT = Number(process.env.PORT || 3000)
 
@@ -14,6 +14,8 @@ const routes = {
   '/api/landing/services': () => defaultLandingContent.services,
   '/api/landing/support': () => defaultLandingContent.support,
   '/api/landing/action': () => defaultLandingContent.action,
+  '/api/landing/distributor': () => defaultLandingContent.distributor,
+  '/api/landing/rental': () => defaultLandingContent.rental,
   '/api/landing/footer': () => defaultLandingContent.footer,
   '/api/products': () => defaultLandingContent.products.items,
   '/api/health': () => ({ status: 'ok' }),

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-const CAROUSEL_IMAGES = [
+const FALLBACK_CAROUSEL_IMAGES = [
   '/assets/products/prod-001.png',
   '/assets/products/prod-005.png',
   '/assets/products/prod-009.png',
@@ -15,9 +15,29 @@ function SupportSection({ support }) {
   const sectionSubtitle = t('landing.support.subtitle', support.subtitle)
 
   const contactOptions = support.contacts ?? []
+  const carouselImages = useMemo(
+    () => (Array.isArray(support.carouselImages) && support.carouselImages.length > 0
+      ? support.carouselImages
+      : FALLBACK_CAROUSEL_IMAGES),
+    [support.carouselImages],
+  )
 
   const [activeId, setActiveId] = useState(0)
-  const len = CAROUSEL_IMAGES.length
+  const [isHorizontal, setIsHorizontal] = useState(false)
+  const len = carouselImages.length
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setIsHorizontal(mq.matches)
+    sync()
+    if (mq.addEventListener) {
+      mq.addEventListener('change', sync)
+      return () => mq.removeEventListener('change', sync)
+    }
+    mq.addListener(sync)
+    return () => mq.removeListener(sync)
+  }, [])
 
   const goPrev = () => setActiveId((i) => (i - 1 + len) % len)
   const goNext = () => setActiveId((i) => (i + 1) % len)
@@ -35,8 +55,7 @@ function SupportSection({ support }) {
         <div className="grid gap-5">
           <div className="kt-landing-reveal-item border-l border-[rgba(244,223,51,0.5)] pl-4">
             <h2 className="title-font mb-2 text-left text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
-              {sectionTitle}
-              <span className="text-primary">.</span>
+              {sectionTitle}<span className="text-primary">.</span>
             </h2>
             <p className="m-0 text-[#aab2be]">{sectionSubtitle}</p>
           </div>
@@ -62,20 +81,20 @@ function SupportSection({ support }) {
           </ul>
         </div>
 
-        <div className="kt-landing-reveal-item relative min-h-[400px] lg:min-h-0 lg:h-full">
+        <div className="kt-landing-reveal-item relative min-h-[260px] sm:min-h-[400px] lg:min-h-0 lg:h-full">
           <button
             type="button"
             onClick={goPrev}
-            aria-label="Imagen anterior"
-            className="absolute -top-9 left-1/2 z-10 inline-flex -translate-x-1/2 items-center justify-center text-primary transition hover:scale-110"
+            aria-label={t('common.previousImage', 'Imagen anterior')}
+            className="absolute z-10 inline-flex items-center justify-center text-primary transition hover:scale-110 -left-2 top-1/2 -translate-y-1/2 lg:left-1/2 lg:top-auto lg:-top-9 lg:-translate-x-1/2 lg:translate-y-0"
           >
             <svg viewBox="0 0 24 24" className="h-8 w-8 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
-              <path d="M6 15l6-6 6 6" />
+              <path d={isHorizontal ? 'M15 6l-6 6 6 6' : 'M6 15l6-6 6 6'} />
             </svg>
           </button>
 
           <div className="absolute inset-0 overflow-hidden">
-            {CAROUSEL_IMAGES.map((src, i) => {
+            {carouselImages.map((src, i) => {
               const pos = getRelativePos(i, activeId, len)
               const isVisible = Math.abs(pos) <= 1
               return (
@@ -87,12 +106,18 @@ function SupportSection({ support }) {
                   aria-hidden="true"
                   className="absolute inset-0 h-full w-full object-cover"
                   style={{
-                    transform: `translateY(${pos * 100}%)`,
+                    transform: isHorizontal
+                      ? `translateX(${pos * 100}%)`
+                      : `translateY(${pos * 100}%)`,
                     opacity: isVisible ? 1 : 0,
                     transition:
                       'transform 700ms cubic-bezier(0.4, 0, 0.2, 1), opacity 700ms cubic-bezier(0.4, 0, 0.2, 1)',
-                    maskImage: 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
+                    maskImage: isHorizontal
+                      ? 'linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%)'
+                      : 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
+                    WebkitMaskImage: isHorizontal
+                      ? 'linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%)'
+                      : 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
                   }}
                 />
               )
@@ -100,7 +125,7 @@ function SupportSection({ support }) {
 
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-transparent"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505] lg:to-transparent"
             />
             <div
               aria-hidden="true"
@@ -111,11 +136,11 @@ function SupportSection({ support }) {
           <button
             type="button"
             onClick={goNext}
-            aria-label="Imagen siguiente"
-            className="absolute -bottom-9 left-1/2 z-10 inline-flex -translate-x-1/2 items-center justify-center text-primary transition hover:scale-110"
+            aria-label={t('common.nextImage', 'Imagen siguiente')}
+            className="absolute z-10 inline-flex items-center justify-center text-primary transition hover:scale-110 -right-2 top-1/2 -translate-y-1/2 lg:left-1/2 lg:right-auto lg:top-auto lg:-bottom-9 lg:-translate-x-1/2 lg:translate-y-0"
           >
             <svg viewBox="0 0 24 24" className="h-8 w-8 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
-              <path d="M6 9l6 6 6-6" />
+              <path d={isHorizontal ? 'M9 6l6 6-6 6' : 'M6 9l6 6 6-6'} />
             </svg>
           </button>
         </div>

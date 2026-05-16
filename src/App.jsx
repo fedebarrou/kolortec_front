@@ -10,6 +10,7 @@ import ServicesPage from './features/services/pages/ServicesPage'
 import ShopPage from './features/catalog/pages/ShopPage'
 import CategoryPage from './features/catalog/pages/CategoryPage'
 import SupportPage from './features/support/pages/SupportPage'
+import GarantiasPage from './features/warranty/pages/GarantiasPage'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/soporte" element={<SupportPage />} />
+        <Route path="/garantias" element={<GarantiasPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/distribuidores" element={<DistributorsPage />} />
         <Route path="/rentals" element={<RentalsPage />} />

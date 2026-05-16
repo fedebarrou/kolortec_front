@@ -302,7 +302,7 @@ function HeaderSection() {
           className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/70 p-4 backdrop-blur-[3px]"
           role="dialog"
           aria-modal="true"
-          aria-label="Opciones de inicio de sesion"
+          aria-label={t('header.loginDialogTitle', 'Iniciar sesion')}
           onClick={() => setIsLoginDialogOpen(false)}
         >
           <div
@@ -311,14 +311,14 @@ function HeaderSection() {
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="title-font text-[1.35rem] leading-none text-white">Iniciar sesion</h3>
-                <p className="mt-2 text-[0.84rem] text-[#aeb4bf]">Accede con tu cuenta de Google.</p>
+                <h3 className="title-font text-[1.35rem] leading-none text-white">{t('header.loginDialogTitle', 'Iniciar sesion')}</h3>
+                <p className="mt-2 text-[0.84rem] text-[#aeb4bf]">{t('header.loginDialogSubtitle', 'Accede con tu cuenta de Google.')}</p>
               </div>
               <button
                 type="button"
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(255,255,255,0.18)] text-[#c8ced8] transition hover:border-primary hover:text-primary"
                 onClick={() => setIsLoginDialogOpen(false)}
-                aria-label="Cerrar dialogo"
+                aria-label={t('header.closeDialog', 'Cerrar dialogo')}
               >
                 <span className="material-symbols-outlined text-[18px] leading-none" aria-hidden="true">close</span>
               </button>
@@ -339,14 +339,14 @@ function HeaderSection() {
                     d="M21.35 11.1H12v2.92h5.35c-.23 1.5-1.74 4.4-5.35 4.4-3.22 0-5.84-2.67-5.84-5.96s2.62-5.96 5.84-5.96c1.84 0 3.07.78 3.77 1.46l2.57-2.48C16.69 3.89 14.57 3 12 3 6.92 3 2.8 7.16 2.8 12.25S6.92 21.5 12 21.5c6.93 0 9.2-4.86 9.2-7.37 0-.5-.05-.86-.12-1.23z"
                   />
                 </svg>
-                Continuar con Google
+                {t('header.loginContinueGoogle', 'Continuar con Google')}
               </button>
               <button
                 type="button"
                 className="text-center text-[0.73rem] font-semibold uppercase tracking-[0.1em] text-[#9ea6b3] transition hover:text-white"
                 onClick={() => setIsLoginDialogOpen(false)}
               >
-                Cancelar
+                {t('header.loginCancel', 'Cancelar')}
               </button>
             </div>
           </div>
@@ -356,7 +356,7 @@ function HeaderSection() {
     : null
 
   return (
-    <header className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-40 py-4">
+    <header className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-10 xl:px-20 2xl:px-40 py-4">
       <div className="w-full flex items-center justify-between relative">
         <div className="flex items-center">
           <Link
@@ -376,12 +376,12 @@ function HeaderSection() {
           </Link>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+        <nav className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-7 absolute left-1/2 -translate-x-1/2">
           {navItems.map((item) => (
             item.hash ? (
               <a
                 key={`${item.to}${item.hash}`}
-                className="text-center text-slate-100 hover:text-primary text-sm font-bold uppercase tracking-wider"
+                className="text-center text-slate-100 hover:text-primary text-[0.72rem] xl:text-sm font-bold uppercase tracking-wide whitespace-nowrap"
                 href={`${item.to}${item.hash}`}
                 onClick={handleSupportNav}
               >
@@ -390,7 +390,7 @@ function HeaderSection() {
             ) : (
               <Link
                 key={item.to}
-                className="text-center text-slate-100 hover:text-primary text-sm font-bold uppercase tracking-wider"
+                className="text-center text-slate-100 hover:text-primary text-[0.72rem] xl:text-sm font-bold uppercase tracking-wide whitespace-nowrap"
                 to={item.to}
                 onClick={item.to === '/products' ? handleCatalogNav : undefined}
               >
@@ -420,8 +420,8 @@ function HeaderSection() {
             </button>
           </div>
 
-          <div className="hidden md:inline-flex items-center gap-1 md:gap-1.5">
-            {socialLinks.map((item) => (
+          <div className="hidden xl:inline-flex items-center gap-1 xl:gap-1.5">
+            {socialLinks.map((item, idx) => (
               <a
                 key={item.key}
                 href={item.href}
@@ -429,7 +429,7 @@ function HeaderSection() {
                 rel="noreferrer"
                 aria-label={item.label}
                 title={item.label}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary md:h-8 md:w-8"
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary ${idx === 0 ? '' : 'hidden 2xl:inline-flex'}`}
               >
                 {item.icon}
               </a>
@@ -438,13 +438,13 @@ function HeaderSection() {
 
           <form
             ref={searchWrapRef}
-            className="relative hidden lg:flex h-9 min-w-[230px] items-center bg-slate-800/50 rounded-lg px-2.5 border border-slate-700"
+            className="relative hidden lg:flex h-9 items-center bg-slate-800/50 rounded-lg px-2.5 border border-slate-700 xl:min-w-[230px]"
             onSubmit={handleSearchSubmit}
           >
             <span className="material-symbols-outlined inline-flex items-center text-slate-400 text-base leading-none">search</span>
             <input
-              className="h-full bg-transparent border-none focus:ring-0 text-xs text-slate-100 placeholder:text-slate-500 w-36 rounded-lg pl-2"
-              placeholder="Buscar producto..."
+              className="h-full bg-transparent border-none focus:ring-0 text-xs text-slate-100 placeholder:text-slate-500 w-24 rounded-lg pl-2 xl:w-36"
+              placeholder={t('header.searchPlaceholder', 'Buscar producto...')}
               value={searchTerm}
               onFocus={openPredict}
               onChange={(event) => {
@@ -455,7 +455,7 @@ function HeaderSection() {
                 setActiveSuggestionIndex(hasQuery ? 0 : -1)
               }}
               onKeyDown={handleSearchKeyDown}
-              aria-label="Buscar producto"
+              aria-label={t('header.searchAria', 'Buscar producto')}
               role="combobox"
               aria-expanded={isPredictOpen ? 'true' : 'false'}
               aria-controls="navPredictiveResults"
@@ -503,8 +503,8 @@ function HeaderSection() {
           </form>
 
           <button
-            aria-label="Iniciar sesión"
-            title="Iniciar sesión"
+            aria-label={t('header.loginAria', 'Iniciar sesión')}
+            title={t('header.loginAria', 'Iniciar sesión')}
             className="h-9 w-9 bg-primary text-background-dark hover:bg-white transition-all inline-flex items-center justify-center rounded-lg"
             type="button"
             onClick={() => setIsLoginDialogOpen(true)}

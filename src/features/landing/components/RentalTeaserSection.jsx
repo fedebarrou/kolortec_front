@@ -1,16 +1,18 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-function RentalTeaserSection() {
+function RentalTeaserSection({ rental }) {
   const { t } = useLanguage()
+  const data = rental ?? {}
 
-  const eyebrow = t('landing.rental.eyebrow', 'Programa de rental')
-  const title = t('landing.rental.title', 'Presenta tu proyecto y lo iluminamos juntos')
-  const subtitle = t(
+  const eyebrow = data.eyebrow ?? t('landing.rental.eyebrow', 'Programa de rental')
+  const title = data.title ?? t('landing.rental.title', 'Presenta tu proyecto y lo iluminamos juntos')
+  const subtitle = data.subtitle ?? t(
     'landing.rental.subtitle',
     'Traenos tu evento o produccion — trabajamos con partners de rental activos en toda LATAM para llevar equipos Kolortec a tu escenario.',
   )
-  const cta = t('landing.rental.cta', 'Presenta tu proyecto')
+  const cta = data.cta ?? t('landing.rental.cta', 'Presenta tu proyecto')
+  const href = data.href ?? '/rentals'
 
   return (
     <section
@@ -36,16 +38,15 @@ function RentalTeaserSection() {
             <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
             <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
           </div>
-          <h2 className="title-font m-0 text-left md:text-right text-[clamp(1.7rem,4.4vw,3.4rem)] leading-[1.02]">
-            {title}
-            <span className="text-primary">.</span>
+          <h2 className="title-font m-0 max-w-[20ch] text-left text-[clamp(1.25rem,4.4vw,3.4rem)] leading-[1.04] md:max-w-none md:text-right">
+            {title}<span className="text-primary">.</span>
           </h2>
           <p className="m-0 max-w-[60ch] text-[1rem] leading-[1.55] text-[#b7bbc4] md:self-end">{subtitle}</p>
         </div>
 
         <div className="kt-landing-reveal-item flex md:order-1 md:justify-start">
           <Link
-            to="/rentals"
+            to={href}
             className="group inline-flex items-center gap-3 rounded-[10px] bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0b0b0b] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(244,223,51,0.25)]"
           >
             <span>{cta}</span>

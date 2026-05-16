@@ -17,9 +17,23 @@ function ShopSection({ shop, products = [] }) {
   const ROTATE_MS = 3500
   const [activeId, setActiveId] = useState(0)
   const [expandedId, setExpandedId] = useState(null)
+  const [isMobile, setIsMobile] = useState(false)
   const isAnyExpanded = expandedId !== null
   const sectionRef = useRef(null)
   const [introPhase, setIntroPhase] = useState('priming')
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined
+    const mq = window.matchMedia('(max-width: 639px)')
+    const sync = () => setIsMobile(mq.matches)
+    sync()
+    if (mq.addEventListener) {
+      mq.addEventListener('change', sync)
+      return () => mq.removeEventListener('change', sync)
+    }
+    mq.addListener(sync)
+    return () => mq.removeListener(sync)
+  }, [])
 
   const goPrev = () => {
     const next = (activeId - 1 + carouselItems.length) % carouselItems.length
@@ -85,6 +99,8 @@ function ShopSection({ shop, products = [] }) {
   const renderCta = (cta) => {
     const isInternal = cta.href.startsWith('/')
     const isExternal = /^https?:\/\//.test(cta.href)
+    const hashMatch = cta.href.match(/^\/?#([\w-]+)$/) || cta.href.match(/^\/#([\w-]+)$/)
+    const targetId = hashMatch ? hashMatch[1] : null
     const baseClass =
       'inline-flex items-center justify-center gap-2 rounded-[10px] px-5 py-3.5 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] transition hover:-translate-y-0.5'
     const variantClass =
@@ -102,6 +118,24 @@ function ShopSection({ shop, products = [] }) {
         <span>{cta.label}</span>
       </>
     )
+    if (targetId) {
+      return (
+        <Link
+          key={cta.label}
+          to={cta.href}
+          className={className}
+          onClick={(event) => {
+            const node = document.getElementById(targetId)
+            if (node) {
+              event.preventDefault()
+              node.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          }}
+        >
+          {inner}
+        </Link>
+      )
+    }
     if (isInternal) {
       return (
         <Link key={cta.label} to={cta.href} className={className}>
@@ -152,7 +186,7 @@ function ShopSection({ shop, products = [] }) {
         </>
       ) : null}
 
-      <div className="kt-shop-content relative z-10 grid items-center gap-10 px-6 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-16 lg:px-40">
+      <div className="kt-shop-content relative z-10 grid items-center gap-10 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] lg:gap-12 lg:px-40">
         <div className="kt-shop-from-left flex flex-col gap-5">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-8 bg-[#0b0b0b]" />
@@ -177,9 +211,9 @@ function ShopSection({ shop, products = [] }) {
 
         <div className="flex flex-col gap-7">
         <div
-          className="kt-shop-from-right group relative h-[280px] w-full sm:h-[clamp(420px,68vw,560px)]"
-          onMouseEnter={() => setExpandedId(activeId)}
-          onMouseLeave={() => setExpandedId(null)}
+          className="kt-shop-from-right group relative h-[300px] w-full sm:h-[clamp(460px,72vw,680px)]"
+          onMouseEnter={() => { if (!isMobile) setExpandedId(activeId) }}
+          onMouseLeave={() => { if (!isMobile) setExpandedId(null) }}
         >
           {carouselItems.map((item, i) => {
             const pos = getRelativePos(i, activeId, carouselItems.length)
@@ -215,11 +249,16 @@ function ShopSection({ shop, products = [] }) {
             return (
               <article
                 key={item.name + i}
-                onFocus={() => { if (isActive) setExpandedId(i) }}
+                onFocus={() => { if (isActive && !isMobile) setExpandedId(i) }}
                 onBlur={(e) => {
                   if (!e.currentTarget.contains(e.relatedTarget)) setExpandedId(null)
                 }}
                 onClick={() => {
+                  if (isMobile) {
+                    if (isPrev) goPrev()
+                    else if (isNext) goNext()
+                    return
+                  }
                   if (isActive) {
                     setExpandedId(i)
                   } else if (isPrev) {
@@ -229,10 +268,10 @@ function ShopSection({ shop, products = [] }) {
                   }
                 }}
                 tabIndex={isActive ? 0 : -1}
-                className="absolute top-1/2 left-1/2 h-[94%] w-[50%] overflow-hidden rounded-[14px] border border-[rgba(11,11,11,0.3)] bg-[#0b0b0b] outline-none focus-visible:ring-2 focus-visible:ring-[#0b0b0b]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:h-full sm:w-[64%]"
+                className="absolute top-1/2 left-1/2 h-[94%] w-[58%] overflow-hidden rounded-[14px] border border-[rgba(11,11,11,0.3)] bg-[#0b0b0b] outline-none focus-visible:ring-2 focus-visible:ring-[#0b0b0b]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:h-full sm:w-[72%]"
                 style={{
-                  width: isCardExpanded ? 'min(125%, 92vw)' : undefined,
-                  height: isCardExpanded ? 'min(155%, 72vh, 700px)' : undefined,
+                  width: isCardExpanded ? 'min(128%, 62vh, 600px)' : undefined,
+                  height: isCardExpanded ? 'min(185%, 86vh, 820px)' : undefined,
                   transform: isCardExpanded
                     ? 'translate(-50%, -50%)'
                     : `translate(-50%, -50%) translateX(${translatePct}%) scale(${scale})`,
@@ -272,14 +311,14 @@ function ShopSection({ shop, products = [] }) {
                   style={{ transform: 'rotate(-8deg)' }}
                 >
                   <span className="text-[0.55rem] font-black uppercase tracking-[0.22em] text-primary">
-                    Garantia
+                    {t('warrantyBadge.label', 'Garantia')}
                   </span>
                   <span className="title-font my-[2px] inline-flex items-baseline text-primary">
                     <span className="text-[clamp(2rem,3.8vw,2.7rem)] leading-none">12</span>
                     <span className="ml-0.5 text-[0.95rem] leading-none">M</span>
                   </span>
                   <span className="text-[0.55rem] font-black uppercase tracking-[0.22em] text-primary">
-                    de fabrica
+                    {t('warrantyBadge.footer', 'de fabrica')}
                   </span>
                 </div>
 
@@ -332,17 +371,17 @@ function ShopSection({ shop, products = [] }) {
             <>
               <button
                 type="button"
-                onClick={goPrev}
+                onClick={(e) => { e.stopPropagation(); goPrev() }}
                 aria-label="Producto anterior"
-                className="absolute top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-primary/40 bg-black/60 text-primary opacity-0 backdrop-blur-sm transition duration-300 hover:scale-105 hover:border-primary hover:bg-primary hover:text-black group-hover:opacity-100 group-focus-within:opacity-100 sm:-left-16 lg:-left-32 sm:grid"
+                className="absolute top-1/2 z-30 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-primary/40 bg-black/60 text-primary opacity-95 backdrop-blur-sm transition duration-300 hover:scale-105 hover:border-primary hover:bg-primary hover:text-black left-2 sm:left-auto sm:-left-16 sm:h-12 sm:w-12 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 lg:-left-32"
               >
                 <span className="material-symbols-outlined text-[22px] leading-none" aria-hidden="true">chevron_left</span>
               </button>
               <button
                 type="button"
-                onClick={goNext}
+                onClick={(e) => { e.stopPropagation(); goNext() }}
                 aria-label="Producto siguiente"
-                className="absolute top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-primary/40 bg-black/60 text-primary opacity-0 backdrop-blur-sm transition duration-300 hover:scale-105 hover:border-primary hover:bg-primary hover:text-black group-hover:opacity-100 group-focus-within:opacity-100 sm:-right-16 lg:-right-32 sm:grid"
+                className="absolute top-1/2 z-30 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-primary/40 bg-black/60 text-primary opacity-95 backdrop-blur-sm transition duration-300 hover:scale-105 hover:border-primary hover:bg-primary hover:text-black right-2 sm:right-auto sm:-right-16 sm:h-12 sm:w-12 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 lg:-right-32"
               >
                 <span className="material-symbols-outlined text-[22px] leading-none" aria-hidden="true">chevron_right</span>
               </button>

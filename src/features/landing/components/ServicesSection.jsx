@@ -30,9 +30,9 @@ function PillarCard({ item, index, eyebrowLabel }) {
       onFocus={play}
       onBlur={pause}
       tabIndex={0}
-      className="kt-pillar-card kt-landing-reveal-item group flex flex-col gap-3 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
+      className="kt-pillar-card kt-landing-reveal-item group flex flex-row items-stretch gap-3 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] sm:flex-col sm:gap-3"
     >
-      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[10px] bg-[#0a0a0a]">
+      <div className="relative h-24 w-[38%] shrink-0 overflow-hidden rounded-[10px] bg-[#0a0a0a] sm:aspect-[16/9] sm:h-auto sm:w-full">
         {item.video ? (
           <video
             ref={videoRef}
@@ -57,25 +57,24 @@ function PillarCard({ item, index, eyebrowLabel }) {
         />
         <span
           aria-hidden="true"
-          className="title-font pointer-events-none absolute bottom-2 left-3 text-[clamp(2.2rem,3.6vw,3.2rem)] font-black leading-none text-primary drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]"
+          className="title-font pointer-events-none absolute bottom-1 left-2 text-[1.4rem] font-black leading-none text-primary drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:bottom-2 sm:left-3 sm:text-[clamp(2.2rem,3.6vw,3.2rem)]"
         >
           {numberLabel}
         </span>
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 sm:gap-1.5">
         <div className="flex items-center gap-2">
-          <span aria-hidden="true" className="block h-[2px] w-5 bg-primary" />
-          <span className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-primary">
+          <span aria-hidden="true" className="block h-[2px] w-4 bg-primary sm:w-5" />
+          <span className="text-[0.55rem] font-black uppercase tracking-[0.2em] text-primary sm:text-[0.6rem] sm:tracking-[0.22em]">
             {eyebrowLabel}
           </span>
         </div>
-        <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[clamp(1.05rem,1.7vw,1.45rem)] uppercase tracking-[0.05em] leading-[1.02] text-white">
-          {item.title}
-          <span className="text-primary">.</span>
+        <h3 className="title-font m-0 text-[0.95rem] uppercase tracking-[0.05em] leading-[1.02] text-white sm:text-[clamp(1.05rem,1.7vw,1.45rem)]">
+          {item.title}<span className="text-primary">.</span>
         </h3>
         {item.subtitle ? (
-          <p className="m-0 text-[0.78rem] leading-[1.4] text-[#aeb5bf]">
+          <p className="m-0 line-clamp-2 text-[0.72rem] leading-[1.35] text-[#aeb5bf] sm:line-clamp-none sm:text-[0.78rem] sm:leading-[1.4]">
             {item.subtitle}
           </p>
         ) : null}
@@ -137,7 +136,7 @@ function ServicesSection({ services }) {
       id="services"
       style={{ '--reveal-delay': '200ms' }}
     >
-      <div className="kt-pillar-title kt-landing-reveal-item mb-10 flex flex-col gap-2 sm:mb-14">
+      <div className="kt-pillar-title kt-landing-reveal-item mb-6 flex flex-col gap-2 sm:mb-14">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
@@ -145,12 +144,11 @@ function ServicesSection({ services }) {
           </span>
         </div>
         <h2 className="title-font m-0 text-left text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
-          {sectionTitle}
-          <span className="text-primary">.</span>
+          {sectionTitle}<span className="text-primary">.</span>
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 sm:gap-6 lg:gap-7">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 sm:gap-6 lg:gap-7">
         {mergedItems.map((item, i) => (
           <PillarCard
             key={item.title}
