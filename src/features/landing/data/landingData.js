@@ -182,7 +182,7 @@ export const defaultLandingContent = {
         icon: 'forum',
       },
       {
-        label: 'Soporte',
+        label: 'Mantenimiento',
         href: '/garantias',
         variant: 'outline',
         icon: 'verified',

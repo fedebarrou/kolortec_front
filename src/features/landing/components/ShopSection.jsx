@@ -270,8 +270,8 @@ function ShopSection({ shop, products = [] }) {
                 tabIndex={isActive ? 0 : -1}
                 className="absolute top-1/2 left-1/2 h-[94%] w-[58%] overflow-hidden rounded-[14px] border border-[rgba(11,11,11,0.3)] bg-[#0b0b0b] outline-none focus-visible:ring-2 focus-visible:ring-[#0b0b0b]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:h-full sm:w-[72%]"
                 style={{
-                  width: isCardExpanded ? 'min(128%, 62vh, 600px)' : undefined,
-                  height: isCardExpanded ? 'min(185%, 86vh, 820px)' : undefined,
+                  width: isCardExpanded ? 'max(100%, min(128%, 62vh, 600px))' : undefined,
+                  height: isCardExpanded ? 'max(115%, min(185%, 86vh, 820px))' : undefined,
                   transform: isCardExpanded
                     ? 'translate(-50%, -50%)'
                     : `translate(-50%, -50%) translateX(${translatePct}%) scale(${scale})`,
