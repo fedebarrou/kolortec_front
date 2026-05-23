@@ -187,9 +187,8 @@
 
     .kt-zoom-canvas {
       width: 1920px;
-      margin-left: calc((100vw - 1920px) / 2);
-      transform: scale(var(--kt-canvas-scale, 1));
-      transform-origin: top center;
+      margin-inline: auto;
+      zoom: var(--kt-canvas-scale, 1);
     }
   }
 

@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 const FALLBACK_CAROUSEL_IMAGES = [
-  '/assets/products/prod-001.png',
-  '/assets/products/prod-005.png',
-  '/assets/products/prod-009.png',
-  '/assets/products/prod-013.png',
-  '/assets/products/prod-016.png',
+  '/assets/products/prod-001.webp',
+  '/assets/products/prod-005.webp',
+  '/assets/products/prod-009.webp',
+  '/assets/products/prod-013.webp',
+  '/assets/products/prod-016.webp',
 ]
 
 function SupportSection({ support }) {

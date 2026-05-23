@@ -1,16 +1,18 @@
+import { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LandingChrome from './features/landing/components/LandingChrome'
-import ContactPage from './features/contact/pages/ContactPage'
-import DistributorsPage from './features/distributors/pages/DistributorsPage'
-import HomePage from './features/home/pages/HomePage'
-import LoginPage from './features/auth/pages/LoginPage'
-import ProductDetailPage from './features/product/pages/ProductDetailPage'
-import RentalsPage from './features/rentals/pages/RentalsPage'
-import ServicesPage from './features/services/pages/ServicesPage'
-import ShopPage from './features/catalog/pages/ShopPage'
-import CategoryPage from './features/catalog/pages/CategoryPage'
-import SupportPage from './features/support/pages/SupportPage'
-import GarantiasPage from './features/warranty/pages/GarantiasPage'
+
+const HomePage = lazy(() => import('./features/home/pages/HomePage'))
+const ShopPage = lazy(() => import('./features/catalog/pages/ShopPage'))
+const CategoryPage = lazy(() => import('./features/catalog/pages/CategoryPage'))
+const ProductDetailPage = lazy(() => import('./features/product/pages/ProductDetailPage'))
+const ServicesPage = lazy(() => import('./features/services/pages/ServicesPage'))
+const SupportPage = lazy(() => import('./features/support/pages/SupportPage'))
+const GarantiasPage = lazy(() => import('./features/warranty/pages/GarantiasPage'))
+const ContactPage = lazy(() => import('./features/contact/pages/ContactPage'))
+const DistributorsPage = lazy(() => import('./features/distributors/pages/DistributorsPage'))
+const RentalsPage = lazy(() => import('./features/rentals/pages/RentalsPage'))
+const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
 
 function App() {
   return (

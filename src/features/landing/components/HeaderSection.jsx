@@ -573,6 +573,23 @@ function HeaderSection() {
             </Link>
           )
         ))}
+
+        <div className="relative z-10 mt-2 flex items-center gap-2 border-t border-white/10 px-[0.55rem] pt-3 xl:hidden">
+          {socialLinks.map((item) => (
+            <a
+              key={`mobile-${item.key}`}
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={item.label}
+              title={item.label}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary"
+              onClick={() => setIsMobileOpen(false)}
+            >
+              {item.icon}
+            </a>
+          ))}
+        </div>
       </div>
 
       {loginDialog}

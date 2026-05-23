@@ -10,35 +10,17 @@ import { LanguageProvider } from './shared/i18n/LanguageProvider.jsx'
 
 function CanvasScaler() {
   useEffect(() => {
-    const canvas = document.querySelector('.kt-zoom-canvas')
-    if (!canvas) return undefined
-
     const update = () => {
       const w = window.innerWidth
       const scale = w >= 1024 ? Math.min(1, w / 1920) : 1
       document.documentElement.style.setProperty('--kt-canvas-scale', String(scale))
-      if (scale < 1) {
-        const h = canvas.offsetHeight
-        canvas.style.marginBottom = `${-(h * (1 - scale))}px`
-      } else {
-        canvas.style.marginBottom = ''
-      }
     }
 
     update()
-
-    let ro
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(update)
-      ro.observe(canvas)
-    }
-
     window.addEventListener('resize', update, { passive: true })
 
     return () => {
-      if (ro) ro.disconnect()
       window.removeEventListener('resize', update)
-      canvas.style.marginBottom = ''
       document.documentElement.style.removeProperty('--kt-canvas-scale')
     }
   }, [])

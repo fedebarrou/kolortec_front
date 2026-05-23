@@ -77,7 +77,7 @@ export const defaultLandingContent = {
         description: 'High-Output LED / IP67',
         longDescription:
           'Flood de alta potencia con LEDs de ultima generacion y proteccion IP67 para uso en exterior. Listo para tours, broadcast y montajes arquitectonicos exigentes.',
-        image: '/assets/products/prod-009.png',
+        image: '/assets/products/prod-009.webp',
         badge: 'NEW',
         category: 'wash-flood',
       },
@@ -86,7 +86,7 @@ export const defaultLandingContent = {
         description: 'DMX Controlled / 4K Lumens',
         longDescription:
           'Spot de precision controlado por DMX con 4.000 lumenes de salida. Optica afilada para gobos y patrones nitidos en cualquier escenario.',
-        image: '/assets/products/prod-010.png',
+        image: '/assets/products/prod-010.webp',
         category: 'beam-spot',
       },
       {
@@ -94,7 +94,7 @@ export const defaultLandingContent = {
         description: 'Interlocking System',
         longDescription:
           'Sistema modular interconectable: armar fila o matriz en minutos sin cableado externo. Ideal para video walls, washes lineales y proyectos a medida.',
-        image: '/assets/products/prod-011.png',
+        image: '/assets/products/prod-011.webp',
         category: 'barras-led',
       },
       {
@@ -102,7 +102,7 @@ export const defaultLandingContent = {
         description: 'Portable Series / Battery Powered',
         longDescription:
           'Wash compacto con bateria recargable y autonomia para uso continuo en locaciones sin energia. Listo para set, fashion y eventos moviles.',
-        image: '/assets/products/prod-012.png',
+        image: '/assets/products/prod-012.webp',
         category: 'wash-flood',
       },
       {
@@ -110,7 +110,7 @@ export const defaultLandingContent = {
         description: 'Sharp Beam / Discharge Lamp',
         longDescription:
           'Beam de descarga con haz afilado de alta intensidad. Genera columnas de luz que cortan la atmosfera para grandes escenarios y arenas.',
-        image: '/assets/products/prod-013.png',
+        image: '/assets/products/prod-013.webp',
         category: 'beam-spot',
       },
       {
@@ -118,7 +118,7 @@ export const defaultLandingContent = {
         description: 'Moving Head Spot / 380W',
         longDescription:
           'Cabezal movil spot de 380W con rueda de gobos giratoria, prisma y zoom. La herramienta para disenadores de iluminacion que buscan precision y caracter.',
-        image: '/assets/products/prod-014.png',
+        image: '/assets/products/prod-014.webp',
         badge: 'NEW',
         category: 'cabezales-moviles',
       },
@@ -127,7 +127,7 @@ export const defaultLandingContent = {
         description: 'Moving Head Wash / 19x40W RGBW',
         longDescription:
           'Cabezal movil wash de 19 LEDs RGBW de 40W con zoom motorizado. Cobertura uniforme, color mezclable y consumo eficiente para giras y festivales.',
-        image: '/assets/products/prod-015.png',
+        image: '/assets/products/prod-015.webp',
         category: 'cabezales-moviles',
       },
       {
@@ -135,7 +135,7 @@ export const defaultLandingContent = {
         description: '15W RGB / ILDA Network',
         longDescription:
           'Laser RGB de 15W con red ILDA para coreografias multilaser sincronizadas. Compatible con software estandar y montaje rapido en clubes y producciones.',
-        image: '/assets/products/prod-016.png',
+        image: '/assets/products/prod-016.webp',
         category: 'laser',
       },
       {
@@ -143,7 +143,7 @@ export const defaultLandingContent = {
         description: '32 LED Pixel Strobe / Audience Wash',
         longDescription:
           'Strobe de 32 LEDs con control individual por pixel y modo audience wash. Combina destellos puros con bano caliente sobre la audiencia.',
-        image: '/assets/products/prod-017.png',
+        image: '/assets/products/prod-017.webp',
         category: 'estrobos-blinders',
       },
       {
@@ -151,7 +151,7 @@ export const defaultLandingContent = {
         description: 'IP65 Linear Wash / DMX-RDM',
         longDescription:
           'Wash lineal arquitectonico IP65 con control DMX-RDM. Pensado para fachadas, integraciones permanentes y resaltado de volumenes urbanos.',
-        image: '/assets/products/prod-018.png',
+        image: '/assets/products/prod-018.webp',
         category: 'arquitectural',
       },
       {
@@ -159,7 +159,7 @@ export const defaultLandingContent = {
         description: '8-Way DMX/RDM Optical Splitter',
         longDescription:
           'Splitter optico DMX/RDM de 8 vias con aislamiento galvanico. Protege la cadena DMX en montajes grandes y elimina problemas de loop o ruido.',
-        image: '/assets/products/prod-019.png',
+        image: '/assets/products/prod-019.webp',
         category: 'control-accesorios',
       },
     ],
@@ -238,11 +238,11 @@ export const defaultLandingContent = {
     subtitle:
       'Reach out via WhatsApp or email - our sales and technical support team is here to help you.',
     carouselImages: [
-      '/assets/products/prod-001.png',
-      '/assets/products/prod-005.png',
-      '/assets/products/prod-009.png',
-      '/assets/products/prod-013.png',
-      '/assets/products/prod-016.png',
+      '/assets/products/prod-001.webp',
+      '/assets/products/prod-005.webp',
+      '/assets/products/prod-009.webp',
+      '/assets/products/prod-013.webp',
+      '/assets/products/prod-016.webp',
     ],
     contacts: [
       {
