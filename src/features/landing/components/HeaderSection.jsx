@@ -420,8 +420,8 @@ function HeaderSection() {
             </button>
           </div>
 
-          <div className="hidden xl:inline-flex items-center gap-1 xl:gap-1.5">
-            {socialLinks.map((item, idx) => (
+          <div className="inline-flex items-center gap-1 lg:gap-1.5">
+            {socialLinks.map((item) => (
               <a
                 key={item.key}
                 href={item.href}
@@ -429,7 +429,7 @@ function HeaderSection() {
                 rel="noreferrer"
                 aria-label={item.label}
                 title={item.label}
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary ${idx === 0 ? '' : 'hidden 2xl:inline-flex'}`}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary"
               >
                 {item.icon}
               </a>
@@ -574,22 +574,6 @@ function HeaderSection() {
           )
         ))}
 
-        <div className="relative z-10 mt-2 flex items-center gap-2 border-t border-white/10 px-[0.55rem] pt-3 xl:hidden">
-          {socialLinks.map((item) => (
-            <a
-              key={`mobile-${item.key}`}
-              href={item.href}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={item.label}
-              title={item.label}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-[#e5e7eb] transition hover:border-primary hover:text-primary"
-              onClick={() => setIsMobileOpen(false)}
-            >
-              {item.icon}
-            </a>
-          ))}
-        </div>
       </div>
 
       {loginDialog}
