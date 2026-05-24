@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node mock-api/server.mjs",
+    "prebuild": "node scripts/gen-sitemap.mjs",
     "build": "vite build",
+    "sitemap": "node scripts/gen-sitemap.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "compress:golden-line": "node scripts/compress-golden-line.mjs",

@@ -1,4 +1,4 @@
-import { demoProductDetail, DEMO_PRODUCT_SLUG } from '../helpers/productDetailDemoHelper'
+import { demoProductDetail, DEMO_PRODUCT_SLUG } from '../helpers/productDetailDemoHelper.js'
 
 export const productDetails = {
   'kt-x1000-flood': {
