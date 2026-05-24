@@ -1,5 +1,5 @@
 import { StrictMode, useEffect } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
@@ -28,7 +28,9 @@ function CanvasScaler() {
   return null
 }
 
-createRoot(document.getElementById('root')).render(
+const rootEl = document.getElementById('root')
+
+const tree = (
   <StrictMode>
     <LanguageProvider>
       <BrowserRouter>
@@ -43,5 +45,13 @@ createRoot(document.getElementById('root')).render(
         </div>
       </BrowserRouter>
     </LanguageProvider>
-  </StrictMode>,
+  </StrictMode>
 )
+
+// react-snap deja contenido pre-renderizado en #root — hidratamos.
+// Dev y prod sin snapshot arrancan vacíos → createRoot.
+if (rootEl.hasChildNodes()) {
+  hydrateRoot(rootEl, tree)
+} else {
+  createRoot(rootEl).render(tree)
+}

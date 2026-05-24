@@ -8,7 +8,9 @@
     "dev:api": "node mock-api/server.mjs",
     "prebuild": "node scripts/gen-sitemap.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/pre-render.mjs",
     "sitemap": "node scripts/gen-sitemap.mjs",
+    "prerender": "node scripts/pre-render.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "compress:golden-line": "node scripts/compress-golden-line.mjs",
@@ -29,6 +31,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "puppeteer": "^25.0.4",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.4"
   },
