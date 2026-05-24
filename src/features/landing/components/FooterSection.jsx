@@ -39,7 +39,7 @@ function FooterSection({ footer }) {
 
   return (
     <footer className="bg-deep-black border-t border-slate-800 py-10">
-      <div className="mb-8 w-full px-6 lg:px-40">
+      <div className="mb-16 w-full px-6 lg:px-40 md:mb-20">
         <div className="kt-marquee">
           <div className="kt-marquee-track">
             {loopImages.map((src, index) => (
