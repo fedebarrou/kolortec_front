@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { defaultLandingContent } from '../../landing/data/landingData'
 
@@ -231,7 +231,6 @@ function WarrantyDetailModal({ item, origin, onClose }) {
 
 function GarantiasPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.warranty', 'Guia de Mantenimiento'))
 
   const [items, setItems] = useState(defaultLandingContent.products.items)
   const [openItem, setOpenItem] = useState(null)
@@ -277,6 +276,11 @@ function GarantiasPage() {
 
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
+      <Seo
+        title="Garantía de fábrica 12 meses · Kolortec"
+        description="Garantía de fábrica y política de soporte de Kolortec: repuestos en stock y respaldo real del fabricante."
+        path="/garantias"
+      />
       <div className="mb-10 flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />

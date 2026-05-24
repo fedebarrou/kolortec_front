@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 
 const FALLBACK_MANUALS = [
@@ -34,7 +34,6 @@ function filterByQuery(items, query) {
 
 function SupportPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.support', 'Soporte'))
   const [query, setQuery] = useState('')
   const [downloadIntent, setDownloadIntent] = useState(null)
 
@@ -60,6 +59,11 @@ function SupportPage() {
 
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
+      <Seo
+        title="Soporte técnico de iluminación escénica · Kolortec"
+        description="Soporte técnico de iluminación escénica con respuesta inmediata y repuestos en stock local. Diagnóstico y reparación de cabezales móviles."
+        path="/soporte"
+      />
       <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10">
         <div className="grid gap-3">
           <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">

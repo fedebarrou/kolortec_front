@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 
 const PARTNERS = [
   {
@@ -65,7 +65,6 @@ const PARTNERS = [
 
 function RentalsPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.rentals', 'Rentals'))
   const [form, setForm] = useState({ nombre: '', apellido: '', telefono: '', email: '', mensaje: '' })
   const [submitted, setSubmitted] = useState(false)
   const [partnerIndex, setPartnerIndex] = useState(0)
@@ -122,6 +121,11 @@ function RentalsPage() {
 
   return (
     <section className="flex min-h-screen flex-col bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
+      <Seo
+        title="Iluminación para rentals y productoras · Kolortec"
+        description="Equipos confiables para casas de alquiler y productoras: uptime, mantenimiento y soporte que evita downtime en cada show."
+        path="/rentals"
+      />
       <div className="mb-8 grid max-w-[760px] gap-3 lg:ml-auto lg:text-right">
         <div className="flex items-center gap-2 lg:flex-row-reverse">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />

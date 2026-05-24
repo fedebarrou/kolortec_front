@@ -1,13 +1,17 @@
 import { Link } from 'react-router-dom'
 import { defaultLandingContent } from '../../landing/data/landingData'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 
 function ServicesPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.services', 'Servicios'))
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+      <Seo
+        title="Servicios y soluciones · Kolortec"
+        description="Servicios de instalación, capacitación y soporte para iluminación profesional Kolortec. Soluciones llave en mano con respaldo de fábrica."
+        path="/servicios"
+      />
       <div className="mb-5">
         <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(3.8rem,10vw,7rem)] leading-[1.02]">
           Servicios

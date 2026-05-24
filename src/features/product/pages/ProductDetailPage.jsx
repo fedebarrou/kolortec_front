@@ -5,7 +5,9 @@ import ImageLightbox from '../../../shared/components/ImageLightbox'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
+import { SITE } from '../../../shared/seo/Seo'
+import { productJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
 
 const HERO_FACTS = [
@@ -77,7 +79,6 @@ function ProductDetailPage() {
   const { t, lang } = useLanguage()
   const { slug } = useParams()
   const product = getProductDetailBySlug(slug)
-  usePageTitle(product?.name || t('pageTitle.productFallback', 'Producto'))
   const detailBodyRef = useRef(null)
   const heroImageRef = useRef(null)
 
@@ -315,6 +316,12 @@ function ProductDetailPage() {
   if (!product) {
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+        <Seo
+          title="Producto no encontrado · Kolortec"
+          description="Este producto no está publicado o el enlace cambió. Volvé al catálogo para ver toda la línea Kolortec."
+          path={`/producto/${slug || ''}`}
+          noindex
+        />
         <div>
           <h1 className="title-font m-0 mb-2 text-[clamp(3.8rem,10vw,7rem)] leading-[1.02]">
             {t('productDetail.notFoundTitle', 'Producto no encontrado')}
@@ -326,8 +333,40 @@ function ProductDetailPage() {
     )
   }
 
+  const productPath = `/producto/${product.slug}`
+  const productUrl = `${SITE}${productPath}`
+  const productImage = product.heroImage || (product.gallery && product.gallery[0]) || undefined
+  const productImageAbs = productImage
+    ? (productImage.startsWith('http') ? productImage : `${SITE}${productImage.startsWith('/') ? '' : '/'}${productImage}`)
+    : undefined
+  const seoTitle = product.seoTitle || `${product.name} · ${product.tipo || 'Iluminación'} Kolortec`
+  const seoDescription =
+    product.seoDescription ||
+    `${(product.shortDescription || product.name).replace(/[.\s]+$/, '')}. Equipo Ready to Work con repuestos y soporte técnico local de Kolortec.`
+  const productLd = productJsonLd({
+    name: product.name,
+    description: seoDescription,
+    image: productImageAbs,
+    sku: product.sku || product.slug,
+    category: product.category,
+    url: productUrl,
+  })
+  const breadcrumbLd = breadcrumbJsonLd([
+    { name: 'Inicio', url: `${SITE}/` },
+    { name: 'Productos', url: `${SITE}/products` },
+    { name: product.name, url: productUrl },
+  ])
+
   return (
     <section className="kt-detail-page">
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        path={productPath}
+        image={productImage}
+        type="product"
+        jsonLd={[productLd, breadcrumbLd]}
+      />
       <main className="kt-detail-main">
         <header className="kt-detail-fixed-header">
           <nav className="kt-detail-tabs" aria-label="Product detail sections">

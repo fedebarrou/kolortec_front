@@ -6,13 +6,12 @@ import CatalogFilterBar from '../components/CatalogFilterBar'
 import { defaultLandingContent } from '../../landing/data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 import { PRODUCT_CATEGORIES } from '../data/categories'
 import { categoryMatchesFilters } from '../data/filters'
 
 function ShopPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.products', 'Productos'))
   const [products, setProducts] = useState(defaultLandingContent.products.items)
   const [searchParams] = useSearchParams()
   const [activeFilters, setActiveFilters] = useState({})
@@ -60,6 +59,12 @@ function ShopPage() {
   if (isSearching) {
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+        <Seo
+          title={`Búsqueda: ${query} · Productos Kolortec`}
+          description="Buscador del catálogo Kolortec. Cabezales móviles, strobes y paneles LED de línea propia con soporte local."
+          path="/products"
+          noindex
+        />
         <div className="mb-8 grid gap-3">
           <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
             {t('catalog.searchTitle', 'Resultados')}
@@ -98,6 +103,11 @@ function ShopPage() {
 
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+      <Seo
+        title="Productos · Iluminación profesional Kolortec"
+        description="Cabezales móviles, strobes y paneles LED de línea propia, testeados y listos para escena. Durabilidad y soporte de fábrica."
+        path="/products"
+      />
       <div className="mb-10 grid gap-3">
         <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
           {catalogTitle}

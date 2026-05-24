@@ -46,7 +46,7 @@ function PillarCard({ item, index, eyebrowLabel }) {
         ) : (
           <img
             src={item.image}
-            alt=""
+            alt={`${item.title} - Servicios Kolortec`}
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.05]"
           />

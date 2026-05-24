@@ -56,7 +56,7 @@ function HeroSection({ hero }) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <img src={slide.imageUrl} alt="" className="h-full w-full object-cover" />
+              <img src={slide.imageUrl} alt={slide.title ? `${slide.title} - Kolortec iluminación profesional` : 'Kolortec iluminación profesional'} className="h-full w-full object-cover" />
             )}
             <div className={overlayClass} />
           </div>
@@ -152,12 +152,12 @@ function HeroSection({ hero }) {
                     <span className="block h-[3px] bg-[#e57b3a]" />
                     <span className="block h-[3px] bg-[#b94e1f]" />
                   </div>
-                  <h1
+                  <h2
                     className="m-0 mb-4 italic leading-[0.92] text-[#f5e9c8] text-[clamp(4rem,11vw,9rem)]"
                     style={{ fontFamily: "'Pacifico', 'Lobster', cursive" }}
                   >
                     {heroTitleBase}
-                  </h1>
+                  </h2>
                   <div
                     aria-hidden="true"
                     className={`kt-landing-reveal-item -mt-2 mb-3 flex w-full max-w-[420px] flex-col gap-[3px] ${isRight ? 'self-end' : 'self-start'}`}
@@ -168,10 +168,10 @@ function HeroSection({ hero }) {
                   </div>
                 </>
               ) : (
-                <h1 className="title-font m-0 mb-4 text-[clamp(3.6rem,10vw,8.4rem)] leading-[0.95]">
+                <h2 className="title-font m-0 mb-4 text-[clamp(3.6rem,10vw,8.4rem)] leading-[0.95]">
                   {heroTitleBase}
                   <span className="text-primary">.</span>
-                </h1>
+                </h2>
               )}
 
               <p className={`kt-landing-reveal-item m-0 max-w-[680px] text-[clamp(1rem,2.5vw,1.2rem)] ${isGolden ? 'text-[#e8dcb8]' : 'text-[#d4d4d4]'}`}>{heroSubtitle}</p>

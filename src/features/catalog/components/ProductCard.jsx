@@ -32,7 +32,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
       <div className="relative aspect-[4/5] w-full overflow-hidden">
         <img
           src={item.image}
-          alt={item.name}
+          alt={`${item.name}${item.description ? ` — ${item.description}` : ''} | Kolortec iluminación profesional`}
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06] group-focus-within:scale-[1.06]"
         />

@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 
 function ContactPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.contact', 'Contacto'))
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+      <Seo
+        title="Contacto · Kolortec"
+        description="Escribinos para cotizaciones, soporte técnico o partnerships. Te respondemos en 48 horas hábiles desde fábrica."
+        path="/contacto"
+      />
       <div className="mb-5">
         <h1 className="title-font m-0 text-[clamp(4.2rem,11.2vw,8.8rem)] leading-[1.02]">
           {t('contactPage.title', 'Contacto')}<span className="text-primary">.</span>

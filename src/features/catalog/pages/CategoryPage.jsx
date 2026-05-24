@@ -4,7 +4,7 @@ import ProductCard from '../components/ProductCard'
 import { defaultLandingContent } from '../../landing/data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 import { getCategoryBySlug, PRODUCT_CATEGORIES } from '../data/categories'
 
 function CategoryPage() {
@@ -14,7 +14,6 @@ function CategoryPage() {
   const [selectedBadge, setSelectedBadge] = useState('all')
   const category = getCategoryBySlug(categorySlug)
   const categoryLabel = category ? (lang === 'en' ? category.nameEn : category.name) : t('pageTitle.products', 'Productos')
-  usePageTitle(categoryLabel)
 
   useEffect(() => {
     let mounted = true
@@ -53,6 +52,12 @@ function CategoryPage() {
   if (!category) {
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+        <Seo
+          title="Categoría no encontrada · Kolortec"
+          description="La categoría solicitada no existe en el catálogo. Volvé a productos para explorar la línea completa."
+          path={`/products/${categorySlug || ''}`}
+          noindex
+        />
         <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
           Categoria no encontrada
           <span className="text-primary">.</span>
@@ -68,8 +73,14 @@ function CategoryPage() {
 
   return (
     <section className="min-h-screen bg-[#050505]">
+      <Seo
+        title={`${displayName} · Productos Kolortec`}
+        description={displayDescription || `Línea ${displayName} Kolortec: equipos profesionales con respaldo, repuestos y soporte técnico local.`}
+        path={`/products/${category.slug}`}
+        image={category.image}
+      />
       <div className="relative h-[clamp(220px,32vw,360px)] w-full overflow-hidden">
-        <img src={category.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={category.image} alt={`${displayName} - Iluminación profesional Kolortec`} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.85)] to-[rgba(5,5,5,0.45)]" />
         <div
           aria-hidden="true"

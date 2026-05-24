@@ -13,7 +13,7 @@ function CategoryCard({ category, count }) {
     >
       <img
         src={category.image}
-        alt=""
+        alt={`Categoría ${displayName} - Iluminación profesional Kolortec`}
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover opacity-40 grayscale-[35%] transition-all duration-500 ease-out group-hover:scale-[1.05] group-hover:opacity-100 group-hover:grayscale-0 group-focus-visible:opacity-100 group-focus-visible:grayscale-0"
       />

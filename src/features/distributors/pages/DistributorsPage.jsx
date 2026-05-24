@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import usePageTitle from '../../../shared/hooks/usePageTitle'
+import Seo from '../../../shared/seo/Seo'
 
 const PARTNERS = [
   {
@@ -57,7 +57,6 @@ const PARTNERS = [
 
 function DistributorsPage() {
   const { t } = useLanguage()
-  usePageTitle(t('pageTitle.distributors', 'Distribuidores'))
   const [form, setForm] = useState({ nombre: '', apellido: '', telefono: '', email: '', mensaje: '' })
   const [submitted, setSubmitted] = useState(false)
   const [partnerIndex, setPartnerIndex] = useState(0)
@@ -114,6 +113,11 @@ function DistributorsPage() {
 
   return (
     <section className="flex min-h-screen flex-col bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
+      <Seo
+        title="Distribuidores y partners · Kolortec"
+        description="Sumate a la red de partners de Kolortec: fabricante de línea propia con respaldo, márgenes y soporte local para tu negocio."
+        path="/distribuidores"
+      />
       <div className="mb-8 grid max-w-[760px] gap-3">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
