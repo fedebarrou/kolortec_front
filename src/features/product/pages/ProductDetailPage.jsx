@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getProductDetailBySlug } from '../data/productDetails'
+import { withProductSeo } from '../../../data/products.js'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
@@ -78,7 +79,8 @@ const FALLBACK_SOFTWARE_DOWNLOADS = [
 function ProductDetailPage() {
   const { t, lang } = useLanguage()
   const { slug } = useParams()
-  const product = getProductDetailBySlug(slug)
+  const rawProduct = getProductDetailBySlug(slug)
+  const product = rawProduct ? withProductSeo(rawProduct) : null
   const detailBodyRef = useRef(null)
   const heroImageRef = useRef(null)
 
@@ -335,18 +337,13 @@ function ProductDetailPage() {
 
   const productPath = `/producto/${product.slug}`
   const productUrl = `${SITE}${productPath}`
-  const productImage = product.heroImage || (product.gallery && product.gallery[0]) || undefined
-  const productImageAbs = productImage
-    ? (productImage.startsWith('http') ? productImage : `${SITE}${productImage.startsWith('/') ? '' : '/'}${productImage}`)
-    : undefined
-  const seoTitle = product.seoTitle || `${product.name} · ${product.tipo || 'Iluminación'} Kolortec`
-  const seoDescription =
-    product.seoDescription ||
-    `${(product.shortDescription || product.name).replace(/[.\s]+$/, '')}. Equipo Ready to Work con repuestos y soporte técnico local de Kolortec.`
+  const ogImageAbs = product.ogImage && !product.ogImage.startsWith('http')
+    ? `${SITE}${product.ogImage.startsWith('/') ? '' : '/'}${product.ogImage}`
+    : product.ogImage
   const productLd = productJsonLd({
     name: product.name,
-    description: seoDescription,
-    image: productImageAbs,
+    description: product.seoDescription,
+    image: ogImageAbs,
     sku: product.sku || product.slug,
     category: product.category,
     url: productUrl,
@@ -360,10 +357,10 @@ function ProductDetailPage() {
   return (
     <section className="kt-detail-page">
       <Seo
-        title={seoTitle}
-        description={seoDescription}
+        title={product.seoTitle}
+        description={product.seoDescription}
         path={productPath}
-        image={productImage}
+        image={product.ogImage}
         type="product"
         jsonLd={[productLd, breadcrumbLd]}
       />

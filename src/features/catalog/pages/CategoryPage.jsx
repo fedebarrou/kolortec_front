@@ -5,6 +5,7 @@ import { defaultLandingContent } from '../../landing/data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
+import { withCategorySeo } from '../../../data/categories.js'
 import { getCategoryBySlug, PRODUCT_CATEGORIES } from '../data/categories'
 
 function CategoryPage() {
@@ -12,7 +13,8 @@ function CategoryPage() {
   const { lang, t } = useLanguage()
   const [products, setProducts] = useState(defaultLandingContent.products.items)
   const [selectedBadge, setSelectedBadge] = useState('all')
-  const category = getCategoryBySlug(categorySlug)
+  const rawCategory = getCategoryBySlug(categorySlug)
+  const category = rawCategory ? withCategorySeo(rawCategory) : null
   const categoryLabel = category ? (lang === 'en' ? category.nameEn : category.name) : t('pageTitle.products', 'Productos')
 
   useEffect(() => {
@@ -74,10 +76,10 @@ function CategoryPage() {
   return (
     <section className="min-h-screen bg-[#050505]">
       <Seo
-        title={`${displayName} · Productos Kolortec`}
-        description={displayDescription || `Línea ${displayName} Kolortec: equipos profesionales con respaldo, repuestos y soporte técnico local.`}
+        title={category.seoTitle}
+        description={category.seoDescription}
         path={`/products/${category.slug}`}
-        image={category.image}
+        image={category.ogImage}
       />
       <div className="relative h-[clamp(220px,32vw,360px)] w-full overflow-hidden">
         <img src={category.image} alt={`${displayName} - Iluminación profesional Kolortec`} className="absolute inset-0 h-full w-full object-cover" />

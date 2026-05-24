@@ -1,22 +1,16 @@
 /**
- * Capa de rutas — Fase 4 (sitemap) + base para Fase 5 (datos dinámicos).
+ * Capa de rutas — usada por build-time (gen-sitemap, pre-render).
  *
- * Hoy importa los mocks que ya viven en src/features/.../data/. Cuando se
- * conecte la API, este archivo se mantiene como interfaz única para:
- *   - scripts/gen-sitemap.mjs (build-time)
- *   - scripts/pre-render (cuando se sume react-snap en Fase 2)
- *
- * En Fase 5 se podrá reemplazar el cuerpo de cada `list*` por un fetch
- * sin tocar los consumidores.
+ * Lee todo desde la capa src/data/ (products, categories, guides).
+ * Cuando esa capa cambie de mock → fetch, este archivo NO se toca.
  */
 
-import { PRODUCT_CATEGORIES } from '../features/catalog/data/categories.js'
-import { productDetails } from '../features/product/data/productDetails.js'
-import { DEMO_PRODUCT_SLUG } from '../features/product/helpers/productDetailDemoHelper.js'
-import { guides } from '../features/guides/data/guides.js'
+import { listCategorySlugs } from './categories.js'
+import { listProductSlugs } from './products.js'
+import { listGuideSlugs } from './guides.js'
 
 /**
- * Rutas estáticas indexables. `/login` queda fuera (noindex en el componente).
+ * Rutas estáticas indexables. `/login` queda fuera (noindex).
  */
 export function listStaticRoutes() {
   return [
@@ -33,27 +27,19 @@ export function listStaticRoutes() {
 }
 
 export function listCategoryRoutes() {
-  return PRODUCT_CATEGORIES.map((c) => c.slug)
+  return listCategorySlugs()
 }
 
-/**
- * Slugs de producto con página de detalle real. Incluye el demo público.
- */
 export function listProductRoutes() {
-  const slugs = new Set(Object.keys(productDetails))
-  slugs.add(DEMO_PRODUCT_SLUG)
-  return Array.from(slugs)
+  return listProductSlugs()
 }
 
-/**
- * Slugs de guías de soporte (cluster Fase 3.2).
- */
 export function listGuideRoutes() {
-  return guides.map((g) => g.slug)
+  return listGuideSlugs()
 }
 
 /**
- * Lista completa de paths a pre-renderizar en Fase 2 (react-snap).
+ * Lista completa de paths a pre-renderizar.
  */
 export function listAllRoutes() {
   return [
