@@ -63,7 +63,7 @@ function FooterSection({ footer }) {
 
       <div className="w-full grid grid-cols-2 gap-10 px-6 md:grid-cols-4 md:gap-12 lg:px-40">
         <div className="flex flex-col gap-4">
-          <img alt="Kolortec Logo" className="h-20 w-20 object-contain shrink-0 md:h-24 md:w-24" src="/assets/footer-logo.jpeg" />
+          <img alt="Kolortec Logo" className="h-28 w-28 object-contain shrink-0 md:h-32 md:w-32" src="/assets/footer-logo.jpeg" />
           <p className="body-font max-w-[34ch] text-[0.78rem] leading-relaxed text-slate-500">
             {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
           </p>
