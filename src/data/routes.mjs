@@ -13,6 +13,7 @@
 import { PRODUCT_CATEGORIES } from '../features/catalog/data/categories.js'
 import { productDetails } from '../features/product/data/productDetails.js'
 import { DEMO_PRODUCT_SLUG } from '../features/product/helpers/productDetailDemoHelper.js'
+import { guides } from '../features/guides/data/guides.js'
 
 /**
  * Rutas estáticas indexables. `/login` queda fuera (noindex en el componente).
@@ -23,6 +24,7 @@ export function listStaticRoutes() {
     { path: '/products', priority: 0.9, changefreq: 'weekly' },
     { path: '/servicios', priority: 0.7, changefreq: 'monthly' },
     { path: '/soporte', priority: 0.9, changefreq: 'weekly' },
+    { path: '/soporte/guias', priority: 0.8, changefreq: 'weekly' },
     { path: '/garantias', priority: 0.7, changefreq: 'monthly' },
     { path: '/contacto', priority: 0.6, changefreq: 'monthly' },
     { path: '/distribuidores', priority: 0.7, changefreq: 'monthly' },
@@ -44,10 +46,10 @@ export function listProductRoutes() {
 }
 
 /**
- * Slugs de guías de soporte. Vacío hasta Fase 3.2.
+ * Slugs de guías de soporte (cluster Fase 3.2).
  */
 export function listGuideRoutes() {
-  return []
+  return guides.map((g) => g.slug)
 }
 
 /**

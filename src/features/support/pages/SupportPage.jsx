@@ -103,6 +103,25 @@ function SupportPage() {
         </aside>
       </div>
 
+      <div className="mb-10 rounded-[12px] border border-[rgba(244,223,51,0.32)] bg-[rgba(244,223,51,0.06)] p-5">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-6">
+          <div>
+            <h2 className="title-font m-0 text-[1.15rem] leading-[1.2] text-white">
+              Guías técnicas de iluminación escénica
+            </h2>
+            <p className="m-0 mt-1 text-[0.92rem] leading-[1.45] text-[#cfd4dc]">
+              Diagnóstico de cabezales móviles, errores DMX, mantenimiento de consolas y reparación profesional.
+            </p>
+          </div>
+          <Link
+            to="/soporte/guias"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-[8px] bg-primary px-5 py-2.5 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
+          >
+            Ver guías
+          </Link>
+        </div>
+      </div>
+
       <div className="mb-10">
         <label className="relative block">
           <span className="sr-only">{searchPlaceholder}</span>

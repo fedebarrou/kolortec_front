@@ -13,6 +13,8 @@ const ContactPage = lazy(() => import('./features/contact/pages/ContactPage'))
 const DistributorsPage = lazy(() => import('./features/distributors/pages/DistributorsPage'))
 const RentalsPage = lazy(() => import('./features/rentals/pages/RentalsPage'))
 const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
+const GuidesIndexPage = lazy(() => import('./features/guides/pages/GuidesIndexPage'))
+const GuideDetailPage = lazy(() => import('./features/guides/pages/GuideDetailPage'))
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/soporte" element={<SupportPage />} />
+        <Route path="/soporte/guias" element={<GuidesIndexPage />} />
+        <Route path="/soporte/guias/:slug" element={<GuideDetailPage />} />
         <Route path="/garantias" element={<GarantiasPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/distribuidores" element={<DistributorsPage />} />
