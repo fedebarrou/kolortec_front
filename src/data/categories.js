@@ -7,7 +7,11 @@
 
 import { PRODUCT_CATEGORIES } from '../features/catalog/data/categories.js'
 
-const SITE = 'https://kolortec.com.ar'
+// kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
+const SITE =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SITE_URL) ||
+  (typeof process !== 'undefined' && process.env && process.env.SITE_URL) ||
+  'https://kolortec.com.ar'
 
 export async function getCategories() {
   // SWAP: const res = await fetch(`${API_BASE}/categories`); return res.json()

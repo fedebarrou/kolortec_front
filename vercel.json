@@ -2,6 +2,26 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "kolortec.com" }],
+      "destination": "https://kolortec.com.ar/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.kolortec.com" }],
+      "destination": "https://kolortec.com.ar/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.kolortec.com.ar" }],
+      "destination": "https://kolortec.com.ar/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

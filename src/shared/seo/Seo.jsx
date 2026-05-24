@@ -16,7 +16,9 @@
  *   />
  */
 
-const SITE = 'https://kolortec.com.ar'
+// Dominio canónico. kolortec.com redirige 301 acá (ver vercel.json).
+// Override con VITE_SITE_URL si en algún momento se invierte el primario.
+const SITE = import.meta.env.VITE_SITE_URL || 'https://kolortec.com.ar'
 const DEFAULT_OG = `${SITE}/og-default.jpg`
 
 function ensureAbsolute(url) {

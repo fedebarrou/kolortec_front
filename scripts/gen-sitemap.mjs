@@ -16,7 +16,9 @@ import { fileURLToPath } from 'node:url'
 
 import { listStaticRoutes, listProductRoutes, listCategoryRoutes, listGuideRoutes } from '../src/data/routes.mjs'
 
-const SITE = 'https://kolortec.com.ar'
+// kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
+// Override con SITE_URL si cambia el primario.
+const SITE = process.env.SITE_URL || 'https://kolortec.com.ar'
 
 function urlEntry({ path, lastmod, changefreq = 'weekly', priority = 0.7 }) {
   const loc = `${SITE}${path}`

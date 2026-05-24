@@ -14,7 +14,11 @@ import { defaultLandingContent } from '../features/landing/data/landingData.js'
 import { productDetails } from '../features/product/data/productDetails.js'
 import { demoProductDetail, DEMO_PRODUCT_SLUG } from '../features/product/helpers/productDetailDemoHelper.js'
 
-const SITE = 'https://kolortec.com.ar'
+// kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
+const SITE =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SITE_URL) ||
+  (typeof process !== 'undefined' && process.env && process.env.SITE_URL) ||
+  'https://kolortec.com.ar'
 
 /**
  * Lista resumida de productos (cards). Devuelve la forma que consumen
