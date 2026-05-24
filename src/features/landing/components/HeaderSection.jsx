@@ -357,8 +357,8 @@ function HeaderSection() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-10 xl:px-20 2xl:px-40 py-4">
-      <div className="w-full flex items-center justify-between relative">
-        <div className="flex items-center">
+      <div className="w-full flex items-center justify-between gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4">
+        <div className="flex items-center md:justify-self-start">
           <Link
             to="/"
             aria-label="Ir al inicio"
@@ -376,7 +376,7 @@ function HeaderSection() {
           </Link>
         </div>
 
-        <nav className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-7 absolute left-1/2 -translate-x-1/2">
+        <nav className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-7 md:justify-self-center md:px-3">
           {navItems.map((item) => (
             item.hash ? (
               <a
@@ -400,7 +400,7 @@ function HeaderSection() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3 md:justify-self-end">
           <div className="inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5">
             <button
               type="button"
