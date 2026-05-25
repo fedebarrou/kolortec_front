@@ -1,0 +1,44 @@
+# Kolortec
+
+> Fabricante argentino de iluminación profesional para espectáculo. Cabezales móviles, strobes, paneles LED y blinders Ready to Work, con respaldo de fábrica, repuestos en stock local y soporte técnico inmediato. Posicionamiento: equipos confiables para tour, rental, broadcast e instalaciones permanentes en LATAM.
+
+Kolortec diseña y fabrica luminarias profesionales con foco en durabilidad y soporte real. Operamos desde Argentina con cobertura regional. La marca es la alternativa local a fabricantes premium importados, con la ventaja de repuestos y service en el país.
+
+## Páginas principales
+- [Inicio](https://kolortec.com.ar/): Resumen del fabricante, líneas y posicionamiento Ready to Work.
+- [Catálogo de productos](https://kolortec.com.ar/products): Categorías y modelos por aplicación.
+- [Soporte técnico](https://kolortec.com.ar/soporte): Manuales, firmware y contacto directo con service de fábrica.
+- [Guía de mantenimiento](https://kolortec.com.ar/garantias): Garantía 12 meses + política de soporte.
+- [Programa de rentals](https://kolortec.com.ar/rentals): Para casas de alquiler y productoras (uptime, repuestos).
+- [Programa de distribuidores](https://kolortec.com.ar/distribuidores): Red de partners B2B con margen y respaldo.
+- [Contacto](https://kolortec.com.ar/contacto): Formulario directo a equipo comercial.
+
+## Categorías de productos
+- [Cabezales Moviles](https://kolortec.com.ar/products/cabezales-moviles): Spots, beams y wash motorizados con maxima precision y rango.
+- [Wash & Flood](https://kolortec.com.ar/products/wash-flood): Iluminacion uniforme de alto flujo para grandes superficies.
+- [Beam & Spot](https://kolortec.com.ar/products/beam-spot): Haces concentrados y definidos para diseno de aire.
+- [Barras LED](https://kolortec.com.ar/products/barras-led): Sistemas modulares lineales para arrays y backdrops.
+- [Arquitectural](https://kolortec.com.ar/products/arquitectural): Soluciones permanentes IP65 para edificios y espacios urbanos.
+- [Laser](https://kolortec.com.ar/products/laser): Proyectores laser de alto contraste para shows y mapping.
+- [Estrobos & Blinders](https://kolortec.com.ar/products/estrobos-blinders): Pulsos de alta intensidad y wash dirigido a publico.
+- [Control & Accesorios](https://kolortec.com.ar/products/control-accesorios): Consolas, splitters, cases y partes de repuesto.
+
+## Productos con detalle publicado
+- [kt-x1000-flood](https://kolortec.com.ar/producto/kt-x1000-flood)
+- [kt-demo-hyperbeam](https://kolortec.com.ar/producto/kt-demo-hyperbeam)
+
+## Guías técnicas (cluster Soporte)
+Cluster de contenido transaccional sobre diagnóstico, mantenimiento y reparación de iluminación profesional:
+
+- [Mi cabezal móvil no enciende: guía de diagnóstico paso a paso](https://kolortec.com.ar/soporte/guias/cabezal-movil-no-enciende): Antes de mandarlo a service: revisá fuente, fusible y línea de datos en este orden. El 80% de los "no enciende" se resuelve en el rack.
+- [Cabezal móvil que no responde a DMX: causas y solución](https://kolortec.com.ar/soporte/guias/cabezal-movil-no-responde-dmx): Si el cabezal enciende pero ignora la consola, el problema está en la cadena DMX o en la dirección. Cuatro chequeos antes de revolver el rack.
+- [Errores de direccionamiento DMX más comunes y cómo evitarlos](https://kolortec.com.ar/soporte/guias/errores-direccionamiento-dmx): El 90% de los problemas DMX no son de hardware: son de patcheo. Lista de los errores que vemos en tour y cómo prevenirlos.
+- [Mantenimiento preventivo de cabezas móviles para rentals](https://kolortec.com.ar/soporte/guias/mantenimiento-cabezas-moviles-rental): En rental, una hora de downtime es un cliente perdido. Plan de mantenimiento que aplicamos a la flota Kolortec, fixture por fixture.
+- [Cómo mantener tu consola para que nunca falle en escena](https://kolortec.com.ar/soporte/guias/mantenimiento-consola-iluminacion): La consola es el único equipo que no se reemplaza por backup en vivo. Cinco hábitos para que llegue al último bis sin colgarse.
+- [Servicio técnico de iluminación escénica: cómo elegir y qué pedir](https://kolortec.com.ar/soporte/guias/servicio-tecnico-iluminacion-escenica): Un buen service no es el más barato: es el que tiene repuestos hoy. Qué preguntar antes de mandar tu cabezal a reparar.
+- [Reparación de cabezal móvil profesional: qué se puede y qué no](https://kolortec.com.ar/soporte/guias/reparacion-cabezal-movil-profesional): No todo cabezal "se arregla". Mapa de reparaciones por componente con costos típicos y cuándo conviene cambiar la unidad entera.
+- [Repuestos de iluminación con stock local: qué tener siempre](https://kolortec.com.ar/soporte/guias/repuestos-iluminacion-stock-local): En gira, esperar 6 semanas un repuesto importado no es opción. Inventario mínimo recomendado para que nunca te quedes parado.
+
+## Optional
+- [Sitemap XML](https://kolortec.com.ar/sitemap.xml)
+- [robots.txt](https://kolortec.com.ar/robots.txt)
