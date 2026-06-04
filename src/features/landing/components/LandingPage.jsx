@@ -43,7 +43,8 @@ function LandingPage() {
       <Divider />
       <FeaturedSection products={content.products} />
       <ShopSection shop={content.shop} products={content.products.items} />
-      <ServicesSection services={content.services} />
+      {/* Seccion "Tres Pilares, Una Promesa" oculta temporalmente a pedido */}
+      {/* <ServicesSection services={content.services} /> */}
       <SupportSection support={content.support} />
       <DistributorTeaserSection distributor={content.distributor} />
       <RentalTeaserSection rental={content.rental} />
