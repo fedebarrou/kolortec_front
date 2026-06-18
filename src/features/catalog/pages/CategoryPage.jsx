@@ -88,7 +88,7 @@ function CategoryPage() {
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[rgba(5,5,5,0.92)] via-[rgba(5,5,5,0.55)] to-transparent"
         />
-        <div className="relative z-[1] flex h-full flex-col justify-end px-6 pb-8 lg:px-40">
+        <div className="relative z-[1] flex h-full flex-col justify-end px-6 pb-8 lg:px-40 kt-reveal">
           <nav className="mb-3 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be] drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
             <Link to="/products" className="transition hover:text-primary">{t('catalog.breadcrumbProducts', 'Productos')}</Link>
             <span aria-hidden="true">/</span>
@@ -105,7 +105,7 @@ function CategoryPage() {
       </div>
 
       <div className="px-6 py-[42px] lg:px-40">
-        <div className="mb-6 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+        <div className="mb-6 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center kt-reveal">
           <div className="inline-flex items-center gap-2.5 text-[0.82rem] tracking-[0.03em] text-[#9ca3af]">
             <strong className="text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-[#f4f4f5]">
               {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
@@ -133,7 +133,7 @@ function CategoryPage() {
         </div>
 
         {filteredProducts.length === 0 ? (
-          <div className="rounded-[10px] border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-10 text-center">
+          <div className="rounded-[10px] border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-10 text-center kt-reveal">
             <h3 className="title-font m-0 text-[1.4rem] text-white">
               {t('catalog.emptyTitle', 'Proximamente')}
               <span className="text-primary">.</span>
@@ -146,7 +146,7 @@ function CategoryPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4 kt-reveal">
             {filteredProducts.map((item) => (
               <ProductCard
                 key={`${selectedBadge}-${item.name}`}
@@ -157,7 +157,7 @@ function CategoryPage() {
           </div>
         )}
 
-        <div className="mt-14 border-t border-[#2a2a2a] pt-8">
+        <div className="mt-14 border-t border-[#2a2a2a] pt-8 kt-reveal">
           <h2 className="title-font m-0 mb-4 text-[1.6rem] leading-[1.05]">
             {t('catalog.otherCategoriesTitle', 'Otras categorias')}
             <span className="text-primary">.</span>

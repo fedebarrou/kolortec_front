@@ -11,14 +11,14 @@ function ContactPage() {
         description="Escribinos para cotizaciones, soporte técnico o partnerships. Te respondemos en 48 horas hábiles desde fábrica."
         path="/contacto"
       />
-      <div className="mb-5">
+      <div className="mb-5 kt-reveal">
         <h1 className="title-font m-0 text-[clamp(4.2rem,11.2vw,8.8rem)] leading-[1.02]">
           {t('contactPage.title', 'Contacto')}<span className="text-primary">.</span>
         </h1>
         <p className="mb-3 text-[#a0a0a0]">{t('contactPage.subtitle', 'Formulario base para conectar luego con endpoint real.')}</p>
         <Link to="/" className="font-bold text-primary">{t('contactPage.backToLanding', 'Volver al landing')}</Link>
       </div>
-      <div className="grid max-w-[640px] gap-2">
+      <div className="grid max-w-[640px] gap-2 kt-reveal">
         <label htmlFor="name" className="text-sm text-[#d7dbe2]">{t('contactPage.nameLabel', 'Nombre')}</label>
         <input id="name" placeholder={t('contactPage.namePlaceholder', 'Tu nombre')} className="rounded-[8px] border border-[#2c2c2c] bg-[#101010] p-3 text-white" />
         <label htmlFor="mail" className="text-sm text-[#d7dbe2]">{t('contactPage.emailLabel', 'Email')}</label>

@@ -59,6 +59,9 @@ out
 
 # Local Claude config
 .claude/
+.superpowers/
 
 # Source assets for one-off processing (large PNGs)
 GOLDENLINE/
+
+.vercel

@@ -118,7 +118,7 @@ function DistributorsPage() {
         description="Sumate a la red de partners de Kolortec: fabricante de línea propia con respaldo, márgenes y soporte local para tu negocio."
         path="/distribuidores"
       />
-      <div className="mb-8 grid max-w-[760px] gap-3">
+      <div className="kt-reveal mb-8 grid max-w-[760px] gap-3">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
@@ -132,7 +132,7 @@ function DistributorsPage() {
 
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,760px)_minmax(360px,1fr)] lg:gap-14">
       {submitted ? (
-        <article className="max-w-[640px] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-8">
+        <article className="kt-reveal max-w-[640px] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-8">
           <div className="mb-4 flex items-center gap-3">
             <span aria-hidden="true" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black">
               <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.6]">
@@ -152,7 +152,7 @@ function DistributorsPage() {
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="grid gap-5 rounded-[12px] border border-[#2a2a2a] bg-[#0a0a0a] p-6 md:p-8"
+          className="kt-reveal grid gap-5 rounded-[12px] border border-[#2a2a2a] bg-[#0a0a0a] p-6 md:p-8"
         >
           <div className="grid gap-5 md:grid-cols-2">
             <div>
@@ -335,7 +335,7 @@ function DistributorsPage() {
         </aside>
       </div>
 
-      <div className="mt-auto -mx-6 pt-16 lg:hidden">
+      <div className="kt-reveal mt-auto -mx-6 pt-16 lg:hidden">
         <div
           className="kt-marquee border-y border-[rgba(244,223,51,0.18)] bg-[#070707]"
           style={{ '--kt-marquee-duration': '50s' }}

@@ -64,7 +64,7 @@ function SupportPage() {
         description="Soporte técnico de iluminación escénica con respuesta inmediata y repuestos en stock local. Diagnóstico y reparación de cabezales móviles."
         path="/soporte"
       />
-      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10">
+      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10 kt-reveal">
         <div className="grid gap-3">
           <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
             {title}
@@ -103,7 +103,7 @@ function SupportPage() {
         </aside>
       </div>
 
-      <div className="mb-10 rounded-[12px] border border-[rgba(244,223,51,0.32)] bg-[rgba(244,223,51,0.06)] p-5">
+      <div className="mb-10 rounded-[12px] border border-[rgba(244,223,51,0.32)] bg-[rgba(244,223,51,0.06)] p-5 kt-reveal">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-6">
           <div>
             <h2 className="title-font m-0 text-[1.15rem] leading-[1.2] text-white">
@@ -122,7 +122,7 @@ function SupportPage() {
         </div>
       </div>
 
-      <div className="mb-10">
+      <div className="mb-10 kt-reveal">
         <label className="relative block">
           <span className="sr-only">{searchPlaceholder}</span>
           <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 left-4 inline-flex items-center text-[20px] leading-none text-[#aeb2ba]" aria-hidden="true">
@@ -138,8 +138,8 @@ function SupportPage() {
         </label>
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-2">
-        <article className="border border-[#2a2a2a] bg-[#0f0f10] p-6 rounded-[10px]">
+      <div className="grid gap-10 lg:grid-cols-2 kt-reveal">
+        <article className="border border-[#2a2a2a] bg-[#0f0f10] p-6 rounded-[10px] kt-reveal-item">
           <header className="flex items-center gap-3 mb-5">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black" aria-hidden="true">
               <svg viewBox="0 0 24 24" className="h-[20px] w-[20px] stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
@@ -173,7 +173,7 @@ function SupportPage() {
           )}
         </article>
 
-        <article className="border border-[#2a2a2a] bg-[#0f0f10] p-6 rounded-[10px]">
+        <article className="border border-[#2a2a2a] bg-[#0f0f10] p-6 rounded-[10px] kt-reveal-item">
           <header className="flex items-center gap-3 mb-5">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black" aria-hidden="true">
               <svg viewBox="0 0 24 24" className="h-[20px] w-[20px] stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">

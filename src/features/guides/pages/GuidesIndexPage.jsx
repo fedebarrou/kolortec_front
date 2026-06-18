@@ -19,7 +19,7 @@ function GuidesIndexPage() {
         <span className="text-white">Guías</span>
       </nav>
 
-      <header className="mb-10 grid max-w-[80ch] gap-3">
+      <header className="mb-10 grid max-w-[80ch] gap-3 kt-reveal">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
@@ -34,9 +34,9 @@ function GuidesIndexPage() {
         </p>
       </header>
 
-      <ul className="grid gap-4 list-none m-0 p-0 md:grid-cols-2">
+      <ul className="grid gap-4 list-none m-0 p-0 md:grid-cols-2 kt-reveal">
         {guides.map((g) => (
-          <li key={g.slug}>
+          <li key={g.slug} className="kt-reveal-item">
             <Link
               to={`/soporte/guias/${g.slug}`}
               className="block rounded-[12px] border border-[#2a2a2a] bg-[#0f0f10] p-5 transition hover:-translate-y-0.5 hover:border-primary/55"

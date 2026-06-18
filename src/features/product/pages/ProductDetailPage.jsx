@@ -83,22 +83,35 @@ function ProductDetailPage() {
   const product = rawProduct ? withProductSeo(rawProduct) : null
   const detailBodyRef = useRef(null)
   const heroImageRef = useRef(null)
+  const lensRef = useRef(null)
+
+  // Lupa cuadrada: magnifica solo la zona de la imagen bajo el cursor.
+  const LENS_SIZE = 240
+  const LENS_ZOOM = 2.5
 
   const handleHeroMouseMove = (event) => {
-    const el = heroImageRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const x = ((event.clientX - rect.left) / rect.width) * 100
-    const y = ((event.clientY - rect.top) / rect.height) * 100
-    el.style.setProperty('--kt-zoom-x', `${Math.max(0, Math.min(100, x))}%`)
-    el.style.setProperty('--kt-zoom-y', `${Math.max(0, Math.min(100, y))}%`)
-    el.style.setProperty('--kt-zoom-active', '1')
+    const fig = heroImageRef.current
+    const lens = lensRef.current
+    if (!fig || !lens) return
+    const img = fig.querySelector('img')
+    if (!img) return
+    const rect = fig.getBoundingClientRect()
+    const half = LENS_SIZE / 2
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    const left = Math.max(0, Math.min(rect.width - LENS_SIZE, x - half))
+    const top = Math.max(0, Math.min(rect.height - LENS_SIZE, y - half))
+    lens.style.backgroundImage = `url("${img.currentSrc || img.src}")`
+    lens.style.backgroundSize = `${rect.width * LENS_ZOOM}px ${rect.height * LENS_ZOOM}px`
+    lens.style.backgroundPosition = `${-left * LENS_ZOOM}px ${-top * LENS_ZOOM}px`
+    lens.style.left = `${left}px`
+    lens.style.top = `${top}px`
+    lens.style.opacity = '1'
   }
 
   const handleHeroMouseLeave = () => {
-    const el = heroImageRef.current
-    if (!el) return
-    el.style.setProperty('--kt-zoom-active', '0')
+    const lens = lensRef.current
+    if (lens) lens.style.opacity = '0'
   }
 
   const relatedMarqueeCallbackRef = (node) => {
@@ -415,6 +428,7 @@ function ProductDetailPage() {
                 >
                   <img src={galleryImages[activeImageIndex] || product.heroImage} alt={product.name} />
                 </button>
+                <span ref={lensRef} className="kt-zoom-lens" aria-hidden="true" />
               </figure>
 
               <div className="kt-detail-summary">

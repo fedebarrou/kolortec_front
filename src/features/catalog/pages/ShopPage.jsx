@@ -65,7 +65,7 @@ function ShopPage() {
           path="/products"
           noindex
         />
-        <div className="mb-8 grid gap-3">
+        <div className="mb-8 grid gap-3 kt-reveal">
           <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
             {t('catalog.searchTitle', 'Resultados')}
             <span className="text-primary">.</span>
@@ -81,7 +81,7 @@ function ShopPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4 kt-reveal">
           {filteredProducts.map((item) => (
             <ProductCard
               key={`search-${item.name}`}
@@ -108,7 +108,7 @@ function ShopPage() {
         description="Cabezales móviles, strobes y paneles LED de línea propia, testeados y listos para escena. Durabilidad y soporte de fábrica."
         path="/products"
       />
-      <div className="mb-10 grid gap-3">
+      <div className="mb-10 grid gap-3 kt-reveal">
         <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
           {catalogTitle}
           <span className="text-primary">.</span>
@@ -118,7 +118,7 @@ function ShopPage() {
 
       <CatalogFilterBar activeFilters={activeFilters} onChange={setActiveFilters} />
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 kt-reveal">
         {PRODUCT_CATEGORIES.filter((category) => categoryMatchesFilters(category, activeFilters)).map((category) => (
           <CategoryCard
             key={category.slug}

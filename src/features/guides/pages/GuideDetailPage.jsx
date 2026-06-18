@@ -61,7 +61,7 @@ function GuideDetailPage() {
         <Link to="/soporte/guias" className="transition hover:text-primary">Guías</Link>
       </nav>
 
-      <header className="mb-8 grid max-w-[80ch] gap-4">
+      <header className="mb-8 grid max-w-[80ch] gap-4 kt-reveal">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
@@ -75,9 +75,9 @@ function GuideDetailPage() {
         <p className="m-0 text-[1.05rem] leading-[1.55] text-[#cfd4dc]">{guide.excerpt}</p>
       </header>
 
-      <div className="grid max-w-[78ch] gap-7">
+      <div className="grid max-w-[78ch] gap-7 kt-reveal">
         {guide.sections.map((section) => (
-          <section key={section.heading}>
+          <section key={section.heading} className="kt-reveal-item">
             <h2 className="title-font m-0 mb-2 text-[1.4rem] leading-[1.2] text-white">
               {section.heading}
             </h2>
@@ -86,7 +86,7 @@ function GuideDetailPage() {
         ))}
       </div>
 
-      <aside className="mt-12 max-w-[78ch] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-6">
+      <aside className="mt-12 max-w-[78ch] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-6 kt-reveal">
         <p className="m-0 mb-4 text-[0.95rem] leading-[1.5] text-[#cfd4dc]">
           ¿Necesitás ayuda directa? Nuestro equipo de soporte responde con repuestos en stock local y diagnóstico en 48-72h.
         </p>
@@ -99,13 +99,13 @@ function GuideDetailPage() {
       </aside>
 
       {related.length > 0 ? (
-        <section className="mt-14 border-t border-[#2a2a2a] pt-8">
+        <section className="mt-14 border-t border-[#2a2a2a] pt-8 kt-reveal">
           <h2 className="title-font m-0 mb-4 text-[1.4rem] leading-[1.05]">
             Seguí leyendo<span className="text-primary">.</span>
           </h2>
           <ul className="grid gap-3 list-none m-0 p-0 md:grid-cols-3">
             {related.map((g) => (
-              <li key={g.slug}>
+              <li key={g.slug} className="kt-reveal-item">
                 <Link
                   to={`/soporte/guias/${g.slug}`}
                   className="block rounded-[10px] border border-[#2a2a2a] bg-[#0f0f10] p-4 transition hover:border-primary/50"

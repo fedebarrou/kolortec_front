@@ -117,7 +117,7 @@ function GarantiasPage() {
         description="Como limpiar cabezales Beam y Wash LED, estrobos, barras LED y maquinas de humo. Guias paso a paso de mantenimiento y soporte tecnico local de Kolortec."
         path="/garantias"
       />
-      <div className="mb-10 flex flex-col gap-4">
+      <div className="mb-10 flex flex-col gap-4 kt-reveal">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
@@ -137,7 +137,7 @@ function GarantiasPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 kt-reveal">
         {maintenanceGuides.map((guide) => (
           <MaintenanceCard
             key={guide.slug}

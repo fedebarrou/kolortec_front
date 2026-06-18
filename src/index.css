@@ -298,6 +298,46 @@
     transition-delay: 190ms;
   }
 
+  /* Reveal-on-scroll liviano para toda la web (sin content-visibility, asi
+     no reserva alto ni hace saltar el scroll en bloques chicos). El observer
+     global de useScrollReveal le agrega .is-visible al entrar al viewport. */
+  .kt-reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 460ms cubic-bezier(0.2, 0.9, 0.2, 1) var(--reveal-delay, 0ms),
+      transform 560ms cubic-bezier(0.2, 0.9, 0.2, 1) var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .kt-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Hijos con stagger automatico dentro de un contenedor .kt-reveal */
+  .kt-reveal-item {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 420ms cubic-bezier(0.2, 0.9, 0.2, 1),
+      transform 520ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+
+  .kt-reveal.is-visible .kt-reveal-item {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(1) { transition-delay: 60ms; }
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(2) { transition-delay: 120ms; }
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(3) { transition-delay: 180ms; }
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(4) { transition-delay: 240ms; }
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(5) { transition-delay: 300ms; }
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(6) { transition-delay: 360ms; }
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(7) { transition-delay: 420ms; }
+  .kt-reveal.is-visible .kt-reveal-item:nth-child(8) { transition-delay: 480ms; }
+
   .kt-landing-float-card {
     transition:
       transform 300ms var(--ease-smooth),
@@ -519,7 +559,7 @@
   .kt-detail-hero {
     margin-top: 20px;
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
     gap: 22px;
     align-items: stretch;
   }
@@ -534,24 +574,37 @@
     overflow: hidden;
   }
 
-  .kt-detail-hero-zoom img {
-    transform-origin: var(--kt-zoom-x, 50%) var(--kt-zoom-y, 50%);
-    transform: scale(calc(1 + 1.1 * var(--kt-zoom-active, 0)));
-    transition:
-      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-      transform-origin 80ms linear;
-    will-change: transform, transform-origin;
+  /* Lupa cuadrada: magnifica solo la zona bajo el cursor (driven por JS).
+     Vive dentro del figure (overflow:hidden), asi queda recortada al borde
+     de la imagen. cursor-zoom-in del boton sigue abriendo el lightbox. */
+  .kt-zoom-lens {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 240px;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    box-shadow:
+      0 10px 34px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+    background-repeat: no-repeat;
+    background-color: #050505;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 160ms ease;
+    z-index: 6;
   }
 
   @media (hover: none) {
-    .kt-detail-hero-zoom img {
-      transform: none;
+    .kt-zoom-lens {
+      display: none;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .kt-detail-hero-zoom img {
-      transform: none;
+    .kt-zoom-lens {
+      transition: none;
     }
   }
 
@@ -574,8 +627,8 @@
   .kt-detail-image img {
     width: 100%;
     height: auto;
-    min-height: 420px;
-    max-height: 620px;
+    min-height: 500px;
+    max-height: 720px;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1212,7 +1265,7 @@
   .kt-detail-preview-strip {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: calc((100% - 36px) / 4);
+    grid-auto-columns: calc((100% - 48px) / 5);
     gap: 12px;
     overflow-x: auto;
     padding-bottom: 6px;
@@ -1260,7 +1313,8 @@
 
   .kt-detail-preview-btn img {
     width: 100%;
-    height: 128px;
+    aspect-ratio: 1 / 1;
+    height: auto;
     object-fit: cover;
     display: block;
   }
@@ -1715,19 +1769,19 @@
 
     .kt-detail-preview-strip {
       display: flex;
-      gap: 0;
+      gap: 10px;
       scroll-snap-type: x mandatory;
       overflow-x: auto;
     }
 
     .kt-detail-preview-btn {
-      flex: 0 0 100%;
+      flex: 0 0 46%;
       border-radius: 8px;
       scroll-snap-align: start;
     }
 
     .kt-detail-preview-btn img {
-      height: 132px;
+      height: auto;
     }
 
     .kt-graphene-separator {
@@ -1783,7 +1837,9 @@
       filter: none;
     }
 
-    .kt-landing-reveal-item {
+    .kt-landing-reveal-item,
+    .kt-reveal,
+    .kt-reveal-item {
       transition: none;
       opacity: 1;
       transform: none;

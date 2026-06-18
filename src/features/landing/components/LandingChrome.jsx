@@ -1,8 +1,11 @@
 import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import FooterSection from './FooterSection'
+import { useScrollReveal } from '../../../shared/hooks/useScrollReveal'
 
 function LandingChrome({ loading, children }) {
+  useScrollReveal()
+
   return (
     <div className="bg-[rgba(5,5,5,0.9)]">
       <main>

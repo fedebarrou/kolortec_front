@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import Divider from './Divider'
 import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
@@ -13,28 +12,6 @@ import { useLandingContent } from '../hooks/useLandingContent'
 function LandingPage() {
   const { content } = useLandingContent()
 
-  useEffect(() => {
-    const sections = Array.from(document.querySelectorAll('.kt-section-reveal'))
-    if (sections.length === 0) return undefined
-
-    const reveal = (node) => node.classList.add('is-visible')
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
-          reveal(entry.target)
-          observer.unobserve(entry.target)
-        })
-      },
-      { threshold: 0.18, rootMargin: '0px 0px -10% 0px' },
-    )
-
-    sections.forEach((section) => observer.observe(section))
-
-    return () => observer.disconnect()
-  }, [])
-
   return (
     <>
       <HeroSection hero={content.hero} />
@@ -42,7 +19,7 @@ function LandingPage() {
       <InstagramSection gallery={content.gallery} />
       <Divider />
       <FeaturedSection products={content.products} />
-      <ShopSection shop={content.shop} products={content.products.items} />
+      <ShopSection shop={content.shop} />
       {/* Seccion "Tres Pilares, Una Promesa" oculta temporalmente a pedido */}
       {/* <ServicesSection services={content.services} /> */}
       <SupportSection support={content.support} />
