@@ -165,7 +165,7 @@ export const defaultLandingContent = {
     ],
   },
   shop: {
-    title: 'Guia de\nMantenimiento',
+    title: 'Soporte\nProfesional',
     subtitle:
       'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
     ctas: [

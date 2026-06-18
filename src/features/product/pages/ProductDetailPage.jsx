@@ -282,6 +282,17 @@ function ProductDetailPage() {
     return [specs.slice(0, mid), specs.slice(mid)]
   }, [product])
 
+  // Marquee de accesorios: repetimos la lista hasta llenar el ancho (al menos
+  // ~8 items por mitad) y duplicamos en dos mitades identicas, asi el loop a
+  // -50% es continuo y nunca queda espacio en blanco entre el ultimo y el primero.
+  const marqueeAccessories = useMemo(() => {
+    const base = product?.accessories ?? []
+    if (base.length === 0) return []
+    const repeats = Math.max(1, Math.ceil(8 / base.length))
+    const half = Array.from({ length: repeats }, () => base).flat()
+    return [...half, ...half]
+  }, [product?.accessories])
+
   const galleryImages = useMemo(() => {
     const baseGallery = (product?.gallery ?? []).filter(Boolean)
     const primaryCandidate = selectedVariant?.image || product?.heroImage
@@ -701,7 +712,7 @@ function ProductDetailPage() {
               {isAccessoriesOpen && (
                 <div ref={relatedMarqueeCallbackRef} className="kt-marquee mt-8" style={{ '--kt-marquee-duration': '38s' }}>
                   <div className="kt-marquee-track">
-                    {[...product.accessories, ...product.accessories].map((item, index) => (
+                    {marqueeAccessories.map((item, index) => (
                       <div
                         key={`acc-${item.name}-${index}`}
                         className="kt-marquee-item kt-marquee-item-product"
