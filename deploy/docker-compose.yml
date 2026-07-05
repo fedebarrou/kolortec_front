@@ -1,0 +1,20 @@
+# Storefront público (kolortec) en el VPS. UN contenedor sirve TODAS las webs
+# públicas: el tenant se resuelve por dominio (accountHost.js → X-Account-Host),
+# así que sumar un cliente = registrar su dominio en account_domains + agregar
+# su server_name al nginx_proxy. Convive en la red externa `web`.
+services:
+  kolortec_web:
+    build:
+      context: ..
+      args:
+        VITE_API_BASE_URL: https://api.soytiendita.store/api
+    image: kolortec-web
+    container_name: kolortec_web
+    restart: unless-stopped
+    networks:
+      - web
+    mem_limit: 256m
+
+networks:
+  web:
+    external: true

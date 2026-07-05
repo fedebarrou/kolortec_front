@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { trackEvent } from '../../../shared/services/tracking'
 import { getProductDetailBySlug } from '../data/productDetails'
 import { withProductSeo } from '../../../data/products.js'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
@@ -160,6 +161,16 @@ function ProductDetailPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [slug])
+
+  // Track product_view — fire-and-forget, never blocks render.
+  useEffect(() => {
+    if (!slug) return
+    trackEvent({
+      event_type: 'product_view',
+      path: `/producto/${slug}`,
+      product_id: slug,
+    })
   }, [slug])
 
   useEffect(() => {

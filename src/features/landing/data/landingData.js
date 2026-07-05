@@ -165,27 +165,24 @@ export const defaultLandingContent = {
     ],
   },
   shop: {
-    title: 'Soporte\nProfesional',
+    title: 'Guia de\nMantenimiento',
     subtitle:
       'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
     ctas: [
       {
         label: 'Descargas',
-        description: 'Manuales, fichas tecnicas y firmware',
         href: '/soporte',
         variant: 'primary',
         icon: 'download',
       },
       {
         label: 'Comunicate con nosotros',
-        description: 'WhatsApp y email de soporte tecnico',
         href: '/#support',
         variant: 'outline',
         icon: 'forum',
       },
       {
         label: 'Mantenimiento',
-        description: 'Garantia de fabrica y cuidado del equipo',
         href: '/garantias',
         variant: 'outline',
         icon: 'verified',

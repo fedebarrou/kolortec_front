@@ -1,65 +1,52 @@
 import { useEffect } from 'react'
 
 /**
- * Observer global de reveal-on-scroll. Se monta una sola vez (en LandingChrome)
- * y cubre toda la web, incluyendo paginas cargadas con lazy/Suspense gracias a
- * un MutationObserver que detecta nodos nuevos.
+ * useScrollReveal — observer global de reveal-on-scroll.
  *
- * Anima cualquier elemento con la clase `.kt-section-reveal` (secciones grandes
- * del landing) o `.kt-reveal` (resto del sitio): al entrar al viewport les agrega
- * `.is-visible`. Respeta `prefers-reduced-motion`.
+ * Agrega `.is-visible` a los elementos `.kt-reveal` / `.kt-section-reveal`
+ * cuando entran al viewport (estilos en index.css). Se monta una sola vez
+ * (LandingChrome). Re-escanea el DOM ante contenido que aparece async (fetch),
+ * y desobserva cada elemento al revelarlo.
  */
-const REVEAL_SELECTOR = '.kt-section-reveal, .kt-reveal'
-
-export function useScrollReveal() {
+export function useScrollReveal(selector = '.kt-reveal, .kt-section-reveal') {
   useEffect(() => {
     if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
-      return undefined
+      // Sin soporte: revelá todo para no dejar contenido invisible.
+      if (typeof document !== 'undefined') {
+        document.querySelectorAll(selector).forEach((el) => el.classList.add('is-visible'))
+      }
+      return
     }
-
-    const prefersReduced =
-      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
-          entry.target.classList.add('is-visible')
-          io.unobserve(entry.target)
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            io.unobserve(entry.target)
+          }
         })
       },
-      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
     )
 
-    const register = (el) => {
-      if (el.classList.contains('is-visible')) return
-      if (prefersReduced) {
-        el.classList.add('is-visible')
-        return
-      }
-      io.observe(el)
-    }
-
-    const scan = (root) => {
-      if (!(root instanceof Element)) return
-      if (root.matches && root.matches(REVEAL_SELECTOR)) register(root)
-      if (root.querySelectorAll) root.querySelectorAll(REVEAL_SELECTOR).forEach(register)
-    }
-
-    document.querySelectorAll(REVEAL_SELECTOR).forEach(register)
-
-    const mo = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach(scan)
+    const observeAll = () => {
+      document.querySelectorAll(selector).forEach((el) => {
+        if (!el.classList.contains('is-visible')) io.observe(el)
       })
-    })
+    }
+
+    observeAll()
+
+    // Cubre secciones que se montan después (datos async del adapter).
+    const mo = new MutationObserver(() => observeAll())
     mo.observe(document.body, { childList: true, subtree: true })
 
     return () => {
       io.disconnect()
       mo.disconnect()
     }
-  }, [])
+  }, [selector])
 }
 
 export default useScrollReveal

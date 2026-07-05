@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLanguage } from '../i18n/LanguageProvider'
+import { getGoogleAuthUrl } from '../services/contentService'
 
 function GoogleIcon({ className }) {
   return (
@@ -43,10 +44,11 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
   if (!isOpen) return null
 
   const handleProvider = (provider) => {
-    if (typeof window !== 'undefined' && window.console) {
-      // eslint-disable-next-line no-console
-      console.log(`[Kolortec] Solicitud de inicio de sesion con ${provider}. Pendiente de integracion OAuth.`)
+    if (provider === 'google') {
+      window.location.href = getGoogleAuthUrl()
+      return
     }
+    // Outlook OAuth not yet configured in tiendita — close dialog
     onClose()
   }
 

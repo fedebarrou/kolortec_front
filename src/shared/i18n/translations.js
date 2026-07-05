@@ -47,7 +47,7 @@ export const translations = {
         cta: 'View Products',
       },
       shop: {
-        title: 'Professional\nSupport',
+        title: 'Maintenance\nGuide',
         subtitle:
           'Factory-backed warranty, original spare parts, and technical support to keep your Kolortec gear running season after season.',
         cta: 'Go to Products',
@@ -183,8 +183,7 @@ export const translations = {
     },
     support: {
       page: {
-        eyebrow: 'Support / Downloads',
-        title: 'Support Center',
+        title: 'Manuals & Libraries',
         subtitle:
           'Find technical manuals, firmware updates, photometric files, and reference material for the entire Kolortec line.',
         manualsTitle: 'Manuals',
@@ -192,11 +191,7 @@ export const translations = {
         firmwareTitle: 'Libraries',
         firmwareCta: 'Browse downloads',
         contactTitle: 'Need help?',
-        contactSubtitle:
-          'Did not find what you were looking for? Our technical team responds fast and keeps spare parts in local stock.',
         contactCta: 'Contact technical support',
-        guidesTitle: 'Technical guides',
-        guidesCta: 'View guides',
         searchPlaceholder: 'Search by product (e.g. KT-X1000)',
         emptyResults: 'No results for this search.',
       },
@@ -372,7 +367,7 @@ export const translations = {
         cta: 'Ver Productos',
       },
       shop: {
-        title: 'Soporte\nProfesional',
+        title: 'Guia de\nMantenimiento',
         subtitle:
           'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
         cta: 'Ir a Productos',
@@ -508,8 +503,7 @@ export const translations = {
     },
     support: {
       page: {
-        eyebrow: 'Soporte / Descargas',
-        title: 'Centro de Soporte',
+        title: 'Manuales y librerias',
         subtitle:
           'Encontra manuales tecnicos, actualizaciones de firmware, fotometria y material de referencia de toda la linea Kolortec.',
         manualsTitle: 'Manuales',
@@ -517,11 +511,7 @@ export const translations = {
         firmwareTitle: 'Librerias',
         firmwareCta: 'Ver descargas',
         contactTitle: 'Necesitas ayuda?',
-        contactSubtitle:
-          'No encontras lo que buscas? Nuestro equipo tecnico responde rapido y mantiene repuestos en stock local.',
         contactCta: 'Contactar soporte tecnico',
-        guidesTitle: 'Guias tecnicas',
-        guidesCta: 'Ver guias',
         searchPlaceholder: 'Buscar por producto (ej: KT-X1000)',
         emptyResults: 'Sin resultados para esta busqueda.',
       },

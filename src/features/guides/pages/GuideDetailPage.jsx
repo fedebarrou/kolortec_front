@@ -1,11 +1,40 @@
+import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Seo, { SITE } from '../../../shared/seo/Seo'
 import { articleJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
-import { getGuideBySlug, listGuides } from '../data/guides'
+import { getGuideBySlug, getGuides } from '../../../shared/services/contentService'
+import { getGuideBySlug as getGuideBySlugLocal, listGuides } from '../data/guides'
 
+/**
+ * We initialise with the hardcoded local data synchronously so there is no
+ * flash of "not found" on first render while the remote fetch is in-flight.
+ */
 function GuideDetailPage() {
   const { slug } = useParams()
-  const guide = getGuideBySlug(slug)
+
+  const [guide, setGuide] = useState(() => getGuideBySlugLocal(slug))
+  const [related, setRelated] = useState(() =>
+    listGuides()
+      .filter((g) => g.slug !== slug)
+      .slice(0, 3),
+  )
+
+  useEffect(() => {
+    if (!slug) return undefined
+    let cancelled = false
+
+    getGuideBySlug(slug).then((data) => {
+      if (!cancelled && data) setGuide(data)
+    })
+
+    getGuides().then((all) => {
+      if (!cancelled && Array.isArray(all)) {
+        setRelated(all.filter((g) => g.slug !== slug).slice(0, 3))
+      }
+    })
+
+    return () => { cancelled = true }
+  }, [slug])
 
   if (!guide) {
     return (
@@ -27,10 +56,6 @@ function GuideDetailPage() {
 
   const path = `/soporte/guias/${guide.slug}`
   const url = `${SITE}${path}`
-
-  const related = listGuides()
-    .filter((g) => g.slug !== guide.slug)
-    .slice(0, 3)
 
   const articleLd = articleJsonLd({
     title: guide.title,
@@ -91,10 +116,10 @@ function GuideDetailPage() {
           ¿Necesitás ayuda directa? Nuestro equipo de soporte responde con repuestos en stock local y diagnóstico en 48-72h.
         </p>
         <Link
-          to={guide.cta.href}
+          to={guide.cta?.href || '/soporte'}
           className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-6 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
         >
-          {guide.cta.label}
+          {guide.cta?.label || 'Contactar soporte'}
         </Link>
       </aside>
 

@@ -1,9 +1,21 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Seo from '../../../shared/seo/Seo'
+import { getGuides } from '../../../shared/services/contentService'
 import { listGuides } from '../data/guides'
 
 function GuidesIndexPage() {
-  const guides = listGuides()
+  const [guides, setGuides] = useState(listGuides)
+
+  useEffect(() => {
+    let cancelled = false
+    getGuides().then((data) => {
+      if (!cancelled && Array.isArray(data) && data.length > 0) {
+        setGuides(data)
+      }
+    })
+    return () => { cancelled = true }
+  }, [])
 
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">

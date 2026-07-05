@@ -7,6 +7,7 @@ import MatrixBackground from './shared/components/MatrixBackground.jsx'
 import HeaderSection from './features/landing/components/HeaderSection.jsx'
 import WhatsAppFab from './shared/components/WhatsAppFab.jsx'
 import { LanguageProvider } from './shared/i18n/LanguageProvider.jsx'
+import { AuthProvider } from './shared/auth/AuthContext.jsx'
 
 function CanvasScaler() {
   useEffect(() => {
@@ -34,15 +35,17 @@ const tree = (
   <StrictMode>
     <LanguageProvider>
       <BrowserRouter>
-        <div className="kt-app-shell">
-          <MatrixBackground />
-          <HeaderSection />
-          <div className="kt-zoom-canvas">
-            <App />
+        <AuthProvider>
+          <div className="kt-app-shell">
+            <MatrixBackground />
+            <HeaderSection />
+            <div className="kt-zoom-canvas">
+              <App />
+            </div>
+            <WhatsAppFab />
+            <CanvasScaler />
           </div>
-          <WhatsAppFab />
-          <CanvasScaler />
-        </div>
+        </AuthProvider>
       </BrowserRouter>
     </LanguageProvider>
   </StrictMode>

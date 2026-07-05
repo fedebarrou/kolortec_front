@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.vercel
+.superpowers
+.claude
+mock-api
+docs
+design
+*.md

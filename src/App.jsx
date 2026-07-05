@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LandingChrome from './features/landing/components/LandingChrome'
+import { usePageTracking } from './shared/services/tracking'
 
 const HomePage = lazy(() => import('./features/home/pages/HomePage'))
 const ShopPage = lazy(() => import('./features/catalog/pages/ShopPage'))
@@ -17,6 +18,8 @@ const GuidesIndexPage = lazy(() => import('./features/guides/pages/GuidesIndexPa
 const GuideDetailPage = lazy(() => import('./features/guides/pages/GuideDetailPage'))
 
 function App() {
+  usePageTracking()
+
   return (
     <Routes>
       <Route element={<LandingChrome />}>

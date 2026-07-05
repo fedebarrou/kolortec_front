@@ -34,7 +34,7 @@ function HeroSection({ hero }) {
     >
       {slides.map((slide, index) => {
         const isActive = index === activeIndex
-        const isGoldenLine = slide.translationKey === 'hero3'
+        const isGoldenLine = slide.isGolden === true || slide.translationKey === 'hero3'
         const overlayClass = isGoldenLine
           ? 'absolute inset-0 bg-gradient-to-t from-[#1a0d04] via-[rgba(26,13,4,0.55)] to-[rgba(26,13,4,0.15)]'
           : 'absolute inset-0 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.8)] to-[rgba(5,5,5,0.4)]'
@@ -66,7 +66,7 @@ function HeroSection({ hero }) {
       {slides.map((slide, index) => {
         const isActive = index === activeIndex
         const tKey = slide.translationKey || 'hero'
-        const isGolden = tKey === 'hero3'
+        const isGolden = slide.isGolden === true || tKey === 'hero3'
         const heroTitle = t(`landing.${tKey}.title`, slide.title)
         const heroSubtitle = t(`landing.${tKey}.subtitle`, slide.subtitle)
         const primaryCta = t(`landing.${tKey}.primaryCta`, slide.primaryCta)

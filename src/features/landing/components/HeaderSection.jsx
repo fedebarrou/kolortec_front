@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { defaultLandingContent } from '../data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { useAuth } from '../../../shared/auth/AuthContext'
 
 const normalizeText = (value) =>
   value
@@ -44,6 +45,7 @@ const scoreProductMatch = (product, query) => {
 
 function HeaderSection() {
   const { lang, setLang, t } = useLanguage()
+  const { user, logout } = useAuth()
   const { pathname, hash } = useLocation()
   const navigate = useNavigate()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -502,15 +504,27 @@ function HeaderSection() {
             ) : null}
           </form>
 
-          <button
-            aria-label={t('header.loginAria', 'Iniciar sesión')}
-            title={t('header.loginAria', 'Iniciar sesión')}
-            className="h-9 w-9 bg-primary text-background-dark hover:bg-white transition-all inline-flex items-center justify-center rounded-lg"
-            type="button"
-            onClick={() => setIsLoginDialogOpen(true)}
-          >
-            <span className="material-symbols-outlined text-[18px] leading-none">person</span>
-          </button>
+          {user ? (
+            <button
+              aria-label={t('header.logoutAria', 'Cerrar sesión')}
+              title={t('header.logoutAria', 'Cerrar sesión')}
+              className="h-9 w-9 bg-primary text-background-dark hover:bg-white transition-all inline-flex items-center justify-center rounded-lg"
+              type="button"
+              onClick={() => logout()}
+            >
+              <span className="material-symbols-outlined text-[18px] leading-none">logout</span>
+            </button>
+          ) : (
+            <button
+              aria-label={t('header.loginAria', 'Iniciar sesión')}
+              title={t('header.loginAria', 'Iniciar sesión')}
+              className="h-9 w-9 bg-primary text-background-dark hover:bg-white transition-all inline-flex items-center justify-center rounded-lg"
+              type="button"
+              onClick={() => setIsLoginDialogOpen(true)}
+            >
+              <span className="material-symbols-outlined text-[18px] leading-none">person</span>
+            </button>
+          )}
 
           <button
             ref={mobileMenuBtnRef}
