@@ -101,12 +101,14 @@ function GuideDetailPage() {
       </header>
 
       <div className="grid max-w-[78ch] gap-7 kt-reveal">
-        {guide.sections.map((section) => (
-          <section key={section.heading} className="kt-reveal-item">
-            <h2 className="title-font m-0 mb-2 text-[1.4rem] leading-[1.2] text-white">
-              {section.heading}
-            </h2>
-            <p className="m-0 text-[1rem] leading-[1.65] text-[#b7bbc4]">{section.body}</p>
+        {guide.sections.map((section, i) => (
+          <section key={`${section.heading || 'sec'}-${i}`} className="kt-reveal-item">
+            {section.heading ? (
+              <h2 className="title-font m-0 mb-2 text-[1.4rem] leading-[1.2] text-white">
+                {section.heading}
+              </h2>
+            ) : null}
+            <p className="m-0 whitespace-pre-line text-[1rem] leading-[1.65] text-[#b7bbc4]">{section.body}</p>
           </section>
         ))}
       </div>

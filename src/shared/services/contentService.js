@@ -225,6 +225,46 @@ function mapServicios(raw) {
  *  - A markdown/HTML string (we wrap it as a single section)
  *  - undefined/null (sections will be empty)
  */
+function stripInlineMarks(s) {
+  return String(s || '')
+    .replace(/\{([^}]*)\}/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    .trim()
+}
+
+/**
+ * Parsea el `contenido` de un blog de tiendita (mini-sintaxis por línea: <h2>/<p>/<li>/<warn>/<spec>/...)
+ * a secciones [{ heading, body }] que renderiza GuideDetailPage. Los <li> se vuelven viñetas y el body
+ * conserva saltos de línea (se renderiza con whitespace-pre-line).
+ */
+function parseBlogContent(str) {
+  const sections = []
+  let cur = { heading: '', body: [] }
+  const flush = () => {
+    const body = cur.body.join('\n').trim()
+    if (cur.heading || body) sections.push({ heading: cur.heading, body })
+    cur = { heading: '', body: [] }
+  }
+  for (const rawLine of String(str).split('\n')) {
+    const line = rawLine.trim()
+    if (!line) continue
+    const m = line.match(/^<(h[1-4]|p|li|oli|warn|note|hr|spec)>\s*(.*)$/i)
+    if (!m) { cur.body.push(stripInlineMarks(line)); continue }
+    const tag = m[1].toLowerCase()
+    const text = stripInlineMarks(m[2])
+    if (tag[0] === 'h') { flush(); cur.heading = text }
+    else if (tag === 'li') cur.body.push('•  ' + text)
+    else if (tag === 'oli') cur.body.push(text)
+    else if (tag === 'warn' || tag === 'note') cur.body.push('⚠  ' + text)
+    else if (tag === 'hr') { /* separador: ignorar */ }
+    else if (tag === 'spec') { const [k, v] = text.split('|'); cur.body.push(`${(k || '').trim()}: ${(v || '').trim()}`) }
+    else cur.body.push(text)
+  }
+  flush()
+  return sections.filter((s) => s.heading || s.body)
+}
+
 function mapBlogToGuides(raw) {
   if (!Array.isArray(raw) || raw.length === 0) return null
 
@@ -238,8 +278,8 @@ function mapBlogToGuides(raw) {
         body: block.body || block.cuerpo || block.contenido || '',
       }))
     } else if (typeof post.contenido === 'string' && post.contenido.trim()) {
-      // Fallback: wrap whole content in one section
-      sections = [{ heading: '', body: post.contenido }]
+      // Blog de tiendita: contenido = mini-sintaxis por línea → parsear a secciones.
+      sections = parseBlogContent(post.contenido)
     }
 
     return {
