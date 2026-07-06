@@ -1,13 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-const FALLBACK_CAROUSEL_IMAGES = [
-  '/assets/products/prod-001.webp',
-  '/assets/products/prod-005.webp',
-  '/assets/products/prod-009.webp',
-  '/assets/products/prod-013.webp',
-  '/assets/products/prod-016.webp',
-]
+const FALLBACK_IMAGE = '/assets/products/prod-013.webp'
 
 function SupportSection({ support }) {
   const { t } = useLanguage()
@@ -15,39 +8,7 @@ function SupportSection({ support }) {
   const sectionSubtitle = t('landing.support.subtitle', support.subtitle)
 
   const contactOptions = support.contacts ?? []
-  const carouselImages = useMemo(
-    () => (Array.isArray(support.carouselImages) && support.carouselImages.length > 0
-      ? support.carouselImages
-      : FALLBACK_CAROUSEL_IMAGES),
-    [support.carouselImages],
-  )
-
-  const [activeId, setActiveId] = useState(0)
-  const [isHorizontal, setIsHorizontal] = useState(false)
-  const len = carouselImages.length
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined
-    const mq = window.matchMedia('(max-width: 1023px)')
-    const sync = () => setIsHorizontal(mq.matches)
-    sync()
-    if (mq.addEventListener) {
-      mq.addEventListener('change', sync)
-      return () => mq.removeEventListener('change', sync)
-    }
-    mq.addListener(sync)
-    return () => mq.removeListener(sync)
-  }, [])
-
-  const goPrev = () => setActiveId((i) => (i - 1 + len) % len)
-  const goNext = () => setActiveId((i) => (i + 1) % len)
-
-  const getRelativePos = (i, current, total) => {
-    let p = i - current
-    if (p > total / 2) p -= total
-    if (p < -total / 2) p += total
-    return p
-  }
+  const image = (Array.isArray(support.carouselImages) && support.carouselImages[0]) || FALLBACK_IMAGE
 
   return (
     <section className="px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" id="support" style={{ '--reveal-delay': '240ms' }}>
@@ -95,68 +56,14 @@ function SupportSection({ support }) {
           )}
         </div>
 
-        <div className="kt-landing-reveal-item relative min-h-[260px] sm:min-h-[400px] lg:min-h-0 lg:h-full">
-          <button
-            type="button"
-            onClick={goPrev}
-            aria-label={t('common.previousImage', 'Imagen anterior')}
-            className="absolute z-10 inline-flex items-center justify-center text-primary transition hover:scale-110 -left-2 top-1/2 -translate-y-1/2 lg:left-1/2 lg:top-auto lg:-top-9 lg:-translate-x-1/2 lg:translate-y-0"
-          >
-            <svg viewBox="0 0 24 24" className="h-8 w-8 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
-              <path d={isHorizontal ? 'M15 6l-6 6 6 6' : 'M6 15l6-6 6 6'} />
-            </svg>
-          </button>
-
-          <div className="absolute inset-0 overflow-hidden">
-            {carouselImages.map((src, i) => {
-              const pos = getRelativePos(i, activeId, len)
-              const isVisible = Math.abs(pos) <= 1
-              return (
-                <img
-                  key={src}
-                  src={src}
-                  alt=""
-                  loading="lazy"
-                  aria-hidden="true"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  style={{
-                    transform: isHorizontal
-                      ? `translateX(${pos * 100}%)`
-                      : `translateY(${pos * 100}%)`,
-                    opacity: isVisible ? 1 : 0,
-                    transition:
-                      'transform 700ms cubic-bezier(0.4, 0, 0.2, 1), opacity 700ms cubic-bezier(0.4, 0, 0.2, 1)',
-                    maskImage: isHorizontal
-                      ? 'linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%)'
-                      : 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
-                    WebkitMaskImage: isHorizontal
-                      ? 'linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%)'
-                      : 'linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%)',
-                  }}
-                />
-              )
-            })}
-
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505] lg:to-transparent"
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={goNext}
-            aria-label={t('common.nextImage', 'Imagen siguiente')}
-            className="absolute z-10 inline-flex items-center justify-center text-primary transition hover:scale-110 -right-2 top-1/2 -translate-y-1/2 lg:left-1/2 lg:right-auto lg:top-auto lg:-bottom-9 lg:-translate-x-1/2 lg:translate-y-0"
-          >
-            <svg viewBox="0 0 24 24" className="h-8 w-8 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
-              <path d={isHorizontal ? 'M9 6l6 6-6 6' : 'M6 9l6 6 6-6'} />
-            </svg>
-          </button>
+        <div className="kt-landing-reveal-item relative min-h-[240px] overflow-hidden rounded-2xl sm:min-h-[340px] lg:min-h-0 lg:h-full">
+          <img
+            src={image}
+            alt={sectionTitle}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
+          />
         </div>
       </div>
     </section>
