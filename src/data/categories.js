@@ -6,6 +6,7 @@
  */
 
 import { PRODUCT_CATEGORIES } from '../features/catalog/data/categories.js'
+import { getCategorias as fetchCategoriasApi } from '../shared/services/contentService.js'
 
 // kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
 const SITE =
@@ -13,15 +14,34 @@ const SITE =
   (typeof process !== 'undefined' && process.env && process.env.SITE_URL) ||
   'https://kolortec.com.ar'
 
+/**
+ * Merge de una categoría de la API con el diseño LOCAL por slug: la API es la fuente de la
+ * LISTA + nombre + orden + imagen; el local aporta el enriquecimiento visual (nameEn,
+ * description, image webp, tags de facetas). Categorías nuevas (sin local) igual se muestran.
+ */
+function mergeCategoria(apiCat) {
+  const local = PRODUCT_CATEGORIES.find((c) => c.slug === apiCat.slug)
+  return {
+    ...(local || {}),
+    slug: apiCat.slug,
+    name: apiCat.nombre || local?.name || apiCat.slug,
+    image: apiCat.image_url || local?.image || `${SITE}/og-default.jpg`,
+  }
+}
+
 export async function getCategories() {
-  // SWAP: const res = await fetch(`${API_BASE}/categories`); return res.json()
+  // Lista autoritativa desde tiendita (por cuenta); fallback al array local si falla/vacío.
+  const api = await fetchCategoriasApi().catch(() => [])
+  if (Array.isArray(api) && api.length) {
+    return api.map(mergeCategoria)
+  }
   return PRODUCT_CATEGORIES
 }
 
 export async function getCategory(slug) {
-  // SWAP: const res = await fetch(`${API_BASE}/categories/${slug}`); return res.json()
   if (!slug) return null
-  const raw = PRODUCT_CATEGORIES.find((c) => c.slug === slug)
+  const list = await getCategories()
+  const raw = list.find((c) => c.slug === slug)
   return raw ? withCategorySeo(raw) : null
 }
 

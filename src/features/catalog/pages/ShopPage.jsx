@@ -8,11 +8,14 @@ import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
 import { PRODUCT_CATEGORIES } from '../data/categories'
+import { getCategories } from '../../../data/categories.js'
 import { categoryMatchesFilters } from '../data/filters'
 
 function ShopPage() {
   const { t } = useLanguage()
   const [products, setProducts] = useState(defaultLandingContent.products.items)
+  // Categorías: fuente de verdad = tiendita (por cuenta). Fallback al array local mientras carga.
+  const [categories, setCategories] = useState(PRODUCT_CATEGORIES)
   const [searchParams] = useSearchParams()
   const [activeFilters, setActiveFilters] = useState({})
   const query = (searchParams.get('q') ?? '').trim().toLowerCase()
@@ -22,6 +25,9 @@ function ShopPage() {
     let mounted = true
     getShopProducts().then((response) => {
       if (mounted) setProducts(response)
+    })
+    getCategories().then((list) => {
+      if (mounted && Array.isArray(list) && list.length) setCategories(list)
     })
     return () => { mounted = false }
   }, [])
@@ -119,14 +125,14 @@ function ShopPage() {
       <CatalogFilterBar activeFilters={activeFilters} onChange={setActiveFilters} />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 kt-reveal">
-        {PRODUCT_CATEGORIES.filter((category) => categoryMatchesFilters(category, activeFilters)).map((category) => (
+        {categories.filter((category) => categoryMatchesFilters(category, activeFilters)).map((category) => (
           <CategoryCard
             key={category.slug}
             category={category}
             count={categoryCounts[category.slug] ?? 0}
           />
         ))}
-        {PRODUCT_CATEGORIES.filter((category) => categoryMatchesFilters(category, activeFilters)).length === 0 ? (
+        {categories.filter((category) => categoryMatchesFilters(category, activeFilters)).length === 0 ? (
           <div className="col-span-2 border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-10 text-center lg:col-span-3 xl:col-span-4">
             <h3 className="title-font m-0 text-[1.4rem] text-white">
               {t('catalog.emptyFiltersTitle', 'Sin coincidencias')}

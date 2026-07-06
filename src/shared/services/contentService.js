@@ -397,6 +397,17 @@ export async function getShopProducts() {
 }
 
 /**
+ * getCategorias()
+ * Categorías definidas en tiendita para esta cuenta (fuente de verdad de la LISTA).
+ * Shape crudo: [{ id, slug, nombre, orden, image_url }]. El merge con el diseño local
+ * (imagen/tags/nameEn) se hace en src/data/categories.js. Fallback: [] si falla.
+ */
+export async function getCategorias() {
+  const raw = await fetchWithFallback('/public/categorias', [])
+  return Array.isArray(raw) ? raw : []
+}
+
+/**
  * getProductDetail(slug)
  * No dedicated single-product endpoint yet — searches within /public/productos.
  * Falls back to null if not found (caller should handle 404 state).

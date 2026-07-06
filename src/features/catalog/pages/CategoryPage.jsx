@@ -5,16 +5,17 @@ import { defaultLandingContent } from '../../landing/data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
-import { withCategorySeo } from '../../../data/categories.js'
-import { getCategoryBySlug, PRODUCT_CATEGORIES } from '../data/categories'
+import { getCategory, getCategories } from '../../../data/categories.js'
+import { PRODUCT_CATEGORIES } from '../data/categories'
 
 function CategoryPage() {
   const { categorySlug } = useParams()
   const { lang, t } = useLanguage()
   const [products, setProducts] = useState(defaultLandingContent.products.items)
   const [selectedBadge, setSelectedBadge] = useState('all')
-  const rawCategory = getCategoryBySlug(categorySlug)
-  const category = rawCategory ? withCategorySeo(rawCategory) : null
+  // category: undefined = cargando, null = no encontrada. allCategories: lista para "otras".
+  const [category, setCategory] = useState(undefined)
+  const [allCategories, setAllCategories] = useState(PRODUCT_CATEGORIES)
   const categoryLabel = category ? (lang === 'en' ? category.nameEn : category.name) : t('pageTitle.products', 'Productos')
 
   useEffect(() => {
@@ -24,6 +25,16 @@ function CategoryPage() {
     })
     return () => { mounted = false }
   }, [])
+
+  useEffect(() => {
+    let mounted = true
+    setCategory(undefined)
+    getCategory(categorySlug).then((c) => { if (mounted) setCategory(c) })
+    getCategories().then((list) => {
+      if (mounted && Array.isArray(list) && list.length) setAllCategories(list)
+    })
+    return () => { mounted = false }
+  }, [categorySlug])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -50,6 +61,11 @@ function CategoryPage() {
     if (selectedBadge === 'all') return categoryProducts
     return categoryProducts.filter((item) => (item.badge ?? '').toLowerCase() === selectedBadge)
   }, [categoryProducts, selectedBadge])
+
+  if (category === undefined) {
+    // Cargando la categoría desde la API — sección vacía para no parpadear "no encontrada".
+    return <section className="min-h-screen bg-[#050505]" aria-busy="true" />
+  }
 
   if (!category) {
     return (
@@ -163,7 +179,7 @@ function CategoryPage() {
             <span className="text-primary">.</span>
           </h2>
           <div className="flex flex-wrap gap-2">
-            {PRODUCT_CATEGORIES.filter((c) => c.slug !== category.slug).map((c) => (
+            {allCategories.filter((c) => c.slug !== category.slug).map((c) => (
               <Link
                 key={c.slug}
                 to={`/products/${c.slug}`}
