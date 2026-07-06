@@ -2,17 +2,16 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Seo from '../../../shared/seo/Seo'
 import { getGuides } from '../../../shared/services/contentService'
-import { listGuides } from '../data/guides'
 
 function GuidesIndexPage() {
-  const [guides, setGuides] = useState(listGuides)
+  // Data-driven: las guías salen de tiendita; si la cuenta no tiene, la lista queda vacía
+  // (empty state) en vez de mostrar las guías hardcodeadas.
+  const [guides, setGuides] = useState([])
 
   useEffect(() => {
     let cancelled = false
     getGuides().then((data) => {
-      if (!cancelled && Array.isArray(data) && data.length > 0) {
-        setGuides(data)
-      }
+      if (!cancelled) setGuides(Array.isArray(data) ? data : [])
     })
     return () => { cancelled = true }
   }, [])
@@ -46,21 +45,29 @@ function GuidesIndexPage() {
         </p>
       </header>
 
-      <ul className="grid gap-4 list-none m-0 p-0 md:grid-cols-2 kt-reveal">
-        {guides.map((g) => (
-          <li key={g.slug} className="kt-reveal-item">
-            <Link
-              to={`/soporte/guias/${g.slug}`}
-              className="block rounded-[12px] border border-[#2a2a2a] bg-[#0f0f10] p-5 transition hover:-translate-y-0.5 hover:border-primary/55"
-            >
-              <h2 className="title-font m-0 mb-2 text-[1.15rem] leading-[1.25] text-white">
-                {g.title}
-              </h2>
-              <p className="m-0 text-[0.92rem] leading-[1.55] text-[#aeb5bf]">{g.excerpt}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {guides.length === 0 ? (
+        <div className="rounded-[12px] border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-10 text-center kt-reveal">
+          <p className="m-0 text-[0.95rem] text-[#aeb5bf]">
+            Todavía no hay guías publicadas.
+          </p>
+        </div>
+      ) : (
+        <ul className="grid gap-4 list-none m-0 p-0 md:grid-cols-2 kt-reveal">
+          {guides.map((g) => (
+            <li key={g.slug} className="kt-reveal-item">
+              <Link
+                to={`/soporte/guias/${g.slug}`}
+                className="block rounded-[12px] border border-[#2a2a2a] bg-[#0f0f10] p-5 transition hover:-translate-y-0.5 hover:border-primary/55"
+              >
+                <h2 className="title-font m-0 mb-2 text-[1.15rem] leading-[1.25] text-white">
+                  {g.title}
+                </h2>
+                <p className="m-0 text-[0.92rem] leading-[1.55] text-[#aeb5bf]">{g.excerpt}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }

@@ -14,7 +14,6 @@
  */
 
 import { defaultLandingContent } from '../../features/landing/data/landingData'
-import { guides as hardcodedGuides } from '../../features/guides/data/guides'
 import { resolveAccountHost } from './accountHost'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
@@ -89,8 +88,9 @@ function mapProducto(p) {
  * Keeps the same structure as defaultLandingContent.products.
  */
 function mapProductosToSection(raw) {
+  // Data-driven: sin productos en tiendita → items vacío (la sección se oculta).
   if (!Array.isArray(raw) || raw.length === 0) {
-    return defaultLandingContent.products
+    return { ...defaultLandingContent.products, items: [] }
   }
   const mapped = raw.map(mapProducto)
   // Prefer destacado=true; if none, just take all
@@ -126,7 +126,8 @@ function mapGallery(igData, galeriaData) {
       images,
     }
   }
-  return defaultLandingContent.gallery
+  // Data-driven: sin galería/IG → images vacío (la sección se oculta).
+  return { ...defaultLandingContent.gallery, images: [] }
 }
 
 /**
@@ -134,7 +135,8 @@ function mapGallery(igData, galeriaData) {
  * Builds WhatsApp + email contact entries from empresa/whatsapp config keys.
  */
 function mapWebConfigToSupport(cfg) {
-  if (!cfg) return defaultLandingContent.support
+  // Data-driven: sin config → contactos vacío (la sección se oculta).
+  if (!cfg) return { ...defaultLandingContent.support, contacts: [] }
 
   const contacts = []
 
@@ -160,7 +162,7 @@ function mapWebConfigToSupport(cfg) {
     contacts.push({ label: 'Teléfono', value: empresa.telefono, href: `tel:${num}` })
   }
 
-  if (contacts.length === 0) return defaultLandingContent.support
+  if (contacts.length === 0) return { ...defaultLandingContent.support, contacts: [] }
 
   return {
     ...defaultLandingContent.support,
@@ -175,8 +177,9 @@ function mapWebConfigToSupport(cfg) {
  * logo_url is absent; if logo_url is present, the component should render an <img>.
  */
 function mapMarcasToClientLogos(raw) {
+  // Data-driven: sin marcas cargadas → sin logos (no se muestran los hardcodeados).
   if (!Array.isArray(raw) || raw.length === 0) {
-    return defaultLandingContent.footer.clientLogos
+    return []
   }
   return raw
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
@@ -195,8 +198,9 @@ function mapMarcasToClientLogos(raw) {
  * mapped and available but not rendered. Do not uncomment the section.
  */
 function mapServicios(raw) {
+  // Data-driven: sin servicios → items vacío.
   if (!Array.isArray(raw) || raw.length === 0) {
-    return defaultLandingContent.services
+    return { ...defaultLandingContent.services, items: [] }
   }
   return {
     title: defaultLandingContent.services.title,
@@ -389,9 +393,10 @@ export async function getLandingContent() {
  * Shape: same as mapProducto() output.
  */
 export async function getShopProducts() {
+  // Data-driven: sin productos en tiendita → lista vacía (las páginas muestran su empty state).
   const raw = await fetchWithFallback('/public/productos', null)
   if (!Array.isArray(raw) || raw.length === 0) {
-    return defaultLandingContent.products.items
+    return []
   }
   return raw.map(mapProducto)
 }
@@ -428,9 +433,11 @@ export async function getProductDetail(slug) {
  * Falls back to the hardcoded guides from features/guides/data/guides.js.
  */
 export async function getGuides() {
+  // Data-driven: sin guías cargadas en tiendita → lista vacía (la página muestra empty state),
+  // en vez de las guías hardcodeadas.
   const raw = await fetchWithFallback('/public/blog?tipo=guia', null)
   const mapped = mapBlogToGuides(raw)
-  return mapped || hardcodedGuides
+  return mapped || []
 }
 
 /**

@@ -2,29 +2,43 @@ import Divider from './Divider'
 import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
-import ServicesSection from './ServicesSection'
-import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
-import DistributorTeaserSection from './DistributorTeaserSection'
-import RentalTeaserSection from './RentalTeaserSection'
 import { useLandingContent } from '../hooks/useLandingContent'
 
+/**
+ * Landing DATA-DRIVEN y minimalista: refleja EXACTO lo cargado en tiendita para la cuenta.
+ * Solo se muestra el Hero (preservado) + las secciones que tienen datos reales. Las secciones
+ * de marketing hardcodeadas (Tienda / Distribuidores / Alquiler) y los fallbacks se quitaron:
+ * si una cuenta no tiene datos de una sección, esa sección no aparece.
+ */
 function LandingPage() {
   const { content } = useLandingContent()
+
+  const hasGallery = (content.gallery?.images?.length ?? 0) > 0
+  const hasProducts = (content.products?.items?.length ?? 0) > 0
+  const hasSupport = (content.support?.contacts?.length ?? 0) > 0
 
   return (
     <>
       <HeroSection hero={content.hero} />
-      <Divider />
-      <InstagramSection gallery={content.gallery} />
-      <Divider />
-      <FeaturedSection products={content.products} />
-      <ShopSection shop={content.shop} />
-      {/* Seccion "Tres Pilares, Una Promesa" oculta temporalmente a pedido */}
-      {/* <ServicesSection services={content.services} /> */}
-      <SupportSection support={content.support} />
-      <DistributorTeaserSection distributor={content.distributor} />
-      <RentalTeaserSection rental={content.rental} />
+      {hasGallery ? (
+        <>
+          <Divider />
+          <InstagramSection gallery={content.gallery} />
+        </>
+      ) : null}
+      {hasProducts ? (
+        <>
+          <Divider />
+          <FeaturedSection products={content.products} />
+        </>
+      ) : null}
+      {hasSupport ? (
+        <>
+          <Divider />
+          <SupportSection support={content.support} />
+        </>
+      ) : null}
     </>
   )
 }
