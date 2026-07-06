@@ -106,7 +106,7 @@ function mapProductosToSection(raw) {
  * /public/instagram/feed or /public/galeria → gallery section
  */
 function mapGallery(igData, galeriaData) {
-  // Try Instagram first
+  // Try Instagram first. `connected` = hay un Instagram REAL asociado al tenant (no galería).
   if (igData && igData.connected && Array.isArray(igData.data) && igData.data.length > 0) {
     const images = igData.data
       .map((item) => item.media_url || item.thumbnail_url)
@@ -114,9 +114,11 @@ function mapGallery(igData, galeriaData) {
     return {
       ...defaultLandingContent.gallery,
       images,
+      connected: true,
     }
   }
-  // Fallback to /public/galeria
+  // Fallback to /public/galeria (NO es Instagram → connected:false; la landing NO muestra el carrusel
+  // de la sección Instagram, esta data se usa en el footer).
   if (Array.isArray(galeriaData) && galeriaData.length > 0) {
     const images = galeriaData
       .filter((item) => item.url)
@@ -124,10 +126,11 @@ function mapGallery(igData, galeriaData) {
     return {
       ...defaultLandingContent.gallery,
       images,
+      connected: false,
     }
   }
-  // Data-driven: sin galería/IG → images vacío (la sección se oculta).
-  return { ...defaultLandingContent.gallery, images: [] }
+  // Data-driven: sin galería/IG → images vacío.
+  return { ...defaultLandingContent.gallery, images: [], connected: false }
 }
 
 /**

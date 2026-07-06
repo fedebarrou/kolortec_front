@@ -15,7 +15,9 @@ function InstagramSection({ gallery }) {
   const [followBefore, followAfter = ''] = followText.split('{handle}')
 
   const [lightboxIndex, setLightboxIndex] = useState(-1)
-  const loopImages = [...gallery.images, ...gallery.images]
+  // El carrusel se muestra SOLO si hay un Instagram REAL conectado al tenant (no galería).
+  const showCarousel = !!gallery.connected && gallery.images.length > 0
+  const loopImages = showCarousel ? [...gallery.images, ...gallery.images] : []
 
   return (
     <section className="px-6 pt-[clamp(40px,6vw,72px)] pb-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" style={{ '--reveal-delay': '80ms' }}>
@@ -46,6 +48,7 @@ function InstagramSection({ gallery }) {
           </p>
         </div>
 
+        {showCarousel ? (
         <div className="kt-marquee" style={{ '--kt-marquee-duration': '60s' }}>
           <div className="kt-marquee-track">
             {loopImages.map((src, index) => (
@@ -66,6 +69,7 @@ function InstagramSection({ gallery }) {
             ))}
           </div>
         </div>
+        ) : null}
       </div>
       <ImageLightbox
         images={gallery.images}

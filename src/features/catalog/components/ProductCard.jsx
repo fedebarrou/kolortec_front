@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DEMO_PRODUCT_ROUTE } from '../../product/helpers/productDetailDemoHelper'
 import { getProductDetailBySlug } from '../../product/data/productDetails'
@@ -9,6 +10,8 @@ const slugifyProductName = (value) =>
     .replace(/(^-|-$)/g, '')
 
 function ProductCard({ item, className = '', style, showDetailLink = true, detailHref }) {
+  const [imgFailed, setImgFailed] = useState(false)
+  const showImage = !!item.image && !imgFailed
   const slug = item.slug || slugifyProductName(item.name)
   const fallbackDetailHref = getProductDetailBySlug(slug) ? `/producto/${slug}` : DEMO_PRODUCT_ROUTE
   const resolvedDetailHref = detailHref || fallbackDetailHref
@@ -30,12 +33,20 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
       ) : null}
 
       <div className="relative aspect-[4/5] w-full overflow-hidden">
-        <img
-          src={item.image}
-          alt={`${item.name}${item.description ? ` — ${item.description}` : ''} | Kolortec iluminación profesional`}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06] group-focus-within:scale-[1.06]"
-        />
+        {showImage ? (
+          <img
+            src={item.image}
+            alt={`${item.name}${item.description ? ` — ${item.description}` : ''} | Kolortec iluminación profesional`}
+            loading="lazy"
+            onError={() => setImgFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06] group-focus-within:scale-[1.06]"
+          />
+        ) : (
+          // Placeholder cuando el producto no tiene imagen: bg negro + isotipo kolortec.
+          <div className="absolute inset-0 flex items-center justify-center bg-deep-black">
+            <img src="/favicon.svg" alt="" aria-hidden="true" className="h-16 w-16 opacity-80" />
+          </div>
+        )}
 
         <span
           aria-hidden="true"

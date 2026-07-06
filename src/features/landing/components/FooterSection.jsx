@@ -62,6 +62,7 @@ function FooterSection() {
                   className="h-full w-full cursor-pointer object-cover"
                   src={src}
                   alt="Kolortec action"
+                  onError={(e) => { const b = e.currentTarget.closest('button'); if (b) b.style.display = 'none' }}
                 />
               </button>
             ))}

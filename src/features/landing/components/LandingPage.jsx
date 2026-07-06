@@ -6,39 +6,31 @@ import SupportSection from './SupportSection'
 import { useLandingContent } from '../hooks/useLandingContent'
 
 /**
- * Landing DATA-DRIVEN y minimalista: refleja EXACTO lo cargado en tiendita para la cuenta.
- * Solo se muestra el Hero (preservado) + las secciones que tienen datos reales. Las secciones
- * de marketing hardcodeadas (Tienda / Distribuidores / Alquiler) y los fallbacks se quitaron:
- * si una cuenta no tiene datos de una sección, esa sección no aparece.
+ * Landing DATA-DRIVEN: refleja EXACTO lo cargado en tiendita para la cuenta. Cada sección mantiene
+ * su ESTRUCTURA (título/leyenda) y oculta solo sus listas de datos vacías (degradado fino):
+ *  - Instagram: siempre el "Seguinos en @"; el carrusel solo si hay IG conectado.
+ *  - Productos destacados: solo si hay productos (imágenes faltantes → placeholder en ProductCard).
+ *  - Contactanos (amarilla): siempre; contactos y guías se ocultan si están vacíos.
+ * Las secciones de marketing hardcodeadas (Tienda / Distribuidores / Alquiler) siguen quitadas.
  */
 function LandingPage() {
   const { content } = useLandingContent()
 
-  const hasGallery = (content.gallery?.images?.length ?? 0) > 0
   const hasProducts = (content.products?.items?.length ?? 0) > 0
-  const hasSupport = (content.support?.contacts?.length ?? 0) > 0
 
   return (
     <>
       <HeroSection hero={content.hero} />
-      {hasGallery ? (
-        <>
-          <Divider />
-          <InstagramSection gallery={content.gallery} />
-        </>
-      ) : null}
+      <Divider />
+      <InstagramSection gallery={content.gallery} />
       {hasProducts ? (
         <>
           <Divider />
           <FeaturedSection products={content.products} />
         </>
       ) : null}
-      {hasSupport ? (
-        <>
-          <Divider />
-          <SupportSection support={content.support} />
-        </>
-      ) : null}
+      <Divider />
+      <SupportSection support={content.support} />
     </>
   )
 }
