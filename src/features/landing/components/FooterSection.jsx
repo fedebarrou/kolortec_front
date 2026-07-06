@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import { defaultLandingContent } from '../data/landingData'
+import { getFooterData } from '../../../shared/services/contentService'
 
 function renderShape(shape, index) {
   const { type, ...attrs } = shape
@@ -19,11 +19,18 @@ function renderShape(shape, index) {
   }
 }
 
-function FooterSection({ footer }) {
+function FooterSection() {
   const { t } = useLanguage()
-  const data = footer ?? defaultLandingContent.footer
-  const galleryImages = useMemo(() => data.gallery ?? defaultLandingContent.footer.gallery, [data.gallery])
-  const clientLogos = useMemo(() => data.clientLogos ?? defaultLandingContent.footer.clientLogos, [data.clientLogos])
+  // Data-driven: partners (marcas) + galería salen de la cuenta en tiendita. Vacío → se ocultan
+  // (antes usaba defaultLandingContent.footer → mostraba partners/imágenes hardcodeados siempre).
+  const [footerData, setFooterData] = useState({ gallery: [], clientLogos: [] })
+  useEffect(() => {
+    let mounted = true
+    getFooterData().then((d) => { if (mounted && d) setFooterData(d) })
+    return () => { mounted = false }
+  }, [])
+  const galleryImages = footerData.gallery
+  const clientLogos = footerData.clientLogos
   const loopImages = useMemo(() => [...galleryImages, ...galleryImages], [galleryImages])
   const loopClientLogos = useMemo(() => [...clientLogos, ...clientLogos], [clientLogos])
   const [lightboxIndex, setLightboxIndex] = useState(-1)
@@ -39,6 +46,7 @@ function FooterSection({ footer }) {
 
   return (
     <footer className="bg-deep-black border-t border-slate-800 py-10">
+      {galleryImages.length > 0 ? (
       <div className="mb-16 w-full px-6 lg:px-40 md:mb-20">
         <div className="kt-marquee">
           <div className="kt-marquee-track">
@@ -60,6 +68,7 @@ function FooterSection({ footer }) {
           </div>
         </div>
       </div>
+      ) : null}
 
       <div className="w-full grid grid-cols-2 gap-10 px-6 md:grid-cols-4 md:gap-12 lg:px-40">
         <div className="flex flex-col gap-4">
@@ -113,6 +122,7 @@ function FooterSection({ footer }) {
         </div>
       </div>
 
+      {clientLogos.length > 0 ? (
       <div className="mt-8 w-full border-t border-slate-800 pt-6 px-6 lg:px-40">
         <div className="kt-marquee kt-marquee-reverse" style={{ '--kt-marquee-duration': '52s' }}>
           <div className="kt-marquee-track">
@@ -131,6 +141,7 @@ function FooterSection({ footer }) {
           </div>
         </div>
       </div>
+      ) : null}
 
       <div className="w-full mt-6 px-6 pt-5 border-t border-slate-800 flex flex-col gap-3 text-xs text-slate-600 md:flex-row md:items-center md:justify-between lg:px-40">
         <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>

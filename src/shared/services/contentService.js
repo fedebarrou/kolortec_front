@@ -441,6 +441,26 @@ export async function getGuides() {
 }
 
 /**
+ * getFooterData()
+ * Data del footer (que va en TODAS las páginas): logos de partners (marcas) + galería.
+ * Data-driven: si la cuenta no tiene marcas/galería, devuelve arrays VACÍOS (el footer oculta
+ * esas tiras) en vez de mostrar los partners/imágenes hardcodeados.
+ */
+export async function getFooterData() {
+  const [igFeed, galeriaRaw, marcasRaw] = await Promise.all([
+    fetchWithFallback('/public/instagram/feed', null),
+    fetchWithFallback('/public/galeria', null),
+    fetchWithFallback('/public/marcas', null),
+  ])
+  const gallery = mapGallery(igFeed, galeriaRaw) // { ..., images: [] } si no hay
+  const clientLogos = mapMarcasToClientLogos(marcasRaw) // [] si no hay
+  return {
+    gallery: Array.isArray(gallery?.images) ? gallery.images : [],
+    clientLogos: Array.isArray(clientLogos) ? clientLogos : [],
+  }
+}
+
+/**
  * getGuideBySlug(slug)
  * Finds a single guide by slug from the remote list.
  * Falls back to the hardcoded entry if remote fails or slug is not found.
