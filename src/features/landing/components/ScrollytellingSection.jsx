@@ -92,10 +92,18 @@ function ScrollytellingSection() {
     }
   }, [reduced])
 
-  // Clases de reveal (solo transform/opacity). El stagger se hace con transition-delay por elemento.
+  // "Inicio" saltea el scrollytelling: scrollea a la sección que sigue al spacer (Instagram).
+  const skipIntro = () => {
+    const next = spacerRef.current?.nextElementSibling
+    if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    else window.scrollTo({ top: window.innerHeight * 3.6, behavior: 'smooth' })
+  }
+
+  // Clases de reveal (solo transform/opacity). El texto va a la DERECHA (el video apunta a la
+  // izquierda), así que el reveal entra desde la derecha. El stagger se hace con transition-delay.
   const revealCls = (isActive) =>
     `transition-[transform,opacity] ease-out will-change-transform ${
-      isActive ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+      isActive ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
     }`
   const revealStyle = (isActive, order) => ({
     transitionDuration: isActive ? '520ms' : '300ms',
@@ -103,8 +111,8 @@ function ScrollytellingSection() {
   })
 
   const TextBlock = ({ m, isActive }) => (
-    <div className="pointer-events-none absolute inset-0 flex items-center px-6 lg:px-16 xl:pl-40 xl:pr-24">
-      <div className="max-w-[40rem]">
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-end px-6 lg:px-16 xl:pl-24 xl:pr-40">
+      <div className="max-w-[40rem] text-right">
         <span
           className={`block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary ${revealCls(isActive)}`}
           style={revealStyle(isActive, 0)}
@@ -118,7 +126,7 @@ function ScrollytellingSection() {
           {m.title}<span className="text-primary">.</span>
         </h2>
         <p
-          className={`mt-4 max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] ${revealCls(isActive)}`}
+          className={`mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] ${revealCls(isActive)}`}
           style={revealStyle(isActive, 2)}
         >
           {m.subtitle}
@@ -142,14 +150,14 @@ function ScrollytellingSection() {
     return (
       <section className="relative h-[100dvh] w-full overflow-hidden bg-deep-black">
         <img src={frameUrl(0)} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
-        <div className="absolute inset-0 flex items-center px-6 lg:px-16 xl:pl-40">
-          <div className="max-w-[40rem]">
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/30 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-end px-6 lg:px-16 xl:pr-40">
+          <div className="max-w-[40rem] text-right">
             <span className="block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary">{m.eyebrow}</span>
             <h2 className="title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white">
               {m.title}<span className="text-primary">.</span>
             </h2>
-            <p className="mt-4 max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef]">{m.subtitle}</p>
+            <p className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef]">{m.subtitle}</p>
           </div>
         </div>
       </section>
@@ -168,8 +176,8 @@ function ScrollytellingSection() {
             aria-label="Kolortec — iluminación profesional"
           >
             <img ref={imgRef} src={frameUrl(0)} alt="" draggable="false" className="absolute inset-0 h-full w-full object-cover" />
-            {/* Scrims: izquierda (para el texto) + vertical (para top-bar / indicador) */}
-            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+            {/* Scrims: derecha (para el texto, que va a la derecha) + vertical (top-bar / indicador) */}
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/30 to-transparent" />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/45" />
 
             {/* Mini top-bar: branding + Inicio (el navbar real queda tapado por el portal) */}
@@ -179,7 +187,7 @@ function ScrollytellingSection() {
               </button>
               <button
                 type="button"
-                onClick={scrollTop}
+                onClick={skipIntro}
                 className="pointer-events-auto inline-flex min-h-11 items-center text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-100 transition hover:text-primary xl:text-sm"
               >
                 Inicio
@@ -192,7 +200,7 @@ function ScrollytellingSection() {
             ))}
 
             {/* Indicador de progreso por pasos */}
-            <div className="pointer-events-none absolute bottom-8 left-6 flex gap-2 lg:left-16 xl:left-40" aria-hidden="true">
+            <div className="pointer-events-none absolute bottom-8 right-6 flex gap-2 lg:right-16 xl:right-40" aria-hidden="true">
               {MESSAGES.map((_, i) => (
                 <div key={i} className="h-[3px] w-9 overflow-hidden rounded-full bg-white/20 sm:w-14">
                   <div ref={(el) => { segRefs.current[i] = el }} className="h-full w-0 bg-primary" />
@@ -203,7 +211,7 @@ function ScrollytellingSection() {
             {/* Hint "Scrolleá" (se desvanece al empezar) */}
             <div
               ref={hintRef}
-              className="pointer-events-none absolute bottom-7 right-6 flex flex-col items-center gap-1 text-white/70 transition-opacity duration-500 lg:right-16 xl:right-20"
+              className="pointer-events-none absolute bottom-7 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-white/70 transition-opacity duration-500"
               aria-hidden="true"
             >
               <span className="text-[0.62rem] font-bold uppercase tracking-[0.22em]">Scrolleá</span>
