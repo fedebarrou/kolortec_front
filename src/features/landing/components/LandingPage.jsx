@@ -2,6 +2,7 @@ import Divider from './Divider'
 import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
+import ScrollytellingSection from './ScrollytellingSection'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
 import { useLandingContent } from '../hooks/useLandingContent'
@@ -23,7 +24,7 @@ function LandingPage() {
 
   return (
     <>
-      <HeroSection hero={content.hero} />
+      <ScrollytellingSection />
       <Divider />
       <InstagramSection gallery={content.gallery} />
       {hasProducts ? (
@@ -32,6 +33,8 @@ function LandingPage() {
           <FeaturedSection products={content.products} />
         </>
       ) : null}
+      <Divider />
+      <HeroSection hero={content.hero} />
       <Divider />
       <ShopSection shop={content.shop} />
       <Divider />
