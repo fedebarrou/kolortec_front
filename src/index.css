@@ -382,6 +382,39 @@
     animation-direction: reverse;
   }
 
+  /* Marquee VERTICAL (Biblioteca de guías de la sección amarilla): rota en loop, pausa en hover. */
+  .kt-vmarquee {
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+  }
+
+  .kt-vmarquee-track {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: kt-vmarquee-scroll var(--kt-vmarquee-duration, 40s) linear infinite;
+  }
+
+  @keyframes kt-vmarquee-scroll {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+  }
+
+  @media (hover: hover) {
+    .kt-vmarquee:hover .kt-vmarquee-track,
+    .kt-vmarquee:focus-within .kt-vmarquee-track {
+      animation-play-state: paused;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-vmarquee-track {
+      animation: none;
+    }
+  }
+
   .kt-marquee-item-clientlogo {
     flex: 0 0 auto;
     display: inline-flex;

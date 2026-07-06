@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import { getFooterData } from '../../../shared/services/contentService'
+import { getFooterData, getCategorias } from '../../../shared/services/contentService'
 
 function renderShape(shape, index) {
   const { type, ...attrs } = shape
@@ -34,7 +34,16 @@ function FooterSection() {
   const loopImages = useMemo(() => [...galleryImages, ...galleryImages], [galleryImages])
   const loopClientLogos = useMemo(() => [...clientLogos, ...clientLogos], [clientLogos])
   const [lightboxIndex, setLightboxIndex] = useState(-1)
-  const productLinks = t('footer.productsLinks', ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'])
+  // Columna "Productos" del footer = categorías reales de la cuenta (tiendita). Vacío → "Ver productos".
+  const [categorias, setCategorias] = useState([])
+  useEffect(() => {
+    let mounted = true
+    getCategorias().then((c) => { if (mounted && Array.isArray(c)) setCategorias(c) })
+    return () => { mounted = false }
+  }, [])
+  const productItems = categorias.length > 0
+    ? categorias.slice(0, 6).map((c) => ({ key: c.slug, label: c.nombre }))
+    : [{ key: 'all', label: 'Ver productos' }]
   const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
 
   const renderTitle = (label) => (
@@ -80,11 +89,11 @@ function FooterSection() {
         </div>
 
         <div>
-          {renderTitle(t('footer.productsTitle', 'Products'))}
+          {renderTitle(t('footer.productsTitle', 'Productos'))}
           <ul className="body-font text-slate-400 space-y-4 text-sm">
-            {productLinks.map((label) => (
-              <li key={`footer-product-${label}`}>
-                <Link className="hover:text-primary transition-colors" to="/products">{label}</Link>
+            {productItems.map((it) => (
+              <li key={`footer-cat-${it.key}`}>
+                <Link className="hover:text-primary transition-colors" to="/products">{it.label}</Link>
               </li>
             ))}
           </ul>

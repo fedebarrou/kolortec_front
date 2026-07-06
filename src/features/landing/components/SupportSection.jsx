@@ -80,7 +80,19 @@ function SupportSection({ support }) {
                 </li>
               ))}
             </ul>
-          ) : null}
+          ) : (
+            <div className="grid place-items-center gap-3 border-y border-[rgba(255,255,255,0.14)] py-9 text-center">
+              <span
+                className="material-symbols-outlined grid h-12 w-12 place-items-center rounded-full border border-[rgba(244,223,51,0.35)] text-[24px] text-primary"
+                aria-hidden="true"
+              >
+                forum
+              </span>
+              <p className="m-0 max-w-[30ch] text-[0.9rem] leading-relaxed text-[#aeb5bf]">
+                Todavía no cargamos los datos de contacto. Pronto vas a poder escribirnos por acá.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="kt-landing-reveal-item relative min-h-[260px] sm:min-h-[400px] lg:min-h-0 lg:h-full">

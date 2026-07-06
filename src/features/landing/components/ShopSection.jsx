@@ -127,11 +127,44 @@ function ShopSection({ shop }) {
     )
   }
 
+  const renderGuideCard = (guide, hidden = false) => (
+    <Link
+      to={`/soporte/guias/${guide.slug}`}
+      tabIndex={hidden ? -1 : undefined}
+      className="group/guide flex w-full items-center gap-4 rounded-2xl border border-[rgba(11,11,11,0.2)] bg-[rgba(11,11,11,0.05)] p-2.5 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#0b0b0b] hover:bg-[#0b0b0b] hover:shadow-[0_16px_34px_rgba(0,0,0,0.32)]"
+    >
+      {guide.image ? (
+        <img src={guide.image} alt="" loading="lazy" aria-hidden="true" className="h-[68px] w-[68px] flex-none rounded-xl object-cover" />
+      ) : (
+        <span className="grid h-[68px] w-[68px] flex-none place-items-center rounded-xl bg-[#0b0b0b]">
+          <img src="/favicon.svg" alt="" aria-hidden="true" className="h-8 w-8" />
+        </span>
+      )}
+      <span className="flex min-w-0 flex-col gap-0.5">
+        {guide.excerpt ? (
+          <span className="line-clamp-1 text-[0.66rem] font-bold uppercase tracking-[0.16em] text-[rgba(11,11,11,0.6)] transition group-hover/guide:text-primary">
+            {guide.excerpt}
+          </span>
+        ) : null}
+        <span className="title-font truncate text-[1.1rem] leading-tight text-[#0b0b0b] transition group-hover/guide:text-white">
+          {guide.title}
+        </span>
+      </span>
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="ml-auto h-5 w-5 flex-none stroke-[#0b0b0b] fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4] transition group-hover/guide:translate-x-1 group-hover/guide:stroke-primary"
+      >
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </Link>
+  )
+
   return (
     <section
       id="shop"
       ref={sectionRef}
-      className={`kt-shop-section ${phaseClass} relative isolate overflow-hidden bg-primary py-[clamp(72px,10vw,128px)] text-[#0b0b0b]`}
+      className={`kt-shop-section ${phaseClass} relative isolate flex min-h-[600px] items-center overflow-hidden bg-primary py-[clamp(72px,10vw,128px)] text-[#0b0b0b]`}
     >
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <video
@@ -157,7 +190,7 @@ function ShopSection({ shop }) {
         </>
       ) : null}
 
-      <div className={`kt-shop-content relative z-10 grid items-start gap-10 px-6 lg:gap-16 lg:px-40 ${hasGuides ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]' : ''}`}>
+      <div className={`kt-shop-content relative z-10 grid w-full items-center gap-10 px-6 lg:gap-16 lg:pl-40 lg:pr-48 ${hasGuides ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]' : ''}`}>
         <div className="kt-shop-from-left flex flex-col gap-5">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-8 bg-[#0b0b0b]" />
@@ -191,47 +224,26 @@ function ShopSection({ shop }) {
             </span>
           </div>
 
-          <ul className="grid list-none gap-3 p-0">
-            {guides.map((guide) => (
-              <li key={guide.slug}>
-                <Link
-                  to={`/soporte/guias/${guide.slug}`}
-                  className="group/guide flex w-full items-center gap-4 rounded-2xl border border-[rgba(11,11,11,0.2)] bg-[rgba(11,11,11,0.05)] p-2.5 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#0b0b0b] hover:bg-[#0b0b0b] hover:shadow-[0_16px_34px_rgba(0,0,0,0.32)]"
-                >
-                  {guide.image ? (
-                    <img
-                      src={guide.image}
-                      alt=""
-                      loading="lazy"
-                      aria-hidden="true"
-                      className="h-[68px] w-[68px] flex-none rounded-xl object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-[68px] w-[68px] flex-none place-items-center rounded-xl bg-[#0b0b0b]">
-                      <img src="/favicon.svg" alt="" aria-hidden="true" className="h-8 w-8" />
-                    </span>
-                  )}
-                  <span className="flex min-w-0 flex-col gap-0.5">
-                    {guide.excerpt ? (
-                      <span className="line-clamp-1 text-[0.66rem] font-bold uppercase tracking-[0.16em] text-[rgba(11,11,11,0.6)] transition group-hover/guide:text-primary">
-                        {guide.excerpt}
-                      </span>
-                    ) : null}
-                    <span className="title-font truncate text-[1.1rem] leading-tight text-[#0b0b0b] transition group-hover/guide:text-white">
-                      {guide.title}
-                    </span>
-                  </span>
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="ml-auto h-5 w-5 flex-none stroke-[#0b0b0b] fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4] transition group-hover/guide:translate-x-1 group-hover/guide:stroke-primary"
-                  >
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {guides.length > 3 ? (
+            <div
+              className="kt-vmarquee h-[440px] px-1"
+              style={{ '--kt-vmarquee-duration': `${Math.max(28, guides.length * 4)}s` }}
+            >
+              <ul className="kt-vmarquee-track m-0 list-none p-0">
+                {[...guides, ...guides].map((guide, i) => (
+                  <li key={`${guide.slug}-${i}`} aria-hidden={i >= guides.length ? 'true' : undefined}>
+                    {renderGuideCard(guide, i >= guides.length)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <ul className="grid list-none gap-3 p-0">
+              {guides.map((guide) => (
+                <li key={guide.slug}>{renderGuideCard(guide)}</li>
+              ))}
+            </ul>
+          )}
         </div>
         ) : null}
       </div>
