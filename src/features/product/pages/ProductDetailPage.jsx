@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { trackEvent } from '../../../shared/services/tracking'
-import { getProductDetailBySlug } from '../data/productDetails'
-import { withProductSeo } from '../../../data/products.js'
+import { getProductDetail } from '../../../shared/services/contentService'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
@@ -12,76 +11,24 @@ import { SITE } from '../../../shared/seo/Seo'
 import { productJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
 
-const HERO_FACTS = [
-  {
-    icon: 'light-source',
-    label: 'Light source',
-    value: 'Osram Sirius HRI 470 W RO',
-  },
-  {
-    icon: 'light-output',
-    label: 'Light output',
-    value: 'MEGA bright 2.200.000 lx @ 5',
-  },
-  {
-    icon: 'zoom-range',
-    label: 'Zoom range',
-    value: '1.8°-21° beam mode, 3°-42° spot mode',
-  },
-  {
-    icon: 'effects',
-    label: 'Effects',
-    value: 'CMY mixing, rotating and static gobo wheel, animation wheel, 12 beam and flower effects',
-  },
-]
-
-function HeroFactIcon({ type }) {
-  if (type === 'light-source') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
-        <path d="M9 18h6M10 21h4M8 10a4 4 0 118 0c0 1.6-.9 2.7-1.8 3.6-.7.7-1.2 1.4-1.2 2.4h-2c0-1-.5-1.7-1.2-2.4C8.9 12.7 8 11.6 8 10z" />
-      </svg>
-    )
-  }
-
-  if (type === 'light-output') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
-        <path d="M12 3v3M4.8 7.8l2.1 2.1M3 12h3m12 0h3m-2.9-4.2-2.1 2.1M7 17h10M9 21h6" />
-      </svg>
-    )
-  }
-
-  if (type === 'zoom-range') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
-        <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M9 9h6v6H9z" />
-      </svg>
-    )
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-full w-full stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
-      <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3zm7 10l.9 2.1L22 16l-2.1.9L19 19l-.9-2.1L16 16l2.1-.9L19 13zM5 14l.7 1.6L7.3 16l-1.6.7L5 18.3l-.7-1.6L2.7 16l1.6-.7L5 14z" />
-    </svg>
-  )
+function formatPrice(value, moneda) {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n <= 0) return 'Consultar precio'
+  return `${moneda || 'USD'} ${n.toLocaleString('es-AR')}`
 }
-
-const FALLBACK_MANUAL_DOWNLOADS = [
-  { label: 'User Manual', size: '11 MB', type: 'PDF' },
-  { label: 'Service Manual', size: '14 MB', type: 'PDF' },
-]
-
-const FALLBACK_SOFTWARE_DOWNLOADS = [
-  { label: 'Firmware Update Pack', size: '132 MB', type: 'ZIP' },
-  { label: 'Fixture Config Utility', size: '28 MB', type: 'EXE / DMG' },
-]
 
 function ProductDetailPage() {
   const { t, lang } = useLanguage()
   const { slug } = useParams()
-  const rawProduct = getProductDetailBySlug(slug)
-  const product = rawProduct ? withProductSeo(rawProduct) : null
+  // Data-driven: cargamos el producto REAL desde la API de tiendita por su id/slug.
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    let mounted = true
+    setLoading(true)
+    getProductDetail(slug).then((p) => { if (mounted) { setProduct(p); setLoading(false) } })
+    return () => { mounted = false }
+  }, [slug])
   const detailBodyRef = useRef(null)
   const heroImageRef = useRef(null)
   const lensRef = useRef(null)
@@ -141,17 +88,15 @@ function ProductDetailPage() {
   const [previewActivePage, setPreviewActivePage] = useState(0)
   const [downloadIntent, setDownloadIntent] = useState(null)
   const [translatedShortDescription, setTranslatedShortDescription] = useState(product?.shortDescription ?? '')
-  const tabs = useMemo(
-    () => [
-      { id: 'about', label: t('productDetail.tabs.about', 'About') },
-      { id: 'gallery', label: t('productDetail.tabs.gallery', 'Pictures') },
-      { id: 'video', label: t('productDetail.tabs.video', 'Product Video') },
-      { id: 'downloads', label: t('productDetail.tabs.downloads', 'Downloads') },
-      { id: 'accessories', label: t('productDetail.tabs.accessories', 'Accessories') },
-      { id: 'technical-specs', label: t('productDetail.tabs.technicalSpecs', 'Technical Specification') },
-    ],
-    [t],
-  )
+  const tabs = useMemo(() => {
+    const list = [{ id: 'about', label: t('productDetail.tabs.about', 'About') }]
+    if ((product?.gallery?.length ?? 0) > 0) list.push({ id: 'gallery', label: t('productDetail.tabs.gallery', 'Fotos') })
+    if ((product?.videos?.length ?? 0) > 0) list.push({ id: 'video', label: t('productDetail.tabs.video', 'Video') })
+    if ((product?.downloads?.length ?? 0) > 0) list.push({ id: 'downloads', label: t('productDetail.tabs.downloads', 'Descargas') })
+    if ((product?.accessories?.length ?? 0) > 0) list.push({ id: 'accessories', label: t('productDetail.tabs.accessories', 'Accesorios') })
+    if ((product?.technicalSpecs?.length ?? 0) > 0) list.push({ id: 'technical-specs', label: t('productDetail.tabs.technicalSpecs', 'Especificaciones') })
+    return list
+  }, [t, product])
 
   const getStickyOffset = () => {
     const mainHeader = window.innerWidth <= 640 ? 74 : 88
@@ -270,22 +215,14 @@ function ProductDetailPage() {
     [product, selectedVariantId],
   )
 
-  const manualDownloads = useMemo(() => {
-    const list = (product?.downloads ?? []).filter(
-      (item) =>
-        item.label.toLowerCase().includes('manual') ||
-        item.label.toLowerCase().includes('brochure'),
-    )
-    return list.length > 0 ? list : FALLBACK_MANUAL_DOWNLOADS
-  }, [product])
-
-  const softwareDownloads = useMemo(() => {
-    const list = (product?.downloads ?? []).filter((item) =>
-      item.label.toLowerCase().includes('software') ||
-      item.label.toLowerCase().includes('firmware'),
-    )
-    return list.length > 0 ? list : FALLBACK_SOFTWARE_DOWNLOADS
-  }, [product])
+  const softwareDownloads = useMemo(
+    () => (product?.downloads ?? []).filter((item) => /software|firmware/i.test(item.label || '')),
+    [product],
+  )
+  const manualDownloads = useMemo(
+    () => (product?.downloads ?? []).filter((item) => !/software|firmware/i.test(item.label || '')),
+    [product],
+  )
 
   const technicalSpecColumns = useMemo(() => {
     const specs = product?.technicalSpecs ?? []
@@ -348,6 +285,14 @@ function ProductDetailPage() {
       const top = node.getBoundingClientRect().top + window.scrollY - getStickyOffset()
       window.scrollTo({ top, behavior: 'smooth' })
     }
+  }
+
+  if (loading) {
+    return (
+      <section className="flex min-h-screen items-center justify-center bg-[#050505] px-6">
+        <p className="animate-pulse text-[#a0a0a0]">Cargando producto…</p>
+      </section>
+    )
   }
 
   if (!product) {
@@ -455,23 +400,25 @@ function ProductDetailPage() {
 
               <div className="kt-detail-summary">
                 <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]">{product.name}</h1>
-                <p className="kt-detail-intro">{translatedShortDescription}</p>
-                <div className="mt-8 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
-                  {HERO_FACTS.map((item) => (
-                    <article key={item.label} className="kt-reveal-item flex items-center gap-3 py-3.5">
-                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-black" aria-hidden="true">
-                        <span className="h-5 w-5">
-                          <HeroFactIcon type={item.icon} />
-                        </span>
-                      </span>
-                      <div className="grid gap-0.5">
-                        <span className="text-[11px] font-bold uppercase tracking-[0.09em] text-[#aeb4bf]">{item.label}</span>
-                        <strong className="text-[0.95rem] font-bold leading-[1.45] text-[#f0f2f5]">{item.value}</strong>
-                      </div>
-                    </article>
-                  ))}
+                {translatedShortDescription ? <p className="kt-detail-intro">{translatedShortDescription}</p> : null}
+                <div className="mt-5 flex items-baseline gap-2">
+                  <strong className="title-font text-[clamp(1.8rem,3vw,2.6rem)] leading-none text-primary">
+                    {formatPrice(product.price, product.moneda)}
+                  </strong>
                 </div>
-
+                {product.technicalSpecs.length > 0 ? (
+                  <div className="mt-8 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
+                    {product.technicalSpecs.slice(0, 4).map(([label, value]) => (
+                      <article key={label} className="kt-reveal-item flex items-start gap-3 py-3.5">
+                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                        <div className="grid gap-0.5">
+                          <span className="text-[11px] font-bold uppercase tracking-[0.09em] text-[#aeb4bf]">{label}</span>
+                          <strong className="text-[0.95rem] font-bold leading-[1.45] text-[#f0f2f5]">{value}</strong>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <div className="kt-reveal-item kt-detail-preview-strip-wrap mt-4 lg:col-span-2">
@@ -506,6 +453,8 @@ function ProductDetailPage() {
               </div>
             </section>
 
+            {product.videos.length > 0 ? (
+            <>
             <div className="kt-graphene-separator" aria-hidden="true" />
 
             <section className="kt-detail-video-shell kt-detail-anim" id="video">
@@ -593,6 +542,11 @@ function ProductDetailPage() {
                 )
               })()}
             </section>
+            </>
+            ) : null}
+
+            {product.downloads.length > 0 ? (
+            <>
             <div className="kt-graphene-separator" aria-hidden="true" />
 
             <section className="kt-detail-downloads-shell kt-detail-anim" id="downloads">
@@ -700,6 +654,11 @@ function ProductDetailPage() {
                 </div>
               )}
             </section>
+            </>
+            ) : null}
+
+            {product.accessories.length > 0 ? (
+            <>
             <div className="kt-graphene-separator" aria-hidden="true" />
 
             <section className="kt-detail-accessories-shell kt-detail-anim" id="accessories">
@@ -742,6 +701,11 @@ function ProductDetailPage() {
                 </div>
               )}
             </section>
+            </>
+            ) : null}
+
+            {product.technicalSpecs.length > 0 ? (
+            <>
             <div className="kt-graphene-separator" aria-hidden="true" />
 
             <section className="kt-detail-tech-shell kt-detail-anim" id="technical-specs">
@@ -762,6 +726,8 @@ function ProductDetailPage() {
                 ))}
               </div>
             </section>
+            </>
+            ) : null}
           </div>
         </div>
       </main>

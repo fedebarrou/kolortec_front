@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { DEMO_PRODUCT_ROUTE } from '../../product/helpers/productDetailDemoHelper'
-import { getProductDetailBySlug } from '../../product/data/productDetails'
 
 const slugifyProductName = (value) =>
   value
@@ -12,9 +10,9 @@ const slugifyProductName = (value) =>
 function ProductCard({ item, className = '', style, showDetailLink = true, detailHref }) {
   const [imgFailed, setImgFailed] = useState(false)
   const showImage = !!item.image && !imgFailed
-  const slug = item.slug || slugifyProductName(item.name)
-  const fallbackDetailHref = getProductDetailBySlug(slug) ? `/producto/${slug}` : DEMO_PRODUCT_ROUTE
-  const resolvedDetailHref = detailHref || fallbackDetailHref
+  // Linkea SIEMPRE al producto real (por su id/slug de la API). El detalle se carga data-driven.
+  const detailId = item.slug || item.id || slugifyProductName(item.name)
+  const resolvedDetailHref = detailHref || `/producto/${detailId}`
   const articleClassName = [
     'group relative overflow-hidden transition-all duration-300 ease-out md:hover:-translate-y-1 md:focus-within:-translate-y-1',
     className,

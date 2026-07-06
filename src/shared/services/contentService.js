@@ -84,6 +84,44 @@ function mapProducto(p) {
 }
 
 /**
+ * Mapea un producto de /public/productos al shape COMPLETO que consume ProductDetailPage.
+ * Todo data-driven de la API (galería, precio, specs, docs, variantes). Los campos que la API no
+ * tiene (videos, accesorios, family, tagline) quedan vacíos → la página oculta esas secciones.
+ */
+function mapProductoDetail(p) {
+  const heroImage = p.img_url || (Array.isArray(p.media) && p.media[0]?.url) || ''
+  const gallery = (Array.isArray(p.media) ? p.media : [])
+    .filter((m) => (m.kind === 'image' || m.tipo === 'imagen' || !m.kind) && m.url)
+    .map((m) => m.url)
+  return {
+    slug: String(p.id),
+    id: p.id,
+    name: p.nombre,
+    sku: p.variantes?.[0]?.sku || p.codigo_interno || '',
+    shortDescription: p.descripcion || '',
+    longDescription: p.ficha_tecnica || p.descripcion || '',
+    heroImage,
+    gallery: gallery.length > 0 ? gallery : (heroImage ? [heroImage] : []),
+    price: p.precio,
+    moneda: p.moneda,
+    category: p.categoria,
+    technicalSpecs: (Array.isArray(p.specs) ? p.specs : [])
+      .filter((s) => s && (s.nombre || s.valor))
+      .map((s) => [s.nombre || '', s.valor || '']),
+    downloads: (Array.isArray(p.docs) ? p.docs : [])
+      .filter((d) => d && d.url)
+      .map((d) => ({ label: d.title || 'Documento', size: d.size || '', type: String(d.extension || d.tipo || '').toUpperCase(), url: d.url })),
+    variants: (Array.isArray(p.variantes) ? p.variantes : [])
+      .map((v) => ({ id: v.id, sku: v.sku, price: v.precio, image: heroImage })),
+    videos: [],
+    accessories: [],
+    seoTitle: `${p.nombre} · Kolortec`,
+    seoDescription: p.descripcion || p.nombre,
+    ogImage: heroImage,
+  }
+}
+
+/**
  * /public/productos → products section (featured items)
  * Keeps the same structure as defaultLandingContent.products.
  */
@@ -468,7 +506,7 @@ export async function getProductDetail(slug) {
   const match = raw.find(
     (p) => (p.slug && p.slug === slug) || String(p.id) === String(slug),
   )
-  return match ? mapProducto(match) : null
+  return match ? mapProductoDetail(match) : null
 }
 
 /**
