@@ -2,6 +2,7 @@ import Divider from './Divider'
 import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
+import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
 import { useLandingContent } from '../hooks/useLandingContent'
 
@@ -10,8 +11,10 @@ import { useLandingContent } from '../hooks/useLandingContent'
  * su ESTRUCTURA (título/leyenda) y oculta solo sus listas de datos vacías (degradado fino):
  *  - Instagram: siempre el "Seguinos en @"; el carrusel solo si hay IG conectado.
  *  - Productos destacados: solo si hay productos (imágenes faltantes → placeholder en ProductCard).
- *  - Contactanos (amarilla): siempre; contactos y guías se ocultan si están vacíos.
- * Las secciones de marketing hardcodeadas (Tienda / Distribuidores / Alquiler) siguen quitadas.
+ *  - Soporte (ShopSection, amarilla con efecto visual): siempre; su "Biblioteca de guías" (blogs)
+ *    a la derecha se oculta si no hay guías cargadas.
+ *  - Contactanos (SupportSection): siempre, con su carrusel de imagen; contactos ocultos si vacío.
+ * Las secciones de marketing hardcodeadas (Distribuidores / Alquiler) siguen quitadas.
  */
 function LandingPage() {
   const { content } = useLandingContent()
@@ -29,6 +32,8 @@ function LandingPage() {
           <FeaturedSection products={content.products} />
         </>
       ) : null}
+      <Divider />
+      <ShopSection shop={content.shop} />
       <Divider />
       <SupportSection support={content.support} />
     </>

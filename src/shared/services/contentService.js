@@ -245,6 +245,7 @@ function mapBlogToGuides(raw) {
     return {
       slug: post.slug,
       title: post.titulo,
+      image: post.img_url || (Array.isArray(post.media) && post.media[0]?.url) || '',
       seoTitle: `${post.titulo} · Kolortec`,
       seoDescription: post.excerpt || post.titulo,
       excerpt: post.excerpt || '',

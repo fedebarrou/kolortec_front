@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import { maintenanceGuides } from '../../warranty/data/maintenanceGuides'
-import MaintenanceDetailModal from '../../warranty/components/MaintenanceDetailModal'
+import { getGuides } from '../../../shared/services/contentService'
 
 function ShopSection({ shop }) {
   const { t } = useLanguage()
@@ -18,18 +17,16 @@ function ShopSection({ shop }) {
 
   const sectionRef = useRef(null)
   const [introPhase, setIntroPhase] = useState(prefersReducedMotion ? 'done' : 'priming')
-  const [openGuide, setOpenGuide] = useState(null)
-  const [openOrigin, setOpenOrigin] = useState(null)
 
-  const openGuideDetail = (guide, event) => {
-    if (event?.currentTarget) {
-      const rect = event.currentTarget.getBoundingClientRect()
-      setOpenOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
-    } else {
-      setOpenOrigin(null)
-    }
-    setOpenGuide(guide)
-  }
+  // Biblioteca de guías = data-driven desde blogs de tiendita (tipo=guia). Si no hay, la columna
+  // derecha no se muestra (la sección amarilla igual queda).
+  const [guides, setGuides] = useState([])
+  useEffect(() => {
+    let mounted = true
+    getGuides().then((g) => { if (mounted && Array.isArray(g)) setGuides(g) })
+    return () => { mounted = false }
+  }, [])
+  const hasGuides = guides.length > 0
 
   // Animacion de entrada (cortina + barrido + flash). Se dispara al entrar la
   // seccion al viewport; el resto del contenido se revela junto.
@@ -160,7 +157,7 @@ function ShopSection({ shop }) {
         </>
       ) : null}
 
-      <div className="kt-shop-content relative z-10 grid items-start gap-10 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:gap-16 lg:px-40">
+      <div className={`kt-shop-content relative z-10 grid items-start gap-10 px-6 lg:gap-16 lg:px-40 ${hasGuides ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]' : ''}`}>
         <div className="kt-shop-from-left flex flex-col gap-5">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-8 bg-[#0b0b0b]" />
@@ -185,6 +182,7 @@ function ShopSection({ shop }) {
           ) : null}
         </div>
 
+        {hasGuides ? (
         <div className="kt-shop-from-right flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-6 bg-[#0b0b0b]" />
@@ -194,26 +192,33 @@ function ShopSection({ shop }) {
           </div>
 
           <ul className="grid list-none gap-3 p-0">
-            {maintenanceGuides.map((guide) => (
-              <li key={guide.slug ?? guide.name}>
-                <button
-                  type="button"
-                  onClick={(event) => openGuideDetail(guide, event)}
+            {guides.map((guide) => (
+              <li key={guide.slug}>
+                <Link
+                  to={`/soporte/guias/${guide.slug}`}
                   className="group/guide flex w-full items-center gap-4 rounded-2xl border border-[rgba(11,11,11,0.2)] bg-[rgba(11,11,11,0.05)] p-2.5 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#0b0b0b] hover:bg-[#0b0b0b] hover:shadow-[0_16px_34px_rgba(0,0,0,0.32)]"
                 >
-                  <img
-                    src={guide.image}
-                    alt=""
-                    loading="lazy"
-                    aria-hidden="true"
-                    className="h-[68px] w-[68px] flex-none rounded-xl object-cover"
-                  />
-                  <span className="flex min-w-0 flex-col gap-0.5">
-                    <span className="text-[0.66rem] font-bold uppercase tracking-[0.16em] text-[rgba(11,11,11,0.6)] transition group-hover/guide:text-primary">
-                      {guide.category}
+                  {guide.image ? (
+                    <img
+                      src={guide.image}
+                      alt=""
+                      loading="lazy"
+                      aria-hidden="true"
+                      className="h-[68px] w-[68px] flex-none rounded-xl object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-[68px] w-[68px] flex-none place-items-center rounded-xl bg-[#0b0b0b]">
+                      <img src="/favicon.svg" alt="" aria-hidden="true" className="h-8 w-8" />
                     </span>
+                  )}
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    {guide.excerpt ? (
+                      <span className="line-clamp-1 text-[0.66rem] font-bold uppercase tracking-[0.16em] text-[rgba(11,11,11,0.6)] transition group-hover/guide:text-primary">
+                        {guide.excerpt}
+                      </span>
+                    ) : null}
                     <span className="title-font truncate text-[1.1rem] leading-tight text-[#0b0b0b] transition group-hover/guide:text-white">
-                      {guide.name}
+                      {guide.title}
                     </span>
                   </span>
                   <svg
@@ -223,23 +228,13 @@ function ShopSection({ shop }) {
                   >
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
         </div>
+        ) : null}
       </div>
-
-      {openGuide ? (
-        <MaintenanceDetailModal
-          guide={openGuide}
-          origin={openOrigin}
-          onClose={() => {
-            setOpenGuide(null)
-            setOpenOrigin(null)
-          }}
-        />
-      ) : null}
     </section>
   )
 }
