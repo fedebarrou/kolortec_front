@@ -6,24 +6,26 @@ import { Link } from 'react-router-dom'
 // frames como imágenes y swapeamos la que corresponde al progreso del scroll (swap cacheado = suave).
 const FRAME_COUNT = 96
 const frameUrl = (i) => `/assets/scrolly-frames/f${String(i).padStart(3, '0')}.jpg`
+const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
 // Mensajes SINCRONIZADOS con lo que muestra el video en cada etapa:
 // (rugged bajo lluvia) → (se enciende, haz potente) → (se abre el plano) → (show en vivo con público)
 const MESSAGES = [
-  { title: 'Hecha para la ruta', subtitle: 'Cabezales profesionales que aguantan lluvia, polvo y cada gira.' },
-  { title: 'Encendé la potencia', subtitle: 'Haces intensos que atraviesan la noche.' },
-  { title: 'Del truss al escenario', subtitle: 'Producciones que se ven desde la última fila.' },
-  { title: 'La luz que mueve el show', subtitle: 'KOLORTEC en cada escenario.', cta: { label: 'Ver productos', href: '/products' } },
+  { eyebrow: 'Resistencia', title: 'Hecha para la ruta', subtitle: 'Cabezales profesionales que aguantan lluvia, polvo y cada gira.' },
+  { eyebrow: 'Potencia', title: 'Encendé la potencia', subtitle: 'Haces intensos que atraviesan la noche.' },
+  { eyebrow: 'Producción', title: 'Del truss al escenario', subtitle: 'Producciones que se ven desde la última fila.' },
+  { eyebrow: 'En vivo', title: 'La luz que mueve el show', subtitle: 'KOLORTEC en cada escenario.', cta: { label: 'Ver productos', href: '/products' } },
 ]
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
+const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
 function ScrollytellingSection() {
   const spacerRef = useRef(null)
   const layerRef = useRef(null)
   const imgRef = useRef(null)
-  const barRef = useRef(null)
   const hintRef = useRef(null)
+  const segRefs = useRef([])
   const lastFrameRef = useRef(-1)
   const rafRef = useRef(0)
   const [active, setActive] = useState(0)
@@ -45,9 +47,10 @@ function ScrollytellingSection() {
     return () => { imgs.length = 0 }
   }, [reduced])
 
-  // Scroll → progreso → frame + mensaje + visibilidad del layer fixed.
+  // Scroll → progreso → frame + mensaje + indicador + visibilidad del layer fixed.
   useEffect(() => {
     if (reduced) return undefined
+    const N = MESSAGES.length
     const update = () => {
       rafRef.current = 0
       const spacer = spacerRef.current
@@ -68,10 +71,14 @@ function ScrollytellingSection() {
         imgRef.current.src = frameUrl(fi)
         lastFrameRef.current = fi
       }
-      if (barRef.current) barRef.current.style.width = `${(p * 100).toFixed(2)}%`
+      // Indicador por pasos: cada segmento se llena según el progreso local.
+      for (let i = 0; i < N; i++) {
+        const seg = segRefs.current[i]
+        if (seg) seg.style.width = `${(clamp(p * N - i, 0, 1) * 100).toFixed(1)}%`
+      }
       if (hintRef.current) hintRef.current.style.opacity = p > 0.03 ? '0' : '1'
 
-      const idx = Math.min(Math.floor(p * MESSAGES.length), MESSAGES.length - 1)
+      const idx = Math.min(Math.floor(p * N), N - 1)
       setActive((prev) => (prev === idx ? prev : idx))
     }
     const onScroll = () => { if (!rafRef.current) rafRef.current = window.requestAnimationFrame(update) }
@@ -85,18 +92,64 @@ function ScrollytellingSection() {
     }
   }, [reduced])
 
+  // Clases de reveal (solo transform/opacity). El stagger se hace con transition-delay por elemento.
+  const revealCls = (isActive) =>
+    `transition-[transform,opacity] ease-out will-change-transform ${
+      isActive ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+    }`
+  const revealStyle = (isActive, order) => ({
+    transitionDuration: isActive ? '520ms' : '300ms',
+    transitionDelay: isActive ? `${order * 80}ms` : '0ms',
+  })
+
+  const TextBlock = ({ m, isActive }) => (
+    <div className="pointer-events-none absolute inset-0 flex items-center px-6 lg:px-16 xl:pl-40 xl:pr-24">
+      <div className="max-w-[40rem]">
+        <span
+          className={`block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary ${revealCls(isActive)}`}
+          style={revealStyle(isActive, 0)}
+        >
+          {m.eyebrow}
+        </span>
+        <h2
+          className={`title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white drop-shadow-[0_6px_28px_rgba(0,0,0,0.6)] ${revealCls(isActive)}`}
+          style={revealStyle(isActive, 1)}
+        >
+          {m.title}<span className="text-primary">.</span>
+        </h2>
+        <p
+          className={`mt-4 max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] ${revealCls(isActive)}`}
+          style={revealStyle(isActive, 2)}
+        >
+          {m.subtitle}
+        </p>
+        {m.cta ? (
+          <Link
+            to={m.cta.href}
+            className={`pointer-events-auto mt-8 inline-flex min-h-11 items-center bg-primary px-7 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black transition hover:brightness-105 ${revealCls(isActive)}`}
+            style={revealStyle(isActive, 3)}
+          >
+            {m.cta.label}
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  )
+
   // Reduced-motion: sección simple full-screen (primer frame + primer mensaje), sin scrub.
   if (reduced) {
+    const m = MESSAGES[0]
     return (
       <section className="relative h-[100dvh] w-full overflow-hidden bg-deep-black">
         <img src={frameUrl(0)} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div aria-hidden="true" className="absolute inset-0 bg-black/45" />
-        <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-          <div className="max-w-[26ch]">
-            <h2 className="title-font text-[clamp(2.6rem,7.5vw,6rem)] leading-[0.9] text-white">
-              {MESSAGES[0].title}<span className="text-primary">.</span>
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+        <div className="absolute inset-0 flex items-center px-6 lg:px-16 xl:pl-40">
+          <div className="max-w-[40rem]">
+            <span className="block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary">{m.eyebrow}</span>
+            <h2 className="title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white">
+              {m.title}<span className="text-primary">.</span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[44ch] text-[clamp(1rem,1.9vw,1.4rem)] text-[#e6e9ef]">{MESSAGES[0].subtitle}</p>
+            <p className="mt-4 max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef]">{m.subtitle}</p>
           </div>
         </div>
       </section>
@@ -115,43 +168,45 @@ function ScrollytellingSection() {
             aria-label="Kolortec — iluminación profesional"
           >
             <img ref={imgRef} src={frameUrl(0)} alt="" draggable="false" className="absolute inset-0 h-full w-full object-cover" />
-            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/70" />
+            {/* Scrims: izquierda (para el texto) + vertical (para top-bar / indicador) */}
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/45" />
 
-            <div className="absolute inset-0 flex items-center justify-center px-6">
-              {MESSAGES.map((m, i) => (
-                <div
-                  key={m.title}
-                  className={`absolute max-w-[26ch] text-center transition-all duration-[800ms] ease-out ${
-                    i === active ? 'translate-y-0 opacity-100 blur-none' : 'pointer-events-none translate-y-8 opacity-0 blur-[3px]'
-                  }`}
-                >
-                  <h2 className="title-font text-[clamp(2.6rem,7.5vw,6rem)] leading-[0.9] text-white drop-shadow-[0_6px_30px_rgba(0,0,0,0.6)]">
-                    {m.title}<span className="text-primary">.</span>
-                  </h2>
-                  {m.subtitle ? (
-                    <p className="mx-auto mt-4 max-w-[44ch] text-[clamp(1rem,1.9vw,1.4rem)] leading-[1.5] text-[#e6e9ef] drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]">
-                      {m.subtitle}
-                    </p>
-                  ) : null}
-                  {m.cta ? (
-                    <Link
-                      to={m.cta.href}
-                      className="pointer-events-auto mt-8 inline-flex items-center bg-primary px-7 py-3.5 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black transition hover:brightness-105"
-                    >
-                      {m.cta.label}
-                    </Link>
-                  ) : null}
+            {/* Mini top-bar: branding + Inicio (el navbar real queda tapado por el portal) */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-6 py-4 lg:px-10 xl:px-20">
+              <button type="button" onClick={scrollTop} className="pointer-events-auto flex items-center transition hover:opacity-80" aria-label="Kolortec — ir al inicio">
+                <img src={LOGO} alt="Kolortec" className="h-6 w-auto object-contain" />
+              </button>
+              <button
+                type="button"
+                onClick={scrollTop}
+                className="pointer-events-auto inline-flex min-h-11 items-center text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-100 transition hover:text-primary xl:text-sm"
+              >
+                Inicio
+              </button>
+            </div>
+
+            {/* Mensajes (uno visible por vez, reveal escalonado) */}
+            {MESSAGES.map((m, i) => (
+              <TextBlock key={m.title} m={m} isActive={i === active} />
+            ))}
+
+            {/* Indicador de progreso por pasos */}
+            <div className="pointer-events-none absolute bottom-8 left-6 flex gap-2 lg:left-16 xl:left-40" aria-hidden="true">
+              {MESSAGES.map((_, i) => (
+                <div key={i} className="h-[3px] w-9 overflow-hidden rounded-full bg-white/20 sm:w-14">
+                  <div ref={(el) => { segRefs.current[i] = el }} className="h-full w-0 bg-primary" />
                 </div>
               ))}
             </div>
 
-            <div ref={barRef} className="absolute bottom-0 left-0 h-[3px] w-0 bg-primary" aria-hidden="true" />
+            {/* Hint "Scrolleá" (se desvanece al empezar) */}
             <div
               ref={hintRef}
-              className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-white/70 transition-opacity duration-500"
+              className="pointer-events-none absolute bottom-7 right-6 flex flex-col items-center gap-1 text-white/70 transition-opacity duration-500 lg:right-16 xl:right-20"
               aria-hidden="true"
             >
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.22em]">Scrolleá</span>
+              <span className="text-[0.62rem] font-bold uppercase tracking-[0.22em]">Scrolleá</span>
               <svg viewBox="0 0 24 24" className="h-5 w-5 animate-bounce stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
                 <path d="M6 9l6 6 6-6" />
               </svg>
