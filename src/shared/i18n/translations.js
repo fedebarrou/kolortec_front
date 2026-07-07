@@ -47,7 +47,7 @@ export const translations = {
         cta: 'View Products',
       },
       shop: {
-        title: 'Maintenance\nGuide',
+        title: 'Support\ncenter',
         subtitle:
           'Factory-backed warranty, original spare parts, and technical support to keep your Kolortec gear running season after season.',
         cta: 'Go to Products',
@@ -367,7 +367,7 @@ export const translations = {
         cta: 'Ver Productos',
       },
       shop: {
-        title: 'Guia de\nMantenimiento',
+        title: 'Centro de\nsoporte',
         subtitle:
           'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
         cta: 'Ir a Productos',
