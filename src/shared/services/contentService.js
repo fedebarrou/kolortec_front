@@ -51,9 +51,21 @@ async function fetchJson(path) {
   return response.json()
 }
 
+// Cache por sesión de los GET públicos (/public/*): dedupe de llamadas concurrentes/duplicadas
+// (ej. getLandingContent y getFooterData piden galeria/instagram/marcas) → la data queda lista al
+// instante. Guarda la PROMESA; si falla, la remueve para permitir reintento.
+const _publicFetchCache = new Map()
 async function fetchWithFallback(path, fallbackValue) {
+  let entry = _publicFetchCache.get(path)
+  if (!entry) {
+    entry = fetchJson(path).catch((err) => {
+      _publicFetchCache.delete(path)
+      throw err
+    })
+    _publicFetchCache.set(path, entry)
+  }
   try {
-    return await fetchJson(path)
+    return await entry
   } catch {
     return fallbackValue
   }
