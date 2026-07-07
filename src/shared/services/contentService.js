@@ -116,6 +116,15 @@ function mapProductoDetail(p) {
     videos: (Array.isArray(p.media) ? p.media : [])
       .filter((m) => m && m.kind === 'video' && m.url)
       .map((m, i) => ({ title: `${p.nombre} · Video ${i + 1}`, url: m.url, thumbnail: heroImage })),
+    innovations: (Array.isArray(p.innovaciones) ? p.innovaciones : [])
+      .filter((i) => i && (i.nombre || i.descripcion))
+      .map((i) => ({
+        title: i.nombre || '',
+        description: i.descripcion || '',
+        image: i.media_url || i.logo_url || '',
+        mediaType: i.media_tipo || 'imagen',
+      })),
+    related: [],
     accessories: [],
     seoTitle: `${p.nombre} · Kolortec`,
     seoDescription: p.descripcion || p.nombre,
@@ -511,7 +520,14 @@ export async function getProductDetail(slug) {
   const match = raw.find(
     (p) => (p.slug && p.slug === slug) || String(p.id) === String(slug),
   )
-  return match ? mapProductoDetail(match) : null
+  if (!match) return null
+  const detail = mapProductoDetail(match)
+  // Relacionados: misma categoría (excluye el actual), completa con otros hasta 4.
+  const others = raw.filter((p) => String(p.id) !== String(match.id))
+  const sameCat = others.filter((p) => p.categoria && p.categoria === match.categoria)
+  const rest = others.filter((p) => !sameCat.includes(p))
+  detail.related = [...sameCat, ...rest].slice(0, 4).map(mapProducto)
+  return detail
 }
 
 /**

@@ -406,14 +406,22 @@ function ProductDetailPage() {
                     {formatPrice(product.price, product.moneda)}
                   </strong>
                 </div>
-                {product.technicalSpecs.length > 0 ? (
-                  <div className="mt-8 border-t border-[#2a2a2a] divide-y divide-[#2a2a2a]">
-                    {product.technicalSpecs.slice(0, 4).map(([label, value]) => (
-                      <article key={label} className="kt-reveal-item flex items-start gap-3 py-3.5">
-                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
+                    Si no hay innovaciones cargadas, no se muestra nada acá. */}
+                {product.innovations.length > 0 ? (
+                  <div className="mt-8 grid gap-4 border-t border-[#2a2a2a] pt-6">
+                    {product.innovations.slice(0, 4).map((inn) => (
+                      <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
+                        {inn.image ? (
+                          <img src={inn.image} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-lg border border-[#2a2a2a] object-cover" />
+                        ) : (
+                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                        )}
                         <div className="grid gap-0.5">
-                          <span className="text-[11px] font-bold uppercase tracking-[0.09em] text-[#aeb4bf]">{label}</span>
-                          <strong className="text-[0.95rem] font-bold leading-[1.45] text-[#f0f2f5]">{value}</strong>
+                          <span className="text-[0.95rem] font-bold leading-tight text-[#f0f2f5]">{inn.title}</span>
+                          {inn.description ? (
+                            <span className="text-[0.85rem] leading-[1.5] text-[#aeb4bf]">{inn.description}</span>
+                          ) : null}
                         </div>
                       </article>
                     ))}
@@ -727,6 +735,23 @@ function ProductDetailPage() {
               </div>
             </section>
             </>
+            ) : null}
+
+            {product.related && product.related.length > 0 ? (
+              <>
+              <div className="kt-graphene-separator" aria-hidden="true" />
+              <section className="kt-detail-anim px-6 py-[clamp(48px,7vw,88px)] lg:px-40" id="related">
+                <h3 className="kt-detail-tech-title text-[clamp(1.8rem,3vw,2.6rem)] leading-[1.05]">
+                  {t('productDetail.related', 'También te puede interesar')}
+                  <span className="kt-title-dot">.</span>
+                </h3>
+                <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                  {product.related.map((item) => (
+                    <ProductCard key={item.slug || item.id} item={item} />
+                  ))}
+                </div>
+              </section>
+              </>
             ) : null}
           </div>
         </div>
