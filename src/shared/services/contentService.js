@@ -113,7 +113,9 @@ function mapProductoDetail(p) {
       .map((d) => ({ label: d.title || 'Documento', size: d.size || '', type: String(d.extension || d.tipo || '').toUpperCase(), url: d.url })),
     variants: (Array.isArray(p.variantes) ? p.variantes : [])
       .map((v) => ({ id: v.id, sku: v.sku, price: v.precio, image: heroImage })),
-    videos: [],
+    videos: (Array.isArray(p.media) ? p.media : [])
+      .filter((m) => m && m.kind === 'video' && m.url)
+      .map((m, i) => ({ title: `${p.nombre} · Video ${i + 1}`, url: m.url, thumbnail: heroImage })),
     accessories: [],
     seoTitle: `${p.nombre} · Kolortec`,
     seoDescription: p.descripcion || p.nombre,
