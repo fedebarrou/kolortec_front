@@ -8,13 +8,13 @@ const FRAME_COUNT = 96
 const frameUrl = (i) => `/assets/scrolly-frames/f${String(i).padStart(3, '0')}.jpg`
 const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
-// Mensajes SINCRONIZADOS con lo que muestra el video en cada etapa:
-// (rugged bajo lluvia) → (se enciende, haz potente) → (se abre el plano) → (show en vivo con público)
+// Mensajes de MARCA (pilares KOLORTEC), coherentes con lo que muestra el video en cada etapa:
+// (rugged/lluvia → Calidad) · (haz potente → Presencia) · (en escena → Soporte) · (show masivo → Ready to work)
 const MESSAGES = [
-  { eyebrow: 'Resistencia', title: 'Hecha para la ruta', subtitle: 'Cabezales profesionales que aguantan lluvia, polvo y cada gira.' },
-  { eyebrow: 'Potencia', title: 'Encendé la potencia', subtitle: 'Haces intensos que atraviesan la noche.' },
-  { eyebrow: 'Producción', title: 'Del truss al escenario', subtitle: 'Producciones que se ven desde la última fila.' },
-  { eyebrow: 'En vivo', title: 'La luz que mueve el show', subtitle: 'KOLORTEC en cada escenario.', cta: { label: 'Ver productos', href: '/products' } },
+  { eyebrow: 'Calidad', title: 'Construidos para rendir', subtitle: 'Línea propia, testeada y fabricada para aguantar giras, clima y uso intensivo.' },
+  { eyebrow: 'Presencia', title: 'Presencia en escena', subtitle: 'Óptica y potencia que definen el espacio y se imponen en cualquier escenario.' },
+  { eyebrow: 'Soporte', title: 'Respaldo que no falla', subtitle: 'Soporte técnico, repuestos y mantenimiento de fábrica: tu equipo, siempre listo.' },
+  { eyebrow: 'Ready to work', title: 'Listos para usar', subtitle: 'Salen de fábrica listos para trabajar — los conectás y el show arranca.', cta: { label: 'Ver productos', href: '/products' } },
 ]
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
@@ -93,6 +93,8 @@ function ScrollytellingSection() {
         const op = 1 - smoothstep(0.06, 0.16, dist)
         block.style.opacity = op.toFixed(3)
         block.style.setProperty('--ty', `${((c - p) * 200).toFixed(1)}px`)
+        block.style.setProperty('--blur', `${((1 - op) * 7).toFixed(2)}px`)
+        block.style.setProperty('--rv', op.toFixed(3))
         block.style.pointerEvents = op > 0.5 ? 'auto' : 'none'
       }
     }
@@ -125,21 +127,22 @@ function ScrollytellingSection() {
       className="pointer-events-none absolute inset-0 flex items-center justify-end px-6 will-change-[transform,opacity] lg:px-16 xl:pl-24 xl:pr-40"
       style={{ opacity: index === 0 ? 1 : 0 }}
     >
-      <div className="max-w-[40rem] text-right">
+      <div className="max-w-[40rem] text-right will-change-[filter]" style={{ filter: 'blur(var(--blur, 0px))' }}>
         <span
-          className="block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary"
+          className="flex items-center justify-end gap-2.5"
           style={{ transform: 'translateY(calc(var(--ty, 0px) * 0.6))' }}
         >
-          {m.eyebrow}
+          <span className="h-[2px] w-9 origin-right bg-primary" style={{ transform: 'scaleX(var(--rv, 1))' }} aria-hidden="true" />
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary">{m.eyebrow}</span>
         </span>
         <h2
-          className="title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white drop-shadow-[0_6px_28px_rgba(0,0,0,0.6)]"
+          className="title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.9),0_1px_3px_rgba(0,0,0,0.85)]"
           style={{ transform: 'translateY(var(--ty, 0px))' }}
         >
           {m.title}<span className="text-primary">.</span>
         </h2>
         <p
-          className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
+          className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#eef0f4] [text-shadow:0_1px_12px_rgba(0,0,0,0.9)]"
           style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.35))' }}
         >
           {m.subtitle}
@@ -147,7 +150,7 @@ function ScrollytellingSection() {
         {m.cta ? (
           <Link
             to={m.cta.href}
-            className="mt-8 inline-flex min-h-11 items-center bg-primary px-7 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black transition hover:brightness-105"
+            className="mt-8 inline-flex min-h-11 items-center bg-primary px-7 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition hover:brightness-105"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.1))' }}
           >
             {m.cta.label}
@@ -163,7 +166,8 @@ function ScrollytellingSection() {
     return (
       <section className="relative h-[100dvh] w-full overflow-hidden bg-deep-black">
         <img src={frameUrl(0)} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/30 to-transparent" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/45 to-transparent" />
+        <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,0.6), transparent 72%)' }} />
         <div className="absolute inset-0 flex items-center justify-end px-6 lg:px-16 xl:pr-40">
           <div className="max-w-[40rem] text-right">
             <span className="block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary">{m.eyebrow}</span>
@@ -189,9 +193,15 @@ function ScrollytellingSection() {
             aria-label="Kolortec — iluminación profesional"
           >
             <img ref={imgRef} src={frameUrl(0)} alt="" draggable="false" className="absolute inset-0 h-full w-full object-cover" />
-            {/* Scrims: derecha (para el texto, que va a la derecha) + vertical (top-bar / indicador) */}
-            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/30 to-transparent" />
-            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/45" />
+            {/* Scrims para legibilidad: gradiente derecho (texto) + vertical (top-bar/indicador) +
+                "spotlight" radial oscuro anclado detrás de la copy → el texto no se pierde en el bg. */}
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/45 to-transparent" />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/50" />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{ backgroundImage: 'radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,0.6), transparent 72%)' }}
+            />
 
             {/* Mini top-bar: branding + Inicio (el navbar real queda tapado por el portal) */}
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-6 py-4 lg:px-10 xl:px-20">
