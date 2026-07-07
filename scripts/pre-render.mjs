@@ -108,7 +108,14 @@ async function snapshot(browser, route) {
   await new Promise((r) => setTimeout(r, 800))
 
   const html = await page.evaluate(() => {
-    // Limpiar atributos React específicos antes de serializar
+    // Quitar portales runtime (createPortal a document.body) del snapshot estático: React los recrea
+    // al hidratar; si quedan en el HTML generan fantasmas (ej. el layer fixed del scrollytelling que
+    // reaparece al scrollear en Vercel). Solo se conserva #root + scripts.
+    document.querySelectorAll('body > *').forEach((el) => {
+      const tag = el.tagName.toLowerCase()
+      if (el.id === 'root' || tag === 'script' || tag === 'noscript' || tag === 'template') return
+      el.remove()
+    })
     return '<!doctype html>\n' + document.documentElement.outerHTML
   })
 
