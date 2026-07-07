@@ -1,4 +1,5 @@
 import Divider from './Divider'
+import DistributorTeaserSection from './DistributorTeaserSection'
 import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
@@ -39,6 +40,8 @@ function LandingPage() {
       <ShopSection shop={content.shop} />
       <Divider />
       <SupportSection support={content.support} />
+      <Divider />
+      <DistributorTeaserSection distributor={content.distributor} />
     </>
   )
 }
