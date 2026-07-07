@@ -535,6 +535,15 @@ export async function getProductDetail(slug) {
  * Fetches /public/blog?tipo=guia and maps to the guide shape.
  * Falls back to the hardcoded guides from features/guides/data/guides.js.
  */
+/**
+ * getSiteConfig()
+ * Config pública de la web (flags). Hoy: showPrices (mostrar/ocultar precios). Fallback: showPrices=true.
+ */
+export async function getSiteConfig() {
+  const cfg = await fetchWithFallback('/public/web-config', null)
+  return { showPrices: cfg ? cfg.show_prices !== false : true }
+}
+
 export async function getGuides() {
   // Data-driven: sin guías cargadas en tiendita → lista vacía (la página muestra empty state),
   // en vez de las guías hardcodeadas.

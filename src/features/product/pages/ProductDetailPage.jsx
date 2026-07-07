@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { trackEvent } from '../../../shared/services/tracking'
-import { getProductDetail } from '../../../shared/services/contentService'
+import { getProductDetail, getSiteConfig } from '../../../shared/services/contentService'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
@@ -23,12 +23,18 @@ function ProductDetailPage() {
   // Data-driven: cargamos el producto REAL desde la API de tiendita por su id/slug.
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showPrices, setShowPrices] = useState(true)
   useEffect(() => {
     let mounted = true
     setLoading(true)
     getProductDetail(slug).then((p) => { if (mounted) { setProduct(p); setLoading(false) } })
     return () => { mounted = false }
   }, [slug])
+  useEffect(() => {
+    let mounted = true
+    getSiteConfig().then((c) => { if (mounted) setShowPrices(c.showPrices) })
+    return () => { mounted = false }
+  }, [])
   const detailBodyRef = useRef(null)
   const heroImageRef = useRef(null)
   const lensRef = useRef(null)
@@ -401,11 +407,13 @@ function ProductDetailPage() {
               <div className="kt-detail-summary">
                 <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]">{product.name}</h1>
                 {translatedShortDescription ? <p className="kt-detail-intro">{translatedShortDescription}</p> : null}
-                <div className="mt-5 flex items-baseline gap-2">
-                  <strong className="title-font text-[clamp(1.8rem,3vw,2.6rem)] leading-none text-primary">
-                    {formatPrice(product.price, product.moneda)}
-                  </strong>
-                </div>
+                {showPrices ? (
+                  <div className="mt-5 flex items-baseline gap-2">
+                    <strong className="title-font text-[clamp(1.8rem,3vw,2.6rem)] leading-none text-primary">
+                      {formatPrice(product.price, product.moneda)}
+                    </strong>
+                  </div>
+                ) : null}
                 {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
                     Si no hay innovaciones cargadas, no se muestra nada acá. */}
                 {product.innovations.length > 0 ? (
