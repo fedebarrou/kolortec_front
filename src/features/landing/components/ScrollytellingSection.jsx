@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 
@@ -18,6 +18,7 @@ const MESSAGES = [
 ]
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
+const smoothstep = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t) }
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
 function ScrollytellingSection() {
@@ -26,9 +27,9 @@ function ScrollytellingSection() {
   const imgRef = useRef(null)
   const hintRef = useRef(null)
   const segRefs = useRef([])
+  const blockRefs = useRef([])
   const lastFrameRef = useRef(-1)
   const rafRef = useRef(0)
-  const [active, setActive] = useState(0)
 
   const reduced =
     typeof window !== 'undefined' && window.matchMedia
@@ -82,16 +83,29 @@ function ScrollytellingSection() {
       }
       if (hintRef.current) hintRef.current.style.opacity = p > 0.03 ? '0' : '1'
 
-      const idx = Math.min(Math.floor(p * N), N - 1)
-      setActive((prev) => (prev === idx ? prev : idx))
+      // Reveal LIGADO AL SCROLL: cada mensaje entra/mantiene/sale según su centro (crossfade limpio
+      // + parallax por línea via --ty). Sin transiciones CSS ni re-render → conectado al scroll.
+      for (let i = 0; i < N; i++) {
+        const block = blockRefs.current[i]
+        if (!block) continue
+        const c = N > 1 ? i / (N - 1) : 0
+        const dist = Math.abs(p - c)
+        const op = 1 - smoothstep(0.06, 0.16, dist)
+        block.style.opacity = op.toFixed(3)
+        block.style.setProperty('--ty', `${((c - p) * 200).toFixed(1)}px`)
+        block.style.pointerEvents = op > 0.5 ? 'auto' : 'none'
+      }
     }
     const onScroll = () => { if (!rafRef.current) rafRef.current = window.requestAnimationFrame(update) }
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
     update()
+    // Robustez: re-correr tras el paint del portal (refs/layout listos) para fijar el estado inicial.
+    const initRaf = window.requestAnimationFrame(() => window.requestAnimationFrame(update))
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
+      window.cancelAnimationFrame(initRaf)
       if (rafRef.current) window.cancelAnimationFrame(rafRef.current)
     }
   }, [reduced])
@@ -103,43 +117,38 @@ function ScrollytellingSection() {
     else window.scrollTo({ top: window.innerHeight * 3.6, behavior: 'smooth' })
   }
 
-  // Clases de reveal (solo transform/opacity). El texto va a la DERECHA (el video apunta a la
-  // izquierda), así que el reveal entra desde la derecha. El stagger se hace con transition-delay.
-  const revealCls = (isActive) =>
-    `transition-[transform,opacity] ease-out will-change-transform ${
-      isActive ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
-    }`
-  const revealStyle = (isActive, order) => ({
-    transitionDuration: isActive ? '520ms' : '300ms',
-    transitionDelay: isActive ? `${order * 80}ms` : '0ms',
-  })
-
-  const TextBlock = ({ m, isActive }) => (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-end px-6 lg:px-16 xl:pl-24 xl:pr-40">
+  // Bloque de mensaje. El reveal (opacity + rise) lo maneja update() por scroll, seteando `opacity` y
+  // la var `--ty` en el div raíz; cada línea aplica un factor distinto de --ty → parallax por capas.
+  const TextBlock = ({ m, index }) => (
+    <div
+      ref={(el) => { blockRefs.current[index] = el }}
+      className="pointer-events-none absolute inset-0 flex items-center justify-end px-6 will-change-[transform,opacity] lg:px-16 xl:pl-24 xl:pr-40"
+      style={{ opacity: index === 0 ? 1 : 0 }}
+    >
       <div className="max-w-[40rem] text-right">
         <span
-          className={`block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary ${revealCls(isActive)}`}
-          style={revealStyle(isActive, 0)}
+          className="block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary"
+          style={{ transform: 'translateY(calc(var(--ty, 0px) * 0.6))' }}
         >
           {m.eyebrow}
         </span>
         <h2
-          className={`title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white drop-shadow-[0_6px_28px_rgba(0,0,0,0.6)] ${revealCls(isActive)}`}
-          style={revealStyle(isActive, 1)}
+          className="title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white drop-shadow-[0_6px_28px_rgba(0,0,0,0.6)]"
+          style={{ transform: 'translateY(var(--ty, 0px))' }}
         >
           {m.title}<span className="text-primary">.</span>
         </h2>
         <p
-          className={`mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] ${revealCls(isActive)}`}
-          style={revealStyle(isActive, 2)}
+          className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
+          style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.35))' }}
         >
           {m.subtitle}
         </p>
         {m.cta ? (
           <Link
             to={m.cta.href}
-            className={`pointer-events-auto mt-8 inline-flex min-h-11 items-center bg-primary px-7 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black transition hover:brightness-105 ${revealCls(isActive)}`}
-            style={revealStyle(isActive, 3)}
+            className="mt-8 inline-flex min-h-11 items-center bg-primary px-7 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black transition hover:brightness-105"
+            style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.1))' }}
           >
             {m.cta.label}
           </Link>
@@ -200,7 +209,7 @@ function ScrollytellingSection() {
 
             {/* Mensajes (uno visible por vez, reveal escalonado) */}
             {MESSAGES.map((m, i) => (
-              <TextBlock key={m.title} m={m} isActive={i === active} />
+              <TextBlock key={m.title} m={m} index={i} />
             ))}
 
             {/* Indicador de progreso por pasos */}
