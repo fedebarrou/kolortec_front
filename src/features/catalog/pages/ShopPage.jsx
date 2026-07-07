@@ -7,15 +7,16 @@ import { defaultLandingContent } from '../../landing/data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
-import { PRODUCT_CATEGORIES } from '../data/categories'
 import { getCategories } from '../../../data/categories.js'
 import { categoryMatchesFilters } from '../data/filters'
 
 function ShopPage() {
   const { t } = useLanguage()
   const [products, setProducts] = useState(defaultLandingContent.products.items)
-  // Categorías: fuente de verdad = tiendita (por cuenta). Fallback al array local mientras carga.
-  const [categories, setCategories] = useState(PRODUCT_CATEGORIES)
+  // Categorías: fuente de verdad = tiendita (por cuenta). Arranca vacío + "cargando" (sin flash de
+  // categorías default); se muestran directo las del tenant al llegar.
+  const [categories, setCategories] = useState([])
+  const [catsLoading, setCatsLoading] = useState(true)
   const [searchParams] = useSearchParams()
   const [activeFilters, setActiveFilters] = useState({})
   const query = (searchParams.get('q') ?? '').trim().toLowerCase()
@@ -26,9 +27,9 @@ function ShopPage() {
     getShopProducts().then((response) => {
       if (mounted) setProducts(response)
     })
-    getCategories().then((list) => {
-      if (mounted && Array.isArray(list) && list.length) setCategories(list)
-    })
+    getCategories()
+      .then((list) => { if (mounted && Array.isArray(list)) setCategories(list) })
+      .finally(() => { if (mounted) setCatsLoading(false) })
     return () => { mounted = false }
   }, [])
 
@@ -125,14 +126,19 @@ function ShopPage() {
       <CatalogFilterBar activeFilters={activeFilters} onChange={setActiveFilters} />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 kt-reveal">
-        {categories.filter((category) => categoryMatchesFilters(category, activeFilters)).map((category) => (
+        {catsLoading ? (
+          <div className="col-span-2 flex items-center justify-center py-16 text-sm text-[#8b90a0] lg:col-span-3 xl:col-span-4">
+            <span className="animate-pulse">{t('catalog.loadingCategories', 'Cargando categorías…')}</span>
+          </div>
+        ) : null}
+        {!catsLoading && categories.filter((category) => categoryMatchesFilters(category, activeFilters)).map((category) => (
           <CategoryCard
             key={category.slug}
             category={category}
             count={categoryCounts[category.slug] ?? 0}
           />
         ))}
-        {categories.filter((category) => categoryMatchesFilters(category, activeFilters)).length === 0 ? (
+        {!catsLoading && categories.filter((category) => categoryMatchesFilters(category, activeFilters)).length === 0 ? (
           <div className="col-span-2 border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-10 text-center lg:col-span-3 xl:col-span-4">
             <h3 className="title-font m-0 text-[1.4rem] text-white">
               {t('catalog.emptyFiltersTitle', 'Sin coincidencias')}

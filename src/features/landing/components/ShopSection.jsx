@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import { getGuides } from '../../../shared/services/contentService'
 
 function ShopSection({ shop }) {
   const { t } = useLanguage()
@@ -18,14 +17,10 @@ function ShopSection({ shop }) {
   const sectionRef = useRef(null)
   const [introPhase, setIntroPhase] = useState(prefersReducedMotion ? 'done' : 'priming')
 
-  // Biblioteca de guías = data-driven desde blogs de tiendita (tipo=guia). Si no hay, la columna
-  // derecha no se muestra (la sección amarilla igual queda).
-  const [guides, setGuides] = useState([])
-  useEffect(() => {
-    let mounted = true
-    getGuides().then((g) => { if (mounted && Array.isArray(g)) setGuides(g) })
-    return () => { mounted = false }
-  }, [])
+  // Biblioteca de guías = data-driven desde blogs de tiendita (tipo=guia), PRECARGADas con el
+  // contenido de la landing (useLandingContent) → aparecen al instante con la sección amarilla, sin
+  // un fetch propio que las demore. Si no hay, la columna derecha no se muestra.
+  const guides = Array.isArray(shop?.guides) ? shop.guides : []
   const hasGuides = guides.length > 0
 
   // Animacion de entrada (cortina + barrido + flash). Se dispara al entrar la

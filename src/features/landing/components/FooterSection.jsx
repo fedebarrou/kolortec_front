@@ -42,7 +42,7 @@ function FooterSection() {
     return () => { mounted = false }
   }, [])
   const productItems = categorias.length > 0
-    ? categorias.slice(0, 6).map((c) => ({ key: c.slug, label: c.nombre }))
+    ? categorias.slice(0, 6).map((c) => ({ key: c.slug, label: String(c.nombre || '').toLowerCase() }))
     : [{ key: 'all', label: 'Ver productos' }]
   const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
 
@@ -93,7 +93,7 @@ function FooterSection() {
           <ul className="body-font text-slate-400 space-y-4 text-sm">
             {productItems.map((it) => (
               <li key={`footer-cat-${it.key}`}>
-                <Link className="hover:text-primary transition-colors" to="/products">{it.label}</Link>
+                <Link className="capitalize hover:text-primary transition-colors" to="/products">{it.label}</Link>
               </li>
             ))}
           </ul>

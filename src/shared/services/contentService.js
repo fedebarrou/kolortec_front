@@ -423,6 +423,7 @@ export async function getLandingContent() {
     marcasRaw,
     serviciosRaw,
     heroCfgRaw,
+    guides,
   ] = await Promise.all([
     fetchWithFallback('/public/web-config', null),
     fetchWithFallback('/public/productos', null),
@@ -431,6 +432,7 @@ export async function getLandingContent() {
     fetchWithFallback('/public/marcas', null),
     fetchWithFallback('/public/servicios', null),
     fetchWithFallback('/public/hero-config', null),
+    getGuides(),
   ])
 
   const products = mapProductosToSection(productosRaw)
@@ -455,8 +457,9 @@ export async function getLandingContent() {
     gallery,
     // products: from /public/productos mapped to featured items
     products,
-    // shop: static copy from defaults (text/cards are editorial, not from API)
-    shop: defaultLandingContent.shop,
+    // shop: static copy from defaults + guías (blog tipo=guia) precargadas con el contenido
+    // para que la "Biblioteca de guías" aparezca al instante con la sección amarilla.
+    shop: { ...defaultLandingContent.shop, guides },
     // services: from /public/servicios — section is commented-out in LandingPage
     services,
     // support: contacts from /public/web-config

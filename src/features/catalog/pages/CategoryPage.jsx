@@ -6,7 +6,6 @@ import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
 import { getCategory, getCategories } from '../../../data/categories.js'
-import { PRODUCT_CATEGORIES } from '../data/categories'
 
 function CategoryPage() {
   const { categorySlug } = useParams()
@@ -15,7 +14,8 @@ function CategoryPage() {
   const [selectedBadge, setSelectedBadge] = useState('all')
   // category: undefined = cargando, null = no encontrada. allCategories: lista para "otras".
   const [category, setCategory] = useState(undefined)
-  const [allCategories, setAllCategories] = useState(PRODUCT_CATEGORIES)
+  // Arranca vacío (sin flash de categorías default); se llenan con las del tenant al cargar.
+  const [allCategories, setAllCategories] = useState([])
   const categoryLabel = category ? (lang === 'en' ? category.nameEn : category.name) : t('pageTitle.products', 'Productos')
 
   useEffect(() => {

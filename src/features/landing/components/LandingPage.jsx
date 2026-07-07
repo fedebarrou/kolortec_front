@@ -27,14 +27,14 @@ function LandingPage() {
       <ScrollytellingSection />
       <Divider />
       <InstagramSection gallery={content.gallery} />
+      <Divider />
+      <HeroSection hero={content.hero} />
       {hasProducts ? (
         <>
           <Divider />
           <FeaturedSection products={content.products} />
         </>
       ) : null}
-      <Divider />
-      <HeroSection hero={content.hero} />
       <Divider />
       <SupportSection support={content.support} />
       <Divider />
