@@ -61,10 +61,14 @@ function ScrollytellingSection() {
       const total = r.height - vh
       const p = total > 0 ? clamp(-r.top / total, 0, 1) : 0
 
-      // Visible mientras el spacer ocupa el viewport (tolerante al offset del header sticky).
-      const inRange = r.bottom > vh * 0.15 && r.top < vh
-      layer.style.opacity = inRange ? '1' : '0'
-      layer.style.pointerEvents = inRange ? 'auto' : 'none'
+      // Salida suave: mientras el spacer sale por abajo del viewport, el layer se desliza hacia arriba
+      // (scroll-away) revelando la sección siguiente (Instagram) de forma natural, en vez de apagarse
+      // de golpe. `releaseY` es 0 mientras está pinned y negativo cuando `r.bottom < vh`.
+      const releaseY = Math.min(0, r.bottom - vh)
+      const visible = r.bottom > 0 && r.top < vh
+      layer.style.transform = `translate3d(0, ${releaseY}px, 0)`
+      layer.style.opacity = visible ? '1' : '0'
+      layer.style.pointerEvents = visible && releaseY > -vh * 0.5 ? 'auto' : 'none'
 
       const fi = clamp(Math.round(p * (FRAME_COUNT - 1)), 0, FRAME_COUNT - 1)
       if (fi !== lastFrameRef.current && imgRef.current) {
@@ -172,7 +176,7 @@ function ScrollytellingSection() {
           <div
             ref={layerRef}
             className="pointer-events-none fixed inset-0 z-[5] opacity-0 transition-opacity duration-200"
-            style={{ willChange: 'opacity' }}
+            style={{ willChange: 'transform, opacity' }}
             aria-label="Kolortec — iluminación profesional"
           >
             <img ref={imgRef} src={frameUrl(0)} alt="" draggable="false" className="absolute inset-0 h-full w-full object-cover" />

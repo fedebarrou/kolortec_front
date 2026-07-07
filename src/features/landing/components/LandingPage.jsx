@@ -36,9 +36,9 @@ function LandingPage() {
       <Divider />
       <HeroSection hero={content.hero} />
       <Divider />
-      <ShopSection shop={content.shop} />
-      <Divider />
       <SupportSection support={content.support} />
+      <Divider />
+      <ShopSection shop={content.shop} />
     </>
   )
 }
