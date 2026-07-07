@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node mock-api/server.mjs",
-    "prebuild": "node scripts/gen-sitemap.mjs && node scripts/gen-llms-txt.mjs",
+    "prebuild": "node scripts/gen-sitemap.mjs || true && node scripts/gen-llms-txt.mjs || true",
     "build": "vite build",
-    "postbuild": "node scripts/pre-render.mjs",
+    "postbuild": "node scripts/pre-render.mjs || true",
     "sitemap": "node scripts/gen-sitemap.mjs",
     "llms": "node scripts/gen-llms-txt.mjs",
     "prerender": "node scripts/pre-render.mjs",

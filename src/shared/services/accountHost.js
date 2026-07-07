@@ -10,7 +10,7 @@
  * En localhost/dev cae al valor de VITE_TIENDITA_ACCOUNT_HOST (la cuenta con la
  * que probás), así el desarrollo local sigue funcionando.
  */
-const FALLBACK_HOST = import.meta.env.VITE_TIENDITA_ACCOUNT_HOST || ''
+const FALLBACK_HOST = import.meta.env?.VITE_TIENDITA_ACCOUNT_HOST || ''
 
 export function resolveAccountHost() {
   if (typeof window !== 'undefined' && window.location && window.location.hostname) {

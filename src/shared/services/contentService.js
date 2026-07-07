@@ -13,10 +13,10 @@
  *  - hero is NEVER fetched remotely; it always comes from landingData defaults.
  */
 
-import { defaultLandingContent } from '../../features/landing/data/landingData'
-import { resolveAccountHost } from './accountHost'
+import { defaultLandingContent } from '../../features/landing/data/landingData.js'
+import { resolveAccountHost } from './accountHost.js'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || ''
 
 // Las rutas OAuth públicas viven en el grupo `web` del backend (SIN prefijo /api):
 // GET /public/auth/{provider} y su callback (routes/web.php). API_BASE_URL trae el
