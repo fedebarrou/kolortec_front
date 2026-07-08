@@ -192,6 +192,23 @@
     }
   }
 
+  /* Entrada del navbar (line-reveal): una línea primary se dibuja y se desvanece (SOLO transición),
+     mientras la barra hace fade + leve drop. Se dispara agregando .kt-nav-enter al <header>
+     (cuando termina el scrollytelling). El resto de páginas no lleva la clase → aparece normal. */
+  @keyframes kt-nav-line {
+    0%   { transform: scaleX(0); opacity: 1; }
+    48%  { transform: scaleX(1); opacity: 1; }
+    70%  { transform: scaleX(1); opacity: 1; }
+    100% { transform: scaleX(1); opacity: 0; }
+  }
+  @keyframes kt-nav-reveal {
+    0%   { opacity: 0; transform: translateY(-8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .kt-nav-line { transform-origin: center; transform: scaleX(0); opacity: 0; will-change: transform, opacity; }
+  .kt-nav-enter .kt-nav-line { animation: kt-nav-line 0.95s ease-out forwards; }
+  .kt-nav-enter { animation: kt-nav-reveal 0.55s cubic-bezier(0.22, 0.9, 0.3, 1) 0.14s both; }
+
   .kt-matrix-bg-layer {
     --mouse-x: 50vw;
     --mouse-y: 50vh;

@@ -58,6 +58,16 @@ function HeaderSection() {
   const mobileMenuBtnRef = useRef(null)
   const searchWrapRef = useRef(null)
 
+  // Entrada del navbar (line-reveal): en la home el navbar arranca oculto (el scrollytelling lo tapa)
+  // y ANIMA su entrada cuando terminás el intro. En el resto de páginas aparece normal.
+  const isHome = pathname === '/'
+  const prefersReduced =
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  const animateEntrance = isHome && !prefersReduced
+  const [navEntered, setNavEntered] = useState(false)
+
   const slugify = (value) =>
     value
       .toLowerCase()
@@ -129,6 +139,38 @@ function HeaderSection() {
     ],
     [t],
   )
+
+  useEffect(() => {
+    if (!animateEntrance) {
+      setNavEntered(false)
+      return undefined
+    }
+    let raf = 0
+    let done = false
+    const check = () => {
+      raf = 0
+      if (done) return
+      const spacer = document.querySelector('[data-scrolly-spacer]')
+      const past = spacer
+        ? spacer.getBoundingClientRect().bottom <= window.innerHeight * 0.1
+        : window.scrollY > window.innerHeight * 0.5
+      if (past) {
+        done = true
+        setNavEntered(true)
+      }
+    }
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(check)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    check()
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (raf) window.cancelAnimationFrame(raf)
+    }
+  }, [animateEntrance])
 
   useEffect(() => {
     if (hash !== '#shop') return
@@ -298,6 +340,11 @@ function HeaderSection() {
   }, [searchTerm, suggestions.length])
 
   const isPredictOpen = isSearchFocused && searchTerm.trim().length > 0
+  const navClass = !animateEntrance
+    ? ''
+    : navEntered
+      ? 'kt-nav-enter'
+      : 'opacity-0 -translate-y-2 pointer-events-none'
   const loginDialog = isLoginDialogOpen
     ? createPortal(
         <div
@@ -358,7 +405,8 @@ function HeaderSection() {
     : null
 
   return (
-    <header className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-10 xl:px-20 2xl:px-40 py-4">
+    <header className={`sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-10 xl:px-20 2xl:px-40 py-4 ${navClass}`}>
+      <span aria-hidden="true" className="kt-nav-line pointer-events-none absolute left-0 top-0 h-[2px] w-full bg-primary" />
       <div className="w-full flex items-center justify-between gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4">
         <div className="flex items-center md:justify-self-start">
           <Link
