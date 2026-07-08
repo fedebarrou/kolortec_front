@@ -435,6 +435,19 @@ function mapHeroConfig(heroCfg) {
  * them to the shape expected by landing components.
  * Fallback is always the matching key from defaultLandingContent.
  */
+/**
+ * deriveLines()
+ * Líneas de producto distintas a partir del payload de /public/productos (cada producto puede o no
+ * tener `linea`, un string freeform). Si no hay ninguna (o falla la API → mockup Vercel), usa las
+ * líneas mock de defaultLandingContent.
+ */
+function deriveLines(raw) {
+  const list = Array.isArray(raw)
+    ? Array.from(new Set(raw.map((p) => (p?.linea ?? '').trim()).filter(Boolean)))
+    : []
+  return list.length ? list : defaultLandingContent.lines ?? []
+}
+
 export async function getLandingContent() {
   const [
     webConfig,
@@ -457,6 +470,7 @@ export async function getLandingContent() {
   ])
 
   const products = mapProductosToSection(productosRaw)
+  const lines = deriveLines(productosRaw)
   const gallery = mapGallery(igFeed, galeriaRaw)
   const support = mapWebConfigToSupport(webConfig)
   const clientLogos = mapMarcasToClientLogos(marcasRaw)
@@ -478,6 +492,8 @@ export async function getLandingContent() {
     gallery,
     // products: from /public/productos mapped to featured items
     products,
+    // lines: líneas de producto distintas (campo `linea`); mock si no hay API (Vercel)
+    lines,
     // shop: static copy from defaults + guías (blog tipo=guia) precargadas con el contenido
     // para que la "Biblioteca de guías" aparezca al instante con la sección amarilla.
     shop: { ...defaultLandingContent.shop, guides },

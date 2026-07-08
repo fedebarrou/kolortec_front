@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
+import { SCROLLY_BRANDS } from './scrollyBrands'
 
 // Frame-sequence: en vez de scrubbear el <video> (que hace jank al hacer seek), pre-cargamos los
 // frames como imágenes y swapeamos la que corresponde al progreso del scroll (swap cacheado = suave).
@@ -13,7 +14,7 @@ const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 const MESSAGES = [
   { eyebrow: 'Calidad', title: 'Construidos para rendir', subtitle: 'Línea propia, testeada y fabricada para aguantar giras, clima y uso intensivo.' },
   { eyebrow: 'Presencia', title: 'Presencia en escena', subtitle: 'Óptica y potencia que definen el espacio y se imponen en cualquier escenario.' },
-  { eyebrow: 'Soporte', title: 'Respaldo que no falla', subtitle: 'Soporte técnico, repuestos y mantenimiento de fábrica: tu equipo, siempre listo.' },
+  { eyebrow: 'Soporte', title: 'Respaldo que no falla', subtitle: 'Soporte técnico, repuestos y mantenimiento de fábrica: tu equipo, siempre listo.', cta: { label: 'Ir a soporte', href: '/soporte' } },
   { eyebrow: 'Ready to work', title: 'Listos para usar', subtitle: 'Salen de fábrica listos para trabajar — los conectás y el show arranca.', cta: { label: 'Ver productos', href: '/products' } },
 ]
 
@@ -21,7 +22,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const smoothstep = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t) }
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-function ScrollytellingSection() {
+function ScrollytellingSection({ lines = [] }) {
   const spacerRef = useRef(null)
   const layerRef = useRef(null)
   const imgRef = useRef(null)
@@ -147,6 +148,42 @@ function ScrollytellingSection() {
         >
           {m.subtitle}
         </p>
+
+        {/* Step 1 (Calidad): chips con las líneas de producto (#linea). */}
+        {index === 0 && lines.length > 0 ? (
+          <ul
+            className="mt-5 flex flex-wrap justify-end gap-2"
+            style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
+          >
+            {lines.map((l) => (
+              <li
+                key={l}
+                className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[0.78rem] font-semibold text-white/85 backdrop-blur-sm"
+              >
+                <span className="text-primary">#</span>
+                {l}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {/* Step 2 (Presencia): logos (blancos) de dónde se usan equipos KOLORTEC. */}
+        {index === 1 ? (
+          <div
+            className="mt-6 flex flex-col items-end gap-2.5"
+            style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
+          >
+            <span className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-white/45">Se usa en</span>
+            <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 text-white/75">
+              {SCROLLY_BRANDS.map((b) => (
+                <span key={b.name} className={b.className} aria-label={b.name}>
+                  {b.text}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {m.cta ? (
           <Link
             to={m.cta.href}
@@ -175,6 +212,16 @@ function ScrollytellingSection() {
               {m.title}<span className="text-primary">.</span>
             </h2>
             <p className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef]">{m.subtitle}</p>
+            {lines.length > 0 ? (
+              <ul className="mt-5 flex flex-wrap justify-end gap-2">
+                {lines.map((l) => (
+                  <li key={l} className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[0.78rem] font-semibold text-white/85">
+                    <span className="text-primary">#</span>
+                    {l}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         </div>
       </section>

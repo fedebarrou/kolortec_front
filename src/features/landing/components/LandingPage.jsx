@@ -26,7 +26,7 @@ function LandingPage() {
 
   return (
     <>
-      <ScrollytellingSection />
+      <ScrollytellingSection lines={content.lines} />
       <Divider />
       <InstagramSection gallery={content.gallery} />
       {hasProducts ? (

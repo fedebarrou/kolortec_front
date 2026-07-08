@@ -3,6 +3,9 @@ export const defaultLandingContent = {
     name: 'Kolortec',
     logoUrl: '/assets/Grupo-Kolortec-1024x150.jpeg',
   },
+  // Líneas de producto (mock para el mockup de Vercel). En el sitio real se derivan del campo `linea`
+  // de los productos de tiendita (/public/productos).
+  lines: ['Golden Line', 'Beam', 'Wash', 'Spot', 'Pro Stage'],
   nav: [
     { label: 'Products', href: '#products' },
     { label: 'Shop', href: '#shop' },
