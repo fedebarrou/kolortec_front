@@ -343,10 +343,16 @@ function mapBlogToGuides(raw) {
       sections = parseBlogContent(post.contenido)
     }
 
+    // media[] de tiendita: items { tipo:'imagen'|'video', url, is_primary, orden } (hasta 2 por guía).
+    const media = Array.isArray(post.media) ? post.media : []
+    const cover = media.find((m) => m?.is_primary) || media.find((m) => m?.tipo === 'imagen') || null
+    const video = media.find((m) => m?.tipo === 'video') || null
+
     return {
       slug: post.slug,
       title: post.titulo,
-      image: post.img_url || (Array.isArray(post.media) && post.media[0]?.url) || '',
+      image: post.img_url || cover?.url || media[0]?.url || '',
+      video: video?.url || '',
       seoTitle: `${post.titulo} · Kolortec`,
       seoDescription: post.excerpt || post.titulo,
       excerpt: post.excerpt || '',
@@ -496,7 +502,10 @@ export async function getLandingContent() {
     lines,
     // shop: static copy from defaults + guías (blog tipo=guia) precargadas con el contenido
     // para que la "Biblioteca de guías" aparezca al instante con la sección amarilla.
-    shop: { ...defaultLandingContent.shop, guides },
+    shop: {
+      ...defaultLandingContent.shop,
+      guides: Array.isArray(guides) && guides.length ? guides : defaultLandingContent.shop.guides,
+    },
     // services: from /public/servicios — section is commented-out in LandingPage
     services,
     // support: contacts from /public/web-config

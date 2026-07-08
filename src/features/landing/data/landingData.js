@@ -209,6 +209,44 @@ export const defaultLandingContent = {
       },
     ],
     mainImage: '/assets/shop-section-product.jpeg',
+    // Guías de fallback (mockup / cuenta sin guías cargadas). En el sitio real se reemplazan por las
+    // guías de tiendita (/public/blog?tipo=guia) con su portada/video de media[].
+    guides: [
+      {
+        slug: 'cabezal-movil-no-enciende',
+        title: 'Cabezal móvil no enciende: diagnóstico paso a paso',
+        excerpt: 'Fuente, fusible y línea de datos',
+        image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=80',
+        sections: [],
+        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+      },
+      {
+        slug: 'mantenimiento-preventivo-cabezas',
+        title: 'Mantenimiento preventivo de cabezas móviles',
+        excerpt: 'Limpieza, lubricación y calibración',
+        image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80',
+        video: '/assets/shop-section-video.mp4',
+        sections: [],
+        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+      },
+      {
+        slug: 'configurar-dmx-5-minutos',
+        title: 'Configurar DMX en 5 minutos',
+        excerpt: 'Direccionamiento y terminación',
+        image: 'https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=1200&q=80',
+        video: '/assets/shop-section-video.mp4',
+        sections: [],
+        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+      },
+      {
+        slug: 'limpieza-opticas-lentes',
+        title: 'Limpieza de ópticas y lentes',
+        excerpt: 'Sin rayar, recuperando brillo real',
+        image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1200&q=80',
+        sections: [],
+        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+      },
+    ],
   },
   services: {
     title: 'Tres Pilares, Una Promesa',

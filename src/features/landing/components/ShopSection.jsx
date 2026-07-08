@@ -22,6 +22,10 @@ function ShopSection({ shop }) {
   // un fetch propio que las demore. Si no hay, la columna derecha no se muestra.
   const guides = Array.isArray(shop?.guides) ? shop.guides : []
   const hasGuides = guides.length > 0
+  // Showcase: una guía destacada a la vez; "Siguiente" cicla y cada botón salta a una guía.
+  const [activeGuide, setActiveGuide] = useState(0)
+  const activeIdx = hasGuides ? Math.min(activeGuide, guides.length - 1) : 0
+  const active = hasGuides ? guides[activeIdx] : null
 
   // Animacion de entrada (cortina + barrido + flash). Se dispara al entrar la
   // seccion al viewport; el resto del contenido se revela junto.
@@ -210,28 +214,75 @@ function ShopSection({ shop }) {
           ) : null}
         </div>
 
-        {hasGuides ? (
-        <div className="kt-shop-from-right flex flex-col gap-4">
-          {guides.length > 3 ? (
-            <div
-              className="kt-vmarquee h-[440px] px-1"
-              style={{ '--kt-vmarquee-duration': `${Math.max(28, guides.length * 4)}s` }}
+        {hasGuides && active ? (
+        <div className="kt-shop-from-right flex flex-col gap-3">
+          {/* Guía destacada (la portada / video llena el panel) */}
+          <div className="relative h-[clamp(220px,26vw,300px)] overflow-hidden rounded-2xl border border-[rgba(11,11,11,0.28)] bg-[#0b0b0b]">
+            <Link to={`/soporte/guias/${active.slug}`} className="group absolute inset-0 block">
+              {active.image ? (
+                <img
+                  src={active.image}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{ backgroundImage: 'radial-gradient(120% 80% at 25% 15%, rgba(244,223,51,0.18), transparent 55%), linear-gradient(160deg,#1b1b20,#0c0c0e)' }}
+                />
+              )}
+              {active.video ? (
+                <span aria-hidden="true" className="absolute inset-0 grid place-items-center">
+                  <span className="grid h-14 w-14 place-items-center rounded-full bg-primary text-[#0b0b0b] shadow-[0_10px_28px_rgba(0,0,0,0.45)]">
+                    <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current"><path d="M8 5v14l11-7z" /></svg>
+                  </span>
+                </span>
+              ) : null}
+              <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[0.56rem] font-black uppercase tracking-[0.12em] text-white backdrop-blur-sm">
+                {active.video ? 'Video' : 'Guía'}
+              </span>
+              <span className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-4 pt-10">
+                {active.excerpt ? (
+                  <span className="line-clamp-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-primary">{active.excerpt}</span>
+                ) : null}
+                <span className="title-font text-[clamp(1.05rem,2vw,1.4rem)] leading-tight text-white">{active.title}</span>
+              </span>
+            </Link>
+          </div>
+
+          {/* Controles */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveGuide((prev) => (prev + 1) % guides.length)}
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-[#0b0b0b] px-4 text-[0.72rem] font-black uppercase tracking-[0.08em] text-primary transition hover:brightness-110"
             >
-              <ul className="kt-vmarquee-track m-0 list-none p-0">
-                {[...guides, ...guides].map((guide, i) => (
-                  <li key={`${guide.slug}-${i}`} aria-hidden={i >= guides.length ? 'true' : undefined}>
-                    {renderGuideCard(guide, i >= guides.length)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <ul className="grid list-none gap-3 p-0">
-              {guides.map((guide) => (
-                <li key={guide.slug}>{renderGuideCard(guide)}</li>
-              ))}
-            </ul>
-          )}
+              Siguiente
+              <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+            <span className="text-[0.72rem] font-bold text-[rgba(11,11,11,0.6)]">{activeIdx + 1} / {guides.length}</span>
+          </div>
+
+          {/* Cada botón = una guía */}
+          <div className="flex flex-wrap gap-2">
+            {guides.map((guide, i) => (
+              <button
+                key={guide.slug}
+                type="button"
+                onClick={() => setActiveGuide(i)}
+                aria-current={i === activeIdx ? 'true' : undefined}
+                className={`max-w-[15rem] truncate rounded-lg border px-3 py-2 text-left text-[0.72rem] font-bold transition ${
+                  i === activeIdx
+                    ? 'border-[#0b0b0b] bg-[#0b0b0b] text-primary'
+                    : 'border-[rgba(11,11,11,0.3)] bg-[rgba(11,11,11,0.05)] text-[#0b0b0b] hover:border-[#0b0b0b]'
+                }`}
+              >
+                {guide.title}
+              </button>
+            ))}
+          </div>
         </div>
         ) : null}
       </div>
