@@ -5,7 +5,7 @@ import { SCROLLY_BRANDS } from './scrollyBrands'
 
 // Frame-sequence: en vez de scrubbear el <video> (que hace jank al hacer seek), pre-cargamos los
 // frames como imágenes y swapeamos la que corresponde al progreso del scroll (swap cacheado = suave).
-const FRAME_COUNT = 96
+const FRAME_COUNT = 180
 const frameUrl = (i) => `/assets/scrolly-frames/f${String(i).padStart(3, '0')}.jpg`
 const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
