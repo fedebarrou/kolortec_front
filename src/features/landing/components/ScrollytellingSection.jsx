@@ -298,7 +298,7 @@ function ScrollytellingSection({ lines = [] }) {
     <>
       {layer}
       {/* Spacer: crea la distancia de scroll; el visual va en el layer fixed portaleado a body. */}
-      <div ref={spacerRef} className="h-[600vh] w-full bg-deep-black" aria-hidden="true" />
+      <div ref={spacerRef} className="h-[680vh] w-full bg-deep-black" aria-hidden="true" />
     </>
   )
 }
