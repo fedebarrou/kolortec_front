@@ -173,7 +173,7 @@ export const defaultLandingContent = {
       'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
     ctas: [
       {
-        label: 'Descargas',
+        label: 'Manuales y librerías',
         href: '/soporte',
         variant: 'primary',
         icon: 'download',
@@ -185,8 +185,8 @@ export const defaultLandingContent = {
         icon: 'forum',
       },
       {
-        label: 'Mantenimiento',
-        href: '/garantias',
+        label: 'Biblioteca de guías',
+        href: '/soporte/guias',
         variant: 'outline',
         icon: 'verified',
       },

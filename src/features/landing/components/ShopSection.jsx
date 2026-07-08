@@ -212,13 +212,6 @@ function ShopSection({ shop }) {
 
         {hasGuides ? (
         <div className="kt-shop-from-right flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <span aria-hidden="true" className="block h-[2px] w-6 bg-[#0b0b0b]" />
-            <span className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-[#0b0b0b]">
-              {t('landing.shop.guidesLabel', 'Biblioteca de guias')}
-            </span>
-          </div>
-
           {guides.length > 3 ? (
             <div
               className="kt-vmarquee h-[440px] px-1"
