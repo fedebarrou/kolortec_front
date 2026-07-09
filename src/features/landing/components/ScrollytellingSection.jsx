@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { SCROLLY_BRANDS } from './scrollyBrands'
+import { getLineBrand, LineMark } from './lineBrands'
 
 // Frame-sequence: en vez de scrubbear el <video> (que hace jank al hacer seek), pre-cargamos los
 // frames como imágenes y swapeamos la que corresponde al progreso del scroll (swap cacheado = suave).
@@ -152,18 +153,26 @@ function ScrollytellingSection({ lines = [] }) {
         {/* Step 1 (Calidad): chips con las líneas de producto (#linea). */}
         {index === 0 && lines.length > 0 ? (
           <ul
-            className="mt-5 flex flex-wrap justify-end gap-2"
+            className="mt-5 flex flex-wrap justify-end gap-2.5"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
           >
-            {lines.map((l) => (
-              <li
-                key={l}
-                className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[0.78rem] font-semibold text-white/85 backdrop-blur-sm"
-              >
-                <span className="text-primary">#</span>
-                {l}
-              </li>
-            ))}
+            {lines.map((l) => {
+              const b = getLineBrand(l)
+              return (
+                <li
+                  key={l}
+                  className="relative flex h-[72px] w-[110px] flex-col justify-between overflow-hidden rounded-xl border border-white/10 p-2.5 shadow-[0_10px_24px_rgba(0,0,0,0.4)]"
+                  style={{ background: `linear-gradient(150deg, ${b.bg}, ${b.bg2})`, color: b.accent }}
+                >
+                  <span className="flex h-4 items-center">
+                    <LineMark kind={b.mark} />
+                  </span>
+                  <span className="text-[0.88rem] font-extrabold leading-none" style={{ color: b.fg, fontFamily: b.font }}>
+                    {l}
+                  </span>
+                </li>
+              )
+            })}
           </ul>
         ) : null}
 
@@ -213,13 +222,20 @@ function ScrollytellingSection({ lines = [] }) {
             </h2>
             <p className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef]">{m.subtitle}</p>
             {lines.length > 0 ? (
-              <ul className="mt-5 flex flex-wrap justify-end gap-2">
-                {lines.map((l) => (
-                  <li key={l} className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[0.78rem] font-semibold text-white/85">
-                    <span className="text-primary">#</span>
-                    {l}
-                  </li>
-                ))}
+              <ul className="mt-5 flex flex-wrap justify-end gap-2.5">
+                {lines.map((l) => {
+                  const b = getLineBrand(l)
+                  return (
+                    <li
+                      key={l}
+                      className="relative flex h-[72px] w-[110px] flex-col justify-between overflow-hidden rounded-xl border border-white/10 p-2.5 shadow-[0_10px_24px_rgba(0,0,0,0.4)]"
+                      style={{ background: `linear-gradient(150deg, ${b.bg}, ${b.bg2})`, color: b.accent }}
+                    >
+                      <span className="flex h-4 items-center"><LineMark kind={b.mark} /></span>
+                      <span className="text-[0.88rem] font-extrabold leading-none" style={{ color: b.fg, fontFamily: b.font }}>{l}</span>
+                    </li>
+                  )
+                })}
               </ul>
             ) : null}
           </div>
