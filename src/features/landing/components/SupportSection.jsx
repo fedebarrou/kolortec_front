@@ -1,18 +1,15 @@
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-const FALLBACK_IMAGE = '/assets/scrolly-frames/f095.jpg'
-
 function SupportSection({ support, loading = false }) {
   const { t } = useLanguage()
   const sectionTitle = t('landing.support.title', support.title)
   const sectionSubtitle = t('landing.support.subtitle', support.subtitle)
 
   const contactOptions = support.contacts ?? []
-  const image = (Array.isArray(support.carouselImages) && support.carouselImages[0]) || FALLBACK_IMAGE
 
   return (
     <section className="px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" id="support" style={{ '--reveal-delay': '240ms' }}>
-      <div className="grid gap-8 lg:grid-cols-[1.22fr_1fr] lg:items-stretch">
+      <div className="grid gap-8">
         <div className="grid gap-5">
           <div className="kt-landing-reveal-item border-l border-[rgba(244,223,51,0.5)] pl-4">
             <h2 className="title-font mb-2 text-left text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
@@ -64,16 +61,6 @@ function SupportSection({ support, loading = false }) {
               </p>
             </div>
           )}
-        </div>
-
-        <div className="kt-landing-reveal-item relative min-h-[240px] overflow-hidden rounded-2xl sm:min-h-[340px] lg:min-h-0 lg:h-full">
-          <img
-            src={image}
-            alt={sectionTitle}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={(e) => { e.currentTarget.style.display = 'none' }}
-          />
         </div>
       </div>
     </section>
