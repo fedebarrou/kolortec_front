@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
+// Accesos de la sección amarilla (data estática en landingData) → key i18n por icono (ES/EN).
+const ACCESS_KEY_BY_ICON = {
+  download: 'landing.shop.access.downloads',
+  forum: 'landing.shop.access.contact',
+  verified: 'landing.shop.access.guides',
+}
+
 function ShopSection({ shop }) {
   const { t } = useLanguage()
   const sectionTitle = t('landing.shop.title', shop.title)
@@ -71,7 +78,7 @@ function ShopSection({ shop }) {
           </span>
           <span className="flex flex-col">
             <strong className="text-[0.95rem] font-extrabold uppercase tracking-[0.06em] text-[#0b0b0b]">
-              {cta.label}
+              {t(ACCESS_KEY_BY_ICON[cta.icon] ?? '', cta.label)}
             </strong>
             {cta.description ? (
               <span className="text-[0.8rem] text-[rgba(11,11,11,0.62)]">{cta.description}</span>
@@ -241,7 +248,7 @@ function ShopSection({ shop }) {
                 </span>
               ) : null}
               <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[0.56rem] font-black uppercase tracking-[0.12em] text-white backdrop-blur-sm">
-                {active.video ? 'Video' : 'Guía'}
+                {active.video ? t('landing.shop.mediaVideo', 'Video') : t('landing.shop.mediaGuide', 'Guía')}
               </span>
               <span className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-4 pt-10">
                 {active.excerpt ? (
@@ -259,7 +266,7 @@ function ShopSection({ shop }) {
               onClick={() => setActiveGuide((prev) => (prev + 1) % guides.length)}
               className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-[#0b0b0b] px-4 text-[0.72rem] font-black uppercase tracking-[0.08em] text-primary transition hover:brightness-110"
             >
-              Siguiente
+              {t('landing.shop.guideNext', 'Siguiente')}
               <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </button>
             <span className="text-[0.72rem] font-bold text-[rgba(11,11,11,0.6)]">{activeIdx + 1} / {guides.length}</span>

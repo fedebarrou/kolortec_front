@@ -50,7 +50,7 @@ function SupportSection({ support }) {
                 forum
               </span>
               <p className="m-0 max-w-[30ch] text-[0.9rem] leading-relaxed text-[#aeb5bf]">
-                Todavía no cargamos los datos de contacto. Pronto vas a poder escribirnos por acá.
+                {t('landing.support.emptyContacts', 'Todavía no cargamos los datos de contacto. Pronto vas a poder escribirnos por acá.')}
               </p>
             </div>
           )}

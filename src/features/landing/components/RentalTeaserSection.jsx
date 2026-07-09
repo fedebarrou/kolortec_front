@@ -5,13 +5,13 @@ function RentalTeaserSection({ rental }) {
   const { t } = useLanguage()
   const data = rental ?? {}
 
-  const eyebrow = data.eyebrow ?? t('landing.rental.eyebrow', 'Programa de rental')
-  const title = data.title ?? t('landing.rental.title', 'Presenta tu proyecto y lo iluminamos juntos')
-  const subtitle = data.subtitle ?? t(
+  const eyebrow = t('landing.rental.eyebrow', data.eyebrow ?? 'Programa de rental')
+  const title = t('landing.rental.title', data.title ?? 'Presenta tu proyecto y lo iluminamos juntos')
+  const subtitle = t(
     'landing.rental.subtitle',
-    'Traenos tu evento o produccion — trabajamos con partners de rental activos en toda LATAM para llevar equipos Kolortec a tu escenario.',
+    data.subtitle ?? 'Traenos tu evento o produccion — trabajamos con partners de rental activos en toda LATAM para llevar equipos Kolortec a tu escenario.',
   )
-  const cta = data.cta ?? t('landing.rental.cta', 'Presenta tu proyecto')
+  const cta = t('landing.rental.cta', data.cta ?? 'Presenta tu proyecto')
   const href = data.href ?? '/rentals'
 
   return (

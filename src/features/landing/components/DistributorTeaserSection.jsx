@@ -5,13 +5,13 @@ function DistributorTeaserSection({ distributor }) {
   const { t } = useLanguage()
   const data = distributor ?? {}
 
-  const eyebrow = data.eyebrow ?? t('landing.distributor.eyebrow', 'Programa de distribuidores')
-  const title = data.title ?? t('landing.distributor.title', 'Quieres formar parte del equipo de distribuidores Kolortec?')
-  const subtitle = data.subtitle ?? t(
+  const eyebrow = t('landing.distributor.eyebrow', data.eyebrow ?? 'Programa de distribuidores')
+  const title = t('landing.distributor.title', data.title ?? 'Quieres formar parte del equipo de distribuidores Kolortec?')
+  const subtitle = t(
     'landing.distributor.subtitle',
-    'Sumate a la red de partners autorizados — acceso a productos, soporte tecnico de fabrica y condiciones comerciales preferenciales.',
+    data.subtitle ?? 'Sumate a la red de partners autorizados — acceso a productos, soporte tecnico de fabrica y condiciones comerciales preferenciales.',
   )
-  const cta = data.cta ?? t('landing.distributor.cta', 'Solicitud de cuenta')
+  const cta = t('landing.distributor.cta', data.cta ?? 'Solicitud de cuenta')
   const href = data.href ?? '/distribuidores'
 
   return (

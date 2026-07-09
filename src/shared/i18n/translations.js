@@ -78,6 +78,15 @@ export const translations = {
         subtitle:
           'Factory-backed warranty, original spare parts, and technical support to keep your Kolortec gear running season after season.',
         cta: 'Go to Products',
+        eyebrow: 'Warranty Program',
+        access: {
+          downloads: 'Manuals & libraries',
+          contact: 'Contact us',
+          guides: 'Guide library',
+        },
+        guideNext: 'Next',
+        mediaVideo: 'Video',
+        mediaGuide: 'Guide',
       },
       services: {
         title: 'Three Pillars, One Promise',
@@ -104,6 +113,7 @@ export const translations = {
           'Reach out via WhatsApp or email - our sales and technical support team is here to help you.',
         salesCategory: 'Sales',
         supportCategory: 'Support',
+        emptyContacts: "We haven't loaded contact details yet. You'll be able to reach us here soon.",
       },
       distributor: {
         eyebrow: 'Distributor Program',
@@ -425,6 +435,15 @@ export const translations = {
         subtitle:
           'Respaldo de fabrica, repuestos originales y soporte tecnico para que tu equipo Kolortec siga funcionando temporada tras temporada.',
         cta: 'Ir a Productos',
+        eyebrow: 'Programa de garantía',
+        access: {
+          downloads: 'Manuales y librerías',
+          contact: 'Comunicate con nosotros',
+          guides: 'Biblioteca de guías',
+        },
+        guideNext: 'Siguiente',
+        mediaVideo: 'Video',
+        mediaGuide: 'Guía',
       },
       services: {
         title: 'Tres Pilares, Una Promesa',
@@ -451,6 +470,7 @@ export const translations = {
           'Escribinos por WhatsApp o email - nuestro equipo de ventas y soporte tecnico esta para ayudarte.',
         salesCategory: 'Ventas',
         supportCategory: 'Soporte',
+        emptyContacts: 'Todavía no cargamos los datos de contacto. Pronto vas a poder escribirnos por acá.',
       },
       distributor: {
         eyebrow: 'Programa de distribuidores',
