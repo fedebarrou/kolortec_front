@@ -11,10 +11,8 @@ const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 const SHOW_SCROLLY_BRANDS = false // logos del step 2 (luzu/telefe/olga/vorterix) ocultos "de momento"
 // Scrollytelling POR PASOS (aprobado en prototipo): cada cruce de umbral dispara una animación de frames
 // de DURACIÓN FIJA con curva lineal → la imagen no "vuela" por scrollear rápido; rate-limited a 1 paso.
-const STEP_DURATION = 1100 // ms por transición entre pasos
-const HYST = 0.15          // histéresis del cambio de paso (evita flip-flop en el borde del umbral)
+const STEP_DURATION = 1100 // ms por transición entre pasos (también el largo del lock: 1 gesto = 1 step)
 const SPACER_VH = 450      // alto del spacer (define el rango de scroll del intro)
-const SNAP_COOLDOWN = 140  // ms tras un snap antes de aceptar otro (doma la inercia del trackpad)
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -128,18 +126,11 @@ function ScrollytellingSection({ lines = [] }) {
       layer.style.opacity = visible ? '1' : '0'
       // La capa es `pointer-events-none`: "Inicio" y los CTA quedan clickeables por su pointer-events-auto.
 
-      // Paso objetivo: mientras NO haya un tween en curso, avanzar/retroceder de a 1 paso hacia el que
-      // indica el scroll (con histéresis). Así cada transición es un tween completo (imagen controlada).
-      const raw = p * (N - 1)
+      // El PASO lo maneja el snap (rueda/touch/teclado) de forma directa — update() NO lo avanza por
+      // posición de scroll (eso causaba salteos al variar el timing por pantalla). Acá solo el init.
       if (stepRef.current < 0) {
-        const s0 = clamp(Math.round(raw), 0, N - 1)
+        const s0 = clamp(Math.round(p * (N - 1)), 0, N - 1)
         stepRef.current = s0; frameFloatRef.current = STOP_FRAMES[s0]; showFrame(STOP_FRAMES[s0]); setActiveStep(s0)
-      } else if (!tweenRef.current) {
-        let desired = stepRef.current
-        if (raw > stepRef.current + 0.5 + HYST) desired = stepRef.current + 1
-        else if (raw < stepRef.current - 0.5 - HYST) desired = stepRef.current - 1
-        desired = clamp(desired, 0, N - 1)
-        if (desired !== stepRef.current) { stepRef.current = desired; startTween(STOP_FRAMES[desired]); setActiveStep(desired) }
       }
 
       // Indicador (progreso continuo por p) + hint.
@@ -164,17 +155,21 @@ function ScrollytellingSection({ lines = [] }) {
       const cur = clamp(stepRef.current < 0 ? 0 : stepRef.current, 0, N - 1)
       const target = cur + dir
       if (target < 0 || target > N - 1) return
+      // El paso lo maneja el SNAP directo (no update()/scroll) → 1 gesto = 1 step exacto, sin salteos ni
+      // dependencia del timing del scroll (que variaba por pantalla). Lock inmediato por toda la transición.
+      stepRef.current = target
+      startTween(STOP_FRAMES[target])
+      setActiveStep(target)
       const a = anchorRefs.current[target]
-      if (!a) return
-      a.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      snapLock = window.performance.now() + SNAP_COOLDOWN
+      if (a) a.scrollIntoView({ behavior: 'smooth', block: 'start' }) // reposiciona (releaseY/navbar/indicador)
+      snapLock = window.performance.now() + STEP_DURATION + 40
     }
     const wantsCapture = (dir) => inIntro() && !(dir > 0 && stepRef.current >= N - 1) && !(dir < 0 && stepRef.current <= 0)
     const onWheel = (e) => {
       const dir = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0
       if (!dir || !wantsCapture(dir)) return
       e.preventDefault()
-      if (window.performance.now() < snapLock || tweenRef.current) return
+      if (window.performance.now() < snapLock) return
       snap(dir)
     }
     let touchY = null
@@ -185,7 +180,7 @@ function ScrollytellingSection({ lines = [] }) {
       const dir = dy > 0 ? 1 : dy < 0 ? -1 : 0
       if (!dir || !wantsCapture(dir)) return
       if (Math.abs(dy) > 6) e.preventDefault()
-      if (Math.abs(dy) > 42 && window.performance.now() >= snapLock && !tweenRef.current) { snap(dir); touchY = e.touches[0].clientY }
+      if (Math.abs(dy) > 42 && window.performance.now() >= snapLock) { snap(dir); touchY = e.touches[0].clientY }
     }
     const onTouchEnd = () => { touchY = null }
     const onKey = (e) => {
@@ -194,7 +189,7 @@ function ScrollytellingSection({ lines = [] }) {
       const dir = down ? 1 : up ? -1 : 0
       if (!dir || !wantsCapture(dir)) return
       e.preventDefault()
-      if (window.performance.now() >= snapLock && !tweenRef.current) snap(dir)
+      if (window.performance.now() >= snapLock) snap(dir)
     }
 
     window.addEventListener('scroll', onScroll, { passive: true })
