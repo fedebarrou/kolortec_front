@@ -27,7 +27,10 @@ function ShopSection({ shop }) {
   // Biblioteca de guías = data-driven desde blogs de tiendita (tipo=guia), PRECARGADas con el
   // contenido de la landing (useLandingContent) → aparecen al instante con la sección amarilla, sin
   // un fetch propio que las demore. Si no hay, la columna derecha no se muestra.
-  const guides = Array.isArray(shop?.guides) ? shop.guides : []
+  // El showcase es un TEASER: se limita a las primeras N guías (la biblioteca completa está en
+  // /soporte/guias vía el CTA). Evita que con muchas guías la sección quede larguísima (sobre todo mobile).
+  const MAX_SHOWCASE = 6
+  const guides = (Array.isArray(shop?.guides) ? shop.guides : []).slice(0, MAX_SHOWCASE)
   const hasGuides = guides.length > 0
   // Showcase: una guía destacada a la vez; "Siguiente" cicla y cada botón salta a una guía.
   const [activeGuide, setActiveGuide] = useState(0)
