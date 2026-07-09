@@ -157,7 +157,8 @@ function ScrollytellingSection({ lines = [] }) {
       const s = spacerRef.current
       if (!s) return false
       const r = s.getBoundingClientRect()
-      return r.top <= 1 && r.bottom > window.innerHeight - 1
+      // El intro "captura" mientras el spacer solape el viewport (el visual fixed está en pantalla).
+      return r.bottom > 1 && r.top < window.innerHeight - 1
     }
     const snap = (dir) => {
       const cur = clamp(stepRef.current < 0 ? 0 : stepRef.current, 0, N - 1)
