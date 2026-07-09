@@ -28,7 +28,11 @@ function LandingPage() {
     <>
       <ScrollytellingSection lines={content.lines} />
       <Divider />
-      <InstagramSection gallery={content.gallery} />
+      {/* Reserva el alto del navbar (que aparece al terminar el scrollytelling) para que no tape el
+          heading de la primera sección. Compensado por el zoom del .kt-zoom-canvas. */}
+      <div style={{ paddingTop: 'calc(84px / var(--kt-canvas-scale, 1))' }}>
+        <InstagramSection gallery={content.gallery} />
+      </div>
       {hasProducts ? (
         <>
           <Divider />
