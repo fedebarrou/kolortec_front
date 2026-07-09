@@ -9,9 +9,12 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 const FRAME_COUNT = 180
 const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 const SHOW_SCROLLY_BRANDS = false // logos del step 2 (luzu/telefe/olga/vorterix) ocultos "de momento"
+// Scrollytelling POR PASOS (aprobado en prototipo): cada cruce de umbral dispara una animación de frames
+// de DURACIÓN FIJA con curva lineal → la imagen no "vuela" por scrollear rápido; rate-limited a 1 paso.
+const STEP_DURATION = 1100 // ms por transición entre pasos
+const HYST = 0.15          // histéresis del cambio de paso (evita flip-flop en el borde del umbral)
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
-const smoothstep = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t) }
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
 function ScrollytellingSection({ lines = [] }) {
@@ -34,6 +37,10 @@ function ScrollytellingSection({ lines = [] }) {
   const blockRefs = useRef([])
   const lastFrameRef = useRef(-1)
   const rafRef = useRef(0)
+  const stepRef = useRef(-1)        // paso actual (0..N-1); -1 = sin inicializar
+  const frameFloatRef = useRef(0)   // frame mostrado (float) que el tween anima
+  const tweenRef = useRef(null)     // { from, to, start } | null (null = pausado en un paso)
+  const tweenRafRef = useRef(0)
 
   // Set de frames por viewport: mobile = video PORTRAIT (scrolly-frames-mobile); desktop = landscape.
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
@@ -63,11 +70,43 @@ function ScrollytellingSection({ lines = [] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced, framesDir])
 
-  // Scroll → progreso → frame + mensaje + indicador + visibilidad del layer fixed.
+  // Scroll → PASO discreto → tween EASED del frame (desacoplado de la velocidad del scroll: la imagen
+  // no "vuela") + crossfade del mensaje + indicador + release del navbar. Rate-limited a 1 paso por vez.
   useEffect(() => {
     if (reduced) return undefined
     const N = MESSAGES.length
-    lastFrameRef.current = -1 // forzar re-set del frame al cambiar de set (mobile/desktop)
+    // Frame objetivo de cada paso, repartido en 0..179.
+    const STOP_FRAMES = Array.from({ length: N }, (_, i) => Math.round((i / (N - 1)) * (FRAME_COUNT - 1)))
+    stepRef.current = -1
+    frameFloatRef.current = STOP_FRAMES[0]
+    lastFrameRef.current = -1
+
+    const showFrame = (f) => {
+      const fi = clamp(Math.round(f), 0, FRAME_COUNT - 1)
+      if (imgRef.current && fi !== lastFrameRef.current) { imgRef.current.src = frameUrl(fi); lastFrameRef.current = fi }
+    }
+    const scheduleUpdate = () => { if (!rafRef.current) rafRef.current = window.requestAnimationFrame(update) }
+    const tweenTick = (now) => {
+      tweenRafRef.current = 0
+      const tw = tweenRef.current
+      if (!tw) return
+      const t = Math.min(1, (now - tw.start) / STEP_DURATION) // curva LINEAL (aprobada en prototipo)
+      frameFloatRef.current = tw.from + (tw.to - tw.from) * t
+      showFrame(frameFloatRef.current)
+      if (t < 1) tweenRafRef.current = window.requestAnimationFrame(tweenTick)
+      else { frameFloatRef.current = tw.to; tweenRef.current = null; scheduleUpdate() } // encadena si falta llegar al paso del scroll
+    }
+    const startTween = (toFrame) => {
+      tweenRef.current = { from: frameFloatRef.current, to: toFrame, start: window.performance.now() }
+      if (!tweenRafRef.current) tweenRafRef.current = window.requestAnimationFrame(tweenTick)
+    }
+    const setActiveStep = (s) => {
+      for (let i = 0; i < N; i++) {
+        const block = blockRefs.current[i]
+        if (block) { block.style.opacity = i === s ? '1' : '0'; block.style.transform = `translateY(${i === s ? 0 : 26}px)` }
+      }
+    }
+
     const update = () => {
       rafRef.current = 0
       const spacer = spacerRef.current
@@ -78,48 +117,38 @@ function ScrollytellingSection({ lines = [] }) {
       const total = r.height - vh
       const p = total > 0 ? clamp(-r.top / total, 0, 1) : 0
 
-      // Salida suave: mientras el spacer sale por abajo del viewport, el layer se desliza hacia arriba
-      // (scroll-away) revelando la sección siguiente (Instagram) de forma natural, en vez de apagarse
-      // de golpe. `releaseY` es 0 mientras está pinned y negativo cuando `r.bottom < vh`.
+      // Salida suave: al salir el spacer, el layer se desliza (scroll-away) revelando la sección siguiente
+      // + el navbar. `releaseY` = 0 mientras está pinned, negativo cuando `r.bottom < vh`.
       const releaseY = Math.min(0, r.bottom - vh)
       const visible = r.bottom > 0 && r.top < vh
       layer.style.transform = `translate3d(0, ${releaseY}px, 0)`
       layer.style.opacity = visible ? '1' : '0'
-      // La capa queda con `pointer-events-none` (className): los clicks pasan al contenido, y los botones
-      // (logo/Inicio) + los CTA de mensajes visibles quedan clickeables por su `pointer-events-auto`.
-      // Así "Inicio" está SIEMPRE activo mientras esté en pantalla (no se apaga cerca del final).
+      // La capa es `pointer-events-none`: "Inicio" y los CTA quedan clickeables por su pointer-events-auto.
 
-      const fi = clamp(Math.round(p * (FRAME_COUNT - 1)), 0, FRAME_COUNT - 1)
-      if (fi !== lastFrameRef.current && imgRef.current) {
-        imgRef.current.src = frameUrl(fi)
-        lastFrameRef.current = fi
+      // Paso objetivo: mientras NO haya un tween en curso, avanzar/retroceder de a 1 paso hacia el que
+      // indica el scroll (con histéresis). Así cada transición es un tween completo (imagen controlada).
+      const raw = p * (N - 1)
+      if (stepRef.current < 0) {
+        const s0 = clamp(Math.round(raw), 0, N - 1)
+        stepRef.current = s0; frameFloatRef.current = STOP_FRAMES[s0]; showFrame(STOP_FRAMES[s0]); setActiveStep(s0)
+      } else if (!tweenRef.current) {
+        let desired = stepRef.current
+        if (raw > stepRef.current + 0.5 + HYST) desired = stepRef.current + 1
+        else if (raw < stepRef.current - 0.5 - HYST) desired = stepRef.current - 1
+        desired = clamp(desired, 0, N - 1)
+        if (desired !== stepRef.current) { stepRef.current = desired; startTween(STOP_FRAMES[desired]); setActiveStep(desired) }
       }
-      // Indicador por pasos: cada segmento se llena según el progreso local.
-      for (let i = 0; i < N; i++) {
-        const seg = segRefs.current[i]
-        if (seg) seg.style.width = `${(clamp(p * N - i, 0, 1) * 100).toFixed(1)}%`
-      }
+
+      // Indicador (progreso continuo por p) + hint.
+      for (let i = 0; i < N; i++) { const seg = segRefs.current[i]; if (seg) seg.style.width = `${(clamp(p * N - i, 0, 1) * 100).toFixed(1)}%` }
       if (hintRef.current) hintRef.current.style.opacity = p > 0.03 ? '0' : '1'
-
-      // Reveal LIGADO AL SCROLL: cada mensaje entra/mantiene/sale según su centro (crossfade limpio
-      // + parallax por línea via --ty). Sin transiciones CSS ni re-render → conectado al scroll.
-      for (let i = 0; i < N; i++) {
-        const block = blockRefs.current[i]
-        if (!block) continue
-        const c = N > 1 ? i / (N - 1) : 0
-        const dist = Math.abs(p - c)
-        const op = 1 - smoothstep(0.06, 0.16, dist)
-        block.style.opacity = op.toFixed(3)
-        block.style.setProperty('--ty', `${((c - p) * 200).toFixed(1)}px`)
-        block.style.setProperty('--blur', `${((1 - op) * 7).toFixed(2)}px`)
-        block.style.setProperty('--rv', op.toFixed(3))
-        // NO tocar pointerEvents del bloque: queda `pointer-events-none` (className) para que su inset-0
-        // no tape el top-bar (Inicio) ni el contenido. El CTA del mensaje tiene su propio pointer-events-auto.
-      }
     }
-    const onScroll = () => { if (!rafRef.current) rafRef.current = window.requestAnimationFrame(update) }
+
+    const onScroll = () => scheduleUpdate()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
+    showFrame(STOP_FRAMES[0])
+    setActiveStep(0)
     update()
     // Robustez: re-correr tras el paint del portal (refs/layout listos) para fijar el estado inicial.
     const initRaf = window.requestAnimationFrame(() => window.requestAnimationFrame(update))
@@ -128,6 +157,7 @@ function ScrollytellingSection({ lines = [] }) {
       window.removeEventListener('resize', onScroll)
       window.cancelAnimationFrame(initRaf)
       if (rafRef.current) window.cancelAnimationFrame(rafRef.current)
+      if (tweenRafRef.current) window.cancelAnimationFrame(tweenRafRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced, framesDir])
@@ -144,8 +174,8 @@ function ScrollytellingSection({ lines = [] }) {
   const TextBlock = ({ m, index }) => (
     <div
       ref={(el) => { blockRefs.current[index] = el }}
-      className="pointer-events-none absolute inset-0 flex items-end justify-center px-5 pb-16 will-change-[transform,opacity] md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pl-24 xl:pr-40"
-      style={{ opacity: index === 0 ? 1 : 0 }}
+      className="pointer-events-none absolute inset-0 flex items-end justify-center px-5 pb-16 will-change-[transform,opacity] transition-[opacity,transform] duration-[600ms] ease-out md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pl-24 xl:pr-40"
+      style={{ opacity: index === 0 ? 1 : 0, transform: index === 0 ? 'translateY(0)' : 'translateY(26px)' }}
     >
       <div className="max-w-[40rem] text-center md:text-right will-change-[filter]" style={{ filter: 'blur(var(--blur, 0px))' }}>
         <span
@@ -315,7 +345,7 @@ function ScrollytellingSection({ lines = [] }) {
     <>
       {layer}
       {/* Spacer: crea la distancia de scroll; el visual va en el layer fixed portaleado a body. */}
-      <div ref={spacerRef} data-scrolly-spacer className="h-[600vh] w-full bg-deep-black" aria-hidden="true" />
+      <div ref={spacerRef} data-scrolly-spacer className="h-[450vh] w-full bg-deep-black" aria-hidden="true" />
     </>
   )
 }
