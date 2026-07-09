@@ -8,6 +8,7 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 // frames como imágenes y swapeamos la que corresponde al progreso del scroll (swap cacheado = suave).
 const FRAME_COUNT = 180
 const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
+const SHOW_SCROLLY_BRANDS = false // logos del step 2 (luzu/telefe/olga/vorterix) ocultos "de momento"
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const smoothstep = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t) }
@@ -143,7 +144,7 @@ function ScrollytellingSection({ lines = [] }) {
   const TextBlock = ({ m, index }) => (
     <div
       ref={(el) => { blockRefs.current[index] = el }}
-      className="pointer-events-none absolute inset-0 flex items-end justify-center px-5 pb-28 will-change-[transform,opacity] md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pl-24 xl:pr-40"
+      className="pointer-events-none absolute inset-0 flex items-end justify-center px-5 pb-16 will-change-[transform,opacity] md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pl-24 xl:pr-40"
       style={{ opacity: index === 0 ? 1 : 0 }}
     >
       <div className="max-w-[40rem] text-center md:text-right will-change-[filter]" style={{ filter: 'blur(var(--blur, 0px))' }}>
@@ -182,8 +183,8 @@ function ScrollytellingSection({ lines = [] }) {
           </ul>
         ) : null}
 
-        {/* Step 2 (Presencia): logos (blancos) de dónde se usan equipos KOLORTEC. */}
-        {index === 1 ? (
+        {/* Step 2 (Presencia): logos (blancos) de dónde se usan equipos KOLORTEC. Ocultos de momento. */}
+        {index === 1 && SHOW_SCROLLY_BRANDS ? (
           <div
             className="mt-6 flex flex-col items-center gap-2.5 md:items-end"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
@@ -220,7 +221,7 @@ function ScrollytellingSection({ lines = [] }) {
         <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-l from-black/85 via-black/45 to-transparent md:block" />
         <div aria-hidden="true" className="absolute inset-0 hidden md:block" style={{ backgroundImage: 'radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,0.6), transparent 72%)' }} />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden" />
-        <div className="absolute inset-0 flex items-end justify-center px-5 pb-28 md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pr-40">
+        <div className="absolute inset-0 flex items-end justify-center px-5 pb-16 md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pr-40">
           <div className="max-w-[40rem] text-center md:text-right">
             <span className="block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary">{m.eyebrow}</span>
             <h2 className="title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white">
