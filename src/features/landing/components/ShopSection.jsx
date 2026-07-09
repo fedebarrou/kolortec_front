@@ -22,7 +22,29 @@ function ShopSection({ shop }) {
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const sectionRef = useRef(null)
+  const videoRef = useRef(null)
   const [introPhase, setIntroPhase] = useState(prefersReducedMotion ? 'done' : 'priming')
+
+  // Video de fondo: se reproduce UNA vez al entrar la sección al viewport y queda en el último frame
+  // (equipo encendido). Sin loop.
+  useEffect(() => {
+    const vid = videoRef.current
+    const el = sectionRef.current
+    if (!vid || !el) return undefined
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            vid.play?.()?.catch(() => {})
+            obs.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.25 },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
 
   // Biblioteca de guías = data-driven desde blogs de tiendita (tipo=guia), PRECARGADas con el
   // contenido de la landing (useLandingContent) → aparecen al instante con la sección amarilla, sin
@@ -177,13 +199,12 @@ function ShopSection({ shop }) {
     >
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <video
+          ref={videoRef}
           className="h-full w-full object-cover"
-          src="/assets/shop-section-video.mp4"
-          autoPlay
+          src="/assets/shop-section-bg.mp4"
           muted
-          loop
           playsInline
-          preload="metadata"
+          preload="auto"
         />
         <div className="absolute inset-0 bg-[rgba(244,223,51,0.74)]" />
       </div>
