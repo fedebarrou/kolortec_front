@@ -1,8 +1,8 @@
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-const FALLBACK_IMAGE = '/assets/products/prod-013.webp'
+const FALLBACK_IMAGE = '/assets/scrolly-frames/f095.jpg'
 
-function SupportSection({ support }) {
+function SupportSection({ support, loading = false }) {
   const { t } = useLanguage()
   const sectionTitle = t('landing.support.title', support.title)
   const sectionSubtitle = t('landing.support.subtitle', support.subtitle)
@@ -20,7 +20,17 @@ function SupportSection({ support }) {
             </h2>
             <p className="m-0 text-[#aab2be]">{sectionSubtitle}</p>
           </div>
-          {contactOptions.length > 0 ? (
+          {loading ? (
+            // Mientras carga: skeleton sutil (evita el flash de contactos fantasma → empty).
+            <div className="grid gap-0 border-y border-[rgba(255,255,255,0.14)] py-1" aria-hidden="true">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="grid gap-1.5 border-b border-[rgba(255,255,255,0.1)] py-4 last:border-b-0">
+                  <div className="h-3 w-28 animate-pulse rounded bg-white/10" />
+                  <div className="h-3 w-40 animate-pulse rounded bg-white/[0.06]" />
+                </div>
+              ))}
+            </div>
+          ) : contactOptions.length > 0 ? (
             <ul className="grid list-none gap-0 border-y border-[rgba(255,255,255,0.14)] p-0">
               {contactOptions.map((item) => (
                 <li key={item.label} className="kt-landing-reveal-item border-b border-[rgba(255,255,255,0.12)] last:border-b-0">

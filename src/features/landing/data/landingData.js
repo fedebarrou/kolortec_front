@@ -278,13 +278,7 @@ export const defaultLandingContent = {
     title: 'Contact Us',
     subtitle:
       'Reach out via WhatsApp or email - our sales and technical support team is here to help you.',
-    carouselImages: [
-      '/assets/products/prod-001.webp',
-      '/assets/products/prod-005.webp',
-      '/assets/products/prod-009.webp',
-      '/assets/products/prod-013.webp',
-      '/assets/products/prod-016.webp',
-    ],
+    carouselImages: ['/assets/scrolly-frames/f095.jpg'],
     contacts: [
       {
         label: 'WhatsApp Ventas',

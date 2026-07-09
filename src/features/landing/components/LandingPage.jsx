@@ -20,7 +20,7 @@ import { useLandingContent } from '../hooks/useLandingContent'
  * Las secciones de marketing hardcodeadas (Distribuidores / Alquiler) siguen quitadas.
  */
 function LandingPage() {
-  const { content } = useLandingContent()
+  const { content, loading } = useLandingContent()
 
   const hasProducts = (content.products?.items?.length ?? 0) > 0
 
@@ -48,7 +48,7 @@ function LandingPage() {
       <Divider />
       <ShopSection shop={content.shop} />
       <Divider />
-      <SupportSection support={content.support} />
+      <SupportSection support={content.support} loading={loading} />
     </>
   )
 }
