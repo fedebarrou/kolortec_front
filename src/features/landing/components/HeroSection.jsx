@@ -139,7 +139,7 @@ function HeroSection({ hero }) {
                 className={`kt-landing-reveal-item mb-3 inline-block self-start px-3.5 py-1.5 text-sm font-black ${isGolden ? 'bg-[#f5e9c8] text-[#0a0a0a]' : 'bg-primary text-[#090909]'}`}
                 style={isRight ? { alignSelf: 'flex-end' } : undefined}
               >
-                {slide.badge}
+                {t(`landing.${tKey}.badge`, slide.badge)}
               </div>
 
               {isGolden ? (

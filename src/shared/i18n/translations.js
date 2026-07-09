@@ -48,6 +48,8 @@ export const translations = {
         subtitle:
           "Industrial-grade illumination for high-stakes environments. When failure is not an option, the world's leading engineers choose Kolortec.",
         primaryCta: 'View Products',
+        secondaryCta: 'Follow on Instagram',
+        badge: 'EST 2011',
       },
       hero2: {
         title: 'POWER ON STAGE.',
@@ -55,12 +57,14 @@ export const translations = {
           'Trusted by touring productions, broadcasters, and architectural integrators across LATAM. Built to perform night after night.',
         primaryCta: 'Support',
         secondaryCta: 'Contact support',
+        badge: 'In action',
       },
       hero3: {
         title: 'Golden Line.',
         subtitle:
           'Vintage warmth meets touring-grade engineering. A theatrical line of blinders, pars and bars built to glow night after night.',
         primaryCta: 'Explore the line',
+        badge: 'Limited edition',
       },
       instagram: {
         title: 'KOLORTEC on Instagram',
@@ -405,19 +409,23 @@ export const translations = {
         subtitle:
           'Iluminacion industrial para entornos de alta exigencia. Cuando fallar no es opcion, los equipos lideres eligen Kolortec.',
         primaryCta: 'Ver Productos',
+        secondaryCta: 'Seguir en Instagram',
+        badge: 'EST 2011',
       },
       hero2: {
-        title: 'POWER ON STAGE.',
+        title: 'POTENCIA EN ESCENA.',
         subtitle:
           'Elegidos por giras, broadcasters e integradores arquitectonicos en toda LATAM. Diseñados para rendir noche tras noche.',
         primaryCta: 'Soporte',
         secondaryCta: 'Contactate con soporte',
+        badge: 'En acción',
       },
       hero3: {
         title: 'Golden Line.',
         subtitle:
           'Calidez vintage con ingenieria de gira. Una linea teatral de blinders, pares y barras pensada para brillar noche tras noche.',
         primaryCta: 'Explorar la linea',
+        badge: 'Edición limitada',
       },
       instagram: {
         title: 'KOLORTEC en Instagram',
