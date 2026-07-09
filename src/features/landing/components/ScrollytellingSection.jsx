@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { SCROLLY_BRANDS } from './scrollyBrands'
@@ -7,7 +7,6 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 // Frame-sequence: en vez de scrubbear el <video> (que hace jank al hacer seek), pre-cargamos los
 // frames como imágenes y swapeamos la que corresponde al progreso del scroll (swap cacheado = suave).
 const FRAME_COUNT = 180
-const frameUrl = (i) => `/assets/scrolly-frames/f${String(i).padStart(3, '0')}.jpg`
 const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
@@ -35,6 +34,16 @@ function ScrollytellingSection({ lines = [] }) {
   const lastFrameRef = useRef(-1)
   const rafRef = useRef(0)
 
+  // Set de frames por viewport: mobile = video PORTRAIT (scrolly-frames-mobile); desktop = landscape.
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+  const framesDir = isMobile ? 'scrolly-frames-mobile' : 'scrolly-frames'
+  const frameUrl = (i) => `/assets/${framesDir}/f${String(i).padStart(3, '0')}.jpg`
+
   const reduced =
     typeof window !== 'undefined' && window.matchMedia
       ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -50,12 +59,14 @@ function ScrollytellingSection({ lines = [] }) {
       imgs.push(im)
     }
     return () => { imgs.length = 0 }
-  }, [reduced])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced, framesDir])
 
   // Scroll → progreso → frame + mensaje + indicador + visibilidad del layer fixed.
   useEffect(() => {
     if (reduced) return undefined
     const N = MESSAGES.length
+    lastFrameRef.current = -1 // forzar re-set del frame al cambiar de set (mobile/desktop)
     const update = () => {
       rafRef.current = 0
       const spacer = spacerRef.current
@@ -117,7 +128,8 @@ function ScrollytellingSection({ lines = [] }) {
       window.cancelAnimationFrame(initRaf)
       if (rafRef.current) window.cancelAnimationFrame(rafRef.current)
     }
-  }, [reduced])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced, framesDir])
 
   // "Inicio" saltea el scrollytelling: scrollea a la sección que sigue al spacer (Instagram).
   const skipIntro = () => {
@@ -131,15 +143,15 @@ function ScrollytellingSection({ lines = [] }) {
   const TextBlock = ({ m, index }) => (
     <div
       ref={(el) => { blockRefs.current[index] = el }}
-      className="pointer-events-none absolute inset-0 flex items-center justify-end px-6 will-change-[transform,opacity] lg:px-16 xl:pl-24 xl:pr-40"
+      className="pointer-events-none absolute inset-0 flex items-end justify-center px-5 pb-28 will-change-[transform,opacity] md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pl-24 xl:pr-40"
       style={{ opacity: index === 0 ? 1 : 0 }}
     >
-      <div className="max-w-[40rem] text-right will-change-[filter]" style={{ filter: 'blur(var(--blur, 0px))' }}>
+      <div className="max-w-[40rem] text-center md:text-right will-change-[filter]" style={{ filter: 'blur(var(--blur, 0px))' }}>
         <span
-          className="flex items-center justify-end gap-2.5"
+          className="flex items-center justify-center gap-2.5 md:justify-end"
           style={{ transform: 'translateY(calc(var(--ty, 0px) * 0.6))' }}
         >
-          <span className="h-[2px] w-9 origin-right bg-primary" style={{ transform: 'scaleX(var(--rv, 1))' }} aria-hidden="true" />
+          <span className="h-[2px] w-9 origin-center bg-primary md:origin-right" style={{ transform: 'scaleX(var(--rv, 1))' }} aria-hidden="true" />
           <span className="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary">{m.eyebrow}</span>
         </span>
         <h2
@@ -149,7 +161,7 @@ function ScrollytellingSection({ lines = [] }) {
           {m.title}<span className="text-primary">.</span>
         </h2>
         <p
-          className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#eef0f4] [text-shadow:0_1px_12px_rgba(0,0,0,0.9)]"
+          className="mt-4 mx-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#eef0f4] [text-shadow:0_1px_12px_rgba(0,0,0,0.9)] md:ml-auto md:mx-0"
           style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.35))' }}
         >
           {m.subtitle}
@@ -158,7 +170,7 @@ function ScrollytellingSection({ lines = [] }) {
         {/* Step 1 (Calidad): chips con las líneas de producto (#linea). */}
         {index === 0 && lines.length > 0 ? (
           <ul
-            className="mt-5 flex flex-wrap justify-end gap-x-4 gap-y-1.5"
+            className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1.5 md:justify-end"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
           >
             {lines.map((l) => (
@@ -173,10 +185,10 @@ function ScrollytellingSection({ lines = [] }) {
         {/* Step 2 (Presencia): logos (blancos) de dónde se usan equipos KOLORTEC. */}
         {index === 1 ? (
           <div
-            className="mt-6 flex flex-col items-end gap-2.5"
+            className="mt-6 flex flex-col items-center gap-2.5 md:items-end"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
           >
-            <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 text-white/75">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-white/75 md:justify-end">
               {SCROLLY_BRANDS.map((b) => (
                 <span key={b.name} className={b.className} aria-label={b.name}>
                   {b.text}
@@ -205,17 +217,18 @@ function ScrollytellingSection({ lines = [] }) {
     return (
       <section className="relative h-[100dvh] w-full overflow-hidden bg-deep-black">
         <img src={frameUrl(0)} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/45 to-transparent" />
-        <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,0.6), transparent 72%)' }} />
-        <div className="absolute inset-0 flex items-center justify-end px-6 lg:px-16 xl:pr-40">
-          <div className="max-w-[40rem] text-right">
+        <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-l from-black/85 via-black/45 to-transparent md:block" />
+        <div aria-hidden="true" className="absolute inset-0 hidden md:block" style={{ backgroundImage: 'radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,0.6), transparent 72%)' }} />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden" />
+        <div className="absolute inset-0 flex items-end justify-center px-5 pb-28 md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pr-40">
+          <div className="max-w-[40rem] text-center md:text-right">
             <span className="block text-[0.72rem] font-bold uppercase tracking-[0.24em] text-primary">{m.eyebrow}</span>
             <h2 className="title-font mt-3 text-[clamp(1.9rem,6vw,4.6rem)] font-black leading-[0.98] text-white">
               {m.title}<span className="text-primary">.</span>
             </h2>
-            <p className="mt-4 ml-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef]">{m.subtitle}</p>
+            <p className="mt-4 mx-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] md:ml-auto md:mx-0">{m.subtitle}</p>
             {lines.length > 0 ? (
-              <ul className="mt-5 flex flex-wrap justify-end gap-x-4 gap-y-1.5">
+              <ul className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1.5 md:justify-end">
                 {lines.map((l) => (
                   <li key={l} className="text-[0.82rem] font-semibold text-white/70">
                     <span className="text-primary">#</span>
@@ -242,15 +255,16 @@ function ScrollytellingSection({ lines = [] }) {
             aria-label="Kolortec — iluminación profesional"
           >
             <img ref={imgRef} src={frameUrl(0)} alt="" draggable="false" className="absolute inset-0 h-full w-full object-cover" />
-            {/* Scrims para legibilidad: gradiente derecho (texto) + vertical (top-bar/indicador) +
-                "spotlight" radial oscuro anclado detrás de la copy → el texto no se pierde en el bg. */}
-            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/45 to-transparent" />
+            {/* Scrims para legibilidad. Desktop: gradiente derecho + spotlight (texto a la derecha).
+                Mobile: gradiente INFERIOR fuerte (texto abajo). Vertical (top-bar/indicador) en ambos. */}
+            <div aria-hidden="true" className="absolute inset-0 hidden bg-gradient-to-l from-black/85 via-black/45 to-transparent md:block" />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/50" />
             <div
               aria-hidden="true"
-              className="absolute inset-0"
+              className="absolute inset-0 hidden md:block"
               style={{ backgroundImage: 'radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,0.6), transparent 72%)' }}
             />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden" />
 
             {/* Mini top-bar: branding + Inicio (el navbar real queda tapado por el portal) */}
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-6 py-4 lg:px-10 xl:px-20">
