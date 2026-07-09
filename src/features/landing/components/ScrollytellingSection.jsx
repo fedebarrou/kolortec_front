@@ -176,7 +176,6 @@ function ScrollytellingSection({ lines = [] }) {
             className="mt-6 flex flex-col items-end gap-2.5"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
           >
-            <span className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-white/45">{t('landing.scrolly.step2.brands', 'Iluminamos')}</span>
             <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 text-white/75">
               {SCROLLY_BRANDS.map((b) => (
                 <span key={b.name} className={b.className} aria-label={b.name}>
