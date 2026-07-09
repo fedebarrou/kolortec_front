@@ -11,8 +11,9 @@ const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 const SHOW_SCROLLY_BRANDS = false // logos del step 2 (luzu/telefe/olga/vorterix) ocultos "de momento"
 // Scrollytelling POR PASOS (aprobado en prototipo): cada cruce de umbral dispara una animación de frames
 // de DURACIÓN FIJA con curva lineal → la imagen no "vuela" por scrollear rápido; rate-limited a 1 paso.
-const STEP_DURATION = 1100 // ms por transición entre pasos (también el largo del lock: 1 gesto = 1 step)
+const STEP_DURATION = 1100 // ms por transición entre pasos (el lock dura esto: no se avanza mientras anima)
 const SPACER_VH = 450      // alto del spacer (define el rango de scroll del intro)
+const GESTURE_GAP = 130    // ms de silencio entre eventos = nuevo gesto (evita que 1 swipe con inercia larga avance 2 steps)
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -143,7 +144,8 @@ function ScrollytellingSection({ lines = [] }) {
     // ── SNAP 1-scroll-1-paso (feel del prototipo): mientras el intro está "pinned", cada gesto de scroll
     //    NO scrollea libre — hace snap al anchor del paso siguiente/anterior (sin scroll muerto). En los
     //    bordes (último+abajo / primero+arriba) NO se intercepta → el scroll sale normal (a Instagram / arriba).
-    let snapLock = 0
+    let lockUntil = 0       // fin de la animación en curso: no se avanza mientras corre
+    let lastInputAt = -1    // ts del último evento de rueda/teclado → detectar fin de gesto (hueco de silencio)
     const inIntro = () => {
       const s = spacerRef.current
       if (!s) return false
@@ -162,34 +164,44 @@ function ScrollytellingSection({ lines = [] }) {
       setActiveStep(target)
       const a = anchorRefs.current[target]
       if (a) a.scrollIntoView({ behavior: 'smooth', block: 'start' }) // reposiciona (releaseY/navbar/indicador)
-      snapLock = window.performance.now() + STEP_DURATION + 40
+      lockUntil = window.performance.now() + STEP_DURATION
     }
     const wantsCapture = (dir) => inIntro() && !(dir > 0 && stepRef.current >= N - 1) && !(dir < 0 && stepRef.current <= 0)
     const onWheel = (e) => {
       const dir = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0
       if (!dir || !wantsCapture(dir)) return
       e.preventDefault()
-      if (window.performance.now() < snapLock) return
-      snap(dir)
+      const now = window.performance.now()
+      const gap = lastInputAt < 0 ? Infinity : now - lastInputAt
+      lastInputAt = now
+      if (now < lockUntil) return    // animando (o inercia mientras corre la animación)
+      if (gap < GESTURE_GAP) return  // mismo gesto continuo (cola de inercia tras la animación)
+      snap(dir)                       // gesto nuevo + animación terminada → 1 step
     }
+    // Touch: 1 swipe = 1 step (flag por-toque; el touchmove para al levantar el dedo, sin cola de inercia).
     let touchY = null
-    const onTouchStart = (e) => { touchY = e.touches[0].clientY }
+    let touchArmed = false
+    const onTouchStart = (e) => { touchY = e.touches[0].clientY; touchArmed = true }
     const onTouchMove = (e) => {
       if (touchY === null) return
       const dy = touchY - e.touches[0].clientY
       const dir = dy > 0 ? 1 : dy < 0 ? -1 : 0
       if (!dir || !wantsCapture(dir)) return
       if (Math.abs(dy) > 6) e.preventDefault()
-      if (Math.abs(dy) > 42 && window.performance.now() >= snapLock) { snap(dir); touchY = e.touches[0].clientY }
+      if (touchArmed && Math.abs(dy) > 42 && window.performance.now() >= lockUntil) { snap(dir); touchArmed = false }
     }
-    const onTouchEnd = () => { touchY = null }
+    const onTouchEnd = () => { touchY = null; touchArmed = false }
     const onKey = (e) => {
       const down = e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' '
       const up = e.key === 'ArrowUp' || e.key === 'PageUp'
       const dir = down ? 1 : up ? -1 : 0
       if (!dir || !wantsCapture(dir)) return
       e.preventDefault()
-      if (window.performance.now() >= snapLock) snap(dir)
+      const now = window.performance.now()
+      const gap = lastInputAt < 0 ? Infinity : now - lastInputAt
+      lastInputAt = now
+      if (now < lockUntil || gap < GESTURE_GAP) return
+      snap(dir)
     }
 
     window.addEventListener('scroll', onScroll, { passive: true })
