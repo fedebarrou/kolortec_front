@@ -95,7 +95,7 @@ function ScrollytellingSection({ lines = [] }) {
       frameFloatRef.current = tw.from + (tw.to - tw.from) * t
       showFrame(frameFloatRef.current)
       if (t < 1) tweenRafRef.current = window.requestAnimationFrame(tweenTick)
-      else { frameFloatRef.current = tw.to; tweenRef.current = null; scheduleUpdate() } // encadena si falta llegar al paso del scroll
+      else { frameFloatRef.current = tw.to; tweenRef.current = null; setActiveStep(stepRef.current); scheduleUpdate() } // escena ya cambió → recién ahí aparece el mensaje del paso nuevo
     }
     const startTween = (toFrame) => {
       tweenRef.current = { from: frameFloatRef.current, to: toFrame, start: window.performance.now() }
@@ -160,7 +160,7 @@ function ScrollytellingSection({ lines = [] }) {
       // dependencia del timing del scroll (que variaba por pantalla). Lock inmediato por toda la transición.
       stepRef.current = target
       startTween(STOP_FRAMES[target])
-      setActiveStep(target)
+      setActiveStep(-1) // ocultar el mensaje actual (fade-out); el nuevo aparece al terminar el tween
       // Reposicionar el scroll a la FRACCIÓN del rango pinneado REAL (medido en vivo) → cada paso queda
       // pinned (releaseY=0), y el último cae EXACTO en el borde (no se pasa/revela Instagram). Zoom-agnóstico.
       const sp = spacerRef.current
