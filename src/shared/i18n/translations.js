@@ -16,6 +16,33 @@ export const translations = {
       searchEmpty: 'No direct matches. Try the full product list.',
     },
     landing: {
+      scrolly: {
+        step1: {
+          eyebrow: 'Quality',
+          title: 'Built to perform',
+          subtitle: 'Our own line, tested and built to withstand tours, weather and heavy use.',
+        },
+        step2: {
+          eyebrow: 'Presence',
+          title: 'Presence on stage',
+          subtitle: 'Optics and power that define the space and command any stage.',
+          brands: 'We light',
+        },
+        step3: {
+          eyebrow: 'Support',
+          title: 'Backing that never fails',
+          subtitle: 'Factory technical support, spare parts and maintenance: your gear, always ready.',
+          cta: 'Go to support',
+        },
+        step4: {
+          eyebrow: 'Ready to work',
+          title: 'Ready to use',
+          subtitle: 'They ship ready to work — plug them in and the show starts.',
+          cta: 'View products',
+        },
+        hint: 'Scroll',
+        skip: 'Home',
+      },
       hero: {
         title: 'READY TO WORK.',
         subtitle:
@@ -336,6 +363,33 @@ export const translations = {
       searchEmpty: 'Sin coincidencias directas. Probá en productos completos.',
     },
     landing: {
+      scrolly: {
+        step1: {
+          eyebrow: 'Calidad',
+          title: 'Construidos para rendir',
+          subtitle: 'Línea propia, testeada y fabricada para aguantar giras, clima y uso intensivo.',
+        },
+        step2: {
+          eyebrow: 'Presencia',
+          title: 'Presencia en escena',
+          subtitle: 'Óptica y potencia que definen el espacio y se imponen en cualquier escenario.',
+          brands: 'Iluminamos',
+        },
+        step3: {
+          eyebrow: 'Soporte',
+          title: 'Respaldo que no falla',
+          subtitle: 'Soporte técnico, repuestos y mantenimiento de fábrica: tu equipo, siempre listo.',
+          cta: 'Ir a soporte',
+        },
+        step4: {
+          eyebrow: 'Ready to work',
+          title: 'Listos para usar',
+          subtitle: 'Salen de fábrica listos para trabajar — los conectás y el show arranca.',
+          cta: 'Ver productos',
+        },
+        hint: 'Scrolleá',
+        skip: 'Inicio',
+      },
       hero: {
         title: 'READY TO WORK.',
         subtitle:

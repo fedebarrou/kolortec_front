@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { SCROLLY_BRANDS } from './scrollyBrands'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 // Frame-sequence: en vez de scrubbear el <video> (que hace jank al hacer seek), pre-cargamos los
 // frames como imágenes y swapeamos la que corresponde al progreso del scroll (swap cacheado = suave).
@@ -9,20 +10,22 @@ const FRAME_COUNT = 180
 const frameUrl = (i) => `/assets/scrolly-frames/f${String(i).padStart(3, '0')}.jpg`
 const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
-// Mensajes de MARCA (pilares KOLORTEC), coherentes con lo que muestra el video en cada etapa:
-// (rugged/lluvia → Calidad) · (haz potente → Presencia) · (en escena → Soporte) · (show masivo → Ready to work)
-const MESSAGES = [
-  { eyebrow: 'Calidad', title: 'Construidos para rendir', subtitle: 'Línea propia, testeada y fabricada para aguantar giras, clima y uso intensivo.' },
-  { eyebrow: 'Presencia', title: 'Presencia en escena', subtitle: 'Óptica y potencia que definen el espacio y se imponen en cualquier escenario.' },
-  { eyebrow: 'Soporte', title: 'Respaldo que no falla', subtitle: 'Soporte técnico, repuestos y mantenimiento de fábrica: tu equipo, siempre listo.', cta: { label: 'Ir a soporte', href: '/soporte' } },
-  { eyebrow: 'Ready to work', title: 'Listos para usar', subtitle: 'Salen de fábrica listos para trabajar — los conectás y el show arranca.', cta: { label: 'Ver productos', href: '/products' } },
-]
-
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const smoothstep = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t) }
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
 function ScrollytellingSection({ lines = [] }) {
+  const { t } = useLanguage()
+  // Mensajes de MARCA (pilares KOLORTEC) vía i18n (ES/EN). Step 4 eyebrow "Ready to work" queda FIJO.
+  const MESSAGES = useMemo(
+    () => [
+      { eyebrow: t('landing.scrolly.step1.eyebrow', 'Calidad'), title: t('landing.scrolly.step1.title', 'Construidos para rendir'), subtitle: t('landing.scrolly.step1.subtitle', 'Línea propia, testeada y fabricada para aguantar giras, clima y uso intensivo.') },
+      { eyebrow: t('landing.scrolly.step2.eyebrow', 'Presencia'), title: t('landing.scrolly.step2.title', 'Presencia en escena'), subtitle: t('landing.scrolly.step2.subtitle', 'Óptica y potencia que definen el espacio y se imponen en cualquier escenario.') },
+      { eyebrow: t('landing.scrolly.step3.eyebrow', 'Soporte'), title: t('landing.scrolly.step3.title', 'Respaldo que no falla'), subtitle: t('landing.scrolly.step3.subtitle', 'Soporte técnico, repuestos y mantenimiento de fábrica: tu equipo, siempre listo.'), cta: { label: t('landing.scrolly.step3.cta', 'Ir a soporte'), href: '/soporte' } },
+      { eyebrow: 'Ready to work', title: t('landing.scrolly.step4.title', 'Listos para usar'), subtitle: t('landing.scrolly.step4.subtitle', 'Salen de fábrica listos para trabajar — los conectás y el show arranca.'), cta: { label: t('landing.scrolly.step4.cta', 'Ver productos'), href: '/products' } },
+    ],
+    [t],
+  )
   const spacerRef = useRef(null)
   const layerRef = useRef(null)
   const imgRef = useRef(null)
@@ -173,7 +176,7 @@ function ScrollytellingSection({ lines = [] }) {
             className="mt-6 flex flex-col items-end gap-2.5"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
           >
-            <span className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-white/45">Iluminamos</span>
+            <span className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-white/45">{t('landing.scrolly.step2.brands', 'Iluminamos')}</span>
             <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 text-white/75">
               {SCROLLY_BRANDS.map((b) => (
                 <span key={b.name} className={b.className} aria-label={b.name}>
@@ -260,7 +263,7 @@ function ScrollytellingSection({ lines = [] }) {
                 onClick={skipIntro}
                 className="pointer-events-auto inline-flex min-h-11 items-center text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-100 transition hover:text-primary xl:text-sm"
               >
-                Inicio
+                {t('landing.scrolly.skip', 'Inicio')}
               </button>
             </div>
 
@@ -284,7 +287,7 @@ function ScrollytellingSection({ lines = [] }) {
               className="pointer-events-none absolute bottom-7 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-white/70 transition-opacity duration-500"
               aria-hidden="true"
             >
-              <span className="text-[0.62rem] font-bold uppercase tracking-[0.22em]">Scrolleá</span>
+              <span className="text-[0.62rem] font-bold uppercase tracking-[0.22em]">{t('landing.scrolly.hint', 'Scrolleá')}</span>
               <svg viewBox="0 0 24 24" className="h-5 w-5 animate-bounce stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
                 <path d="M6 9l6 6 6-6" />
               </svg>
