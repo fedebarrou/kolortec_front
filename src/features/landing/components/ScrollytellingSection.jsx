@@ -70,7 +70,9 @@ function ScrollytellingSection({ lines = [] }) {
       const visible = r.bottom > 0 && r.top < vh
       layer.style.transform = `translate3d(0, ${releaseY}px, 0)`
       layer.style.opacity = visible ? '1' : '0'
-      layer.style.pointerEvents = visible && releaseY > -vh * 0.5 ? 'auto' : 'none'
+      // La capa queda con `pointer-events-none` (className): los clicks pasan al contenido, y los botones
+      // (logo/Inicio) + los CTA de mensajes visibles quedan clickeables por su `pointer-events-auto`.
+      // Así "Inicio" está SIEMPRE activo mientras esté en pantalla (no se apaga cerca del final).
 
       const fi = clamp(Math.round(p * (FRAME_COUNT - 1)), 0, FRAME_COUNT - 1)
       if (fi !== lastFrameRef.current && imgRef.current) {
@@ -96,7 +98,8 @@ function ScrollytellingSection({ lines = [] }) {
         block.style.setProperty('--ty', `${((c - p) * 200).toFixed(1)}px`)
         block.style.setProperty('--blur', `${((1 - op) * 7).toFixed(2)}px`)
         block.style.setProperty('--rv', op.toFixed(3))
-        block.style.pointerEvents = op > 0.5 ? 'auto' : 'none'
+        // NO tocar pointerEvents del bloque: queda `pointer-events-none` (className) para que su inset-0
+        // no tape el top-bar (Inicio) ni el contenido. El CTA del mensaje tiene su propio pointer-events-auto.
       }
     }
     const onScroll = () => { if (!rafRef.current) rafRef.current = window.requestAnimationFrame(update) }
@@ -184,7 +187,7 @@ function ScrollytellingSection({ lines = [] }) {
         {m.cta ? (
           <Link
             to={m.cta.href}
-            className="mt-8 inline-flex min-h-11 items-center bg-primary px-7 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition hover:brightness-105"
+            className="pointer-events-auto mt-8 inline-flex min-h-11 items-center bg-primary px-7 text-[0.82rem] font-black uppercase tracking-[0.1em] text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition hover:brightness-105"
             style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.1))' }}
           >
             {m.cta.label}
