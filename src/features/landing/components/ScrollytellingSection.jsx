@@ -13,6 +13,8 @@ const SHOW_SCROLLY_BRANDS = false // logos del step 2 (luzu/telefe/olga/vorterix
 // de DURACIÓN FIJA con curva lineal → la imagen no "vuela" por scrollear rápido; rate-limited a 1 paso.
 const STEP_DURATION = 1100 // ms por transición entre pasos
 const HYST = 0.15          // histéresis del cambio de paso (evita flip-flop en el borde del umbral)
+const SPACER_VH = 450      // alto del spacer (define el rango de scroll del intro)
+const SNAP_COOLDOWN = 140  // ms tras un snap antes de aceptar otro (doma la inercia del trackpad)
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -41,6 +43,7 @@ function ScrollytellingSection({ lines = [] }) {
   const frameFloatRef = useRef(0)   // frame mostrado (float) que el tween anima
   const tweenRef = useRef(null)     // { from, to, start } | null (null = pausado en un paso)
   const tweenRafRef = useRef(0)
+  const anchorRefs = useRef([])     // marcadores dentro del spacer → snap 1-scroll-1-paso
 
   // Set de frames por viewport: mobile = video PORTRAIT (scrolly-frames-mobile); desktop = landscape.
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
@@ -145,8 +148,61 @@ function ScrollytellingSection({ lines = [] }) {
     }
 
     const onScroll = () => scheduleUpdate()
+
+    // ── SNAP 1-scroll-1-paso (feel del prototipo): mientras el intro está "pinned", cada gesto de scroll
+    //    NO scrollea libre — hace snap al anchor del paso siguiente/anterior (sin scroll muerto). En los
+    //    bordes (último+abajo / primero+arriba) NO se intercepta → el scroll sale normal (a Instagram / arriba).
+    let snapLock = 0
+    const inIntro = () => {
+      const s = spacerRef.current
+      if (!s) return false
+      const r = s.getBoundingClientRect()
+      return r.top <= 1 && r.bottom > window.innerHeight - 1
+    }
+    const snap = (dir) => {
+      const cur = clamp(stepRef.current < 0 ? 0 : stepRef.current, 0, N - 1)
+      const target = cur + dir
+      if (target < 0 || target > N - 1) return
+      const a = anchorRefs.current[target]
+      if (!a) return
+      a.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      snapLock = window.performance.now() + SNAP_COOLDOWN
+    }
+    const wantsCapture = (dir) => inIntro() && !(dir > 0 && stepRef.current >= N - 1) && !(dir < 0 && stepRef.current <= 0)
+    const onWheel = (e) => {
+      const dir = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0
+      if (!dir || !wantsCapture(dir)) return
+      e.preventDefault()
+      if (window.performance.now() < snapLock || tweenRef.current) return
+      snap(dir)
+    }
+    let touchY = null
+    const onTouchStart = (e) => { touchY = e.touches[0].clientY }
+    const onTouchMove = (e) => {
+      if (touchY === null) return
+      const dy = touchY - e.touches[0].clientY
+      const dir = dy > 0 ? 1 : dy < 0 ? -1 : 0
+      if (!dir || !wantsCapture(dir)) return
+      if (Math.abs(dy) > 6) e.preventDefault()
+      if (Math.abs(dy) > 42 && window.performance.now() >= snapLock && !tweenRef.current) { snap(dir); touchY = e.touches[0].clientY }
+    }
+    const onTouchEnd = () => { touchY = null }
+    const onKey = (e) => {
+      const down = e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' '
+      const up = e.key === 'ArrowUp' || e.key === 'PageUp'
+      const dir = down ? 1 : up ? -1 : 0
+      if (!dir || !wantsCapture(dir)) return
+      e.preventDefault()
+      if (window.performance.now() >= snapLock && !tweenRef.current) snap(dir)
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
+    window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onTouchEnd, { passive: true })
+    window.addEventListener('keydown', onKey)
     showFrame(STOP_FRAMES[0])
     setActiveStep(0)
     update()
@@ -155,6 +211,11 @@ function ScrollytellingSection({ lines = [] }) {
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+      window.removeEventListener('keydown', onKey)
       window.cancelAnimationFrame(initRaf)
       if (rafRef.current) window.cancelAnimationFrame(rafRef.current)
       if (tweenRafRef.current) window.cancelAnimationFrame(tweenRafRef.current)
@@ -345,7 +406,16 @@ function ScrollytellingSection({ lines = [] }) {
     <>
       {layer}
       {/* Spacer: crea la distancia de scroll; el visual va en el layer fixed portaleado a body. */}
-      <div ref={spacerRef} data-scrolly-spacer className="h-[450vh] w-full bg-deep-black" aria-hidden="true" />
+      <div ref={spacerRef} data-scrolly-spacer className="relative w-full bg-deep-black" style={{ height: `${SPACER_VH}vh` }} aria-hidden="true">
+        {/* Anchors de cada paso: el snap de la rueda hace scrollIntoView a estos (zoom-agnóstico). */}
+        {MESSAGES.map((_, i) => (
+          <div
+            key={i}
+            ref={(el) => { anchorRefs.current[i] = el }}
+            style={{ position: 'absolute', left: 0, width: 1, height: 1, top: `${(i / (MESSAGES.length - 1)) * (SPACER_VH - 100)}vh` }}
+          />
+        ))}
+      </div>
     </>
   )
 }
