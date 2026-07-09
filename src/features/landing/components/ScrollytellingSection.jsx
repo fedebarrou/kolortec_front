@@ -42,7 +42,6 @@ function ScrollytellingSection({ lines = [] }) {
   const frameFloatRef = useRef(0)   // frame mostrado (float) que el tween anima
   const tweenRef = useRef(null)     // { from, to, start } | null (null = pausado en un paso)
   const tweenRafRef = useRef(0)
-  const anchorRefs = useRef([])     // marcadores dentro del spacer → snap 1-scroll-1-paso
 
   // Set de frames por viewport: mobile = video PORTRAIT (scrolly-frames-mobile); desktop = landscape.
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
@@ -162,8 +161,17 @@ function ScrollytellingSection({ lines = [] }) {
       stepRef.current = target
       startTween(STOP_FRAMES[target])
       setActiveStep(target)
-      const a = anchorRefs.current[target]
-      if (a) a.scrollIntoView({ behavior: 'smooth', block: 'start' }) // reposiciona (releaseY/navbar/indicador)
+      // Reposicionar el scroll a la FRACCIÓN del rango pinneado REAL (medido en vivo) → cada paso queda
+      // pinned (releaseY=0), y el último cae EXACTO en el borde (no se pasa/revela Instagram). Zoom-agnóstico.
+      const sp = spacerRef.current
+      if (sp) {
+        const r = sp.getBoundingClientRect()
+        const vh = window.innerHeight
+        const spacerTopDoc = window.scrollY + r.top      // offset del spacer en el documento (consistente)
+        const pinned = Math.max(0, r.height - vh)        // rango donde el portal queda pinned (releaseY=0)
+        const targetY = spacerTopDoc + (N > 1 ? target / (N - 1) : 0) * pinned
+        window.scrollTo({ top: targetY, behavior: 'smooth' })
+      }
       lockUntil = window.performance.now() + STEP_DURATION
     }
     const wantsCapture = (dir) => inIntro() && !(dir > 0 && stepRef.current >= N - 1) && !(dir < 0 && stepRef.current <= 0)
@@ -414,16 +422,7 @@ function ScrollytellingSection({ lines = [] }) {
     <>
       {layer}
       {/* Spacer: crea la distancia de scroll; el visual va en el layer fixed portaleado a body. */}
-      <div ref={spacerRef} data-scrolly-spacer className="relative w-full bg-deep-black" style={{ height: `${SPACER_VH}vh` }} aria-hidden="true">
-        {/* Anchors de cada paso: el snap de la rueda hace scrollIntoView a estos (zoom-agnóstico). */}
-        {MESSAGES.map((_, i) => (
-          <div
-            key={i}
-            ref={(el) => { anchorRefs.current[i] = el }}
-            style={{ position: 'absolute', left: 0, width: 1, height: 1, top: `${(i / (MESSAGES.length - 1)) * (SPACER_VH - 100)}vh` }}
-          />
-        ))}
-      </div>
+      <div ref={spacerRef} data-scrolly-spacer className="w-full bg-deep-black" style={{ height: `${SPACER_VH}vh` }} aria-hidden="true" />
     </>
   )
 }
