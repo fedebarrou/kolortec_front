@@ -55,9 +55,13 @@ function ProductDetailPage() {
     const y = event.clientY - rect.top
     const left = Math.max(0, Math.min(rect.width - LENS_SIZE, x - half))
     const top = Math.max(0, Math.min(rect.height - LENS_SIZE, y - half))
+    // El fondo se muestrea desde el cursor REAL (no desde la posición clampeada de la lupa):
+    // así en los bordes la ventana llega hasta el borde de la imagen zoomeada.
+    const bgX = Math.max(0, Math.min(rect.width * LENS_ZOOM - LENS_SIZE, x * LENS_ZOOM - half))
+    const bgY = Math.max(0, Math.min(rect.height * LENS_ZOOM - LENS_SIZE, y * LENS_ZOOM - half))
     lens.style.backgroundImage = `url("${img.currentSrc || img.src}")`
     lens.style.backgroundSize = `${rect.width * LENS_ZOOM}px ${rect.height * LENS_ZOOM}px`
-    lens.style.backgroundPosition = `${-left * LENS_ZOOM}px ${-top * LENS_ZOOM}px`
+    lens.style.backgroundPosition = `${-bgX}px ${-bgY}px`
     lens.style.left = `${left}px`
     lens.style.top = `${top}px`
     lens.style.opacity = '1'

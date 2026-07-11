@@ -6,6 +6,7 @@ import App from './App.jsx'
 import MatrixBackground from './shared/components/MatrixBackground.jsx'
 import HeaderSection from './features/landing/components/HeaderSection.jsx'
 import WhatsAppFab from './shared/components/WhatsAppFab.jsx'
+import LoginNudge from './shared/components/LoginNudge.jsx'
 import { LanguageProvider } from './shared/i18n/LanguageProvider.jsx'
 import { AuthProvider } from './shared/auth/AuthContext.jsx'
 
@@ -43,6 +44,7 @@ const tree = (
               <App />
             </div>
             <WhatsAppFab />
+            <LoginNudge />
             <CanvasScaler />
           </div>
         </AuthProvider>

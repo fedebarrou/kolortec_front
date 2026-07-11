@@ -42,6 +42,13 @@ export const translations = {
         },
         hint: 'Scroll',
         skip: 'Home',
+        guide: {
+          aria: 'Quick guide',
+          eyebrow: 'Still there?',
+          join: 'Want to join us?',
+          distributor: 'Want to become a distributor?',
+          featured: 'Want to see our highlights?',
+        },
       },
       hero: {
         title: 'READY TO WORK.',
@@ -323,6 +330,11 @@ export const translations = {
       sales: 'Sales',
       support: 'Support',
     },
+    loginNudge: {
+      body: "You're not signed in. Want to log in and hear about our latest news? It's two clicks.",
+      cta: 'Sign in',
+      closeAria: 'Dismiss notice',
+    },
     loginDialog: {
       close: 'Close',
       title: 'Sign in to download',
@@ -403,6 +415,13 @@ export const translations = {
         },
         hint: 'Scrolleá',
         skip: 'Inicio',
+        guide: {
+          aria: 'Guía rápida',
+          eyebrow: '¿Seguimos?',
+          join: '¿Querés formar parte?',
+          distributor: '¿Querés ser distribuidor?',
+          featured: '¿Querés ver nuestros destacados?',
+        },
       },
       hero: {
         title: 'READY TO WORK.',
@@ -683,6 +702,11 @@ export const translations = {
       closeWhatsapp: 'Cerrar WhatsApp',
       sales: 'Ventas',
       support: 'Soporte',
+    },
+    loginNudge: {
+      body: 'No estás registrado. ¿Querés iniciar sesión y enterarte de nuestras novedades? Son dos clicks.',
+      cta: 'Iniciar sesión',
+      closeAria: 'Cerrar aviso',
     },
     loginDialog: {
       close: 'Cerrar',
