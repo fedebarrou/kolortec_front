@@ -23,14 +23,14 @@ const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 // Step 1 (Calidad): badges de TECNOLOGÍA (reemplazan las viejas chips #linea). Acrónimos técnicos
 // (no se traducen); descriptor corto opcional. Estilo "pill oscura con punto" (variante C aprobada).
 const TECH_BADGES = [
-  { k: 'High Power LED', d: '4-en-1' },
-  { k: 'P2P', d: 'Pixel por pixel' },
-  { k: 'CMY+CTO' },
-  { k: 'IP65' },
-  { k: 'IP66' },
-  { k: 'DMX512' },
-  { k: 'RDM' },
-  { k: 'Láser' },
+  { k: 'High Power LED', d: '4-en-1',        bg: '#f4df33', fg: '#0a0a0b' },
+  { k: 'P2P',            d: 'Pixel por pixel', bg: '#22c55e', fg: '#04120a' },
+  { k: 'CMY+CTO',        d: 'Mezcla digital', bg: '#c026d3', fg: '#ffffff' },
+  { k: 'IP65',           d: 'Agua/polvo',     bg: '#0ea5e9', fg: '#04121b' },
+  { k: 'IP66',           d: 'Exterior',       bg: '#2563eb', fg: '#ffffff' },
+  { k: 'DMX512',         d: 'Control',        bg: '#f97316', fg: '#1a0a02' },
+  { k: 'RDM',            d: 'Bidireccional',  bg: '#14b8a6', fg: '#04120f' },
+  { k: 'Láser',          d: 'Efectos',        bg: '#ef4444', fg: '#ffffff' },
 ]
 
 function TechBadges({ className = '' }) {
@@ -39,11 +39,11 @@ function TechBadges({ className = '' }) {
       {TECH_BADGES.map((b) => (
         <li
           key={b.k}
-          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#111214] py-2 pl-3 pr-3.5"
+          className="inline-flex items-baseline gap-2 px-3.5 py-2"
+          style={{ background: b.bg, color: b.fg }}
         >
-          <span className="h-[7px] w-[7px] flex-none rounded-full bg-primary shadow-[0_0_10px_rgba(244,223,51,0.7)]" aria-hidden="true" />
-          <span className="text-[0.8rem] font-bold uppercase tracking-[0.03em] text-[#eef0f4]">{b.k}</span>
-          {b.d ? <span className="text-[0.68rem] text-white/55">{b.d}</span> : null}
+          <span className="title-font text-[0.95rem] uppercase leading-none">{b.k}</span>
+          {b.d ? <span className="text-[0.62rem] font-bold opacity-80">{b.d}</span> : null}
         </li>
       ))}
     </ul>
