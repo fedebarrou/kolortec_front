@@ -489,15 +489,17 @@ function ScrollytellingSection({ lines = [] }) {
                 <Link
                   to="/login"
                   onClick={closeGuide}
-                  className="flex min-h-11 items-center justify-between gap-3 text-[0.82rem] font-semibold text-[#eef0f4] transition hover:text-primary"
+                  style={{ transitionDelay: guideOpen ? '140ms' : '0ms' }}
+                  className={`flex min-h-11 items-center justify-between gap-3 text-[0.82rem] font-semibold text-[#eef0f4] transition-[transform,opacity] duration-500 ease-out hover:text-primary ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-3 opacity-0'}`}
                 >
-                  {t('landing.scrolly.guide.join', '¿Querés formar parte?')}
+                  {t('landing.scrolly.guide.join', 'Iniciar sesión')}
                   <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">arrow_forward</span>
                 </Link>
                 <Link
                   to="/distribuidores"
                   onClick={closeGuide}
-                  className="flex min-h-11 items-center justify-between gap-3 text-[0.82rem] font-semibold text-[#eef0f4] transition hover:text-primary"
+                  style={{ transitionDelay: guideOpen ? '220ms' : '0ms' }}
+                  className={`flex min-h-11 items-center justify-between gap-3 text-[0.82rem] font-semibold text-[#eef0f4] transition-[transform,opacity] duration-500 ease-out hover:text-primary ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-3 opacity-0'}`}
                 >
                   {t('landing.scrolly.guide.distributor', '¿Querés ser distribuidor?')}
                   <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">arrow_forward</span>
@@ -505,7 +507,8 @@ function ScrollytellingSection({ lines = [] }) {
                 <button
                   type="button"
                   onClick={goToFeatured}
-                  className="flex min-h-11 items-center justify-between gap-3 text-left text-[0.82rem] font-semibold text-[#eef0f4] transition hover:text-primary"
+                  style={{ transitionDelay: guideOpen ? '300ms' : '0ms' }}
+                  className={`flex min-h-11 items-center justify-between gap-3 text-left text-[0.82rem] font-semibold text-[#eef0f4] transition-[transform,opacity] duration-500 ease-out hover:text-primary ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-3 opacity-0'}`}
                 >
                   {t('landing.scrolly.guide.featured', '¿Querés ver nuestros destacados?')}
                   <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">arrow_downward</span>

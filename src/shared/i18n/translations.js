@@ -45,7 +45,7 @@ export const translations = {
         guide: {
           aria: 'Quick guide',
           eyebrow: 'Still there?',
-          join: 'Want to join us?',
+          join: 'Sign in',
           distributor: 'Want to become a distributor?',
           featured: 'Want to see our highlights?',
         },
@@ -418,7 +418,7 @@ export const translations = {
         guide: {
           aria: 'Guía rápida',
           eyebrow: '¿Seguimos?',
-          join: '¿Querés formar parte?',
+          join: 'Iniciar sesión',
           distributor: '¿Querés ser distribuidor?',
           featured: '¿Querés ver nuestros destacados?',
         },
