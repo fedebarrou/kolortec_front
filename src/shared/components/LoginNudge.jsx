@@ -7,7 +7,7 @@ import { useLightRigChime } from '../audio/useLightRigChime'
 
 // Flotante global: tras ~45s de navegación, invita a iniciar sesión a usuarios sin sesión.
 // Aparece 1 vez por sesión; si se cierra, no vuelve por unos días (localStorage).
-const SHOW_DELAY = 45_000
+const SHOW_DELAY = 70_000
 const SESSION_KEY = 'kt-login-nudge-shown'
 const DISMISS_KEY = 'kt-login-nudge-dismissed-at'
 const SNOOZE_MS = 5 * 24 * 60 * 60 * 1000
@@ -42,6 +42,13 @@ function LoginNudge() {
     if (dismissedAt && Date.now() - dismissedAt < SNOOZE_MS) return undefined
 
     let cancelled = false
+    let scrollCleanup = null
+    const reallyShow = () => {
+      if (cancelled) return
+      safeSet('sessionStorage', SESSION_KEY, '1')
+      setOpen(true)
+      playChime()
+    }
     const show = () => {
       if (cancelled) return
       const { user: u, loading: l } = authRef.current
@@ -57,14 +64,31 @@ function LoginNudge() {
         document.addEventListener('visibilitychange', onVisible)
         return
       }
-      safeSet('sessionStorage', SESSION_KEY, '1')
-      setOpen(true)
-      playChime()
+      // Gate: en la home hay un scrollytelling que ocupa el arranque; el aviso aparece SOLO cuando
+      // ya lo pasamos (su spacer con data-scrolly-spacer quedó por encima del viewport). En páginas
+      // sin scrollytelling (no hay spacer) aparece directo.
+      const spacer = document.querySelector('[data-scrolly-spacer]')
+      if (spacer && spacer.getBoundingClientRect().bottom > 0) {
+        const onScroll = () => {
+          const { user: u2, loading: l2 } = authRef.current
+          if (l2 || u2) { window.removeEventListener('scroll', onScroll); scrollCleanup = null; return }
+          if (spacer.getBoundingClientRect().bottom <= 0) {
+            window.removeEventListener('scroll', onScroll)
+            scrollCleanup = null
+            reallyShow()
+          }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true })
+        scrollCleanup = () => window.removeEventListener('scroll', onScroll)
+        return
+      }
+      reallyShow()
     }
     const timer = setTimeout(show, SHOW_DELAY)
     return () => {
       cancelled = true
       clearTimeout(timer)
+      if (scrollCleanup) scrollCleanup()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
