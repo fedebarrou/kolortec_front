@@ -20,5 +20,9 @@ export async function getGuide(slug) {
 }
 
 export function listGuideSlugs() {
-  return rawGuides.map((g) => g.slug)
+  // Data-driven: las guías reales viven en tiendita (/public/blog?tipo=guia). Kolortec hoy
+  // no tiene guías cargadas → no pre-renderizamos ni listamos en el sitemap/llms.txt slugs
+  // hardcodeados (eran "guías inventadas" que caían en "no encontrada").
+  // SWAP: cuando el build fetchee la API, devolver acá los slugs reales publicados.
+  return []
 }

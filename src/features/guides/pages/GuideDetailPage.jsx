@@ -3,28 +3,29 @@ import { Link, useParams } from 'react-router-dom'
 import Seo, { SITE } from '../../../shared/seo/Seo'
 import { articleJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { getGuideBySlug, getGuides } from '../../../shared/services/contentService'
-import { getGuideBySlug as getGuideBySlugLocal, listGuides } from '../data/guides'
 
 /**
- * We initialise with the hardcoded local data synchronously so there is no
- * flash of "not found" on first render while the remote fetch is in-flight.
+ * Data-driven: las guías salen de tiendita (/public/blog?tipo=guia). Empezamos
+ * en loading (sin data local hardcodeada) para no "inventar" una guía; mientras
+ * el fetch está en vuelo mostramos un placeholder en vez del "no encontrada".
  */
 function GuideDetailPage() {
   const { slug } = useParams()
 
-  const [guide, setGuide] = useState(() => getGuideBySlugLocal(slug))
-  const [related, setRelated] = useState(() =>
-    listGuides()
-      .filter((g) => g.slug !== slug)
-      .slice(0, 3),
-  )
+  const [guide, setGuide] = useState(null)
+  const [related, setRelated] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!slug) return undefined
     let cancelled = false
+    setLoading(true)
 
     getGuideBySlug(slug).then((data) => {
-      if (!cancelled && data) setGuide(data)
+      if (!cancelled) {
+        setGuide(data || null)
+        setLoading(false)
+      }
     })
 
     getGuides().then((all) => {
@@ -35,6 +36,16 @@ function GuideDetailPage() {
 
     return () => { cancelled = true }
   }, [slug])
+
+  if (loading) {
+    return (
+      <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
+        <div className="h-4 w-24 animate-pulse rounded bg-[#1a1a1a]" />
+        <div className="mt-6 h-12 w-3/4 max-w-[60ch] animate-pulse rounded bg-[#141414]" />
+        <div className="mt-4 h-4 w-2/3 max-w-[50ch] animate-pulse rounded bg-[#111]" />
+      </section>
+    )
+  }
 
   if (!guide) {
     return (

@@ -502,9 +502,11 @@ export async function getLandingContent() {
     lines,
     // shop: static copy from defaults + guías (blog tipo=guia) precargadas con el contenido
     // para que la "Biblioteca de guías" aparezca al instante con la sección amarilla.
+    // Data-driven: si la cuenta no tiene guías cargadas → [] (la ShopSection oculta la columna),
+    // NUNCA se cae a las guías hardcodeadas de defaults (eran "guías inventadas").
     shop: {
       ...defaultLandingContent.shop,
-      guides: Array.isArray(guides) && guides.length ? guides : defaultLandingContent.shop.guides,
+      guides: Array.isArray(guides) ? guides : [],
     },
     // services: from /public/servicios — section is commented-out in LandingPage
     services,
