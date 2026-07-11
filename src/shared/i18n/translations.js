@@ -41,7 +41,7 @@ export const translations = {
           cta: 'View products',
         },
         hint: 'Scroll',
-        skip: 'Home',
+        skip: 'Skip',
         guide: {
           aria: 'Quick guide',
           eyebrow: 'Still there?',
@@ -414,7 +414,7 @@ export const translations = {
           cta: 'Ver productos',
         },
         hint: 'Scrolleá',
-        skip: 'Inicio',
+        skip: 'Saltar',
         guide: {
           aria: 'Guía rápida',
           eyebrow: '¿Seguimos?',

@@ -14,7 +14,6 @@ const SHOW_SCROLLY_BRANDS = false // logos del step 2 (luzu/telefe/olga/vorterix
 const STEP_DURATION = 1100 // ms por transición entre pasos (el lock dura esto: no se avanza mientras anima)
 const IDLE_DELAY    = 5000 // ms quieto antes de activar el breathing
 const BREATHE_PERIOD = 4200 // ms por ciclo color→gris→color
-const GUIDE_DELAY   = 7000 // ms ADICIONALES en breathing antes de mostrar el panel guía lateral
 const SPACER_VH = 450      // alto del spacer (define el rango de scroll del intro)
 const GESTURE_GAP = 130    // ms de silencio entre eventos = nuevo gesto (evita que 1 swipe con inercia larga avance 2 steps)
 
@@ -77,9 +76,6 @@ function ScrollytellingSection({ lines = [] }) {
   const tweenRafRef = useRef(0)
   const idleTimerRef = useRef(0)
   const breatheRafRef = useRef(0)
-  // Panel guía: aparece tras GUIDE_DELAY de breathing; cualquier interacción lo cierra (vía stopBreathing).
-  const [guideOpen, setGuideOpen] = useState(false)
-  const guideTimerRef = useRef(0)
   const stopIdleExternalRef = useRef(() => {})
 
   // Set de frames por viewport: mobile = video PORTRAIT (scrolly-frames-mobile); desktop = landscape.
@@ -131,15 +127,10 @@ function ScrollytellingSection({ lines = [] }) {
         breatheRafRef.current = window.requestAnimationFrame(tick)
       }
       breatheRafRef.current = window.requestAnimationFrame(tick)
-      // Si sigue respirando GUIDE_DELAY más, entra el panel guía desde la izquierda.
-      clearTimeout(guideTimerRef.current)
-      guideTimerRef.current = setTimeout(() => setGuideOpen(true), GUIDE_DELAY)
     }
     const stopBreathing = () => {
       if (breatheRafRef.current) { window.cancelAnimationFrame(breatheRafRef.current); breatheRafRef.current = 0 }
       if (imgRef.current) imgRef.current.style.filter = ''
-      clearTimeout(guideTimerRef.current)
-      setGuideOpen(false)
     }
     const armIdle = () => {
       stopBreathing()
@@ -179,7 +170,12 @@ function ScrollytellingSection({ lines = [] }) {
     const setActiveStep = (s) => {
       for (let i = 0; i < N; i++) {
         const block = blockRefs.current[i]
-        if (block) { block.style.opacity = i === s ? '1' : '0'; block.style.transform = `translateY(${i === s ? 0 : 26}px)` }
+        if (block) {
+          const active = i === s
+          block.style.opacity = active ? '1' : '0'
+          // Swap marcado: el saliente se desvanece bajando + achicándose; el entrante hace lo inverso.
+          block.style.transform = active ? 'translateY(0) scale(1)' : 'translateY(34px) scale(0.96)'
+        }
       }
     }
 
@@ -318,24 +314,12 @@ function ScrollytellingSection({ lines = [] }) {
       clearTimeout(idleTimerRef.current)
       if (breatheRafRef.current) window.cancelAnimationFrame(breatheRafRef.current)
       if (imgRef.current) imgRef.current.style.filter = ''
-      clearTimeout(guideTimerRef.current)
       stopIdleExternalRef.current = () => {}
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced, framesDir])
 
-  const closeGuide = () => {
-    stopIdleExternalRef.current()
-    setGuideOpen(false)
-  }
-  // "Destacados": mismo patrón que skipIntro — scroll programático (el hash #products no es confiable
-  // con el spacer fixed encima); el scroll dispara update() y el layer se apaga solo.
-  const goToFeatured = () => {
-    closeGuide()
-    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  // "Inicio" saltea el scrollytelling: scrollea a la sección que sigue al spacer (Instagram).
+  // "Saltar" saltea el scrollytelling: scrollea a la sección que sigue al spacer (Instagram).
   const skipIntro = () => {
     const next = spacerRef.current?.nextElementSibling
     if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -347,8 +331,8 @@ function ScrollytellingSection({ lines = [] }) {
   const TextBlock = ({ m, index }) => (
     <div
       ref={(el) => { blockRefs.current[index] = el }}
-      className="pointer-events-none absolute inset-0 flex items-end justify-center px-5 pb-16 will-change-[transform,opacity] transition-[opacity,transform] duration-[600ms] ease-out md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pl-24 xl:pr-40"
-      style={{ opacity: index === 0 ? 1 : 0, transform: index === 0 ? 'translateY(0)' : 'translateY(26px)' }}
+      className="pointer-events-none absolute inset-0 flex items-end justify-center px-5 pb-16 will-change-[transform,opacity] transition-[opacity,transform] duration-700 ease-[cubic-bezier(.22,.61,.36,1)] md:items-center md:justify-end md:px-6 md:pb-0 lg:px-16 xl:pl-24 xl:pr-40"
+      style={{ opacity: index === 0 ? 1 : 0, transform: index === 0 ? 'translateY(0) scale(1)' : 'translateY(34px) scale(0.96)' }}
     >
       <div className="max-w-[40rem] text-center md:text-right will-change-[filter]" style={{ filter: 'blur(var(--blur, 0px))' }}>
         <span
@@ -463,7 +447,7 @@ function ScrollytellingSection({ lines = [] }) {
                 onClick={skipIntro}
                 className="pointer-events-auto inline-flex min-h-11 items-center text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-100 transition hover:text-primary xl:text-sm"
               >
-                {t('landing.scrolly.skip', 'Inicio')}
+                {t('landing.scrolly.skip', 'Saltar')}
               </button>
             </div>
 
@@ -480,57 +464,6 @@ function ScrollytellingSection({ lines = [] }) {
                 </div>
               ))}
             </div>
-
-            {/* Panel guía lateral: entra desde la izquierda tras un rato de breathing (usuario quieto).
-                Siempre montado para animar el slide; cerrado queda invisible y fuera del tab order. */}
-            <aside
-              aria-label={t('landing.scrolly.guide.aria', 'Guía rápida')}
-              aria-hidden={!guideOpen}
-              className={`absolute left-0 top-1/2 z-[8] w-[min(280px,78vw)] -translate-y-1/2 rounded-r-2xl border-y border-r border-[rgba(244,223,51,0.38)] bg-[rgba(15,15,16,0.92)] px-5 py-6 shadow-[0_18px_40px_rgba(0,0,0,0.42)] backdrop-blur-sm transition-[transform,opacity] duration-500 ease-out ${
-                guideOpen
-                  ? 'translate-x-0 opacity-100 pointer-events-auto'
-                  : '-translate-x-full opacity-0 pointer-events-none invisible'
-              }`}
-            >
-              <span
-                style={{ transitionDelay: guideOpen ? '60ms' : '0ms' }}
-                className={`flex items-center gap-2.5 transition-[transform,opacity] duration-500 ease-out ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}
-              >
-                <span className="h-[2px] w-6 bg-primary" aria-hidden="true" />
-                <span className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-primary">
-                  {t('landing.scrolly.guide.eyebrow', '¿Seguimos?')}
-                </span>
-              </span>
-              <nav className="mt-3 grid gap-1">
-                <Link
-                  to="/login"
-                  onClick={closeGuide}
-                  style={{ transitionDelay: guideOpen ? '140ms' : '0ms' }}
-                  className={`flex min-h-11 items-center justify-between gap-3 text-[0.82rem] font-semibold text-[#eef0f4] transition-[transform,opacity] duration-500 ease-out hover:text-primary ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-3 opacity-0'}`}
-                >
-                  {t('landing.scrolly.guide.join', 'Iniciar sesión')}
-                  <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">arrow_forward</span>
-                </Link>
-                <Link
-                  to="/distribuidores"
-                  onClick={closeGuide}
-                  style={{ transitionDelay: guideOpen ? '220ms' : '0ms' }}
-                  className={`flex min-h-11 items-center justify-between gap-3 text-[0.82rem] font-semibold text-[#eef0f4] transition-[transform,opacity] duration-500 ease-out hover:text-primary ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-3 opacity-0'}`}
-                >
-                  {t('landing.scrolly.guide.distributor', '¿Querés ser distribuidor?')}
-                  <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">arrow_forward</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={goToFeatured}
-                  style={{ transitionDelay: guideOpen ? '300ms' : '0ms' }}
-                  className={`flex min-h-11 items-center justify-between gap-3 text-left text-[0.82rem] font-semibold text-[#eef0f4] transition-[transform,opacity] duration-500 ease-out hover:text-primary ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-3 opacity-0'}`}
-                >
-                  {t('landing.scrolly.guide.featured', '¿Querés ver nuestros destacados?')}
-                  <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">arrow_downward</span>
-                </button>
-              </nav>
-            </aside>
 
             {/* Hint "Scrolleá" (se desvanece al empezar) */}
             <div
