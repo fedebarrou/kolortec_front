@@ -21,6 +21,36 @@ const GESTURE_GAP = 130    // ms de silencio entre eventos = nuevo gesto (evita 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
+// Step 1 (Calidad): badges de TECNOLOGÍA (reemplazan las viejas chips #linea). Acrónimos técnicos
+// (no se traducen); descriptor corto opcional. Estilo "pill oscura con punto" (variante C aprobada).
+const TECH_BADGES = [
+  { k: 'High Power LED', d: '4-en-1' },
+  { k: 'P2P', d: 'Pixel por pixel' },
+  { k: 'CMY+CTO' },
+  { k: 'IP65' },
+  { k: 'IP66' },
+  { k: 'DMX512' },
+  { k: 'RDM' },
+  { k: 'Láser' },
+]
+
+function TechBadges({ className = '' }) {
+  return (
+    <ul className={`flex flex-wrap justify-center gap-2 md:justify-end ${className}`}>
+      {TECH_BADGES.map((b) => (
+        <li
+          key={b.k}
+          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#111214] py-2 pl-3 pr-3.5"
+        >
+          <span className="h-[7px] w-[7px] flex-none rounded-full bg-primary shadow-[0_0_10px_rgba(244,223,51,0.7)]" aria-hidden="true" />
+          <span className="text-[0.8rem] font-bold uppercase tracking-[0.03em] text-[#eef0f4]">{b.k}</span>
+          {b.d ? <span className="text-[0.68rem] text-white/55">{b.d}</span> : null}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function ScrollytellingSection({ lines = [] }) {
   const { t } = useLanguage()
   // Mensajes de MARCA (pilares KOLORTEC) vía i18n (ES/EN). Step 4 eyebrow "Ready to work" queda FIJO.
@@ -341,19 +371,11 @@ function ScrollytellingSection({ lines = [] }) {
           {m.subtitle}
         </p>
 
-        {/* Step 1 (Calidad): chips con las líneas de producto (#linea). */}
-        {index === 0 && lines.length > 0 ? (
-          <ul
-            className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1.5 md:justify-end"
-            style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}
-          >
-            {lines.map((l) => (
-              <li key={l} className="text-[0.82rem] font-semibold text-white/70">
-                <span className="text-primary">#</span>
-                {l}
-              </li>
-            ))}
-          </ul>
+        {/* Step 1 (Calidad): badges de tecnología (reemplazan las viejas chips #linea). */}
+        {index === 0 ? (
+          <div className="mt-5" style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}>
+            <TechBadges />
+          </div>
         ) : null}
 
         {/* Step 2 (Presencia): logos (blancos) de dónde se usan equipos KOLORTEC. Ocultos de momento. */}
@@ -401,16 +423,7 @@ function ScrollytellingSection({ lines = [] }) {
               {m.title}<span className="text-primary">.</span>
             </h2>
             <p className="mt-4 mx-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] md:ml-auto md:mx-0">{m.subtitle}</p>
-            {lines.length > 0 ? (
-              <ul className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1.5 md:justify-end">
-                {lines.map((l) => (
-                  <li key={l} className="text-[0.82rem] font-semibold text-white/70">
-                    <span className="text-primary">#</span>
-                    {l}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            <TechBadges className="mt-5" />
           </div>
         </div>
       </section>
@@ -479,7 +492,10 @@ function ScrollytellingSection({ lines = [] }) {
                   : '-translate-x-full opacity-0 pointer-events-none invisible'
               }`}
             >
-              <span className="flex items-center gap-2.5">
+              <span
+                style={{ transitionDelay: guideOpen ? '60ms' : '0ms' }}
+                className={`flex items-center gap-2.5 transition-[transform,opacity] duration-500 ease-out ${guideOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}
+              >
                 <span className="h-[2px] w-6 bg-primary" aria-hidden="true" />
                 <span className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-primary">
                   {t('landing.scrolly.guide.eyebrow', '¿Seguimos?')}
