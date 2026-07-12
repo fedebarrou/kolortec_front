@@ -6,7 +6,7 @@
  */
 
 import { PRODUCT_CATEGORIES } from '../features/catalog/data/categories.js'
-import { getCategorias as fetchCategoriasApi } from '../shared/services/contentService.js'
+import { getCategorias as fetchCategoriasApi, DEMO_MODE } from '../shared/services/contentService.js'
 
 // kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
 const SITE =
@@ -30,12 +30,14 @@ function mergeCategoria(apiCat) {
 }
 
 export async function getCategories() {
-  // Lista autoritativa desde tiendita (por cuenta); fallback al array local si falla/vacío.
+  // Lista autoritativa desde tiendita (por cuenta).
   const api = await fetchCategoriasApi().catch(() => [])
   if (Array.isArray(api) && api.length) {
     return api.map(mergeCategoria)
   }
-  return PRODUCT_CATEGORIES
+  // Sin categorías cargadas: mock solo en modo vidriera (Vercel). En el build real NO se muestran
+  // las categorías hardcodeadas (eran "categorías inventadas" → data fantasma).
+  return DEMO_MODE ? PRODUCT_CATEGORIES : []
 }
 
 export async function getCategory(slug) {

@@ -14,6 +14,11 @@ import { defaultLandingContent } from '../features/landing/data/landingData.js'
 import { productDetails } from '../features/product/data/productDetails.js'
 import { demoProductDetail, DEMO_PRODUCT_SLUG } from '../features/product/helpers/productDetailDemoHelper.js'
 
+// Modo vidriera (ver contentService.js). Se lee directo del env para no acoplar este archivo
+// —usado también por sitemap/prerender— al módulo del adapter.
+const DEMO_MODE =
+  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_DEMO_DATA === 'true'
+
 // kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
 const SITE =
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SITE_URL) ||
@@ -26,7 +31,8 @@ const SITE =
  */
 export async function getProducts() {
   // SWAP: const res = await fetch(`${API_BASE}/products`); return res.json()
-  return defaultLandingContent.products.items
+  // Mock solo en modo vidriera (Vercel); en real, sin productos hardcodeados (data fantasma).
+  return DEMO_MODE ? defaultLandingContent.products.items : []
 }
 
 /**

@@ -9,6 +9,7 @@ import WhatsAppFab from './shared/components/WhatsAppFab.jsx'
 import LoginNudge from './shared/components/LoginNudge.jsx'
 import { LanguageProvider } from './shared/i18n/LanguageProvider.jsx'
 import { AuthProvider } from './shared/auth/AuthContext.jsx'
+import PublishGate from './shared/components/PublishGate.jsx'
 
 function CanvasScaler() {
   useEffect(() => {
@@ -37,16 +38,18 @@ const tree = (
     <LanguageProvider>
       <BrowserRouter>
         <AuthProvider>
-          <div className="kt-app-shell">
-            <MatrixBackground />
-            <HeaderSection />
-            <div className="kt-zoom-canvas">
-              <App />
+          <PublishGate>
+            <div className="kt-app-shell">
+              <MatrixBackground />
+              <HeaderSection />
+              <div className="kt-zoom-canvas">
+                <App />
+              </div>
+              <WhatsAppFab />
+              <LoginNudge />
+              <CanvasScaler />
             </div>
-            <WhatsAppFab />
-            <LoginNudge />
-            <CanvasScaler />
-          </div>
+          </PublishGate>
         </AuthProvider>
       </BrowserRouter>
     </LanguageProvider>

@@ -2,6 +2,7 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
+  "build": { "env": { "VITE_DEMO_DATA": "true" } },
   "redirects": [
     {
       "source": "/:path*",

@@ -18,6 +18,14 @@ import { resolveAccountHost } from './accountHost.js'
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || ''
 
+/**
+ * DEMO_MODE — "modo vidriera". Cuando VITE_DEMO_DATA === 'true' (build de Vercel para mostrarle al
+ * cliente), los fallbacks caen a data MOCK para que el sitio se vea "lleno". En el build real/oficial
+ * (VPS, flag ausente/false) todo es 100% data-driven: si tiendita no tiene info cargada, NO se inventa
+ * nada (sin categorías/hero/líneas fantasma). Un solo codebase, dos builds. Ver categories.js y products.js.
+ */
+export const DEMO_MODE = import.meta.env?.VITE_DEMO_DATA === 'true'
+
 // Las rutas OAuth públicas viven en el grupo `web` del backend (SIN prefijo /api):
 // GET /public/auth/{provider} y su callback (routes/web.php). API_BASE_URL trae el
 // sufijo /api, que rompía el redirect (/api/public/auth/google → 404). AUTH_BASE lo
@@ -379,7 +387,11 @@ function mapHeroConfig(heroCfg) {
   const scenes =
     Array.isArray(carousels) && carousels.length ? carousels[0]?.scenes : null
   if (!Array.isArray(scenes) || scenes.length === 0) {
-    return defaultLandingContent.hero
+    // Sin carrusel creado en tiendita: mock solo en modo vidriera; en real, hero sin slides
+    // (la sección se oculta) en vez de mostrar los 3 slides hardcodeados (data fantasma).
+    return DEMO_MODE
+      ? defaultLandingContent.hero
+      : { intervalMs: defaultLandingContent.hero?.intervalMs || 7000, slides: [] }
   }
 
   const hrefOf = (b) =>
@@ -451,7 +463,9 @@ function deriveLines(raw) {
   const list = Array.isArray(raw)
     ? Array.from(new Set(raw.map((p) => (p?.linea ?? '').trim()).filter(Boolean)))
     : []
-  return list.length ? list : defaultLandingContent.lines ?? []
+  if (list.length) return list
+  // Sin líneas reales: solo mock en modo vidriera; en real no se inventan líneas.
+  return DEMO_MODE ? (defaultLandingContent.lines ?? []) : []
 }
 
 export async function getLandingContent() {
@@ -580,7 +594,12 @@ export async function getProductDetail(slug) {
  */
 export async function getSiteConfig() {
   const cfg = await fetchWithFallback('/public/web-config', null)
-  return { showPrices: cfg ? cfg.show_prices !== false : true }
+  return {
+    showPrices: cfg ? cfg.show_prices !== false : true,
+    // published: si la cuenta despublicó su web desde tiendita → false. Fail-open: si no hay
+    // config (API caída) asumimos publicado para no dejar un sitio sano en "mantenimiento".
+    published: cfg ? cfg.published !== false : true,
+  }
 }
 
 export async function getGuides() {
