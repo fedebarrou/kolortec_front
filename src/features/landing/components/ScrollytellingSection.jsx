@@ -9,6 +9,7 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 const FRAME_COUNT = 180
 const LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 const SHOW_SCROLLY_BRANDS = false // logos del step 2 (luzu/telefe/olga/vorterix) ocultos "de momento"
+const SHOW_SCROLLY_TECH = false // badges de tecnología del step 1 (TECH_BADGES) ocultos a pedido del cliente; poner true para reactivarlos
 // Scrollytelling POR PASOS (aprobado en prototipo): cada cruce de umbral dispara una animación de frames
 // de DURACIÓN FIJA con curva lineal → la imagen no "vuela" por scrollear rápido; rate-limited a 1 paso.
 const STEP_DURATION = 1100 // ms por transición entre pasos (el lock dura esto: no se avanza mientras anima)
@@ -355,8 +356,8 @@ function ScrollytellingSection({ lines = [] }) {
           {m.subtitle}
         </p>
 
-        {/* Step 1 (Calidad): badges de tecnología (reemplazan las viejas chips #linea). */}
-        {index === 0 ? (
+        {/* Step 1 (Calidad): badges de tecnología (reemplazan las viejas chips #linea). Ocultos a pedido del cliente (SHOW_SCROLLY_TECH). */}
+        {index === 0 && SHOW_SCROLLY_TECH ? (
           <div className="mt-5" style={{ transform: 'translateY(calc(var(--ty, 0px) * 1.5))' }}>
             <TechBadges />
           </div>
@@ -407,7 +408,7 @@ function ScrollytellingSection({ lines = [] }) {
               {m.title}<span className="text-primary">.</span>
             </h2>
             <p className="mt-4 mx-auto max-w-[42ch] text-[clamp(0.95rem,1.6vw,1.25rem)] leading-[1.55] text-[#e6e9ef] md:ml-auto md:mx-0">{m.subtitle}</p>
-            <TechBadges className="mt-5" />
+            {SHOW_SCROLLY_TECH ? <TechBadges className="mt-5" /> : null}
           </div>
         </div>
       </section>
