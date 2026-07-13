@@ -593,12 +593,35 @@ export async function getProductDetail(slug) {
  * Config pública de la web (flags). Hoy: showPrices (mostrar/ocultar precios). Fallback: showPrices=true.
  */
 export async function getSiteConfig() {
-  const cfg = await fetchWithFallback('/public/web-config', null)
+  // Vista previa: un token en la URL (?preview=<token>) se persiste en sessionStorage para que
+  // sobreviva la navegación del SPA; se lo mandamos al backend, que devuelve preview_authorized
+  // si matchea el token secreto de la cuenta. Con eso el PublishGate saltea el "en construcción".
+  let previewToken = ''
+  try {
+    if (typeof window !== 'undefined') {
+      const fromUrl = new URL(window.location.href).searchParams.get('preview')
+      if (fromUrl) {
+        previewToken = fromUrl
+        window.sessionStorage.setItem('kt:preview', fromUrl)
+      } else {
+        previewToken = window.sessionStorage.getItem('kt:preview') || ''
+      }
+    }
+  } catch {
+    /* sessionStorage bloqueado (modo privado): sin preview persistente */
+  }
+
+  const path = previewToken
+    ? `/public/web-config?preview_token=${encodeURIComponent(previewToken)}`
+    : '/public/web-config'
+  const cfg = await fetchWithFallback(path, null)
   return {
     showPrices: cfg ? cfg.show_prices !== false : true,
     // published: si la cuenta despublicó su web desde tiendita → false. Fail-open: si no hay
     // config (API caída) asumimos publicado para no dejar un sitio sano en "mantenimiento".
     published: cfg ? cfg.published !== false : true,
+    // preview_authorized: el link de vista previa trae el token correcto → ver el sitio real.
+    previewAuthorized: !!(cfg && cfg.preview_authorized === true),
   }
 }
 
