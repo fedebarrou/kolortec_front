@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LandingChrome from './features/landing/components/LandingChrome'
 import { usePageTracking } from './shared/services/tracking'
@@ -16,6 +16,7 @@ const RentalsPage = lazy(() => import('./features/rentals/pages/RentalsPage'))
 const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
 const GuidesIndexPage = lazy(() => import('./features/guides/pages/GuidesIndexPage'))
 const GuideDetailPage = lazy(() => import('./features/guides/pages/GuideDetailPage'))
+const DownloadRedirect = lazy(() => import('./features/landing/components/DownloadRedirect'))
 
 function App() {
   usePageTracking()
@@ -37,6 +38,15 @@ function App() {
         <Route path="/rentals" element={<RentalsPage />} />
         <Route path="/login" element={<LoginPage />} />
       </Route>
+      {/* Landing de descarga (abre el QR del producto) — clean full-screen, sin chrome */}
+      <Route
+        path="/d/:id"
+        element={
+          <Suspense fallback={<div className="min-h-screen bg-deep-black" />}>
+            <DownloadRedirect />
+          </Suspense>
+        }
+      />
       <Route path="/editable" element={<Navigate to="/" replace />} />
       <Route path="/home" element={<Navigate to="/" replace />} />
     </Routes>

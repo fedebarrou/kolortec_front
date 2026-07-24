@@ -362,3 +362,22 @@ export const defaultLandingContent = {
     ],
   },
 }
+
+/**
+ * emptyLandingContent — mismo shape que defaultLandingContent pero con las LISTAS
+ * de datos VACÍAS (hero/productos/galería/guías/servicios/contactos/logos/líneas).
+ * Conserva los estáticos (brand, nav, titulos/CTA, action, distributor, rental).
+ * Se usa como estado INICIAL en modo real para NO pintar datos demo antes de que
+ * la API responda (evita el "flash" demo→real). En DEMO_MODE se usa el default.
+ */
+export const emptyLandingContent = {
+  ...defaultLandingContent,
+  lines: [],
+  hero: { ...defaultLandingContent.hero, slides: [] },
+  gallery: { ...defaultLandingContent.gallery, images: [], connected: false },
+  products: { ...defaultLandingContent.products, items: [] },
+  shop: { ...defaultLandingContent.shop, guides: [] },
+  services: { ...defaultLandingContent.services, items: [] },
+  support: { ...defaultLandingContent.support, contacts: [] },
+  footer: { ...defaultLandingContent.footer, clientLogos: [] },
+}

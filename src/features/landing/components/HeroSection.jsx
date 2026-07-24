@@ -1,17 +1,61 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { CarouselRenderer } from '../_hero-renderer/CarouselRenderer'
+
+// Detect breakpoint once per mount (matchMedia — not reactive to resize, good enough for hero).
+function useBreakpoint() {
+  const [bp, setBp] = useState(() => {
+    if (typeof window === 'undefined') return 'desktop'
+    if (window.matchMedia('(max-width: 767px)').matches) return 'mobile'
+    if (window.matchMedia('(max-width: 1023px)').matches) return 'tablet'
+    return 'desktop'
+  })
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)')
+    const mql2 = window.matchMedia('(max-width: 1023px)')
+    const update = () => {
+      if (mql.matches) setBp('mobile')
+      else if (mql2.matches) setBp('tablet')
+      else setBp('desktop')
+    }
+    mql.addEventListener('change', update)
+    mql2.addEventListener('change', update)
+    return () => { mql.removeEventListener('change', update); mql2.removeEventListener('change', update) }
+  }, [])
+  return bp
+}
+
+// Default settings fallback so CarouselRenderer never receives settings=null.
+const DEFAULT_SETTINGS = {
+  autoplay: true,
+  intervalMs: 7000,
+  loop: true,
+  arrows: false,
+  dots: true,
+  fullHeight: true,
+  heightDesktop: '100vh',
+  heightMobile: '100svh',
+}
 
 function HeroSection({ hero }) {
   const { t } = useLanguage()
+  const bp = useBreakpoint()
 
+  // IMPORTANTE: todos los hooks se declaran ANTES de cualquier return condicional.
+  // El hero puede empezar como legacy (defaults) y pasar a lab (labConfig) tras el
+  // fetch; si el early-return del path lab quedara antes de estos hooks, React
+  // lanzaría "Rendered fewer hooks than expected" y tumbaría toda la landing.
   const slides = hero?.slides ?? (hero ? [hero] : [])
   const intervalMs = hero?.intervalMs ?? 7000
   const [activeIndex, setActiveIndex] = useState(0)
   const isPausedRef = useRef(false)
 
+  // El path lab usa su propio carrusel (CarouselRenderer/useCarousel); este intervalo
+  // sólo aplica al hero legacy. Se corta solo cuando hay labConfig o <=1 slide.
+  const isLab = !!hero?.labConfig
   useEffect(() => {
-    if (slides.length <= 1) return undefined
+    if (isLab || slides.length <= 1) return undefined
 
     const id = window.setInterval(() => {
       if (isPausedRef.current) return
@@ -19,7 +63,27 @@ function HeroSection({ hero }) {
     }, intervalMs)
 
     return () => window.clearInterval(id)
-  }, [slides.length, intervalMs, activeIndex])
+  }, [isLab, slides.length, intervalMs, activeIndex])
+
+  // Lab path: render with CarouselRenderer when the backend emits lab elements.
+  if (hero?.labConfig) {
+    const config = {
+      ...hero.labConfig,
+      settings: hero.labConfig.settings ?? DEFAULT_SETTINGS,
+    }
+    // Full-viewport como el hero legacy: alto = viewport menos navbar (72 mobile /
+    // 80 desktop), dividido por la escala del canvas (.kt-zoom-canvas usa zoom).
+    const navH = bp === 'mobile' ? 72 : 80
+    const containerHeight = `calc((100dvh - ${navH}px) / var(--kt-canvas-scale, 1))`
+    return (
+      <section
+        className="kt-section-reveal"
+        style={{ '--reveal-delay': '10ms' }}
+      >
+        <CarouselRenderer config={config} breakpoint={bp} containerHeight={containerHeight} bleed />
+      </section>
+    )
+  }
 
   const goToSlide = (index) => setActiveIndex(index)
 

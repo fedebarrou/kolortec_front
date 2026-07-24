@@ -382,22 +382,36 @@ function textValue(block) {
   return (block && typeof block === 'object' ? block.value : block) || ''
 }
 
+// Default theme para CarouselRenderer cuando el backend no envía theme.
+const DEFAULT_THEME = {
+  colors: { primary: '#5b6cff', secondary: '#9c4dff', text: '#ffffff', bg: '#111111', accent: '#ffd54a' },
+  fontFamily: 'Inter, sans-serif',
+  radius: 12,
+  shadow: 'md',
+}
+
 function mapHeroConfig(heroCfg) {
   const carousels = heroCfg?.carousels
-  const scenes =
-    Array.isArray(carousels) && carousels.length ? carousels[0]?.scenes : null
+  const carousel = Array.isArray(carousels) && carousels.length ? carousels[0] : null
+  const scenes = carousel?.scenes
   if (!Array.isArray(scenes) || scenes.length === 0) {
     // Sin carrusel creado en tiendita: mock solo en modo vidriera; en real, hero sin slides
     // (la sección se oculta) en vez de mostrar los 3 slides hardcodeados (data fantasma).
     return DEMO_MODE
       ? defaultLandingContent.hero
-      : { intervalMs: defaultLandingContent.hero?.intervalMs || 7000, slides: [] }
+      : { intervalMs: defaultLandingContent.hero?.intervalMs || 7000, slides: [], labConfig: null }
   }
+
+  // Detectar si alguna scene es del hero-lab (tiene elementos libres).
+  const isLab = scenes.some((s) => s?.builder === 'lab' || Array.isArray(s?.elements))
+
+  // Escenas ocultas (draft en el editor) NO se publican en la web.
+  const publicScenes = scenes.filter((s) => !s?.hidden)
 
   const hrefOf = (b) =>
     b?.destination?.href || (b?.destination?.key ? `/${b.destination.key}` : null)
 
-  const slides = scenes.map((scene, i) => {
+  const slides = publicScenes.map((scene, i) => {
     const media = scene?.media || {}
     const buttons = Array.isArray(scene?.buttons)
       ? scene.buttons.filter((b) => b && b.visible !== false)
@@ -437,9 +451,25 @@ function mapHeroConfig(heroCfg) {
     }
   })
 
+  // Config para el CarouselRenderer (path lab). Solo se incluye cuando hay scenes lab.
+  const labConfig = isLab && publicScenes.length
+    ? {
+        version: 1,
+        settings: carousel.settings ?? null,
+        theme: carousel.theme ?? DEFAULT_THEME,
+        slides: publicScenes.map((s) => ({
+          id: s.id,
+          overlay: s.overlay ?? 0.2,
+          background: s.background ?? null,
+          elements: Array.isArray(s.elements) ? s.elements : [],
+        })),
+      }
+    : null
+
   return {
     intervalMs: defaultLandingContent.hero?.intervalMs || 7000,
     slides,
+    labConfig,
   }
 }
 
@@ -662,6 +692,22 @@ export async function getGuideBySlug(slug) {
   if (!slug) return null
   const all = await getGuides()
   return all.find((g) => g.slug === slug) ?? null
+}
+
+/**
+ * getDownloadInfo(id)
+ * Fetches the branded download-redirect info for a product from the tiendita
+ * public API: GET /public/download/{id}.
+ * Uses the SAME base URL + X-Account-Host handling as the rest of the adapter.
+ * Returns { nombre, imagen, target } (target may be null) or null if it fails.
+ */
+export async function getDownloadInfo(id) {
+  if (!id) return null
+  try {
+    return await fetchJson(`/public/download/${encodeURIComponent(id)}`)
+  } catch {
+    return null
+  }
 }
 
 // ---------------------------------------------------------------------------

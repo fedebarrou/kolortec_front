@@ -7,6 +7,7 @@ import RentalTeaserSection from './RentalTeaserSection'
 import ScrollytellingSection from './ScrollytellingSection'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
+import SectionErrorBoundary from './SectionErrorBoundary'
 import { useLandingContent } from '../hooks/useLandingContent'
 
 /**
@@ -26,30 +27,46 @@ function LandingPage() {
 
   return (
     <>
-      <ScrollytellingSection lines={content.lines} />
+      <SectionErrorBoundary name="Scrollytelling">
+        <ScrollytellingSection lines={content.lines} />
+      </SectionErrorBoundary>
       <Divider />
       {/* Reserva el alto del navbar (que aparece al terminar el scrollytelling) para que no tape el
           heading de la primera sección. Compensado por el zoom del .kt-zoom-canvas.
           Orden pedido por el cliente post-scroll: Hero (banner) → Instagram → Productos. */}
       <div style={{ paddingTop: 'calc(84px / var(--kt-canvas-scale, 1))' }}>
-        <HeroSection hero={content.hero} />
+        <SectionErrorBoundary name="Hero">
+          <HeroSection hero={content.hero} />
+        </SectionErrorBoundary>
       </div>
       <Divider />
-      <InstagramSection gallery={content.gallery} />
+      <SectionErrorBoundary name="Instagram">
+        <InstagramSection gallery={content.gallery} />
+      </SectionErrorBoundary>
       {hasProducts ? (
         <>
           <Divider />
-          <FeaturedSection products={content.products} />
+          <SectionErrorBoundary name="Featured">
+            <FeaturedSection products={content.products} />
+          </SectionErrorBoundary>
         </>
       ) : null}
       <Divider />
-      <DistributorTeaserSection distributor={content.distributor} />
+      <SectionErrorBoundary name="Distributor">
+        <DistributorTeaserSection distributor={content.distributor} />
+      </SectionErrorBoundary>
       <Divider />
-      <RentalTeaserSection rental={content.rental} />
+      <SectionErrorBoundary name="Rental">
+        <RentalTeaserSection rental={content.rental} />
+      </SectionErrorBoundary>
       <Divider />
-      <ShopSection shop={content.shop} />
+      <SectionErrorBoundary name="Shop">
+        <ShopSection shop={content.shop} />
+      </SectionErrorBoundary>
       <Divider />
-      <SupportSection support={content.support} loading={loading} />
+      <SectionErrorBoundary name="Support">
+        <SupportSection support={content.support} loading={loading} />
+      </SectionErrorBoundary>
     </>
   )
 }

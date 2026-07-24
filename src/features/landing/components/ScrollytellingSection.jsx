@@ -226,28 +226,33 @@ function ScrollytellingSection({ lines = [] }) {
     }
     const snap = (dir) => {
       stopBreathing() // durante la transición el fondo va siempre en color
-      const cur = clamp(stepRef.current < 0 ? 0 : stepRef.current, 0, N - 1)
+      // Paso "release" virtual = índice N (el 5º): tras el último mensaje, un gesto más aterriza EXACTO
+      // en el hero+navbar (fin del spacer al tope), sin scroll libre intermedio.
+      const cur = clamp(stepRef.current < 0 ? 0 : stepRef.current, 0, N)
       const target = cur + dir
-      if (target < 0 || target > N - 1) return
+      if (target < 0 || target > N) return
       // El paso lo maneja el SNAP directo (no update()/scroll) → 1 gesto = 1 step exacto, sin salteos ni
       // dependencia del timing del scroll (que variaba por pantalla). Lock inmediato por toda la transición.
       stepRef.current = target
-      startTween(STOP_FRAMES[target])
+      if (target < N) startTween(STOP_FRAMES[target]) // en el release (N) se mantiene el último frame
       setActiveStep(-1) // ocultar el mensaje actual (fade-out); el nuevo aparece al terminar el tween
-      // Reposicionar el scroll a la FRACCIÓN del rango pinneado REAL (medido en vivo) → cada paso queda
-      // pinned (releaseY=0), y el último cae EXACTO en el borde (no se pasa/revela Instagram). Zoom-agnóstico.
+      // Reposicionar el scroll a la FRACCIÓN del rango pinneado REAL (medido en vivo) → cada paso de mensaje
+      // queda pinned (releaseY=0); el release (N) va al FIN del spacer → la sección post-spacer (hero) queda
+      // al tope y el navbar entra justo. Zoom-agnóstico.
       const sp = spacerRef.current
       if (sp) {
         const r = sp.getBoundingClientRect()
         const vh = window.innerHeight
         const spacerTopDoc = window.scrollY + r.top      // offset del spacer en el documento (consistente)
         const pinned = Math.max(0, r.height - vh)        // rango donde el portal queda pinned (releaseY=0)
-        const targetY = spacerTopDoc + (N > 1 ? target / (N - 1) : 0) * pinned
+        const targetY = target >= N
+          ? spacerTopDoc + r.height                      // release → fin del spacer: hero+navbar exactos al tope
+          : spacerTopDoc + (N > 1 ? target / (N - 1) : 0) * pinned
         window.scrollTo({ top: targetY, behavior: 'smooth' })
       }
       lockUntil = window.performance.now() + STEP_DURATION
     }
-    const wantsCapture = (dir) => inIntro() && !(dir > 0 && stepRef.current >= N - 1) && !(dir < 0 && stepRef.current <= 0)
+    const wantsCapture = (dir) => inIntro() && !(dir > 0 && stepRef.current >= N) && !(dir < 0 && stepRef.current <= 0)
     const onWheel = (e) => {
       stopIdle() // cualquier actividad corta el breathing y resetea; el próximo settle lo re-arma
       const dir = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0
