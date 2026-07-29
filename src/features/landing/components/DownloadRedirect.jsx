@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { getDownloadInfo } from '../../../shared/services/contentService'
 import { defaultLandingContent } from '../data/landingData'
 
 /**
- * DownloadRedirect — landing pública que abre el QR de descarga de un producto.
- * Lee `id` de la ruta (/d/:id), pide la info a la API pública de tiendita
- * (GET /public/download/:id) y redirige a `target` (URL externa).
+ * DownloadRedirect — landing pública que abre el QR único de un producto.
+ * Lee `id` de la ruta (/d/:id) y pide la info a la API pública de tiendita
+ * (GET /public/download/:id) → { nombre, descripcion, imagen, type, target }.
  *
- * - target presente  → botón + auto-redirect (~1s vía window.location.href).
- * - target null      → mensaje "sin descarga configurada" + link a home.
- * Targets son URLs EXTERNAS → siempre <a href>, nunca router Link.
+ * Siempre muestra imagen + nombre + descripción del producto. Comportamiento
+ * por tipo de destino:
+ * - type 'product' (default) → auto-redirect ~1s al detalle propio (/producto/:id,
+ *   target relativo; getProductDetail matchea por id) vía navigate (SPA).
+ * - type 'link'    → auto-redirect ~1s a la URL externa (window.location).
+ * - type 'file'    → SIN auto-redirect: una descarga nunca arranca sola por
+ *   escanear el QR — botón "Descargar" explícito.
+ * - target null    → error / QR sin destino.
  */
 function DownloadRedirect() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [state, setState] = useState({ status: 'loading', data: null })
   const brand = defaultLandingContent.brand
 
@@ -33,17 +39,27 @@ function DownloadRedirect() {
     }
   }, [id])
 
-  // Auto-redirect al target cuando existe (~1s de branding antes de saltar).
   const target = state.data?.target || null
+  const tipo = state.data?.type || 'product'
+  const esArchivo = tipo === 'file'
+  const esProducto = tipo === 'product'
+
+  // Auto-redirect SOLO para detalle/link (~1s de branding antes de saltar).
+  // Un archivo espera el click del usuario.
   useEffect(() => {
-    if (state.status !== 'ready' || !target) return undefined
+    if (state.status !== 'ready' || !target || esArchivo) return undefined
     const t = window.setTimeout(() => {
-      window.location.href = target
+      if (esProducto) {
+        navigate(target)
+      } else {
+        window.location.href = target
+      }
     }, 1000)
     return () => window.clearTimeout(t)
-  }, [state.status, target])
+  }, [state.status, target, esArchivo, esProducto, navigate])
 
   const nombre = state.data?.nombre || ''
+  const descripcion = state.data?.descripcion || ''
   const imagen = state.data?.imagen || ''
 
   return (
@@ -66,7 +82,7 @@ function DownloadRedirect() {
             >
               progress_activity
             </span>
-            <p className="m-0 text-sm text-[#aeb5bf]">Preparando tu descarga…</p>
+            <p className="m-0 text-sm text-[#aeb5bf]">Un momento…</p>
           </div>
         ) : state.status === 'error' || !target ? (
           <div className="grid place-items-center gap-5 py-8">
@@ -82,7 +98,7 @@ function DownloadRedirect() {
               </h1>
             ) : null}
             <p className="m-0 max-w-[32ch] text-[0.95rem] leading-relaxed text-[#aeb5bf]">
-              Este producto no tiene una descarga configurada.
+              No encontramos el destino de este código QR.
             </p>
             {/* Home es interno pero mantenemos <a> simple para máxima robustez */}
             <a
@@ -107,22 +123,39 @@ function DownloadRedirect() {
                   {nombre}
                 </h1>
               ) : null}
+              {descripcion ? (
+                <p className="m-0 line-clamp-3 text-[0.9rem] leading-relaxed text-[#aeb5bf]">
+                  {descripcion}
+                </p>
+              ) : null}
               <p className="m-0 text-[0.95rem] text-[#aeb5bf]">
-                Tu descarga está lista<span className="text-primary">.</span>
+                {esArchivo
+                  ? 'Tu descarga está lista'
+                  : esProducto
+                    ? 'Te llevamos al producto'
+                    : 'Te estamos redirigiendo'}
+                <span className="text-primary">.</span>
               </p>
             </div>
             <a
               href={target}
+              {...(esArchivo ? { download: '' } : {})}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-primary px-8 py-3 text-sm font-bold uppercase tracking-[0.08em] text-deep-black transition hover:opacity-90"
             >
               <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                download
+                {esArchivo ? 'download' : esProducto ? 'arrow_forward' : 'open_in_new'}
               </span>
-              Descargar
+              {esArchivo ? 'Descargar' : esProducto ? 'Ver producto' : 'Continuar'}
             </a>
-            <p className="m-0 text-xs text-[#7a828d]">
-              Te estamos redirigiendo automáticamente…
-            </p>
+            {esArchivo ? (
+              <p className="m-0 text-xs text-[#7a828d]">
+                Podés bajar el archivo desde acá cuando quieras.
+              </p>
+            ) : (
+              <p className="m-0 text-xs text-[#7a828d]">
+                Te estamos redirigiendo automáticamente…
+              </p>
+            )}
           </div>
         )}
       </div>

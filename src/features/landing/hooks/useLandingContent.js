@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { defaultLandingContent, emptyLandingContent } from '../data/landingData'
-import { getLandingContent, DEMO_MODE } from '../../../shared/services/contentService'
+import { getLandingContent } from '../../../shared/services/contentService'
+import { DEMO_MODE } from '../../../config.js'
 
 export function useLandingContent() {
   // En modo real arrancamos VACÍO (sin demos) → el scrollytelling hace de colchón

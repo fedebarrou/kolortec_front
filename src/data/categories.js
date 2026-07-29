@@ -6,7 +6,8 @@
  */
 
 import { PRODUCT_CATEGORIES } from '../features/catalog/data/categories.js'
-import { getCategorias as fetchCategoriasApi, DEMO_MODE } from '../shared/services/contentService.js'
+import { getCategorias as fetchCategoriasApi } from '../shared/services/contentService.js'
+import { DEMO_MODE } from '../config.js'
 
 // kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
 const SITE =

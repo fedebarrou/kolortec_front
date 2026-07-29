@@ -13,11 +13,7 @@
 import { defaultLandingContent } from '../features/landing/data/landingData.js'
 import { productDetails } from '../features/product/data/productDetails.js'
 import { demoProductDetail, DEMO_PRODUCT_SLUG } from '../features/product/helpers/productDetailDemoHelper.js'
-
-// Modo vidriera (ver contentService.js). Se lee directo del env para no acoplar este archivo
-// —usado también por sitemap/prerender— al módulo del adapter.
-const DEMO_MODE =
-  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_DEMO_DATA === 'true'
+import { DEMO_MODE } from '../config.js'
 
 // kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
 const SITE =

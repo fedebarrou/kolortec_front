@@ -3,8 +3,8 @@
  * tiendita public API (https://api.soytiendita.store/api/public/*).
  *
  * Contract: the shapes returned by getLandingContent() MUST match the keys
- * expected by landing components (hero, gallery, products, shop, services,
- * support, distributor, rental, footer, brand, nav, action).
+ * expected by landing components (hero, gallery, products, shop, support,
+ * distributor, rental, footer, brand, nav, action).
  *
  * Rules:
  *  - Every fetch includes X-Account-Host and credentials: 'include'.
@@ -15,16 +15,13 @@
 
 import { defaultLandingContent } from '../../features/landing/data/landingData.js'
 import { resolveAccountHost } from './accountHost.js'
+import { DEMO_MODE } from '../../config.js'
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || ''
 
-/**
- * DEMO_MODE — "modo vidriera". Cuando VITE_DEMO_DATA === 'true' (build de Vercel para mostrarle al
- * cliente), los fallbacks caen a data MOCK para que el sitio se vea "lleno". En el build real/oficial
- * (VPS, flag ausente/false) todo es 100% data-driven: si tiendita no tiene info cargada, NO se inventa
- * nada (sin categorías/hero/líneas fantasma). Un solo codebase, dos builds. Ver categories.js y products.js.
- */
-export const DEMO_MODE = import.meta.env?.VITE_DEMO_DATA === 'true'
+// Re-export para no romper los consumidores que ya importan DEMO_MODE desde este adapter
+// (categories.js, useLandingContent.js). Fuente única en src/config.js.
+export { DEMO_MODE }
 
 // Las rutas OAuth públicas viven en el grupo `web` del backend (SIN prefijo /api):
 // GET /public/auth/{provider} y su callback (routes/web.php). API_BASE_URL trae el
@@ -264,27 +261,6 @@ function mapMarcasToClientLogos(raw) {
 }
 
 /**
- * /public/servicios → services section
- * { title, items:[{title, subtitle, image}] }
- * NOTE: ServicesSection is currently commented-out in LandingPage; data is
- * mapped and available but not rendered. Do not uncomment the section.
- */
-function mapServicios(raw) {
-  // Data-driven: sin servicios → items vacío.
-  if (!Array.isArray(raw) || raw.length === 0) {
-    return { ...defaultLandingContent.services, items: [] }
-  }
-  return {
-    title: defaultLandingContent.services.title,
-    items: raw.map((s) => ({
-      title: s.nombre,
-      subtitle: s.descripcion,
-      image: s.img_url || (s.imagenes && s.imagenes[0]?.url) || '',
-    })),
-  }
-}
-
-/**
  * /public/blog?tipo=guia → guides[]
  * Maps to the shape used by GuidesIndexPage and GuideDetailPage:
  * { slug, title, excerpt, publishedAt, sections[], cta, seoTitle, seoDescription }
@@ -505,7 +481,6 @@ export async function getLandingContent() {
     igFeed,
     galeriaRaw,
     marcasRaw,
-    serviciosRaw,
     heroCfgRaw,
     guides,
   ] = await Promise.all([
@@ -514,7 +489,6 @@ export async function getLandingContent() {
     fetchWithFallback('/public/instagram/feed', null),
     fetchWithFallback('/public/galeria', null),
     fetchWithFallback('/public/marcas', null),
-    fetchWithFallback('/public/servicios', null),
     fetchWithFallback('/public/hero-config', null),
     getGuides(),
   ])
@@ -524,7 +498,6 @@ export async function getLandingContent() {
   const gallery = mapGallery(igFeed, galeriaRaw)
   const support = mapWebConfigToSupport(webConfig)
   const clientLogos = mapMarcasToClientLogos(marcasRaw)
-  const services = mapServicios(serviciosRaw)
   const hero = mapHeroConfig(heroCfgRaw)
 
   const footer = {
@@ -552,8 +525,6 @@ export async function getLandingContent() {
       ...defaultLandingContent.shop,
       guides: Array.isArray(guides) ? guides : [],
     },
-    // services: from /public/servicios — section is commented-out in LandingPage
-    services,
     // support: contacts from /public/web-config
     support,
     // action: static — no API source yet
