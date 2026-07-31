@@ -95,9 +95,7 @@ export const translations = {
           contact: 'Contact us',
           guides: 'Guide library',
         },
-        guideNext: 'Next',
-        mediaVideo: 'Video',
-        mediaGuide: 'Guide',
+        videoBadge: 'Original spare parts',
       },
       services: {
         title: 'Three Pillars, One Promise',
@@ -468,9 +466,7 @@ export const translations = {
           contact: 'Comunicate con nosotros',
           guides: 'Biblioteca de guías',
         },
-        guideNext: 'Siguiente',
-        mediaVideo: 'Video',
-        mediaGuide: 'Guía',
+        videoBadge: 'Repuestos originales',
       },
       services: {
         title: 'Tres Pilares, Una Promesa',

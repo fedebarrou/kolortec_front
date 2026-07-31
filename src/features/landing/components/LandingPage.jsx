@@ -15,8 +15,8 @@ import { useLandingContent } from '../hooks/useLandingContent'
  * su ESTRUCTURA (título/leyenda) y oculta solo sus listas de datos vacías (degradado fino):
  *  - Instagram: siempre el "Seguinos en @"; el carrusel solo si hay IG conectado.
  *  - Productos destacados: solo si hay productos (imágenes faltantes → placeholder en ProductCard).
- *  - Soporte (ShopSection, amarilla con efecto visual): siempre; su "Biblioteca de guías" (blogs)
- *    a la derecha se oculta si no hay guías cargadas.
+ *  - Soporte (ShopSection, diseño 2c: intro amarilla que funde a negro + video ghost al borde
+ *    derecho): siempre; la biblioteca de guías vive en /soporte/guias vía su acceso.
  *  - Contactanos (SupportSection): siempre, con su carrusel de imagen; contactos ocultos si vacío.
  * Las secciones de marketing hardcodeadas (Distribuidores / Alquiler) siguen quitadas.
  */
