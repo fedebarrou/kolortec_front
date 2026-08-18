@@ -425,7 +425,7 @@ function ProductDetailPage() {
                     {product.innovations.slice(0, 4).map((inn) => (
                       <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
                         {inn.image ? (
-                          <img src={inn.image} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-lg border border-[#2a2a2a] object-cover" />
+                          <img src={inn.image} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
                         ) : (
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
                         )}

@@ -23,7 +23,7 @@ function FeaturedSection({ products }) {
         </Link>
       </div>
 
-      <div className="kt-marquee" style={{ '--kt-marquee-duration': '38s' }}>
+      <div className="kt-marquee" style={{ '--kt-marquee-duration': '72s' }}>
         <div className="kt-marquee-track">
           {loopItems.map((item, index) => (
             <div
