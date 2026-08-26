@@ -11,6 +11,16 @@ import { LanguageProvider } from './shared/i18n/LanguageProvider.jsx'
 import { AuthProvider } from './shared/auth/AuthContext.jsx'
 import PublishGate from './shared/components/PublishGate.jsx'
 
+/**
+ * CanvasScaler — mantiene --kt-canvas-scale al dia en cada resize.
+ *
+ * El valor INICIAL ya no sale de aca: lo calcula el script inline de index.html,
+ * antes del primer paint. Cuando vivia solo en este efecto, el primer paint usaba
+ * zoom:1 y el efecto lo bajaba a ~0.71 un frame despues — el documento entero se
+ * encogia ~30%%, y sobre esa altura provisoria el navegador restauraba el scroll.
+ * El update() del montaje quedo igual (escribe el mismo valor) para que el efecto
+ * siga siendo la unica fuente durante la vida de la app.
+ */
 function CanvasScaler() {
   useEffect(() => {
     const update = () => {

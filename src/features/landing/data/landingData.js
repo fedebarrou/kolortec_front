@@ -316,6 +316,17 @@ export const defaultLandingContent = {
       'https://lh3.googleusercontent.com/aida-public/AB6AXuDWcNNqvhbO3-kWmHhlyIf67ZnRuenDR6Nke_atIH4P0iBTbbk3h1cUIppnokV_MguAoBV17cu80eWEFUny1UFmMARYd74eahe05y2QfjB5YYOJbuqTApJ0aHSS7kEI4_DBhdLSpF0yhBpNeW0YhXxk3Y4bCGmmaIDPrT9h6jUbEDpqpeKozkP5ksPOeXMTU5DRvxl3DwuyKqZF5CuDT05BEvR6iVbtyhdFVCBxdlAI-cvEVmwu4Lfi7SkXv6ccsmpWhVzPejxoZcwM',
     ],
   },
+  // Un solo llamado a sumarse. NO hereda de `distributor`: ese copy hablaba solo
+  // de la red de distribuidores, y desde /sumate se puede elegir cualquiera de
+  // las dos formas.
+  join: {
+    eyebrow: 'Sumate a Kolortec',
+    title: '¿Querés formar parte de Kolortec?',
+    subtitle:
+      'Como distribuidor autorizado o presentando tu proyecto de rental. Acceso a producto, soporte técnico de fábrica y condiciones comerciales preferenciales.',
+    cta: 'Quiero sumarme',
+    href: '/sumate',
+  },
   distributor: {
     eyebrow: 'Programa de distribuidores',
     title: 'Queres formar parte del equipo de distribuidores Kolortec?',

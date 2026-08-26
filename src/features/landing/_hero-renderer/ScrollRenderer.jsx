@@ -10,7 +10,7 @@
  * el preview del admin (tiendita-front/app/(admin)/admin/hero-lab/_renderer/).
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Background } from "./Background";
+import { Background, animProps } from "./Background";
 import { ElementView, boxAt } from "./elements/ElementView";
 import { createSnapEngine } from "./snapEngine";
 import { SnapChrome } from "./SnapChrome";
@@ -88,10 +88,20 @@ const videoUrlFor = (bg, breakpoint) => (breakpoint === "mobile" && bg?.urlMobil
 
 function ScrollBackdrop({ config, progress, breakpoint, scrubAlways = false }) {
   const globalBg = config.background;
-  if (globalBg?.type === "frames") return <ScrubFrames bg={globalBg} progress={progress} reverse={config.settings.reverseVideo} breakpoint={breakpoint} />;
+  // Los fondos con scrub pintan su propio <canvas>/<video> y NO pasan por
+  // Background, asi que la animacion hay que ponersela desde afuera. Son
+  // ortogonales: el scrub elige QUE frame se ve, la animacion transforma el
+  // elemento entero. Sin esto, elegir una animacion para un fondo de frames o
+  // de video en el admin no hacia absolutamente nada.
+  const anim = animProps(globalBg);
+  const conAnim = (nodo) => (anim
+    ? <div className={anim.className} style={{ position: "absolute", inset: 0, ...anim.style }}>{nodo}</div>
+    : nodo);
+  if (globalBg?.type === "frames") return conAnim(<ScrubFrames bg={globalBg} progress={progress} reverse={config.settings.reverseVideo} breakpoint={breakpoint} />);
   if (globalBg?.type === "video" && (scrubAlways || config.settings.scrollScrubVideo)) {
-    return <ScrubVideo url={videoUrlFor(globalBg, breakpoint)} poster={globalBg.poster} progress={progress} trim={config.settings.videoTrim} reverse={config.settings.reverseVideo} />;
+    return conAnim(<ScrubVideo url={videoUrlFor(globalBg, breakpoint)} poster={globalBg.poster} progress={progress} trim={config.settings.videoTrim} reverse={config.settings.reverseVideo} />);
   }
+  // Este camino SI pasa por Background, que ya se pone la clase solo.
   return <Background bg={globalBg} />;
 }
 
@@ -121,6 +131,12 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
     <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} />
     {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} /> : null}
     {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${slide.overlay})` }} /> : null}
+    {/* El scrim es una propiedad del SLIDE, no del modo: hasta ahora el modo
+        continuous no lo montaba y el preview del admin si, asi que una escena
+        continuous con scrim se veia distinta en el editor que publicada. Se
+        alinea hacia el editor —que es el que respeta la configuracion— porque
+        hoy no hay ninguna escena continuous en produccion: riesgo cero. */}
+    {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} /> : null}
     {[...(slide.elements || [])].filter((el) => !el.timing || (time >= el.timing.from && time <= el.timing.to)).sort((a, b) => a.z - b.z).map((el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: el.z }}><ElementView el={el} bp={breakpoint} reveal={reveal(el)} accentColor={config.theme?.colors?.primary} themePreset={themePreset} /></div>; })}
   </div>;
 }
@@ -239,6 +255,11 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
   const navRevealedRef = useRef(false);
   // Takeover (snap.takeover, sección PRIMERA de la página): null = todavía sin
   // aplicar (mount), true/false = estado ACTUAL de la clase body.scrolly-takeover.
+  // lastYRef / reentryArmedRef: la historia se puede volver a entrar POR ABAJO
+  // (el usuario sube desde el hero). Para eso hace falta saber la direccion del
+  // scroll, que hasta ahora no se rastreaba en ningun lado. Ver onScroll.
+  const lastYRef = useRef(0);
+  const reentryArmedRef = useRef(true);
   const takeoverActiveRef = useRef(null);
   const skippingRef = useRef(false); // "Saltar" en curso (animación propia de scroll)
   const updateTakeoverRef = useRef(null);
@@ -344,9 +365,13 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
       const wrapTop = window.scrollY + wrap.getBoundingClientRect().top;
       const active = window.scrollY < wrapTop + slides.length * vh();
       if (active === takeoverActiveRef.current) return;
-      const firstRun = takeoverActiveRef.current === null;
+      // headerH se mide SIEMPRE, tambien en el montaje. Antes se salteaba el
+      // primer run (`!firstRun`) y el header salia del flujo sin compensar: el
+      // documento perdia ~70px de un frame al otro y todo lo de abajo subia.
+      // A scrollY=0 la compensacion es un no-op (queda clampeada), asi que no
+      // cambia nada en la carga normal; solo deja de romper si no arranca en 0.
       const header = typeof document !== "undefined" ? document.querySelector(".site-header") : null;
-      const headerH = !firstRun && header ? header.getBoundingClientRect().height : 0;
+      const headerH = header ? header.getBoundingClientRect().height : 0;
       const beforeY = window.scrollY;
       document.body.classList.toggle("scrolly-takeover", active);
       takeoverActiveRef.current = active;
@@ -373,15 +398,26 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
     // lo cruza (aterriza justo en el borde). skippingRef en true evita que
     // updateTakeover interfiera mientras dura; se recalcula al terminar.
     const smoothLandingTo = (targetY, onDone) => {
-      if (reducedMotion) { window.scrollTo({ top: targetY, behavior: "instant" }); onDone?.(); return; }
+      // Sin animacion cuando NO PUEDE haberla: reduced-motion, o la pestaña en
+      // segundo plano, donde rAF no corre y el tween no arrancaria nunca.
+      const oculta = typeof document !== "undefined" && document.visibilityState === "hidden";
+      if (reducedMotion || oculta) { window.scrollTo({ top: targetY, behavior: "instant" }); onDone?.(); return; }
       const startY = window.scrollY;
       const dur = 650;
       const t0 = performance.now();
+      let terminado = false;
+      const fin = () => { if (terminado) return; terminado = true; window.clearTimeout(guarda); onDone?.(); };
+      // RED DE SEGURIDAD: si rAF se frena a mitad —el usuario cambia de pestaña—
+      // el tween nunca llamaria a onDone, y quien lo invoca deja skippingRef en
+      // true PARA SIEMPRE. Con eso updateTakeover sale por la puerta de atras en
+      // cada scroll y el navbar se queda encima de la historia sin arreglo posible.
+      const guarda = window.setTimeout(() => { window.scrollTo({ top: targetY, behavior: "instant" }); fin(); }, dur + 400);
       const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
       const tick = (now) => {
+        if (terminado) return;
         const t = Math.min(1, (now - t0) / dur);
         window.scrollTo({ top: startY + (targetY - startY) * ease(t), behavior: "instant" });
-        if (t < 1) requestAnimationFrame(tick); else onDone?.();
+        if (t < 1) requestAnimationFrame(tick); else fin();
       };
       requestAnimationFrame(tick);
     };
@@ -448,15 +484,54 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
         const el = wrapRef.current;
         if (!el) return;
         updateTakeover();
-        // Ocultar el menú del sitio mientras la historia está pinned (kolortec:
-        // el navbar queda tapado y reaparece al soltar el scroll).
-        if (snap.hideNav) document.body.classList.toggle("scrolly-nav-hidden", pinned());
+        // Geometria del recorrido, en coordenadas de documento.
+        const y = window.scrollY;
+        const goingUp = y < lastYRef.current;
+        lastYRef.current = y;
+        const wrapTopY = y + el.getBoundingClientRect().top;
+        const lastStepY = wrapTopY + Math.max(0, slides.length - 1) * vh();
+        const endY = wrapTopY + slides.length * vh();
+        // insideStory incluye la ULTIMA pantalla del spacer, donde pinned() ya es
+        // false porque el sticky se esta despegando de forma nativa. La historia
+        // sigue ocupando la pantalla ahi, asi que el navbar no puede aparecer.
+        const insideStory = y >= wrapTopY - 1 && y < endY;
+        document.body.classList.toggle("scrolly-nav-hidden", snap.hideNav && (pinned() || insideStory));
+
+        // scrolly-nav-reveal solo tiene sentido FUERA de la historia, y hay que
+        // sacarlo apenas volvemos a entrar. Su regla CSS es una `animation` con
+        // fill-mode:both, y una animacion le gana a las declaraciones normales de
+        // scrolly-takeover / scrolly-nav-hidden: mientras la clase siguiera puesta,
+        // el navbar se quedaba visible ENCIMA del scrolltelling por mas que el
+        // takeover se reactivara. Antes esto se limpiaba solo dentro del enganche
+        // de re-entrada, que no corre si el usuario sube de un saque y se saltea
+        // la banda de release.
+        if (insideStory && document.body.classList.contains("scrolly-nav-reveal")) {
+          navRevealedRef.current = false;
+          document.body.classList.remove("scrolly-nav-reveal");
+        }
+
+        // Re-entrada POR ABAJO (ago-26). onWheel devuelve en seco si !pinned(), asi
+        // que en la ultima pantalla del spacer el scroll quedaba nativo: al subir
+        // desde el hero se veia la historia a medias, el texto del ultimo step
+        // re-entraba con su transicion de 700ms y el primer gesto saltaba DOS
+        // pantallas. Aca se detecta que el usuario vuelve a entrar y se lo aterriza
+        // en el ultimo step real, con el engine sincronizado SIN animar (instant).
+        if (goingUp && reentryArmedRef.current && !skippingRef.current && y > lastStepY && y < endY) {
+          reentryArmedRef.current = false;
+          skippingRef.current = true;
+          engine.syncToStep(Math.max(0, slides.length - 1), { instant: true });
+          smoothLandingTo(lastStepY, () => {
+            skippingRef.current = false;
+            updateTakeover();
+          });
+          return;
+        }
+        if (y >= endY) reentryArmedRef.current = true; // salio al hero: rearmar
         // Entrada del navbar con línea (Fase 1e, kolortec index.css:198-210):
         // solo si el menú estuvo oculto durante la historia (hideNav/takeover);
         // se agrega UNA sola vez, al liberar el recorrido por completo.
         if (!navRevealedRef.current && (snap.hideNav || takeoverEnabled)) {
-          const wrapTop = window.scrollY + el.getBoundingClientRect().top;
-          if (window.scrollY >= wrapTop + slides.length * vh()) {
+          if (y >= endY) {
             navRevealedRef.current = true;
             document.body.classList.add("scrolly-nav-reveal");
           }
@@ -480,8 +555,13 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
     window.addEventListener("scroll", onScroll, true);
     // Aplicar el takeover YA al montar (sin esperar el primer scroll): la
     // historia debe tapar el menú desde y=0, no recién al primer gesto.
+    lastYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
     updateTakeoverRef.current = updateTakeover;
     updateTakeover();
+    // Lo mismo para hideNav: hasta ahora solo se aplicaba dentro de onScroll, asi
+    // que una historia con hideNav pero SIN takeover (o que no fuera la primera
+    // seccion) dejaba el navbar a la vista hasta el primer gesto de scroll.
+    if (snap.hideNav) document.body.classList.toggle("scrolly-nav-hidden", pinned());
     return () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKey);

@@ -113,8 +113,8 @@ function GarantiasPage() {
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
       <Seo
-        title="Guia de mantenimiento de equipos · Kolortec"
-        description="Como limpiar cabezales Beam y Wash LED, estrobos, barras LED y maquinas de humo. Guias paso a paso de mantenimiento y soporte tecnico local de Kolortec."
+        title={t('seo.warrantyTitle', 'Guia de mantenimiento de equipos · Kolortec')}
+        description={t('seo.warrantyDesc', 'Como limpiar cabezales Beam y Wash LED, estrobos, barras LED y maquinas de humo. Guias paso a paso de mantenimiento y soporte tecnico local de Kolortec.')}
         path="/garantias"
       />
       <div className="mb-10 flex flex-col gap-4 kt-reveal">

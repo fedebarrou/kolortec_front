@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { trackEvent } from '../../../shared/services/tracking'
 import { getProductDetail, getSiteConfig } from '../../../shared/services/contentService'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
@@ -19,6 +19,16 @@ function formatPrice(value, moneda) {
 
 function ProductDetailPage() {
   const { t, lang } = useLanguage()
+  const navigate = useNavigate()
+
+  // Volver: si el visitante llego navegando por el sitio, lo devolvemos a donde
+  // estaba (conserva el scroll y los filtros del catalogo). Si entro DIRECTO —un
+  // link compartido, el QR de un producto, un resultado de buscador— no hay a
+  // donde volver: history.back() lo sacaria del sitio. En ese caso, al catalogo.
+  const volver = () => {
+    if (window.history.state?.idx > 0) navigate(-1)
+    else navigate('/products')
+  }
   const { slug } = useParams()
   // Data-driven: cargamos el producto REAL desde la API de tiendita por su id/slug.
   const [product, setProduct] = useState(null)
@@ -309,8 +319,8 @@ function ProductDetailPage() {
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
         <Seo
-          title="Producto no encontrado · Kolortec"
-          description="Este producto no está publicado o el enlace cambió. Volvé al catálogo para ver toda la línea Kolortec."
+          title={t('seo.productNotFound', 'Producto no encontrado · Kolortec')}
+          description={t('seo.productNotFoundDesc', 'Este producto no está publicado o el enlace cambió. Volvé al catálogo para ver toda la línea Kolortec.')}
           path={`/producto/${slug || ''}`}
           noindex
         />
@@ -356,8 +366,13 @@ function ProductDetailPage() {
       />
       <main className="kt-detail-main">
         <header className="kt-detail-fixed-header">
-          <nav className="kt-detail-tabs" aria-label="Product detail sections">
+          <nav className="kt-detail-tabs" aria-label={t('a11y.sections', 'Secciones del producto')}>
             <div className="kt-detail-tabs-name">
+              <button type="button" className="kt-detail-back" onClick={volver} aria-label={t('a11y.back', 'Volver')} title={t('a11y.back', 'Volver')}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 5l-7 7 7 7" />
+                </svg>
+              </button>
               <strong className="title-font text-[13px] md:text-[14px] leading-none tracking-[0.14em]">{product.name}</strong>
             </div>
             <div className="kt-detail-tabs-links">
@@ -457,7 +472,7 @@ function ProductDetailPage() {
                 ))}
                 </div>
                 {previewImages.length > 1 ? (
-                  <div className="mt-3 flex justify-center gap-2 md:hidden" aria-label="Paginacion galeria">
+                  <div className="mt-3 flex justify-center gap-2 md:hidden" aria-label={t('a11y.gallery', 'Paginación de la galería')}>
                     {previewImages.map((_, index) => (
                       <button
                         key={`gallery-dot-${index}`}
@@ -534,7 +549,7 @@ function ProductDetailPage() {
                             <button
                               type="button"
                               onClick={goPrev}
-                              aria-label="Video anterior"
+                              aria-label={t('a11y.prevVideo', 'Video anterior')}
                               className="absolute left-2 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black sm:left-4 sm:h-12 sm:w-12"
                             >
                               <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
@@ -544,7 +559,7 @@ function ProductDetailPage() {
                             <button
                               type="button"
                               onClick={goNext}
-                              aria-label="Video siguiente"
+                              aria-label={t('a11y.nextVideo', 'Video siguiente')}
                               className="absolute right-2 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm transition hover:border-primary hover:bg-primary hover:text-black sm:right-4 sm:h-12 sm:w-12"
                             >
                               <svg viewBox="0 0 24 24" className="h-5 w-5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">

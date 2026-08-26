@@ -8,17 +8,16 @@ function ServicesPage() {
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
       <Seo
-        title="Servicios y soluciones · Kolortec"
-        description="Servicios de instalación, capacitación y soporte para iluminación profesional Kolortec. Soluciones llave en mano con respaldo de fábrica."
+        title={t('seo.servicesTitle', 'Servicios y soluciones · Kolortec')}
+        description={t('seo.servicesDesc', 'Servicios de instalación, capacitación y soporte para iluminación profesional Kolortec. Soluciones llave en mano con respaldo de fábrica.')}
         path="/servicios"
       />
       <div className="mb-5 kt-reveal">
         <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(3.8rem,10vw,7rem)] leading-[1.02]">
-          Servicios
+          {t('pages.services.title', 'Servicios')}
           <span className="text-primary">.</span>
         </h1>
-        <p className="mb-3 text-[#a0a0a0]">Preparado para consumir `/landing/services` desde API.</p>
-        <Link to="/" className="font-bold text-primary">Volver al landing</Link>
+        <Link to="/" className="font-bold text-primary">{t('pages.services.back', 'Volver al inicio')}</Link>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 kt-reveal">
         {defaultLandingContent.services.items.map((item) => (

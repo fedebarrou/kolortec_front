@@ -114,8 +114,8 @@ function SupportPage() {
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
       <Seo
-        title="Soporte técnico de iluminación escénica · Kolortec"
-        description="Soporte técnico de iluminación escénica con respuesta inmediata y repuestos en stock local. Diagnóstico y reparación de cabezales móviles."
+        title={t('seo.supportTitle', 'Soporte técnico de iluminación escénica · Kolortec')}
+        description={t('seo.supportDesc', 'Soporte técnico de iluminación escénica con respuesta inmediata y repuestos en stock local. Diagnóstico y reparación de cabezales móviles.')}
         path="/soporte"
       />
 

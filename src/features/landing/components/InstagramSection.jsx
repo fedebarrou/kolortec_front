@@ -62,7 +62,7 @@ function InstagramSection({ gallery }) {
                 <img
                   className="h-full w-full object-cover transition duration-300 hover:scale-105"
                   src={src}
-                  alt="Kolortec en Instagram"
+                  alt={t('a11y.instagramAlt', 'Kolortec en Instagram')}
                   loading="lazy"
                 />
               </button>

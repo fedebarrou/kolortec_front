@@ -501,6 +501,22 @@
     fill: currentColor;
   }
 
+  /* El logo REAL de la marca (marcas.logo_url de la API). En escala de grises, se
+     colorea al hover: una tira de logos ajenos no puede competirle al amarillo de
+     la marca. .kt-clientlogo-mark queda como fallback de la data demo (shapes). */
+  .kt-clientlogo-img {
+    width: auto;
+    height: 34px;
+    max-width: 128px;
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: grayscale(1) brightness(1.7);
+    opacity: 0.55;
+    transition: opacity 240ms ease-out, filter 240ms ease-out;
+  }
+
+  .kt-marquee-item-clientlogo:hover .kt-clientlogo-img { opacity: 1; filter: grayscale(0) brightness(1); }
+
   .kt-marquee-item {
     flex: 0 0 auto;
   }
@@ -572,6 +588,58 @@
     gap: 20px;
     padding-inline: 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Volver, a la izquierda del nombre. La barra ya es una grilla de 3 columnas
+     (nombre / tabs / consulta): el boton entra DENTRO de la primera para no
+     agregar una cuarta y descolocar el resto. Solo icono: la barra mide 52px y
+     el nombre del producto ya viene apretado; el texto va en aria-label/title. */
+  .kt-detail-tabs-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .kt-detail-back {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    margin-left: -6px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    transition: color 180ms ease-out, border-color 180ms ease-out, transform 180ms ease-out;
+  }
+
+  .kt-detail-back svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .kt-detail-back:hover {
+    color: var(--primary, #f4df33);
+    border-color: rgba(244, 223, 51, 0.55);
+    transform: translateX(-2px);
+  }
+
+  .kt-detail-back:focus-visible {
+    outline: 2px solid var(--primary, #f4df33);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-detail-back:hover { transform: none; }
   }
 
   .kt-detail-tabs-name strong {
@@ -1481,13 +1549,106 @@
     animation: kt-minimal-logo-orbit 14s ease-in-out infinite;
   }
 
+  /* Bordes iluminados: ENCENDIDOS mientras la sección es amarilla y apagándose
+     junto con el fundido, hasta negro liso sin borde.
+     Antes era al revés: el resplandor APARECÍA recién en is-done y quedaba fijo
+     para siempre. La transición dura lo mismo que el fundido (4500ms) para que
+     amarillo y borde bajen juntos y no se noten como dos cosas. */
+  /* ORDEN DEL CIERRE: primero se van los bordes, después baja el amarillo.
+     Los dos usan @keyframes y no `transition` porque la regla de box-shadow
+     sobre `.kt-shop-section.is-playing` la pisaba la composición de sombras de
+     Tailwind (verificado: la transición entraba, el color no). Con keyframes el
+     valor viene del propio fotograma y no hay conflicto.
+
+       0ms ───────── amarillo + borde encendido
+       400ms ─────── el borde empieza a irse (1400ms)
+       3200ms ────── empieza el fundido a negro (4500ms)
+       7700ms ────── negro liso, sin borde, textos en blanco  */
   .kt-shop-section {
-    box-shadow: 0 0 0 0 rgba(244, 223, 51, 0), 0 0 0 0 rgba(244, 223, 51, 0);
-    transition: box-shadow 800ms ease-out;
+    box-shadow: 0 0 45px 2px rgba(244, 223, 51, 0.55), 0 0 90px 8px rgba(244, 223, 51, 0.22);
+  }
+
+  .kt-shop-section.is-playing {
+    animation: kt-shop-unglow 1400ms 400ms ease-out forwards;
   }
 
   .kt-shop-section.is-done {
-    box-shadow: 0 0 45px 2px rgba(244, 223, 51, 0.55), 0 0 90px 8px rgba(244, 223, 51, 0.22);
+    box-shadow: 0 0 0 0 rgba(244, 223, 51, 0), 0 0 0 0 rgba(244, 223, 51, 0);
+  }
+
+  @keyframes kt-shop-unglow {
+    to {
+      box-shadow: 0 0 0 0 rgba(244, 223, 51, 0), 0 0 0 0 rgba(244, 223, 51, 0);
+    }
+  }
+
+  /* Tinta: NEGRA sobre el amarillo y BLANCA sobre el negro. Blanco sobre
+     amarillo es ilegible, y era lo que había. El cambio va con el mismo delay y
+     la misma duración que el fundido para que sea un solo movimiento. */
+  .kt-shop-ink {
+    color: #0b0b0b;
+  }
+
+  .kt-shop-ink--soft {
+    color: rgba(11, 11, 11, 0.72);
+  }
+
+  .kt-shop-section.is-playing .kt-shop-ink {
+    animation: kt-shop-ink-flip 4500ms 3200ms ease-in-out forwards;
+  }
+
+  .kt-shop-section.is-playing .kt-shop-ink--soft {
+    animation: kt-shop-ink-flip-soft 4500ms 3200ms ease-in-out forwards;
+  }
+
+  .kt-shop-section.is-done .kt-shop-ink {
+    color: #ffffff;
+  }
+
+/* Lo mismo que .kt-shop-ink, para todo lo que NO es texto. Mientras la seccion
+   es amarilla los separadores y la flecha van en negro; se dan vuelta junto con
+   el fundido. Los tres numeros (3200ms de espera + 4500ms de fundido = 7700ms)
+   son los MISMOS de .kt-shop-ink y del setTimeout de ShopSection: si tocas uno,
+   tocalos todos o el cambio de color se corta de golpe. */
+.kt-shop-rule { border-color: rgba(11, 11, 11, 0.22); }
+.kt-shop-section.is-playing .kt-shop-rule { animation: kt-shop-rule-flip 4500ms 3200ms ease-in-out forwards; }
+.kt-shop-section.is-done .kt-shop-rule { border-color: rgba(255, 255, 255, 0.18); }
+@keyframes kt-shop-rule-flip { to { border-color: rgba(255, 255, 255, 0.18); } }
+
+/* Los acentos amarillos de la marca: sobre el amarillo eran INVISIBLES (amarillo
+   sobre amarillo). Van oscuros mientras dura, y recuperan el amarillo en negro. */
+.kt-shop-accent { background-color: #0b0b0b; }
+.kt-shop-section.is-playing .kt-shop-accent { animation: kt-shop-accent-flip 4500ms 3200ms ease-in-out forwards; }
+.kt-shop-section.is-done .kt-shop-accent { background-color: #f4df33; }
+@keyframes kt-shop-accent-flip { to { background-color: #f4df33; } }
+
+.kt-shop-accent-text { color: #0b0b0b; }
+.kt-shop-section.is-playing .kt-shop-accent-text { animation: kt-shop-accent-text-flip 4500ms 3200ms ease-in-out forwards; }
+.kt-shop-section.is-done .kt-shop-accent-text { color: #f4df33; }
+@keyframes kt-shop-accent-text-flip { to { color: #f4df33; } }
+
+/* El circulo del icono es un par INVERTIDO: fondo oscuro + icono amarillo
+   mientras la seccion es amarilla, y al reves cuando queda negra. Si solo se
+   diera vuelta el fondo, el icono (que era #0b0b0b fijo) desapareceria. */
+.kt-shop-chip { background-color: #0b0b0b; color: #f4df33; }
+.kt-shop-section.is-playing .kt-shop-chip { animation: kt-shop-chip-flip 4500ms 3200ms ease-in-out forwards; }
+.kt-shop-section.is-done .kt-shop-chip { background-color: #f4df33; color: #0b0b0b; }
+@keyframes kt-shop-chip-flip { to { background-color: #f4df33; color: #0b0b0b; } }
+
+  .kt-shop-section.is-done .kt-shop-ink--soft {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  @keyframes kt-shop-ink-flip {
+    to {
+      color: #ffffff;
+    }
+  }
+
+  @keyframes kt-shop-ink-flip-soft {
+    to {
+      color: rgba(255, 255, 255, 0.75);
+    }
   }
 
   /* Fundido amarillo → negro al cierre de la intro (versión invertida del "kt2-white" del
@@ -1501,8 +1662,12 @@
     pointer-events: none;
   }
 
+  /* Más tiempo en amarillo (3200ms) y fundido mucho más lento (4500ms).
+     ⚠ Estos dos números y el setTimeout de playing→done en ShopSection.jsx se
+     mueven JUNTOS: si `done` llega antes de que termine la animación, el opacity:1
+     de is-done corta el fundido de golpe. */
   .kt-shop-section.is-playing .kt-shop-dark {
-    animation: kt-shop-darken 750ms 1050ms ease forwards;
+    animation: kt-shop-darken 4500ms 3200ms ease-in-out forwards;
   }
 
   .kt-shop-section.is-done .kt-shop-dark {
@@ -1517,6 +1682,82 @@
 
   /* Video al borde derecho con máscara ghost (se funde hacia el fondo por la izquierda,
      como la imagen del mockup 2c). En mobile pasa a fondo full-bleed atenuado. */
+  /* ── Contactanos: foto ghost al borde derecho ────────────────────────────
+     Misma técnica que .kt-shop-video-edge: la imagen sangra por el borde y una
+     máscara la disuelve hacia el contenido, así no hay canto duro. Se le suma
+     una deriva de escala muy lenta (18s) para que no quede muerta; es
+     deliberadamente imperceptible — no debe competir con la lista de contactos,
+     que es lo accionable de la sección.
+     La sección necesita `position: relative` e `isolate` para contenerla. */
+  .kt-support-section {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  /* Separadores de Contactanos: se DIFUMINAN hacia la derecha en vez de cruzar
+   la seccion entera. Antes llegaban hasta el borde y cortaban en seco la foto
+   ghost que sangra por ese lado — dos elementos peleando por el mismo pixel.
+   border-image con un gradiente resuelve las tres variantes (border-y, border-b)
+   de una, sin tener que pintar la linea con pseudo-elementos. */
+.kt-support-rule {
+  border-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.16) 44%,
+      rgba(255, 255, 255, 0.06) 72%,
+      rgba(255, 255, 255, 0) 88%
+    ) 1;
+}
+
+.kt-support-ghost {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    width: min(620px, 48vw);
+    pointer-events: none;
+  }
+
+  .kt-support-ghost img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.42;
+    -webkit-mask-image: linear-gradient(to left, #000 12%, rgba(0, 0, 0, 0.55) 46%, transparent 88%);
+    mask-image: linear-gradient(to left, #000 12%, rgba(0, 0, 0, 0.55) 46%, transparent 88%);
+    animation: kt-support-drift 18s ease-in-out infinite alternate;
+    transform-origin: 78% 50%;
+  }
+
+  @keyframes kt-support-drift {
+    to {
+      transform: scale(1.06);
+    }
+  }
+
+  /* En pantallas chicas la foto pasaría por detrás del texto: se atenúa y se
+     acuesta como una franja inferior, que es donde no molesta. */
+  @media (max-width: 900px) {
+    .kt-support-ghost {
+      width: 100%;
+      top: auto;
+      height: 42%;
+    }
+    .kt-support-ghost img {
+      opacity: 0.2;
+      -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 92%);
+      mask-image: linear-gradient(to top, #000 10%, transparent 92%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-support-ghost img {
+      animation: none;
+    }
+  }
+
   .kt-shop-video-edge {
     position: absolute;
     top: 0;
@@ -2073,6 +2314,20 @@
 }
 
 
+
+/* ── Altura real del viewport, para el scrolltelling ─────────────────────────
+   El renderer arma el spacer con `calc(N * var(--vh-full, 100vh))` y el sticky
+   con `var(--vh-full, 100vh)`, pero el JS mide los umbrales con
+   `window.innerHeight`. Sin esta variable el CSS caía al fallback 100vh: en
+   móvil, con la barra del navegador visible, 100vh es MAYOR que innerHeight, el
+   spacer quedaba más alto que N*innerHeight, y el umbral que revela el navbar
+   (wrapTop + N*vh) se disparaba ANTES del final real de la historia — o sea el
+   navbar aparecía encima del scrolltelling.
+
+   Espejo exacto de tiendita-store/app/globals.css. Va fuera de @layer por el
+   mismo motivo que el bloque de abajo. */
+:root { --vh-full: 100vh; }
+@supports (height: 100dvh) { :root { --vh-full: 100dvh; } }
 
 /* ── Puente con el scrolltelling del admin (ScrollRenderer) ──────────────────
    El renderer NO conoce el header de kolortec: comunica su estado poniendo

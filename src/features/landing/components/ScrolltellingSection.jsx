@@ -7,6 +7,7 @@ import { ScrollRenderer } from '../_hero-renderer/ScrollRenderer'
 import '../_hero-renderer/hero-anim.css'
 import { ensureHeroFonts } from '../_hero-renderer/heroFonts'
 import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 /**
  * ScrolltellingSection — la historia de la landing, renderizada desde el diseño
@@ -25,6 +26,7 @@ import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
 const MOBILE_BELOW = 768
 
 function ScrolltellingSection({ config, logoUrl = null, isFirst = false }) {
+  const { t } = useLanguage()
   const [bp, setBp] = useState('desktop')
   // Traducción al vuelo de TODOS los textos del diseño. La lógica vive en
   // useHeroTranslation/heroTranslate para que el carrusel del Encabezado use
@@ -44,7 +46,7 @@ function ScrolltellingSection({ config, logoUrl = null, isFirst = false }) {
   if (!config || !Array.isArray(config.slides) || config.slides.length === 0) return null
 
   return (
-    <section id="scrolltelling" aria-label="Historia">
+    <section id="scrolltelling" aria-label={t('a11y.story', 'Historia')}>
       <ScrollRenderer config={translated} breakpoint={bp} logoUrl={logoUrl} isFirst={isFirst} />
     </section>
   )

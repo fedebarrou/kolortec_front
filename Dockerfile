@@ -12,6 +12,15 @@ ARG VITE_API_BASE_URL=https://api.soytiendita.store/api
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ARG VITE_TIENDITA_ACCOUNT_HOST=
 ENV VITE_TIENDITA_ACCOUNT_HOST=$VITE_TIENDITA_ACCOUNT_HOST
+# Traductor del contenido cargado en Modora (hero, scrolltelling, productos): esos
+# textos NO estan en el diccionario de i18n, se traducen en vivo desde el navegador.
+# Esta variable FALTABA en el Dockerfile, asi que en produccion quedaba undefined y
+# el cliente caia directo al fallback publico MyMemory — que responde HTTP 429
+# ("YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY"). Como el codigo devuelve el
+# texto original ante cualquier fallo, el sitio en ingles mostraba castellano y no
+# avisaba. Ahora apunta al LibreTranslate propio del VPS (/opt/libretranslate).
+ARG VITE_TRANSLATE_API_URL=https://translate.soytiendita.store/translate
+ENV VITE_TRANSLATE_API_URL=$VITE_TRANSLATE_API_URL
 # Generadores opcionales (no fatal) + build. Saltea el postbuild de puppeteer.
 RUN node scripts/gen-sitemap.mjs || true
 RUN node scripts/gen-llms-txt.mjs || true

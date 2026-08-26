@@ -1,20 +1,11 @@
 export const translations = {
   en: {
     lang: { es: 'Spanish', en: 'English' },
-    header: {
-      nav: {
-        home: 'Home',
-        catalog: 'Products',
-        support: 'Support',
-      },
-      social: {
-        whatsapp: 'WhatsApp',
-        instagram: 'Instagram',
-        facebook: 'Facebook',
-      },
-      searchAll: 'See all in Products',
-      searchEmpty: 'No direct matches. Try the full product list.',
-    },
+    // NOTA: habia DOS bloques `header` por idioma. En un object literal gana el
+    // segundo y el primero se descarta en silencio, asi que la mitad de las claves
+    // que alguien creyera estar editando arriba no llegaban nunca. Se verifico que
+    // el segundo fuera superset EXACTO del primero (mismas claves, mismos valores)
+    // antes de borrarlo: el runtime no cambia en nada. Lo cuida check-i18n-parity.mjs.
     landing: {
       scrolly: {
         step1: {
@@ -138,6 +129,15 @@ export const translations = {
           'Bring us your event or production — we work with active rental partners across LATAM to put Kolortec gear on stage with you.',
         cta: 'Pitch your project',
       },
+      join: {
+        eyebrow: 'Join Kolortec',
+        title: 'Want to be part of Kolortec?',
+        subtitle: 'As an authorized distributor or by pitching your rental project. Product access, factory technical support and preferred commercial terms.',
+        cta: 'I want to join',
+      },
+      partners: {
+        aria: 'Brands working with Kolortec',
+      },
     },
     shop: {
       title: 'Products',
@@ -145,6 +145,14 @@ export const translations = {
         'Browse our full lineup organized by product category. Tap any category to see its full list.',
     },
     catalog: {
+      emptyFiltersBody: 'No categories match the selected filters. Try removing one.',
+      emptyFiltersTitle: 'No matches',
+      loadingCategories: 'Loading categories…',
+      filterClearAll: 'Clear all',
+      filterActiveMany: 'active filters',
+      filterActiveOne: 'active filter',
+      filterClear: 'Clear',
+      selectPlaceholder: 'Select or type',
       breadcrumbProducts: 'Products',
       filterAll: 'All',
       emptyTitle: 'Coming soon',
@@ -158,6 +166,7 @@ export const translations = {
       noResultsBody: 'We could not find products matching that search.',
     },
     productDetail: {
+      related: 'You may also like',
       inquiry: 'Inquiry',
       notFoundTitle: 'Product not found',
       notFoundSubtitle: 'This detail is not published yet.',
@@ -229,6 +238,10 @@ export const translations = {
     },
     support: {
       page: {
+        guidesCta: 'View guides',
+        guidesTitle: 'Technical guides',
+        contactSubtitle: 'Cannot find what you need? Our technical team replies fast and keeps spare parts in local stock.',
+        eyebrow: 'Support / Downloads',
         title: 'Manuals & Libraries',
         subtitle:
           'Find technical manuals, firmware updates, photometric files, and reference material for the entire Kolortec line.',
@@ -271,6 +284,122 @@ export const translations = {
       rentals: 'Rentals',
       login: 'Sign in',
       warranty: 'Maintenance Guide',
+    },
+    join: {
+      eyebrow: 'Join Kolortec',
+      title: 'Join the team',
+      subtitleRental: 'Tell us about your project and we will light it up together. Our team gets in touch within the next 48 business hours.',
+      subtitleDistribuidor: 'Fill in the form and our sales team will get in touch within the next 48 business hours.',
+      tipoLabel: 'How do you want to join?',
+      enviando: 'Sending…',
+      error: 'We could not send your request. Please try again in a moment.',
+      tipos: {
+        distribuidor: 'Distributor',
+        rental: 'Rental',
+      },
+      fields: {
+        mensajeRental: 'Tell us about your project',
+        mensajeDistribuidor: 'Tell us about your business',
+      },
+    },
+    seo: {
+      homeTitle: 'Kolortec · Ready to Work professional lighting',
+      homeDesc: 'Argentine manufacturer of professional lighting for stages, events and architecture. Own product line, local stock and factory technical support.',
+      shopTitle: 'Products · Kolortec',
+      shopDesc: 'Full catalog of Kolortec professional lighting: LED bars, moving heads, laser, strobes, architectural and accessories.',
+      categoryNotFound: 'Category not found · Kolortec',
+      productNotFound: 'Product not found · Kolortec',
+      contactTitle: 'Contact · Kolortec',
+      contactDesc: 'Write to us about sales, technical support or distribution. We reply within 48 business hours.',
+      servicesTitle: 'Services · Kolortec',
+      servicesDesc: 'Technical service, original spare parts and support for Kolortec professional lighting equipment.',
+      supportTitle: 'Technical support · Kolortec',
+      supportDesc: 'Diagnostics, locally stocked spare parts and technical guides for your Kolortec gear.',
+      warrantyTitle: 'Warranty · Kolortec',
+      warrantyDesc: 'Warranty terms, preventive maintenance and how to request service for your Kolortec gear.',
+      guidesTitle: 'Stage lighting technical guides · Kolortec Support',
+      guidesDesc: 'Diagnostics, maintenance and repair of professional lighting. The questions we get in support, answered in depth.',
+      guideNotFound: 'Guide not found · Kolortec',
+      loginTitle: 'Sign in · Kolortec',
+      loginDesc: 'Access your Kolortec account to manage orders, quotes and technical documentation downloads.',
+      joinTitle: 'Join Kolortec · Distributors and Rental',
+      joinDesc: 'Join Kolortec as a distributor or pitch your rental project. Own product line with backing, margins and local support.',
+      categoryNotFoundDesc: 'The requested category does not exist in the catalog. Go back to products to explore the full line.',
+      shopSearchDesc: 'Kolortec catalog search. Moving heads, strobes and LED panels from our own line, with local support.',
+      productNotFoundDesc: 'This product is not published or the link changed. Go back to the catalog to see the whole Kolortec line.',
+      guideNotFoundDesc: 'This guide does not exist or its URL changed. Go back to the support index to see every technical guide.',
+    },
+    pages: {
+      homeH1: 'Kolortec — Ready to Work professional lighting, Argentine manufacturer with local support',
+      syncing: 'Syncing…',
+      maintenance: 'Site under construction',
+      login: {
+        title: 'Sign in',
+        subtitle: 'Sign in or create your account with Google to manage orders and quotes.',
+        back: 'Back to home',
+        google: 'Sign in or sign up with Google',
+        legal: 'By continuing you accept our Terms and Privacy Policy.',
+      },
+      guides: {
+        breadcrumbSupport: 'Support',
+        breadcrumbGuides: 'Guides',
+        breadcrumbHome: 'Home',
+        cluster: 'Support Cluster',
+        title: 'Technical guides',
+        intro: 'Diagnostics, maintenance and repair of professional lighting. The questions we get in support, answered in depth.',
+        empty: 'No guides published yet.',
+        notFoundTitle: 'Guide not found',
+        notFoundBody: 'We could not find this guide in the support cluster.',
+        back: 'Back to guides',
+        badge: 'Technical guide',
+        helpCta: 'Need direct help? Our support team responds with locally stocked spare parts and diagnostics in 48-72h.',
+        helpButton: 'Contact support',
+        keepReading: 'Keep reading',
+      },
+      download: {
+        wait: 'One moment…',
+        notFound: 'We could not find the destination for this QR code.',
+        home: 'Back to home',
+        ready: 'Your download is ready',
+        toProduct: 'Taking you to the product',
+        redirecting: 'Redirecting you',
+        download: 'Download',
+        viewProduct: 'View product',
+        continue: 'Continue',
+        fileHint: 'You can download the file from here whenever you want.',
+        autoHint: 'Redirecting you automatically…',
+      },
+      category: {
+        notFoundTitle: 'Category not found',
+        notFoundBody: 'This category does not exist in the catalog.',
+        back: 'Back to products',
+      },
+      services: {
+        title: 'Services',
+        back: 'Back to home',
+      },
+    },
+    a11y: {
+      back: 'Back',
+      home: 'Go to home',
+      logo: 'Kolortec logo',
+      toSpanish: 'Switch to Spanish',
+      toEnglish: 'Switch to English',
+      heroSlides: 'Hero slides',
+      story: 'Story',
+      productAlt: 'Kolortec professional lighting',
+      instagramAlt: 'Kolortec on Instagram',
+      footerAlt: 'Kolortec in action',
+      footerImage: 'Open footer image',
+      prev: 'Previous',
+      next: 'Next',
+      carousel: 'Carousel slides',
+      prevVideo: 'Previous video',
+      nextVideo: 'Next video',
+      gallery: 'Gallery pagination',
+      sections: 'Product detail sections',
+      allProducts: 'View products',
+      logout: 'Sign out',
     },
     common: {
       close: 'Close',
@@ -347,6 +476,11 @@ export const translations = {
       footer: 'factory',
     },
     warranty: {
+      card: {
+        readFull: 'Read full article',
+        guide: 'View guide',
+        openGuide: 'View maintenance guide',
+      },
       page: {
         title: 'Maintenance guide',
         subtitle:
@@ -355,6 +489,8 @@ export const translations = {
         back: 'Back to home',
       },
       modal: {
+        needHelp: 'Still need help?',
+        badge: 'Cleaning',
         closeAria: 'Close detail',
         seeProducts: 'See products',
         manuals: 'Manuals',
@@ -372,20 +508,11 @@ export const translations = {
   },
   es: {
     lang: { es: 'Espanol', en: 'Ingles' },
-    header: {
-      nav: {
-        home: 'Inicio',
-        catalog: 'Productos',
-        support: 'Soporte',
-      },
-      social: {
-        whatsapp: 'WhatsApp',
-        instagram: 'Instagram',
-        facebook: 'Facebook',
-      },
-      searchAll: 'Ver todos en Productos',
-      searchEmpty: 'Sin coincidencias directas. Probá en productos completos.',
-    },
+    // NOTA: habia DOS bloques `header` por idioma. En un object literal gana el
+    // segundo y el primero se descarta en silencio, asi que la mitad de las claves
+    // que alguien creyera estar editando arriba no llegaban nunca. Se verifico que
+    // el segundo fuera superset EXACTO del primero (mismas claves, mismos valores)
+    // antes de borrarlo: el runtime no cambia en nada. Lo cuida check-i18n-parity.mjs.
     landing: {
       scrolly: {
         step1: {
@@ -509,6 +636,15 @@ export const translations = {
           'Traenos tu evento o produccion — trabajamos con partners de rental activos en toda LATAM para llevar equipos Kolortec a tu escenario.',
         cta: 'Presenta tu proyecto',
       },
+      join: {
+        eyebrow: 'Sumate a Kolortec',
+        title: '¿Querés formar parte de Kolortec?',
+        subtitle: 'Como distribuidor autorizado o presentando tu proyecto de rental. Acceso a producto, soporte técnico de fábrica y condiciones comerciales preferenciales.',
+        cta: 'Quiero sumarme',
+      },
+      partners: {
+        aria: 'Marcas que trabajan con Kolortec',
+      },
     },
     shop: {
       title: 'Productos',
@@ -516,6 +652,14 @@ export const translations = {
         'Recorre nuestra linea completa organizada por tipo de producto. Tocá cualquier categoria para ver el listado.',
     },
     catalog: {
+      emptyFiltersBody: 'No hay categorias que cumplan con los filtros seleccionados. Probá quitando alguno.',
+      emptyFiltersTitle: 'Sin coincidencias',
+      loadingCategories: 'Cargando categorías…',
+      filterClearAll: 'Limpiar todos',
+      filterActiveMany: 'filtros activos',
+      filterActiveOne: 'filtro activo',
+      filterClear: 'Limpiar',
+      selectPlaceholder: 'Seleccionar o tipear',
       breadcrumbProducts: 'Productos',
       filterAll: 'Todos',
       emptyTitle: 'Proximamente',
@@ -529,6 +673,7 @@ export const translations = {
       noResultsBody: 'No encontramos productos para esa busqueda.',
     },
     productDetail: {
+      related: 'También te puede interesar',
       inquiry: 'Consulta',
       notFoundTitle: 'Producto no encontrado',
       notFoundSubtitle: 'Este detalle aun no esta publicado.',
@@ -600,6 +745,10 @@ export const translations = {
     },
     support: {
       page: {
+        guidesCta: 'Ver guias',
+        guidesTitle: 'Guias tecnicas',
+        contactSubtitle: 'No encontras lo que buscas? Nuestro equipo tecnico responde rapido y mantiene repuestos en stock local.',
+        eyebrow: 'Soporte / Descargas',
         title: 'Manuales y librerias',
         subtitle:
           'Encontra manuales tecnicos, actualizaciones de firmware, fotometria y material de referencia de toda la linea Kolortec.',
@@ -642,6 +791,122 @@ export const translations = {
       rentals: 'Rentals',
       login: 'Iniciar sesión',
       warranty: 'Guia de Mantenimiento',
+    },
+    join: {
+      eyebrow: 'Sumate a Kolortec',
+      title: 'Sumate al equipo',
+      subtitleRental: 'Contanos tu proyecto y lo iluminamos juntos. Nuestro equipo se pone en contacto en las próximas 48 horas hábiles.',
+      subtitleDistribuidor: 'Completá el formulario y nuestro equipo comercial se va a poner en contacto en las próximas 48 horas hábiles.',
+      tipoLabel: '¿Cómo querés sumarte?',
+      enviando: 'Enviando…',
+      error: 'No pudimos enviar tu solicitud. Probá de nuevo en un momento.',
+      tipos: {
+        distribuidor: 'Distribuidor',
+        rental: 'Rental',
+      },
+      fields: {
+        mensajeRental: 'Contanos sobre tu proyecto',
+        mensajeDistribuidor: 'Contanos sobre tu negocio',
+      },
+    },
+    seo: {
+      homeTitle: 'Kolortec · Iluminación profesional Ready to Work',
+      homeDesc: 'Fabricante argentino de iluminación profesional para escenarios, eventos y arquitectura. Línea propia, stock local y soporte técnico de fábrica.',
+      shopTitle: 'Productos · Iluminación profesional Kolortec',
+      shopDesc: 'Cabezales móviles, strobes y paneles LED de línea propia, testeados y listos para escena. Durabilidad y soporte de fábrica.',
+      categoryNotFound: 'Categoría no encontrada · Kolortec',
+      productNotFound: 'Producto no encontrado · Kolortec',
+      contactTitle: 'Contacto · Kolortec',
+      contactDesc: 'Escribinos para cotizaciones, soporte técnico o partnerships. Te respondemos en 48 horas hábiles desde fábrica.',
+      servicesTitle: 'Servicios · Kolortec',
+      servicesDesc: 'Servicio técnico, repuestos originales y acompañamiento para equipos de iluminación profesional Kolortec.',
+      supportTitle: 'Soporte técnico de iluminación escénica · Kolortec',
+      supportDesc: 'Soporte técnico de iluminación escénica con respuesta inmediata y repuestos en stock local. Diagnóstico y reparación de cabezales móviles.',
+      warrantyTitle: 'Guia de mantenimiento de equipos · Kolortec',
+      warrantyDesc: 'Como limpiar cabezales Beam y Wash LED, estrobos, barras LED y maquinas de humo. Guias paso a paso de mantenimiento y soporte tecnico local de Kolortec.',
+      guidesTitle: 'Guías técnicas de iluminación escénica · Soporte Kolortec',
+      guidesDesc: 'Cluster de guías técnicas: diagnóstico de cabezales móviles, errores DMX, mantenimiento de consolas y reparación profesional. Soporte local Kolortec.',
+      guideNotFound: 'Guía no encontrada · Kolortec',
+      loginTitle: 'Iniciar sesion · Kolortec',
+      loginDesc: 'Accede a tu cuenta Kolortec para gestionar pedidos, cotizaciones y descargas de documentacion tecnica.',
+      joinTitle: 'Sumate a Kolortec · Distribuidores y Rental',
+      joinDesc: 'Sumate a Kolortec como distribuidor o presentá tu proyecto de rental. Línea propia con respaldo, márgenes y soporte local.',
+      categoryNotFoundDesc: 'La categoría solicitada no existe en el catálogo. Volvé a productos para explorar la línea completa.',
+      shopSearchDesc: 'Buscador del catálogo Kolortec. Cabezales móviles, strobes y paneles LED de línea propia con soporte local.',
+      productNotFoundDesc: 'Este producto no está publicado o el enlace cambió. Volvé al catálogo para ver toda la línea Kolortec.',
+      guideNotFoundDesc: 'Esta guía no existe o se cambió de URL. Volvé al índice de soporte para ver todas las guías técnicas.',
+    },
+    pages: {
+      homeH1: 'Kolortec — Iluminación profesional Ready to Work, fabricante argentino con soporte local',
+      syncing: 'Sincronizando…',
+      maintenance: 'Sitio en construcción',
+      login: {
+        title: 'Iniciar sesión',
+        subtitle: 'Entrá o creá tu cuenta con Google para gestionar pedidos y cotizaciones.',
+        back: 'Volver al inicio',
+        google: 'Entrar o registrarte con Google',
+        legal: 'Al continuar aceptás nuestros Términos y Política de Privacidad.',
+      },
+      guides: {
+        breadcrumbSupport: 'Soporte',
+        breadcrumbGuides: 'Guías',
+        breadcrumbHome: 'Inicio',
+        cluster: 'Cluster Soporte',
+        title: 'Guías técnicas',
+        intro: 'Diagnóstico, mantenimiento y reparación de iluminación profesional. Las preguntas que recibimos en soporte, respondidas en profundidad.',
+        empty: 'Todavía no hay guías publicadas.',
+        notFoundTitle: 'Guía no encontrada',
+        notFoundBody: 'No encontramos esta guía en el cluster de soporte.',
+        back: 'Volver a guías',
+        badge: 'Guía técnica',
+        helpCta: '¿Necesitás ayuda directa? Nuestro equipo de soporte responde con repuestos en stock local y diagnóstico en 48-72h.',
+        helpButton: 'Contactar soporte',
+        keepReading: 'Seguí leyendo',
+      },
+      download: {
+        wait: 'Un momento…',
+        notFound: 'No encontramos el destino de este código QR.',
+        home: 'Volver al inicio',
+        ready: 'Tu descarga está lista',
+        toProduct: 'Te llevamos al producto',
+        redirecting: 'Te estamos redirigiendo',
+        download: 'Descargar',
+        viewProduct: 'Ver producto',
+        continue: 'Continuar',
+        fileHint: 'Podés bajar el archivo desde acá cuando quieras.',
+        autoHint: 'Te estamos redirigiendo automáticamente…',
+      },
+      category: {
+        notFoundTitle: 'Categoría no encontrada',
+        notFoundBody: 'Esta categoría no existe en el catálogo.',
+        back: 'Volver a productos',
+      },
+      services: {
+        title: 'Servicios',
+        back: 'Volver al inicio',
+      },
+    },
+    a11y: {
+      back: 'Volver',
+      home: 'Ir al inicio',
+      logo: 'Logo de Kolortec',
+      toSpanish: 'Cambiar a español',
+      toEnglish: 'Cambiar a inglés',
+      heroSlides: 'Slides del encabezado',
+      story: 'Historia',
+      productAlt: 'Kolortec iluminación profesional',
+      instagramAlt: 'Kolortec en Instagram',
+      footerAlt: 'Kolortec en acción',
+      footerImage: 'Abrir imagen del pie de página',
+      prev: 'Anterior',
+      next: 'Siguiente',
+      carousel: 'Slides del carrusel',
+      prevVideo: 'Video anterior',
+      nextVideo: 'Video siguiente',
+      gallery: 'Paginación de la galería',
+      sections: 'Secciones del producto',
+      allProducts: 'Ver productos',
+      logout: 'Cerrar sesión',
     },
     common: {
       close: 'Cerrar',
@@ -718,6 +983,11 @@ export const translations = {
       footer: 'de fabrica',
     },
     warranty: {
+      card: {
+        readFull: 'Leer articulo completo',
+        guide: 'Ver guia',
+        openGuide: 'Ver guia de mantenimiento',
+      },
       page: {
         title: 'Guia de mantenimiento',
         subtitle:
@@ -726,6 +996,8 @@ export const translations = {
         back: 'Volver al inicio',
       },
       modal: {
+        needHelp: 'Todavia necesitas ayuda?',
+        badge: 'Limpieza',
         closeAria: 'Cerrar detalle',
         seeProducts: 'Ver productos',
         manuals: 'Manuales',

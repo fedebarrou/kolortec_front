@@ -68,7 +68,7 @@ function ShopPage() {
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
         <Seo
           title={`Búsqueda: ${query} · Productos Kolortec`}
-          description="Buscador del catálogo Kolortec. Cabezales móviles, strobes y paneles LED de línea propia con soporte local."
+          description={t('seo.shopSearchDesc', 'Buscador del catálogo Kolortec. Cabezales móviles, strobes y paneles LED de línea propia con soporte local.')}
           path="/products"
           noindex
         />
@@ -111,8 +111,8 @@ function ShopPage() {
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
       <Seo
-        title="Productos · Iluminación profesional Kolortec"
-        description="Cabezales móviles, strobes y paneles LED de línea propia, testeados y listos para escena. Durabilidad y soporte de fábrica."
+        title={t('seo.shopTitle', 'Productos · Iluminación profesional Kolortec')}
+        description={t('seo.shopDesc', 'Cabezales móviles, strobes y paneles LED de línea propia, testeados y listos para escena. Durabilidad y soporte de fábrica.')}
         path="/products"
       />
       <div className="mb-10 grid gap-3 kt-reveal">

@@ -423,7 +423,7 @@ function HeaderSection() {
         <div className="flex items-center md:justify-self-start">
           <Link
             to="/"
-            aria-label="Ir al inicio"
+            aria-label={t('a11y.home', 'Ir al inicio')}
             className="flex items-center gap-2 text-primary transition hover:opacity-80"
             onClick={() => {
               setIsMobileOpen(false)
@@ -434,7 +434,7 @@ function HeaderSection() {
               }
             }}
           >
-            <img alt="Kolortec Logo" className="h-5 md:h-6 w-auto object-contain" src="/assets/Grupo-Kolortec-1024x150.jpeg" />
+            <img alt={t('a11y.logo', 'Logo de Kolortec')} className="h-5 md:h-6 w-auto object-contain" src="/assets/Grupo-Kolortec-1024x150.jpeg" />
           </Link>
         </div>
 
@@ -468,7 +468,7 @@ function HeaderSection() {
               type="button"
               className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
               onClick={() => setLang('es')}
-              aria-label="Cambiar a español"
+              aria-label={t('a11y.toSpanish', 'Cambiar a español')}
             >
               ES
             </button>
@@ -476,7 +476,7 @@ function HeaderSection() {
               type="button"
               className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'en' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
               onClick={() => setLang('en')}
-              aria-label="Switch to English"
+              aria-label={t('a11y.toEnglish', 'Cambiar a inglés')}
             >
               EN
             </button>
@@ -566,8 +566,8 @@ function HeaderSection() {
 
           {user ? (
             <button
-              aria-label={t('header.logoutAria', 'Cerrar sesión')}
-              title={t('header.logoutAria', 'Cerrar sesión')}
+              aria-label={t('a11y.logout', 'Cerrar sesión')}
+              title={t('a11y.logout', 'Cerrar sesión')}
               className="h-9 w-9 bg-primary text-background-dark hover:bg-white transition-all inline-flex items-center justify-center rounded-lg"
               type="button"
               onClick={() => logout()}
@@ -617,7 +617,7 @@ function HeaderSection() {
             type="button"
             className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
             onClick={() => setLang('es')}
-            aria-label="Cambiar a español"
+            aria-label={t('a11y.toSpanish', 'Cambiar a español')}
           >
             ES
           </button>
@@ -625,7 +625,7 @@ function HeaderSection() {
             type="button"
             className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'en' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
             onClick={() => setLang('en')}
-            aria-label="Switch to English"
+            aria-label={t('a11y.toEnglish', 'Cambiar a inglés')}
           >
             EN
           </button>

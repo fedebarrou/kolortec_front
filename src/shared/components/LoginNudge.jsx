@@ -65,9 +65,14 @@ function LoginNudge() {
         return
       }
       // Gate: en la home hay un scrollytelling que ocupa el arranque; el aviso aparece SOLO cuando
-      // ya lo pasamos (su spacer con data-scrolly-spacer quedó por encima del viewport). En páginas
-      // sin scrollytelling (no hay spacer) aparece directo.
-      const spacer = document.querySelector('[data-scrolly-spacer]')
+      // ya lo pasamos (su contenedor quedó por encima del viewport). En páginas sin
+      // scrollytelling aparece directo.
+      //
+      // El atributo era [data-scrolly-spacer], del ScrollytellingSection viejo. El renderer
+      // actual emite [data-scroll-hero], así que el selector no encontraba nada nunca y el
+      // gate caía siempre a la rama "sin scrollytelling": el aviso de login podía aparecer
+      // ENCIMA de la historia.
+      const spacer = document.querySelector('[data-scroll-hero]')
       if (spacer && spacer.getBoundingClientRect().bottom > 0) {
         const onScroll = () => {
           const { user: u2, loading: l2 } = authRef.current

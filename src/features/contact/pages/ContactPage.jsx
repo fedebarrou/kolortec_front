@@ -7,8 +7,8 @@ function ContactPage() {
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
       <Seo
-        title="Contacto · Kolortec"
-        description="Escribinos para cotizaciones, soporte técnico o partnerships. Te respondemos en 48 horas hábiles desde fábrica."
+        title={t('seo.contactTitle', 'Contacto · Kolortec')}
+        description={t('seo.contactDesc', 'Escribinos para cotizaciones, soporte técnico o partnerships. Te respondemos en 48 horas hábiles desde fábrica.')}
         path="/contacto"
       />
       <div className="mb-5 kt-reveal">

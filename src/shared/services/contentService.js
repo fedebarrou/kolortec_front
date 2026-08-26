@@ -538,6 +538,33 @@ function deriveLines(raw) {
   return DEMO_MODE ? (defaultLandingContent.lines ?? []) : []
 }
 
+/**
+ * POST /public/contact — consulta o postulacion desde un formulario publico.
+ *
+ * Reusa el endpoint de contacto que ya existe en vez de tener uno propio: ese
+ * ya guarda la consulta y avisa al tenant por mail y WhatsApp. Lo unico que
+ * distingue una postulacion de una consulta comun es `origen`, que el back
+ * valida contra una whitelist.
+ *
+ * @param {{nombre:string, email?:string, telefono?:string, mensaje?:string, origen?:string}} datos
+ */
+export async function enviarConsultaPublica(datos) {
+  if (!API_BASE_URL) {
+    throw new Error('VITE_API_BASE_URL is not configured')
+  }
+  const response = await fetch(`${API_BASE_URL}/public/contact`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(datos),
+  })
+  if (!response.ok) {
+    const cuerpo = await response.json().catch(() => null)
+    throw new Error(cuerpo?.message || `Request failed: ${response.status}`)
+  }
+  return response.json()
+}
+
 export async function getLandingContent() {
   const [
     webConfig,

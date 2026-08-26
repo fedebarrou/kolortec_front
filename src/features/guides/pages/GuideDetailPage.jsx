@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import Seo, { SITE } from '../../../shared/seo/Seo'
 import { articleJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { getGuideBySlug, getGuides } from '../../../shared/services/contentService'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 /**
  * Data-driven: las guías salen de tiendita (/public/blog?tipo=guia). Empezamos
@@ -11,6 +12,7 @@ import { getGuideBySlug, getGuides } from '../../../shared/services/contentServi
  */
 function GuideDetailPage() {
   const { slug } = useParams()
+  const { t } = useLanguage()
 
   const [guide, setGuide] = useState(null)
   const [related, setRelated] = useState([])
@@ -51,16 +53,16 @@ function GuideDetailPage() {
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
         <Seo
-          title="Guía no encontrada · Kolortec"
-          description="Esta guía no existe o se cambió de URL. Volvé al índice de soporte para ver todas las guías técnicas."
+          title={t('seo.guideNotFound', 'Guía no encontrada · Kolortec')}
+          description={t('seo.guideNotFoundDesc', 'Esta guía no existe o se cambió de URL. Volvé al índice de soporte para ver todas las guías técnicas.')}
           path={`/soporte/guias/${slug || ''}`}
           noindex
         />
         <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
-          Guía no encontrada<span className="text-primary">.</span>
+          {t('pages.guides.notFoundTitle', 'Guía no encontrada')}<span className="text-primary">.</span>
         </h1>
-        <p className="mb-3 text-[#a0a0a0]">No encontramos esta guía en el cluster de soporte.</p>
-        <Link to="/soporte/guias" className="font-bold text-primary">Volver a guías</Link>
+        <p className="mb-3 text-[#a0a0a0]">{t('pages.guides.notFoundBody', 'No encontramos esta guía en el cluster de soporte.')}</p>
+        <Link to="/soporte/guias" className="font-bold text-primary">{t('pages.guides.back', 'Volver a guías')}</Link>
       </section>
     )
   }
@@ -75,9 +77,9 @@ function GuideDetailPage() {
     url,
   })
   const breadcrumbLd = breadcrumbJsonLd([
-    { name: 'Inicio', url: `${SITE}/` },
-    { name: 'Soporte', url: `${SITE}/soporte` },
-    { name: 'Guías', url: `${SITE}/soporte/guias` },
+    { name: t('pages.guides.breadcrumbHome', 'Inicio'), url: `${SITE}/` },
+    { name: t('pages.guides.breadcrumbSupport', 'Soporte'), url: `${SITE}/soporte` },
+    { name: t('pages.guides.breadcrumbGuides', 'Guías'), url: `${SITE}/soporte/guias` },
     { name: guide.title, url },
   ])
 
@@ -92,16 +94,16 @@ function GuideDetailPage() {
       />
 
       <nav className="mb-5 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]" aria-label="Breadcrumb">
-        <Link to="/soporte" className="transition hover:text-primary">Soporte</Link>
+        <Link to="/soporte" className="transition hover:text-primary">{t('pages.guides.breadcrumbSupport', 'Soporte')}</Link>
         <span aria-hidden="true">/</span>
-        <Link to="/soporte/guias" className="transition hover:text-primary">Guías</Link>
+        <Link to="/soporte/guias" className="transition hover:text-primary">{t('pages.guides.breadcrumbGuides', 'Guías')}</Link>
       </nav>
 
       <header className="mb-8 grid max-w-[80ch] gap-4 kt-reveal">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
           <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
-            Guía técnica
+            {t('pages.guides.badge', 'Guía técnica')}
           </span>
         </div>
         <h1 className="title-font m-0 text-[clamp(2.2rem,5.4vw,3.8rem)] leading-[1.04]">
@@ -126,20 +128,20 @@ function GuideDetailPage() {
 
       <aside className="mt-12 max-w-[78ch] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-6 kt-reveal">
         <p className="m-0 mb-4 text-[0.95rem] leading-[1.5] text-[#cfd4dc]">
-          ¿Necesitás ayuda directa? Nuestro equipo de soporte responde con repuestos en stock local y diagnóstico en 48-72h.
+          {t('pages.guides.helpCta', '¿Necesitás ayuda directa? Nuestro equipo de soporte responde con repuestos en stock local y diagnóstico en 48-72h.')}
         </p>
         <Link
           to={guide.cta?.href || '/soporte'}
           className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-6 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
         >
-          {guide.cta?.label || 'Contactar soporte'}
+          {guide.cta?.label || t('pages.guides.helpButton', 'Contactar soporte')}
         </Link>
       </aside>
 
       {related.length > 0 ? (
         <section className="mt-14 border-t border-[#2a2a2a] pt-8 kt-reveal">
           <h2 className="title-font m-0 mb-4 text-[1.4rem] leading-[1.05]">
-            Seguí leyendo<span className="text-primary">.</span>
+            {t('pages.guides.keepReading', 'Seguí leyendo')}<span className="text-primary">.</span>
           </h2>
           <ul className="grid gap-3 list-none m-0 p-0 md:grid-cols-3">
             {related.map((g) => (

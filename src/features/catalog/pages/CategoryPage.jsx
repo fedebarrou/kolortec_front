@@ -71,17 +71,17 @@ function CategoryPage() {
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
         <Seo
-          title="Categoría no encontrada · Kolortec"
-          description="La categoría solicitada no existe en el catálogo. Volvé a productos para explorar la línea completa."
+          title={t('seo.categoryNotFound', 'Categoría no encontrada · Kolortec')}
+          description={t('seo.categoryNotFoundDesc', 'La categoría solicitada no existe en el catálogo. Volvé a productos para explorar la línea completa.')}
           path={`/products/${categorySlug || ''}`}
           noindex
         />
         <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
-          Categoria no encontrada
+          {t('pages.category.notFoundTitle', 'Categoria no encontrada')}
           <span className="text-primary">.</span>
         </h1>
-        <p className="mb-3 text-[#a0a0a0]">Esta categoria no existe en el catalogo.</p>
-        <Link to="/products" className="font-bold text-primary">Volver a productos</Link>
+        <p className="mb-3 text-[#a0a0a0]">{t('pages.category.notFoundBody', 'Esta categoria no existe en el catalogo.')}</p>
+        <Link to="/products" className="font-bold text-primary">{t('pages.category.back', 'Volver a productos')}</Link>
       </section>
     )
   }

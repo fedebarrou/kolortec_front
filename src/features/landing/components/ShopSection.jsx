@@ -14,7 +14,7 @@ const ACCESS_KEY_BY_ICON = {
 // (en el mockup fundía a blanco con tipografía negra). El video vive en el borde derecho con
 // máscara ghost que lo mezcla con el fondo; la biblioteca de guías salió de la sección y queda
 // accesible por su acceso "Biblioteca de guías" (/soporte/guias).
-function ShopSection({ shop }) {
+function ShopSection({ shop, ready = true }) {
   const { t } = useLanguage()
   const sectionTitle = t('landing.shop.title', shop.title)
   const sectionSubtitle = t('landing.shop.subtitle', shop.subtitle)
@@ -37,6 +37,7 @@ function ShopSection({ shop }) {
     const vid = videoRef.current
     const el = sectionRef.current
     if (!vid || !el) return undefined
+    if (!ready) return undefined
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -50,7 +51,7 @@ function ShopSection({ shop }) {
     )
     obs.observe(el)
     return () => obs.disconnect()
-  }, [])
+  }, [ready])
 
   // Animación de entrada (cortina + barrido + flash → fundido a negro). Se dispara al entrar
   // la sección al viewport; el contenido se revela mientras el fondo oscurece.
@@ -58,22 +59,35 @@ function ShopSection({ shop }) {
     const el = sectionRef.current
     if (!el) return undefined
     if (prefersReducedMotion) return undefined
+    // GATE (ago-26): hasta que no llego el contenido, el scrolltelling y el hero
+    // devuelven null y esta seccion nace DENTRO del viewport, a ~400px del tope.
+    // El observer disparaba a los ~0ms, arrancaba el setTimeout de 7700ms y hacia
+    // unobserve: para cuando el usuario bajaba hasta aca, ya estaba negra y
+    // terminada. Con el contenido cargado la seccion esta a miles de px de ahi.
+    if (!ready) return undefined
 
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIntroPhase('playing')
-            window.setTimeout(() => setIntroPhase('done'), 2100)
+            // 3200ms en amarillo + 4500ms de fundido = 7700ms. El estado `done`
+            // tiene que llegar DESPUES de que termine la animacion del CSS
+            // (index.css, .kt-shop-dark): si llega antes, su opacity:1 corta el
+            // fundido de golpe. Si tocas uno de los tres numeros, tocá los tres.
+            window.setTimeout(() => setIntroPhase('done'), 7700)
             obs.unobserve(entry.target)
           }
         })
       },
-      { threshold: 0.2, rootMargin: '0px 0px 12% 0px' },
+      // rootMargin NEGATIVO: encoge el area de deteccion y dispara cuando la
+      // seccion entro de verdad. Era +12%, que la EXPANDE y adelanta el disparo
+      // (signo invertido respecto de useScrollReveal -8% y ProductDetailPage -14%).
+      { threshold: 0.2, rootMargin: '0px 0px -12% 0px' },
     )
     obs.observe(el)
     return () => obs.disconnect()
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, ready])
 
   const phaseClass =
     introPhase === 'playing' ? 'is-playing' : introPhase === 'done' ? 'is-done' : 'is-priming'
@@ -85,28 +99,28 @@ function ShopSection({ shop }) {
     const isInternal = cta.href.startsWith('/') && !targetId
 
     const className =
-      'group/access flex items-center justify-between gap-4 border-b border-[rgba(255,255,255,0.18)] py-4 text-left transition last:border-b-0 hover:pl-1'
+      'group/access flex items-center justify-between gap-4 border-b kt-shop-rule py-4 text-left transition last:border-b-0 hover:pl-1'
     const inner = (
       <>
         <span className="flex items-center gap-3">
-          <span className="grid h-10 w-10 flex-none place-items-center rounded-full bg-primary text-[#0b0b0b] transition group-hover/access:scale-105">
+          <span className="grid h-10 w-10 flex-none place-items-center rounded-full kt-shop-chip transition group-hover/access:scale-105">
             <span className="material-symbols-outlined text-[20px] leading-none" aria-hidden="true">
               {cta.icon || 'arrow_forward'}
             </span>
           </span>
           <span className="flex flex-col">
-            <strong className="text-[0.95rem] font-extrabold uppercase tracking-[0.06em] text-white">
+            <strong className="kt-shop-ink text-[0.95rem] font-extrabold uppercase tracking-[0.06em]">
               {t(ACCESS_KEY_BY_ICON[cta.icon] ?? '', cta.label)}
             </strong>
             {cta.description ? (
-              <span className="text-[0.8rem] text-[rgba(255,255,255,0.62)]">{cta.description}</span>
+              <span className="kt-shop-ink kt-shop-ink--soft text-[0.8rem]">{cta.description}</span>
             ) : null}
           </span>
         </span>
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"
-          className="h-5 w-5 flex-none stroke-white fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4] transition-transform group-hover/access:translate-x-1 group-hover/access:stroke-primary"
+          className="kt-shop-ink h-5 w-5 flex-none stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4] transition-transform group-hover/access:translate-x-1 group-hover/access:stroke-primary"
         >
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
@@ -155,7 +169,7 @@ function ShopSection({ shop }) {
     <section
       id="shop"
       ref={sectionRef}
-      className={`kt-shop-section ${phaseClass} relative isolate flex min-h-[600px] items-center overflow-hidden bg-primary py-[clamp(72px,10vw,128px)] text-white`}
+      className={`kt-shop-section ${phaseClass} relative isolate flex min-h-[600px] items-center overflow-hidden bg-primary py-[clamp(72px,10vw,128px)]`}
     >
       {/* Fundido amarillo → negro al terminar la intro (equivalente invertido del kt2-white del mockup) */}
       <div className="kt-shop-dark" aria-hidden="true" />
@@ -187,23 +201,23 @@ function ShopSection({ shop }) {
       <div className="kt-shop-content relative z-10 w-full px-6 lg:pl-40 lg:pr-[min(620px,46vw)]">
         <div className="kt-shop-from-left flex max-w-[660px] flex-col gap-5">
           <div className="flex items-center gap-2">
-            <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-            <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-white">
+            <span aria-hidden="true" className="block h-[2px] w-8 kt-shop-accent" />
+            <span className="kt-shop-ink text-[0.7rem] font-black uppercase tracking-[0.22em]">
               {sectionEyebrow}
             </span>
           </div>
 
-          <h2 className="title-font m-0 whitespace-pre-line text-left text-[clamp(2.4rem,7vw,5.4rem)] leading-[0.88] text-white">
+          <h2 className="kt-shop-ink title-font m-0 whitespace-pre-line text-left text-[clamp(2.4rem,7vw,5.4rem)] leading-[0.88]">
             {sectionTitle}
-            <span className="text-primary">.</span>
+            <span className="kt-shop-accent-text">.</span>
           </h2>
 
-          <p className="max-w-[52ch] text-[1.05rem] leading-[1.55] text-[rgba(255,255,255,0.75)]">
+          <p className="kt-shop-ink kt-shop-ink--soft max-w-[52ch] text-[1.05rem] leading-[1.55]">
             {sectionSubtitle}
           </p>
 
           {ctas.length > 0 ? (
-            <nav className="mt-2 border-t border-[rgba(255,255,255,0.18)]" aria-label={sectionEyebrow}>
+            <nav className="mt-2 border-t kt-shop-rule" aria-label={sectionEyebrow}>
               {ctas.map(renderAccess)}
             </nav>
           ) : null}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Seo from '../../../shared/seo/Seo'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { getGoogleAuthUrl } from '../../../shared/services/contentService'
 
 function GoogleIcon({ className }) {
@@ -18,6 +19,8 @@ function GoogleIcon({ className }) {
 // El primer inicio de sesión con Google crea la cuenta automáticamente.
 // ---------------------------------------------------------------------------
 function LoginPage() {
+  const { t } = useLanguage()
+
   function handleGoogleLogin() {
     window.location.href = getGoogleAuthUrl()
   }
@@ -25,18 +28,18 @@ function LoginPage() {
   return (
     <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
       <Seo
-        title="Iniciar sesion · Kolortec"
-        description="Accede a tu cuenta Kolortec para gestionar pedidos, cotizaciones y descargas de documentacion tecnica."
+        title={t('seo.loginTitle', 'Iniciar sesion · Kolortec')}
+        description={t('seo.loginDesc', 'Accede a tu cuenta Kolortec para gestionar pedidos, cotizaciones y descargas de documentacion tecnica.')}
         path="/login"
         noindex
       />
       <div className="kt-reveal mb-8">
         <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(3.8rem,10vw,7rem)] leading-[1.02]">
-          Iniciar sesion
+          {t('pages.login.title', 'Iniciar sesion')}
           <span className="text-primary">.</span>
         </h1>
-        <p className="mb-3 text-[#a0a0a0]">Entrá o creá tu cuenta con Google para gestionar pedidos y cotizaciones.</p>
-        <Link to="/" className="font-bold text-primary">Volver al inicio</Link>
+        <p className="mb-3 text-[#a0a0a0]">{t('pages.login.subtitle', 'Entrá o creá tu cuenta con Google para gestionar pedidos y cotizaciones.')}</p>
+        <Link to="/" className="font-bold text-primary">{t('pages.login.back', 'Volver al inicio')}</Link>
       </div>
 
       <div className="kt-reveal max-w-[400px] grid gap-4">
@@ -47,11 +50,11 @@ function LoginPage() {
           className="inline-flex items-center justify-center gap-3 rounded-[10px] border border-[#dadce0] bg-white py-3 px-5 text-[0.95rem] font-bold text-[#1f1f1f] transition hover:bg-[#f7f7f7]"
         >
           <GoogleIcon className="h-5 w-5" />
-          Entrar o registrarte con Google
+          {t('pages.login.google', 'Entrar o registrarte con Google')}
         </button>
 
         <p className="text-[0.72rem] leading-[1.5] text-[#7a7e87] text-center">
-          Al continuar aceptas nuestros Terminos y Politica de Privacidad.
+          {t('pages.login.legal', 'Al continuar aceptas nuestros Terminos y Politica de Privacidad.')}
         </p>
       </div>
     </section>

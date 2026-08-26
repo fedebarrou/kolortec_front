@@ -1,7 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { enviarConsultaPublica } from '../../../shared/services/contentService'
 import Seo from '../../../shared/seo/Seo'
+
+/**
+ * Sumate a Kolortec — una sola pantalla para las dos formas de sumarse.
+ *
+ * Antes eran dos paginas casi identicas (/distribuidores y /rentals), las dos
+ * huerfanas —ni el header ni el footer linkeaban a ellas— y las dos con un
+ * submit que solo hacia setSubmitted(true): la postulacion se perdia.
+ *
+ * Ahora: se elige el tipo arriba, el formulario es uno solo, y el envio va al
+ * endpoint publico de contacto que ya guarda la consulta y avisa al tenant.
+ */
+// Las etiquetas viajan como CLAVE + fallback y no como texto: TIPOS vive fuera
+// del componente, donde no hay acceso a t(). Antes eran literales y quedaban en
+// castellano aunque el sitio estuviera en ingles.
+const TIPOS = [
+  { id: 'web-distribuidor', clave: 'join.tipos.distribuidor', fallback: 'Distribuidor' },
+  { id: 'web-rental', clave: 'join.tipos.rental', fallback: 'Rental' },
+]
 
 const PARTNERS = [
   {
@@ -55,10 +74,13 @@ const PARTNERS = [
   },
 ]
 
-function DistributorsPage() {
+function JoinPage() {
   const { t } = useLanguage()
   const [form, setForm] = useState({ nombre: '', apellido: '', telefono: '', email: '', mensaje: '' })
   const [submitted, setSubmitted] = useState(false)
+  const [tipo, setTipo] = useState(TIPOS[0].id)
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState(null)
   const [partnerIndex, setPartnerIndex] = useState(0)
   const [partnerPaused, setPartnerPaused] = useState(false)
 
@@ -74,12 +96,12 @@ function DistributorsPage() {
     return () => clearInterval(id)
   }, [partnerPaused])
 
-  const eyebrow = t('distributors.eyebrow', 'Programa de distribuidores')
-  const title = t('distributors.title', 'Sumate al equipo')
-  const subtitle = t(
-    'distributors.subtitle',
-    'Completá el formulario y nuestro equipo comercial se va a poner en contacto en las proximas 48 horas habiles.',
-  )
+  const esRental = tipo === 'web-rental'
+  const eyebrow = t('join.eyebrow', 'Sumate a Kolortec')
+  const title = t('join.title', 'Sumate al equipo')
+  const subtitle = esRental
+    ? t('join.subtitleRental', 'Contanos tu proyecto y lo iluminamos juntos. Nuestro equipo se pone en contacto en las próximas 48 horas hábiles.')
+    : t('join.subtitleDistribuidor', 'Completá el formulario y nuestro equipo comercial se va a poner en contacto en las próximas 48 horas hábiles.')
   const visitSiteLabel = t('distributors.visitSite', 'Visitar sitio')
   const networkTitle = t('distributors.networkTitle', 'Distribuidores autorizados')
 
@@ -88,7 +110,9 @@ function DistributorsPage() {
     apellido: t('distributors.fields.apellido', 'Apellido'),
     telefono: t('distributors.fields.telefono', 'Telefono'),
     email: t('distributors.fields.email', 'Email'),
-    mensaje: t('distributors.fields.mensaje', 'Contanos sobre tu negocio'),
+    mensaje: esRental
+      ? t('join.fields.mensajeRental', 'Contanos sobre tu proyecto')
+      : t('join.fields.mensajeDistribuidor', 'Contanos sobre tu negocio'),
   }
   const submitCta = t('distributors.submit', 'Enviar postulacion')
   const submittedTitle = t('distributors.submittedTitle', 'Recibimos tu postulacion')
@@ -102,9 +126,29 @@ function DistributorsPage() {
     setForm((prev) => ({ ...prev, [key]: event.target.value }))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    setSubmitted(true)
+    if (enviando) return
+    setEnviando(true)
+    setError(null)
+    try {
+      // El back espera un solo `nombre`; el formulario pide nombre y apellido.
+      await enviarConsultaPublica({
+        nombre: `${form.nombre} ${form.apellido}`.trim(),
+        email: form.email.trim() || undefined,
+        telefono: form.telefono.trim() || undefined,
+        mensaje: form.mensaje.trim() || undefined,
+        origen: tipo,
+      })
+      setSubmitted(true)
+    } catch (err) {
+      // No se traga el error: si la postulacion no llego, el usuario tiene que
+      // saberlo. Antes esta pantalla mostraba "recibimos tu postulacion" sin
+      // haber mandado nada.
+      setError(err?.message || t('join.error', 'No pudimos enviar tu solicitud. Probá de nuevo en un momento.'))
+    } finally {
+      setEnviando(false)
+    }
   }
 
   const inputClass =
@@ -114,9 +158,9 @@ function DistributorsPage() {
   return (
     <section className="flex min-h-screen flex-col bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
       <Seo
-        title="Distribuidores y partners · Kolortec"
-        description="Sumate a la red de partners de Kolortec: fabricante de línea propia con respaldo, márgenes y soporte local para tu negocio."
-        path="/distribuidores"
+        title={t('seo.joinTitle', 'Sumate a Kolortec · Distribuidores y Rental')}
+        description={t('seo.joinDesc', 'Sumate a Kolortec como distribuidor o presentá tu proyecto de rental. Línea propia con respaldo, márgenes y soporte local.')}
+        path="/sumate"
       />
       <div className="kt-reveal mb-8 grid max-w-[760px] gap-3">
         <div className="flex items-center gap-2">
@@ -154,11 +198,37 @@ function DistributorsPage() {
           onSubmit={handleSubmit}
           className="kt-reveal grid gap-5 rounded-[12px] border border-[#2a2a2a] bg-[#0a0a0a] p-6 md:p-8"
         >
+          {/* Lo primero que se elige: en qué te querés sumar. Cambia el copy del
+              formulario y viaja con el envío como `origen`. */}
+          <div>
+            <span className={labelClass}>{t('join.tipoLabel', '¿Cómo querés sumarte?')}</span>
+            <div role="tablist" aria-label={t('join.tipoLabel', '¿Cómo querés sumarte?')} className="grid grid-cols-2 gap-2">
+              {TIPOS.map((op) => {
+                const activo = op.id === tipo
+                return (
+                  <button
+                    key={op.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activo}
+                    onClick={() => setTipo(op.id)}
+                    className={`rounded-[10px] border px-4 py-3 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] transition ${
+                      activo
+                        ? 'border-primary bg-primary text-[#090909]'
+                        : 'border-[#2a2a2a] bg-[#0f0f10] text-[#b7bbc4] hover:border-white/40 hover:text-white'
+                    }`}
+                  >
+                    {t(op.clave, op.fallback)}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           <div className="grid gap-5 md:grid-cols-2">
             <div>
-              <label htmlFor="distrib-nombre" className={labelClass}>{labels.nombre}</label>
+              <label htmlFor="sumate-nombre" className={labelClass}>{labels.nombre}</label>
               <input
-                id="distrib-nombre"
+                id="sumate-nombre"
                 type="text"
                 required
                 value={form.nombre}
@@ -168,9 +238,9 @@ function DistributorsPage() {
               />
             </div>
             <div>
-              <label htmlFor="distrib-apellido" className={labelClass}>{labels.apellido}</label>
+              <label htmlFor="sumate-apellido" className={labelClass}>{labels.apellido}</label>
               <input
-                id="distrib-apellido"
+                id="sumate-apellido"
                 type="text"
                 required
                 value={form.apellido}
@@ -180,9 +250,9 @@ function DistributorsPage() {
               />
             </div>
             <div>
-              <label htmlFor="distrib-telefono" className={labelClass}>{labels.telefono}</label>
+              <label htmlFor="sumate-telefono" className={labelClass}>{labels.telefono}</label>
               <input
-                id="distrib-telefono"
+                id="sumate-telefono"
                 type="tel"
                 required
                 value={form.telefono}
@@ -192,9 +262,9 @@ function DistributorsPage() {
               />
             </div>
             <div>
-              <label htmlFor="distrib-email" className={labelClass}>{labels.email}</label>
+              <label htmlFor="sumate-email" className={labelClass}>{labels.email}</label>
               <input
-                id="distrib-email"
+                id="sumate-email"
                 type="email"
                 required
                 value={form.email}
@@ -206,9 +276,9 @@ function DistributorsPage() {
           </div>
 
           <div>
-            <label htmlFor="distrib-mensaje" className={labelClass}>{labels.mensaje}</label>
+            <label htmlFor="sumate-mensaje" className={labelClass}>{labels.mensaje}</label>
             <textarea
-              id="distrib-mensaje"
+              id="sumate-mensaje"
               rows={5}
               value={form.mensaje}
               onChange={handleChange('mensaje')}
@@ -216,12 +286,19 @@ function DistributorsPage() {
             />
           </div>
 
+          {error ? (
+            <p role="alert" className="m-0 rounded-[8px] border border-[rgba(255,120,110,0.45)] bg-[rgba(255,120,110,0.08)] px-4 py-3 text-[0.85rem] text-[#ff8a7d]">
+              {error}
+            </p>
+          ) : null}
+
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
             <button
               type="submit"
-              className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-7 py-3.5 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
+              disabled={enviando}
+              className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-7 py-3.5 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             >
-              <span>{submitCta}</span>
+              <span>{enviando ? t('join.enviando', 'Enviando…') : submitCta}</span>
               <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
@@ -385,4 +462,4 @@ function DistributorsPage() {
   )
 }
 
-export default DistributorsPage
+export default JoinPage

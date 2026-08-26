@@ -10,14 +10,14 @@ const shadowOf = (s) =>
 function slideStyle(visible, i, activeIndex, isSlide) {
   if (!isSlide) {
     // fade: comportamiento original
-    return { position: 'absolute', inset: 0, opacity: visible ? 1 : 0, transition: 'opacity .4s ease', pointerEvents: visible ? 'auto' : 'none' }
+    return { position: 'absolute', inset: 0, zIndex: 0, opacity: visible ? 1 : 0, transition: 'opacity .4s ease', pointerEvents: visible ? 'auto' : 'none' }
   }
   // slide: desplazamiento horizontal
   // Clamp a ±100%: en el wrap del loop (último→primero) el slide saliente se
   // desplaza UNA pantalla (no N) mientras se desvanece — sin salto visible.
   const offset = Math.max(-100, Math.min(100, (i - activeIndex) * 100))
   return {
-    position: 'absolute', inset: 0,
+    position: 'absolute', inset: 0, zIndex: 0,
     opacity: visible ? 1 : 0,
     transform: `translateX(${offset}%)`,
     transition: 'transform .45s ease, opacity .45s ease',
@@ -85,7 +85,7 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
         </>
       )}
       {settings.dots && slides.length > 1 && (
-        <div role="tablist" aria-label="slides del carrusel" style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
+        <div role="tablist" aria-label="slides del carrusel" style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6, zIndex: 5 }}>
           {slides.map((s, i) => (
             <button key={s.id} type="button" role="tab" aria-selected={i === index} aria-label={`Ir al slide ${i + 1}`}
               onClick={() => auto.go(i)}
@@ -98,6 +98,10 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
 }
 
 const arrow = (side, accent) => ({
-  position: 'absolute', top: '50%', [side]: 8, transform: 'translateY(-50%)',
+  // zIndex: las flechas son chrome y van SIEMPRE arriba del contenido. Sin esto
+  // quedaban debajo: los elementos de una escena nacen con z:1 y, como el slide
+  // en modo fade no creaba contexto de apilado, ese z competia aca afuera y se
+  // comia los clicks. Se arreglo por los dos lados (ver slideStyle).
+  position: 'absolute', top: '50%', [side]: 8, transform: 'translateY(-50%)', zIndex: 5,
   background: 'rgba(0,0,0,.3)', color: accent, border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', fontSize: 18,
 })

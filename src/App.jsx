@@ -11,8 +11,7 @@ const ServicesPage = lazy(() => import('./features/services/pages/ServicesPage')
 const SupportPage = lazy(() => import('./features/support/pages/SupportPage'))
 const GarantiasPage = lazy(() => import('./features/warranty/pages/GarantiasPage'))
 const ContactPage = lazy(() => import('./features/contact/pages/ContactPage'))
-const DistributorsPage = lazy(() => import('./features/distributors/pages/DistributorsPage'))
-const RentalsPage = lazy(() => import('./features/rentals/pages/RentalsPage'))
+const JoinPage = lazy(() => import('./features/join/pages/JoinPage'))
 const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
 const GuidesIndexPage = lazy(() => import('./features/guides/pages/GuidesIndexPage'))
 const GuideDetailPage = lazy(() => import('./features/guides/pages/GuideDetailPage'))
@@ -34,8 +33,12 @@ function App() {
         <Route path="/soporte/guias/:slug" element={<GuideDetailPage />} />
         <Route path="/garantias" element={<GarantiasPage />} />
         <Route path="/contacto" element={<ContactPage />} />
-        <Route path="/distribuidores" element={<DistributorsPage />} />
-        <Route path="/rentals" element={<RentalsPage />} />
+        <Route path="/sumate" element={<JoinPage />} />
+        {/* Las dos rutas viejas siguen funcionando: eran dos formularios casi
+            idénticos y ahora el tipo se elige dentro de /sumate. Redirigen en
+            vez de romper links que ya existan afuera. */}
+        <Route path="/distribuidores" element={<Navigate to="/sumate" replace />} />
+        <Route path="/rentals" element={<Navigate to="/sumate" replace />} />
         <Route path="/login" element={<LoginPage />} />
       </Route>
       {/* Landing de descarga (abre el QR del producto) — clean full-screen, sin chrome */}

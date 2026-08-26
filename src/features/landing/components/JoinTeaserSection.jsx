@@ -1,18 +1,25 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
-function DistributorTeaserSection({ distributor }) {
+/**
+ * Un solo llamado a sumarse, para las dos formas.
+ *
+ * Reemplaza a DistributorTeaserSection y RentalTeaserSection, que eran espejos
+ * visuales con el mismo peso y competian entre si. El tipo se elige adentro,
+ * en /sumate, en vez de obligar a decidirlo desde la landing.
+ */
+function JoinTeaserSection({ join }) {
   const { t } = useLanguage()
-  const data = distributor ?? {}
+  const data = join ?? {}
 
-  const eyebrow = t('landing.distributor.eyebrow', data.eyebrow ?? 'Programa de distribuidores')
-  const title = t('landing.distributor.title', data.title ?? 'Quieres formar parte del equipo de distribuidores Kolortec?')
+  const eyebrow = t('landing.join.eyebrow', data.eyebrow ?? 'Sumate a Kolortec')
+  const title = t('landing.join.title', data.title ?? '¿Querés formar parte de Kolortec?')
   const subtitle = t(
-    'landing.distributor.subtitle',
-    data.subtitle ?? 'Sumate a la red de partners autorizados — acceso a productos, soporte tecnico de fabrica y condiciones comerciales preferenciales.',
+    'landing.join.subtitle',
+    data.subtitle ?? 'Como distribuidor autorizado o presentando tu proyecto de rental. Acceso a producto, soporte técnico de fábrica y condiciones comerciales preferenciales.',
   )
-  const cta = t('landing.distributor.cta', data.cta ?? 'Solicitud de cuenta')
-  const href = data.href ?? '/distribuidores'
+  const cta = t('landing.join.cta', data.cta ?? 'Quiero sumarme')
+  const href = data.href ?? '/sumate'
 
   return (
     <section
@@ -60,4 +67,4 @@ function DistributorTeaserSection({ distributor }) {
   )
 }
 
-export default DistributorTeaserSection
+export default JoinTeaserSection

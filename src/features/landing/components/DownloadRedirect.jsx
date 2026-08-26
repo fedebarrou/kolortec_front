@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getDownloadInfo } from '../../../shared/services/contentService'
 import { defaultLandingContent } from '../data/landingData'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 /**
  * DownloadRedirect — landing pública que abre el QR único de un producto.
@@ -18,6 +19,7 @@ import { defaultLandingContent } from '../data/landingData'
  * - target null    → error / QR sin destino.
  */
 function DownloadRedirect() {
+  const { t } = useLanguage()
   const { id } = useParams()
   const navigate = useNavigate()
   const [state, setState] = useState({ status: 'loading', data: null })
@@ -82,7 +84,7 @@ function DownloadRedirect() {
             >
               progress_activity
             </span>
-            <p className="m-0 text-sm text-[#aeb5bf]">Un momento…</p>
+            <p className="m-0 text-sm text-[#aeb5bf]">{t('pages.download.wait', 'Un momento…')}</p>
           </div>
         ) : state.status === 'error' || !target ? (
           <div className="grid place-items-center gap-5 py-8">
@@ -98,14 +100,14 @@ function DownloadRedirect() {
               </h1>
             ) : null}
             <p className="m-0 max-w-[32ch] text-[0.95rem] leading-relaxed text-[#aeb5bf]">
-              No encontramos el destino de este código QR.
+              {t('pages.download.notFound', 'No encontramos el destino de este código QR.')}
             </p>
             {/* Home es interno pero mantenemos <a> simple para máxima robustez */}
             <a
               href="/"
               className="text-sm font-semibold uppercase tracking-[0.08em] text-primary transition hover:opacity-80"
             >
-              Volver al inicio
+              {t('pages.download.home', 'Volver al inicio')}
             </a>
           </div>
         ) : (
@@ -130,10 +132,10 @@ function DownloadRedirect() {
               ) : null}
               <p className="m-0 text-[0.95rem] text-[#aeb5bf]">
                 {esArchivo
-                  ? 'Tu descarga está lista'
+                  ? t('pages.download.ready', 'Tu descarga está lista')
                   : esProducto
-                    ? 'Te llevamos al producto'
-                    : 'Te estamos redirigiendo'}
+                    ? t('pages.download.toProduct', 'Te llevamos al producto')
+                    : t('pages.download.redirecting', 'Te estamos redirigiendo')}
                 <span className="text-primary">.</span>
               </p>
             </div>
@@ -145,15 +147,15 @@ function DownloadRedirect() {
               <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                 {esArchivo ? 'download' : esProducto ? 'arrow_forward' : 'open_in_new'}
               </span>
-              {esArchivo ? 'Descargar' : esProducto ? 'Ver producto' : 'Continuar'}
+              {esArchivo ? t('pages.download.download', 'Descargar') : esProducto ? t('pages.download.viewProduct', 'Ver producto') : t('pages.download.continue', 'Continuar')}
             </a>
             {esArchivo ? (
               <p className="m-0 text-xs text-[#7a828d]">
-                Podés bajar el archivo desde acá cuando quieras.
+                {t('pages.download.fileHint', 'Podés bajar el archivo desde acá cuando quieras.')}
               </p>
             ) : (
               <p className="m-0 text-xs text-[#7a828d]">
-                Te estamos redirigiendo automáticamente…
+                {t('pages.download.autoHint', 'Te estamos redirigiendo automáticamente…')}
               </p>
             )}
           </div>

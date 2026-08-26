@@ -1,3 +1,6 @@
+import { useHideBootScreen } from '../hooks/useHideBootScreen'
+import { useLanguage } from '../i18n/LanguageProvider'
+
 /**
  * MaintenancePage — página "en construcción" que se muestra cuando la cuenta despublicó su web
  * desde tiendita (web-config.published === false). Reemplaza el shell completo (sin header/nav).
@@ -5,6 +8,11 @@
  * ahora gobernada desde el admin de tiendita en vez de editar el edge a mano.
  */
 function MaintenancePage() {
+  // Si la web esta despublicada no hay contenido que esperar: la pantalla de carga
+  // se baja ya, si no se quedaria puesta encima del aviso hasta los 6s del failsafe.
+  const { t } = useLanguage()
+  useHideBootScreen()
+
   return (
     <main
       style={{
@@ -25,7 +33,7 @@ function MaintenancePage() {
           src="/assets/Grupo-Kolortec-1024x150.jpeg"
           style={{ height: 40, width: 'auto', objectFit: 'contain', margin: '0 auto 22px' }}
         />
-        <h1 style={{ fontSize: 26, margin: '14px 0 10px', fontWeight: 800 }}>Sitio en construcción</h1>
+        <h1 style={{ fontSize: 26, margin: '14px 0 10px', fontWeight: 800 }}>{t('pages.maintenance', 'Sitio en construcción')}</h1>
         <p style={{ color: '#b9b9b9', fontSize: 15, lineHeight: 1.6, margin: 0 }}>
           Estamos preparando algo grande. Volvé muy pronto.
         </p>

@@ -1,14 +1,15 @@
 import Divider from './Divider'
-import DistributorTeaserSection from './DistributorTeaserSection'
 import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
-import RentalTeaserSection from './RentalTeaserSection'
 import ScrolltellingSection from './ScrolltellingSection'
+import JoinTeaserSection from './JoinTeaserSection'
+import PartnersStrip from './PartnersStrip'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
 import SectionErrorBoundary from './SectionErrorBoundary'
 import { useLandingContent } from '../hooks/useLandingContent'
+import { useHideBootScreen } from '../../../shared/hooks/useHideBootScreen'
 
 // Logo de la barra superior del scrolltelling (SnapChrome). Mismo asset que usaba
 // el ScrollytellingSection hardcodeado. OJO: el archivo tiene extensión .jpeg pero
@@ -28,7 +29,16 @@ const KOLORTEC_LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 function LandingPage() {
   const { content, loading } = useLandingContent()
 
+  // La pantalla de carga (index.html) se baja recien con el contenido resuelto:
+  // hasta ese momento el documento no tiene ni scrolltelling ni hero, y cambia de
+  // alto tres veces seguidas. `loading` pasa a false tambien si la API falla (el
+  // finally de useLandingContent), asi que no puede quedarse trabada.
+  useHideBootScreen(!loading)
+
   const hasProducts = (content.products?.items?.length ?? 0) > 0
+  // Igual que hasProducts: sin marcas cargadas se van la seccion Y su divisor.
+  // Si no, quedarian dos <Divider /> seguidos y una raya huerfana en el medio.
+  const hasPartners = (content.footer?.clientLogos?.length ?? 0) > 0
 
   return (
     <>
@@ -52,7 +62,7 @@ function LandingPage() {
       <SectionErrorBoundary name="Hero">
         <HeroSection hero={content.hero} />
       </SectionErrorBoundary>
-      <Divider />
+      <Divider space />
       <SectionErrorBoundary name="Instagram">
         <InstagramSection gallery={content.gallery} />
       </SectionErrorBoundary>
@@ -65,20 +75,36 @@ function LandingPage() {
         </>
       ) : null}
       <Divider />
-      <SectionErrorBoundary name="Distributor">
-        <DistributorTeaserSection distributor={content.distributor} />
-      </SectionErrorBoundary>
-      <Divider />
-      <SectionErrorBoundary name="Rental">
-        <RentalTeaserSection rental={content.rental} />
-      </SectionErrorBoundary>
-      <Divider />
       <SectionErrorBoundary name="Shop">
-        <ShopSection shop={content.shop} />
+        <ShopSection shop={content.shop} ready={!loading} />
       </SectionErrorBoundary>
+      {/* "Sumate" va DESPUÉS de la sección amarilla: primero se muestra lo que
+          Kolortec hace por vos (soporte, garantía, guías) y recién ahí se invita
+          a sumarse. Antes eran DOS teasers espejados —distribuidores y rental—
+          arriba del amarillo, compitiendo entre sí por la misma decisión. */}
+      {/* Orden del cierre: marcas → Contactanos → Sumate. La tira de marcas va
+          arriba de Contactanos a propósito: hace de CORTE con la sección amarilla,
+          que termina en negro pleno, y evita que las dos se lean como una sola.
+          Y Contactanos antes de Sumate porque primero se ofrece la vía directa
+          —hablar con alguien— y recién después la invitación a formar parte, que
+          es un compromiso mayor. */}
+      {hasPartners ? (
+        <>
+          {/* Divider CON aire: la seccion amarilla termina a sangre, en negro pleno,
+              y la tira de marcas pegada se leia como parte de ella. */}
+          <Divider space />
+          <SectionErrorBoundary name="Partners">
+            <PartnersStrip logos={content.footer?.clientLogos} />
+          </SectionErrorBoundary>
+        </>
+      ) : null}
       <Divider />
       <SectionErrorBoundary name="Support">
         <SupportSection support={content.support} loading={loading} />
+      </SectionErrorBoundary>
+      <Divider />
+      <SectionErrorBoundary name="Join">
+        <JoinTeaserSection join={content.join} />
       </SectionErrorBoundary>
     </>
   )

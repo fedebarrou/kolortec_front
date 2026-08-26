@@ -130,7 +130,7 @@ function HeroSection({ hero }) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <img src={slide.imageUrl} alt={slide.title ? `${slide.title} - Kolortec iluminación profesional` : 'Kolortec iluminación profesional'} className="h-full w-full object-cover" />
+              <img src={slide.imageUrl} alt={slide.title ? `${slide.title} - Kolortec iluminación profesional` : t('a11y.productAlt', 'Kolortec iluminación profesional')} className="h-full w-full object-cover" />
             )}
             <div className={overlayClass} />
           </div>
@@ -259,7 +259,7 @@ function HeroSection({ hero }) {
       })}
 
       {slides.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 z-[3] flex -translate-x-1/2 gap-2.5" aria-label="Hero slides">
+        <div className="absolute bottom-6 left-1/2 z-[3] flex -translate-x-1/2 gap-2.5" aria-label={t('a11y.heroSlides', 'Slides del encabezado')}>
           {slides.map((slide, index) => (
             <button
               key={`dot-${slide.translationKey || index}`}

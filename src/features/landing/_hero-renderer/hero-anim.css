@@ -68,6 +68,17 @@
 /* Scrims kolortec (slide.scrim==='kolortec'): 4 capas fijas de legibilidad,
    ScrollytellingSection.jsx:435-444. Render: después del backdrop, antes de
    los elementos (ver ScrollRenderer.jsx SnapStage). */
+/* ⚠ 2026-08-26 (3a pasada) — LAS ALFAS VIGENTES SON LAS DE ABAJO. Se bajaron
+   otro ~40% AMBAS variantes: negra .6/.3 → .36/.18 · .38/.35 → .23/.21 ·
+   .42 → .25 · .63/.28 → .38/.17; crema .66/.40 → .40/.24 · .35/.31 → .21/.19 ·
+   .42 → .25 · .64/.31 → .38/.19. Con el hero a pantalla completa las fotos
+   seguían sin leerse. Las cifras de las dos pasadas anteriores (comentarios
+   siguientes) quedan como registro de POR QUÉ, no como valores actuales.
+   Antes de volver a tocar: las escenas del carrusel traen `overlay: 0`, así que
+   este CSS es TODO el oscurecimiento — el slider "oscurecer" del admin sólo
+   puede SUMAR sobre esta base, nunca restar. Si hace falta más oscuro en una
+   escena puntual, va por ahí y no bajando esto de nuevo para todos.
+   Sincronizar en las 4 copias. */
 /* ⚠ 2026-08-26: alfas BAJADAS ~30% respecto del clon literal de
    ScrollytellingSection.jsx (.85/.45 → .6/.3 · .55/.5 → .38/.35 · .6 → .42 ·
    .9/.4 → .63/.28). El oscurecimiento original tapaba demasiado los frames;
@@ -77,10 +88,10 @@
    copias (hero-lab.css · _renderer/hero-anim.css · store globals.css ·
    kolortec _hero-renderer/hero-anim.css). */
 .scrolly-scrim { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.scrolly-scrim-1 { display: none; background: linear-gradient(to left, rgba(0,0,0,.6), rgba(0,0,0,.3), transparent); }
-.scrolly-scrim-2 { background: linear-gradient(to bottom, rgba(0,0,0,.38), transparent, rgba(0,0,0,.35)); }
-.scrolly-scrim-3 { display: none; background: radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,.42), transparent 72%); }
-.scrolly-scrim-4 { background: linear-gradient(to top, rgba(0,0,0,.63), rgba(0,0,0,.28), transparent); }
+.scrolly-scrim-1 { display: none; background: linear-gradient(to left, rgba(0,0,0,.36), rgba(0,0,0,.18), transparent); }
+.scrolly-scrim-2 { background: linear-gradient(to bottom, rgba(0,0,0,.23), transparent, rgba(0,0,0,.21)); }
+.scrolly-scrim-3 { display: none; background: radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,.25), transparent 72%); }
+.scrolly-scrim-4 { background: linear-gradient(to top, rgba(0,0,0,.38), rgba(0,0,0,.17), transparent); }
 .scrolly-scrim > span { position: absolute; inset: 0; display: block; }
 @container hc-stage (min-width: 768px) {
   .scrolly-scrim-1, .scrolly-scrim-3 { display: block; }
@@ -96,10 +107,76 @@
    crema, para escenas sobre fondo claro — el scrim negro las ensucia. Misma
    geometría y mismos breakpoints; sólo cambia el color. Sincronizar en las 4
    copias junto con el resto del bloque. */
-.scrolly-scrim--light .scrolly-scrim-1 { background: linear-gradient(to left, rgba(246,240,230,.95), rgba(246,240,230,.58), transparent); }
-.scrolly-scrim--light .scrolly-scrim-2 { background: linear-gradient(to bottom, rgba(246,240,230,.5), transparent, rgba(246,240,230,.45)); }
-.scrolly-scrim--light .scrolly-scrim-3 { background: radial-gradient(ellipse 58% 62% at 78% 50%, rgba(246,240,230,.6), transparent 72%); }
-.scrolly-scrim--light .scrolly-scrim-4 { background: linear-gradient(to top, rgba(246,240,230,.92), rgba(246,240,230,.45), transparent); }
+/* ⚠ 2026-08-26 (2a pasada): alfas de la variante CLARA bajadas ~30%, la misma
+   baja que ya tenia la negra y que a esta se le habia salteado (.95/.58 → .66/.40 ·
+   .5/.45 → .35/.31 · .6 → .42 · .92/.45 → .64/.31). Por eso Golden Line —la UNICA
+   escena con scrim crema— se veia mas tapada que las otras cuatro: no era que la
+   foto clara sufriera mas el oscurecimiento, era que esta variante pesaba mas.
+   La legibilidad la sostiene KOLORTEC_TITLE_SHADOW (MessageView.jsx), igual que
+   en la negra. Sincronizar en las 4 copias. */
+.scrolly-scrim--light .scrolly-scrim-1 { background: linear-gradient(to left, rgba(246,240,230,.40), rgba(246,240,230,.24), transparent); }
+.scrolly-scrim--light .scrolly-scrim-2 { background: linear-gradient(to bottom, rgba(246,240,230,.21), transparent, rgba(246,240,230,.19)); }
+.scrolly-scrim--light .scrolly-scrim-3 { background: radial-gradient(ellipse 58% 62% at 78% 50%, rgba(246,240,230,.25), transparent 72%); }
+.scrolly-scrim--light .scrolly-scrim-4 { background: linear-gradient(to top, rgba(246,240,230,.38), rgba(246,240,230,.19), transparent); }
+/* ── Animaciones de fondo del hero (background.animation) ──────────────────────
+   Se eligen por escena desde el Inspector del admin. Los valores concretos
+   —escala, desplazamiento, opacidad— los calcula Background.jsx y llegan como
+   custom properties YA RESUELTAS: acá sólo se consumen. La cuenta no se hace en
+   CSS porque un calc() con var() adentro de un transform es justo donde más
+   difieren los navegadores.
+   Ninguna depende del scroll: el Encabezado ocupa el viewport y no se recorre.
+   Las duraciones por defecto estan pensadas para un CARRUSEL, no para el
+   scrolltelling: con placas que rotan cada ~6,5s, un ciclo de 26s dejaba ver
+   apenas un cuarto del recorrido y el movimiento no se percibia. Todas las
+   placas estan montadas a la vez (el carrusel cambia opacidad, no monta), asi
+   que cada una entra en un punto distinto de su ciclo. Se puede ajustar por
+   escena con background.animation.durationMs desde el Inspector.
+   ⚠ Sincronizar en las 4 hojas, junto con Background.jsx. */
+.kt-bg-anim { will-change: transform; backface-visibility: hidden; }
+
+.kt-bg-anim--ken-burns { animation: kt-bg-ken-burns var(--kt-bg-dur, 13s) ease-in-out infinite alternate; }
+.kt-bg-anim--drift     { animation: kt-bg-drift     var(--kt-bg-dur, 18s) ease-in-out infinite alternate; }
+/* zoom-out NO cicla: es una entrada. Se asienta y se queda quieto. */
+.kt-bg-anim--zoom-out  { animation: kt-bg-zoom-out  var(--kt-bg-dur, 12s) cubic-bezier(.16,.72,.28,1) both; }
+
+@keyframes kt-bg-ken-burns {
+  from { transform: scale(1) translate(0, 0); }
+  to   { transform: scale(var(--kt-bg-scale, 1.07)) translate(var(--kt-bg-x, -1.6%), var(--kt-bg-y, -1.2%)); }
+}
+@keyframes kt-bg-drift {
+  from { transform: scale(var(--kt-bg-scale, 1.035)) translate(0, 0); }
+  to   { transform: scale(var(--kt-bg-scale, 1.035)) translate(var(--kt-bg-x, 1.8%), 0); }
+}
+@keyframes kt-bg-zoom-out {
+  from { transform: scale(var(--kt-bg-scale, 1.09)); }
+  to   { transform: scale(1); }
+}
+
+/* Barrido de luz: un reflejo diagonal que cruza cada tanto. Es el único de los
+   cuatro que NO mueve la foto — y el guiño más directo al rubro. */
+.kt-bg-anim--light-sweep { overflow: hidden; }
+.kt-bg-anim--light-sweep::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, var(--kt-bg-op, 0.2)), transparent);
+  transform: translateX(-140%) rotate(12deg);
+  animation: kt-bg-light-sweep var(--kt-bg-dur, 9s) ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes kt-bg-light-sweep {
+  0%, 58% { transform: translateX(-140%) rotate(12deg); }
+  100%    { transform: translateX(340%) rotate(12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kt-bg-anim { animation: none !important; }
+  .kt-bg-anim--light-sweep::after { animation: none; opacity: 0; }
+}
+
 
 /* Eyebrow con línea (text.eyebrowLine): raya de acento antes del texto —
    geometría fija; el color (accentColor) lo pone TextView.jsx inline. */

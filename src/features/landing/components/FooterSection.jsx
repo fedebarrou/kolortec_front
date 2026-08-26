@@ -5,24 +5,13 @@ import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { getFooterData, getCategorias } from '../../../shared/services/contentService'
 
-function renderShape(shape, index) {
-  const { type, ...attrs } = shape
-  switch (type) {
-    case 'circle':
-      return <circle key={index} {...attrs} />
-    case 'rect':
-      return <rect key={index} {...attrs} />
-    case 'path':
-      return <path key={index} {...attrs} />
-    default:
-      return null
-  }
-}
-
 function FooterSection() {
   const { t } = useLanguage()
   // Data-driven: partners (marcas) + galería salen de la cuenta en tiendita. Vacío → se ocultan
   // (antes usaba defaultLandingContent.footer → mostraba partners/imágenes hardcodeados siempre).
+  // La TIRA DE MARCAS se mudó a la home (PartnersStrip, entre Contacto y Sumate):
+  // el footer es global y la mostraba en todas las páginas. getFooterData() sigue
+  // usándose acá por la galería; sus clientLogos ya no se leen en este componente.
   const [footerData, setFooterData] = useState({ gallery: [], clientLogos: [] })
   useEffect(() => {
     let mounted = true
@@ -30,9 +19,7 @@ function FooterSection() {
     return () => { mounted = false }
   }, [])
   const galleryImages = footerData.gallery
-  const clientLogos = footerData.clientLogos
   const loopImages = useMemo(() => [...galleryImages, ...galleryImages], [galleryImages])
-  const loopClientLogos = useMemo(() => [...clientLogos, ...clientLogos], [clientLogos])
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   // Columna "Productos" del footer = categorías reales de la cuenta (tiendita). Vacío → "Ver productos".
   const [categorias, setCategorias] = useState([])
@@ -43,7 +30,7 @@ function FooterSection() {
   }, [])
   const productItems = categorias.length > 0
     ? categorias.slice(0, 6).map((c) => ({ key: c.slug, label: String(c.nombre || '').toLowerCase() }))
-    : [{ key: 'all', label: 'Ver productos' }]
+    : [{ key: 'all', label: t('a11y.allProducts', 'Ver productos') }]
   const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
 
   const renderTitle = (label) => (
@@ -70,7 +57,7 @@ function FooterSection() {
                 <img
                   className="h-full w-full cursor-pointer object-cover"
                   src={src}
-                  alt="Kolortec action"
+                  alt={t('a11y.footerAlt', 'Kolortec en acción')}
                   loading="lazy"
                   decoding="async"
                   onError={(e) => { const b = e.currentTarget.closest('button'); if (b) b.style.display = 'none' }}
@@ -84,7 +71,7 @@ function FooterSection() {
 
       <div className="w-full grid grid-cols-2 gap-10 px-6 md:grid-cols-4 md:gap-12 lg:px-40">
         <div className="flex flex-col gap-4">
-          <img alt="Kolortec Logo" className="h-28 w-28 object-contain shrink-0 md:h-32 md:w-32" src="/assets/footer-logo.jpeg" />
+          <img alt={t('a11y.logo', 'Logo de Kolortec')} className="h-28 w-28 object-contain shrink-0 md:h-32 md:w-32" src="/assets/footer-logo.jpeg" />
           <p className="body-font max-w-[34ch] text-[0.78rem] leading-relaxed text-slate-500">
             {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
           </p>
@@ -134,26 +121,6 @@ function FooterSection() {
         </div>
       </div>
 
-      {clientLogos.length > 0 ? (
-      <div className="mt-8 w-full border-t border-slate-800 pt-6 px-6 lg:px-40">
-        <div className="kt-marquee kt-marquee-reverse" style={{ '--kt-marquee-duration': '52s' }}>
-          <div className="kt-marquee-track">
-            {loopClientLogos.map((logo, index) => (
-              <span
-                key={`${logo.name}-${index}`}
-                className="kt-marquee-item-clientlogo"
-                aria-hidden={index >= clientLogos.length ? 'true' : undefined}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" className="kt-clientlogo-mark">
-                  {(logo.shapes ?? []).map(renderShape)}
-                </svg>
-                <span>{logo.name}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-      ) : null}
 
       <div className="w-full mt-6 px-6 pt-5 border-t border-slate-800 flex flex-col gap-3 text-xs text-slate-600 md:flex-row md:items-center md:justify-between lg:px-40">
         <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
