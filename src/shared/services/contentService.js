@@ -405,18 +405,24 @@ function labConfigFromCarousel(carousel) {
 function mapHeroConfig(heroCfg) {
   const carousels = heroCfg?.carousels
   const hasVisibleScene = (item) => Array.isArray(item?.scenes) && item.scenes.some((scene) => !scene?.hidden)
+  // Un design de scrolltelling NUNCA puede usarse como Encabezado: son cosas
+  // distintas (la historia se renderiza con ScrollRenderer, no con el carrusel).
+  const isCarouselDesign = (item) => item?.settings?.mode !== 'scroll'
   // El Encabezado usa el design de `active_carousel_id`. ANTES se tomaba
   // carousels[0], que funcionaba de casualidad mientras hubo un solo design;
   // desde que el payload trae también el scrolltelling, tomar el primero podía
   // renderizar la historia como carrusel. Si el activo no tiene escenas
   // visibles, caemos al primero que sí las tenga (misma decisión que el store:
-  // preferimos mostrar otro design antes que dejar el hero en blanco).
+  // preferimos mostrar otro design antes que dejar el hero en blanco), pero
+  // SOLO entre los de carrusel: una cuenta que tiene únicamente scrolltelling
+  // (el caso de kolortec) caía en el scroll y lo pintaba como hero estático —
+  // y encima el guard anti-doble-render dejaba la historia sin renderizar.
   const activeCarousel = Array.isArray(carousels)
-    ? carousels.find((item) => item?.id === heroCfg?.active_carousel_id)
+    ? carousels.find((item) => item?.id === heroCfg?.active_carousel_id && isCarouselDesign(item))
     : null
   const carousel = hasVisibleScene(activeCarousel)
     ? activeCarousel
-    : (Array.isArray(carousels) ? carousels.find(hasVisibleScene) : null) || activeCarousel || null
+    : (Array.isArray(carousels) ? carousels.find((c) => isCarouselDesign(c) && hasVisibleScene(c)) : null) || activeCarousel || null
 
   // ── Sección Scrolltelling (independiente del Encabezado) ──────────────────
   // Design de `active_scroll_id`. Guard anti-doble-render: si es el MISMO
