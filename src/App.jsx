@@ -6,6 +6,7 @@ import { usePageTracking } from './shared/services/tracking'
 const HomePage = lazy(() => import('./features/home/pages/HomePage'))
 const ShopPage = lazy(() => import('./features/catalog/pages/ShopPage'))
 const CategoryPage = lazy(() => import('./features/catalog/pages/CategoryPage'))
+const LinePage = lazy(() => import('./features/catalog/pages/LinePage'))
 const ProductDetailPage = lazy(() => import('./features/product/pages/ProductDetailPage'))
 const ServicesPage = lazy(() => import('./features/services/pages/ServicesPage'))
 const SupportPage = lazy(() => import('./features/support/pages/SupportPage'))
@@ -26,6 +27,10 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ShopPage />} />
         <Route path="/products/:categorySlug" element={<CategoryPage />} />
+        {/* Linea de producto: existe para que los accesos del hero y del
+            scrolltelling (href de texto libre) tengan a donde apuntar. */}
+        <Route path="/linea/:lineSlug" element={<LinePage />} />
+        <Route path="/lineas/:lineSlug" element={<LinePage />} />
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/soporte" element={<SupportPage />} />

@@ -1,0 +1,154 @@
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import ProductCard from '../components/ProductCard'
+import { getShopProducts, getLines, slugifyLinea } from '../../../shared/services/contentService'
+import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import Seo from '../../../shared/seo/Seo'
+
+/**
+ * LinePage — todos los productos de UNA línea, en su propia URL.
+ *
+ * Existe para tener a dónde apuntar: los accesos del hero y del scrolltelling
+ * guardan un `href` de texto libre, así que con esta ruta un botón puede llevar
+ * a "Golden Line" igual que hoy lleva a una categoría. Sin la ruta no había
+ * ningún destino para una línea.
+ *
+ * A diferencia de una categoría, una línea NO es una entidad: es un campo libre
+ * del producto (`linea`) que el admin completa a mano. Por eso acá no hay foto
+ * de portada ni descripción — no existen — y el slug se deriva del nombre con
+ * `slugifyLinea`, que es la única fuente para las dos puntas: si esta página
+ * slugificara distinto de quien arma el link, el acceso apuntaría a la nada.
+ */
+function LinePage() {
+  const { lineSlug } = useParams()
+  const { t } = useLanguage()
+  const [products, setProducts] = useState([])
+  // lines: undefined = cargando, [] = no hay ninguna línea cargada en el catálogo.
+  const [lines, setLines] = useState(undefined)
+
+  useEffect(() => {
+    let mounted = true
+    getShopProducts().then((r) => { if (mounted) setProducts(Array.isArray(r) ? r : []) })
+    getLines().then((l) => { if (mounted) setLines(Array.isArray(l) ? l : []) })
+    return () => { mounted = false }
+  }, [])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [lineSlug])
+
+  const line = useMemo(
+    () => (lines ?? []).find((l) => l.slug === lineSlug) ?? null,
+    [lines, lineSlug],
+  )
+
+  const lineProducts = useMemo(
+    () => products.filter((p) => p.line && slugifyLinea(p.line) === lineSlug),
+    [products, lineSlug],
+  )
+
+  // Cargando: seccion vacia para no parpadear "no encontrada" antes de tener datos.
+  if (lines === undefined) {
+    return <section className="min-h-screen bg-[#050505]" aria-busy="true" />
+  }
+
+  if (!line) {
+    return (
+      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+        <Seo
+          title={t('seo.lineNotFound', 'Línea no encontrada · Kolortec')}
+          description={t('seo.lineNotFoundDesc', 'Esta línea no existe en el catálogo. Volvé a productos para ver la línea completa.')}
+          path={`/linea/${lineSlug || ''}`}
+          noindex
+        />
+        <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
+          {t('pages.line.notFoundTitle', 'Línea no encontrada')}
+          <span className="text-primary">.</span>
+        </h1>
+        <p className="mb-3 text-[#a0a0a0]">{t('pages.line.notFoundBody', 'Esta línea no existe en el catálogo.')}</p>
+        <Link to="/products" className="font-bold text-primary">{t('pages.line.back', 'Volver a productos')}</Link>
+      </section>
+    )
+  }
+
+  const otras = (lines ?? []).filter((l) => l.slug !== line.slug)
+
+  return (
+    <section className="min-h-screen bg-[#050505]">
+      <Seo
+        title={`${line.name} · Kolortec`}
+        description={t('seo.lineDesc', 'Todos los productos de la línea, con ficha técnica y acceso al detalle de cada equipo.')}
+        path={`/linea/${line.slug}`}
+      />
+
+      <div className="px-6 pt-[clamp(56px,8vw,96px)] lg:px-40">
+        <nav className="mb-3 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]">
+          <Link to="/products" className="transition hover:text-primary">{t('catalog.breadcrumbProducts', 'Productos')}</Link>
+          <span aria-hidden="true">/</span>
+          <span className="text-white">{line.name}</span>
+        </nav>
+        <div className="mb-1 flex items-center gap-2 kt-reveal">
+          <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
+          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
+            {t('pages.line.eyebrow', 'Línea')}
+          </span>
+        </div>
+        <h1 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.02] kt-reveal">
+          {line.name}
+          <span className="text-primary">.</span>
+        </h1>
+      </div>
+
+      <div className="px-6 py-[42px] lg:px-40">
+        <div className="mb-6 inline-flex items-center gap-2.5 text-[0.82rem] tracking-[0.03em] text-[#9ca3af] kt-reveal">
+          <strong className="text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-[#f4f4f5]">
+            {lineProducts.length} {lineProducts.length === 1 ? 'item' : 'items'}
+          </strong>
+        </div>
+
+        {lineProducts.length === 0 ? (
+          <div className="rounded-[10px] border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-10 text-center kt-reveal">
+            <h3 className="title-font m-0 text-[1.4rem] text-white">
+              {t('catalog.emptyTitle', 'Proximamente')}
+              <span className="text-primary">.</span>
+            </h3>
+            <p className="mx-auto mt-2 max-w-[48ch] text-[0.9rem] text-[#aeb5bf]">
+              {t('pages.line.emptyBody', 'Todavía no hay productos asignados a esta línea.')}
+            </p>
+            <Link to="/products" className="mt-4 inline-block font-bold text-primary hover:underline">
+              {t('pages.line.back', 'Volver a productos')}
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4 kt-reveal">
+            {lineProducts.map((item) => (
+              <ProductCard key={item.slug || item.id || item.name} item={item} className="opacity-100" />
+            ))}
+          </div>
+        )}
+
+        {otras.length > 0 ? (
+          <div className="mt-14 border-t border-[#2a2a2a] pt-8 kt-reveal">
+            <h2 className="title-font m-0 mb-4 text-[1.6rem] leading-[1.05]">
+              {t('pages.line.otherLines', 'Otras líneas')}
+              <span className="text-primary">.</span>
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {otras.map((l) => (
+                <Link
+                  key={l.slug}
+                  to={`/linea/${l.slug}`}
+                  className="rounded-full border border-[#303743] bg-transparent px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-[#c8ced8] transition hover:border-[rgba(244,223,51,0.48)] hover:text-white"
+                >
+                  {l.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  )
+}
+
+export default LinePage

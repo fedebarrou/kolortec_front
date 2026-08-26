@@ -303,6 +303,9 @@ export const translations = {
       },
     },
     seo: {
+      lineNotFoundDesc: 'This product line does not exist in the catalog. Go back to products to see the full lineup.',
+      lineNotFound: 'Product line not found · Kolortec',
+      lineDesc: 'Every product in the line, with tech sheets and access to each unit in detail.',
       homeTitle: 'Kolortec · Ready to Work professional lighting',
       homeDesc: 'Argentine manufacturer of professional lighting for stages, events and architecture. Own product line, local stock and factory technical support.',
       shopTitle: 'Products · Kolortec',
@@ -330,6 +333,14 @@ export const translations = {
       guideNotFoundDesc: 'This guide does not exist or its URL changed. Go back to the support index to see every technical guide.',
     },
     pages: {
+      line: {
+        otherLines: 'Other lines',
+        emptyBody: 'No products assigned to this line yet.',
+        back: 'Back to products',
+        notFoundBody: 'This product line does not exist in the catalog.',
+        notFoundTitle: 'Product line not found',
+        eyebrow: 'Product line',
+      },
       homeH1: 'Kolortec — Ready to Work professional lighting, Argentine manufacturer with local support',
       syncing: 'Syncing…',
       maintenance: 'Site under construction',
@@ -810,6 +821,9 @@ export const translations = {
       },
     },
     seo: {
+      lineNotFoundDesc: 'Esta línea no existe en el catálogo. Volvé a productos para ver la línea completa.',
+      lineNotFound: 'Línea no encontrada · Kolortec',
+      lineDesc: 'Todos los productos de la línea, con ficha técnica y acceso al detalle de cada equipo.',
       homeTitle: 'Kolortec · Iluminación profesional Ready to Work',
       homeDesc: 'Fabricante argentino de iluminación profesional para escenarios, eventos y arquitectura. Línea propia, stock local y soporte técnico de fábrica.',
       shopTitle: 'Productos · Iluminación profesional Kolortec',
@@ -837,6 +851,14 @@ export const translations = {
       guideNotFoundDesc: 'Esta guía no existe o se cambió de URL. Volvé al índice de soporte para ver todas las guías técnicas.',
     },
     pages: {
+      line: {
+        otherLines: 'Otras líneas',
+        emptyBody: 'Todavía no hay productos asignados a esta línea.',
+        back: 'Volver a productos',
+        notFoundBody: 'Esta línea no existe en el catálogo.',
+        notFoundTitle: 'Línea no encontrada',
+        eyebrow: 'Línea',
+      },
       homeH1: 'Kolortec — Iluminación profesional Ready to Work, fabricante argentino con soporte local',
       syncing: 'Sincronizando…',
       maintenance: 'Sitio en construcción',

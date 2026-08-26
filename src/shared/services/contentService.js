@@ -100,6 +100,9 @@ function mapProducto(p) {
     longDescription: p.descripcion,
     image: p.img_url || (p.media && p.media[0]?.url) || '',
     category: p.categoria,
+    // line: la LINEA de producto (campo libre en el admin). Se mapeaba a nada, asi
+    // que /linea/:slug no tenia con que filtrar y content.lines quedaba huerfano.
+    line: (p.linea ?? '').trim() || undefined,
     badge: p.destacado ? 'Destacado' : undefined,
     price: p.precio,
     moneda: p.moneda,
@@ -529,6 +532,47 @@ function mapHeroConfig(heroCfg) {
  * tener `linea`, un string freeform). Si no hay ninguna (o falla la API → mockup Vercel), usa las
  * líneas mock de defaultLandingContent.
  */
+/**
+ * slugifyLinea(nombre) — la MISMA cuenta en los dos lados.
+ *
+ * La linea es un campo libre del admin ("Golden Line", "Beam"), no una entidad
+ * con slug propio. La URL se deriva del nombre, asi que esta funcion tiene que
+ * ser la unica fuente: si la pagina slugifica distinto de quien arma el link, el
+ * acceso del hero apunta a una pagina que no existe.
+ */
+export function slugifyLinea(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
+ * getLines() — las lineas de producto de la cuenta, con su slug y cuantos productos
+ * tiene cada una. Es lo que hace falta para armar /linea/:slug y para saber que URL
+ * pegar en el acceso de un hero.
+ *
+ * Devuelve [] si ningun producto tiene `linea` cargada: no se inventan lineas.
+ */
+export async function getLines() {
+  const raw = await fetchWithFallback('/public/productos', null)
+  if (!Array.isArray(raw)) return []
+  const porSlug = new Map()
+  for (const p of raw) {
+    const nombre = (p?.linea ?? '').trim()
+    if (!nombre) continue
+    const slug = slugifyLinea(nombre)
+    if (!slug) continue
+    const actual = porSlug.get(slug)
+    if (actual) actual.count += 1
+    else porSlug.set(slug, { name: nombre, slug, count: 1 })
+  }
+  return [...porSlug.values()].sort((a, b) => a.name.localeCompare(b.name))
+}
+
 function deriveLines(raw) {
   const list = Array.isArray(raw)
     ? Array.from(new Set(raw.map((p) => (p?.linea ?? '').trim()).filter(Boolean)))
