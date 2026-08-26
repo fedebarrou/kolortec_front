@@ -146,27 +146,31 @@ function HeaderSection() {
       return undefined
     }
     let raf = 0
-    let done = false
     let storySeen = false
     const check = () => {
       raf = 0
-      if (done) return
-      // El scrolltelling ahora lo maneja el ScrollRenderer del admin, que avisa
-      // su estado por clases en <body> (antes esto miraba el
-      // [data-scrolly-spacer] del componente propio, que ya no existe).
-      // Mientras la historia tiene el control, el navbar NO entra; entra recién
-      // cuando el renderer la libera. Si la home no tiene historia configurada,
-      // ninguna clase aparece nunca y cae al heurístico de scroll de siempre.
+      // El scrolltelling lo maneja el ScrollRenderer, que avisa su estado por
+      // clases en <body>. Mientras la historia tiene el control, el navbar NO
+      // entra; entra recién cuando el renderer la libera. Si la home no tiene
+      // historia configurada, ninguna clase aparece nunca y cae al heurístico
+      // de scroll de siempre.
       const body = document.body
       if (body.classList.contains('scrolly-takeover') || body.classList.contains('scrolly-nav-hidden')) {
         storySeen = true
+        // ⚠ Volver a entrar a la historia tiene que RETIRAR la entrada del navbar.
+        // Antes esto era un trinquete (`done = true` y no volvía nunca), así que
+        // .kt-nav-enter quedaba pegada al <header> para siempre — y esa clase lleva
+        // una `animation` con fill-mode:both, que en la cascada le GANA a las
+        // declaraciones de body.scrolly-takeover / .scrolly-nav-hidden. Resultado:
+        // el usuario subía de nuevo al scrolltelling, el body decía "ocultá" y el
+        // header se quedaba a la vista igual, encima de la historia.
+        setNavEntered(false)
         return
       }
-      const past = storySeen || window.scrollY > window.innerHeight * 0.5
-      if (past) {
-        done = true
-        setNavEntered(true)
-      }
+      // Fuera de la historia el comportamiento sigue siendo de una sola vía: una
+      // vez que entró, no se va sola al volver al tope (eso es lo que se espera
+      // en una home SIN scrolltelling).
+      if (storySeen || window.scrollY > window.innerHeight * 0.5) setNavEntered(true)
     }
     const onScroll = () => {
       if (!raf) raf = window.requestAnimationFrame(check)
