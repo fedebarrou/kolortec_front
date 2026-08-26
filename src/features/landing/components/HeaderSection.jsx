@@ -147,13 +147,22 @@ function HeaderSection() {
     }
     let raf = 0
     let done = false
+    let storySeen = false
     const check = () => {
       raf = 0
       if (done) return
-      const spacer = document.querySelector('[data-scrolly-spacer]')
-      const past = spacer
-        ? spacer.getBoundingClientRect().bottom <= window.innerHeight * 0.1
-        : window.scrollY > window.innerHeight * 0.5
+      // El scrolltelling ahora lo maneja el ScrollRenderer del admin, que avisa
+      // su estado por clases en <body> (antes esto miraba el
+      // [data-scrolly-spacer] del componente propio, que ya no existe).
+      // Mientras la historia tiene el control, el navbar NO entra; entra recién
+      // cuando el renderer la libera. Si la home no tiene historia configurada,
+      // ninguna clase aparece nunca y cae al heurístico de scroll de siempre.
+      const body = document.body
+      if (body.classList.contains('scrolly-takeover') || body.classList.contains('scrolly-nav-hidden')) {
+        storySeen = true
+        return
+      }
+      const past = storySeen || window.scrollY > window.innerHeight * 0.5
       if (past) {
         done = true
         setNavEntered(true)
@@ -405,7 +414,10 @@ function HeaderSection() {
     : null
 
   return (
-    <header className={`sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-10 xl:px-20 2xl:px-40 py-4 ${navClass}`}>
+    /* site-header: hook que usa el ScrollRenderer del admin para retirar/devolver
+       el menú durante la historia (body.scrolly-*, ver index.css). Mismo nombre
+       de clase que en tiendita-store para que el CSS sea el mismo. */
+    <header className={`site-header sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-10 xl:px-20 2xl:px-40 py-4 ${navClass}`}>
       <span aria-hidden="true" className="kt-nav-line pointer-events-none absolute left-0 top-0 h-[2px] w-full bg-primary" />
       <div className="w-full flex items-center justify-between gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4">
         <div className="flex items-center md:justify-self-start">

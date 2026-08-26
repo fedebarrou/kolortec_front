@@ -2038,3 +2038,47 @@
 }
 
 
+
+/* ── Puente con el scrolltelling del admin (ScrollRenderer) ──────────────────
+   El renderer NO conoce el header de kolortec: comunica su estado poniendo
+   clases en <body> y espera que el sitio reaccione por CSS. Espejo de
+   tiendita-store/app/globals.css (mismo contrato, mismo selector .site-header).
+   Antes esto lo resolvía el ScrollytellingSection propio con su
+   [data-scrolly-spacer]; ahora manda el renderer.
+
+   ⚠ VA FUERA DE @layer A PROPÓSITO. El header usa utilidades de Tailwind
+   (`sticky top-0`, `opacity-0`) que viven en la capa `utilities`, la de mayor
+   precedencia: desde @layer components estas reglas perdían y el header seguía
+   `position: sticky`. El CSS sin capa gana sobre CUALQUIER cascade layer, así
+   que acá sí se aplica. No moverlo adentro de un @layer. */
+
+/* snap.hideNav: mientras la historia está pinned el header se retira; vuelve al
+   soltar el scroll. */
+body.scrolly-nav-hidden .site-header {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* snap.takeover (historia PRIMERA de la página): además de retirarse, el header
+   sale del FLUJO para no reservar altura — si solo se deslizara seguiría
+   ocupando su espacio y la historia quedaría con un hueco arriba. Activo desde
+   el montaje hasta soltar el scroll del todo. */
+body.scrolly-takeover .site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* El renderer agrega scrolly-nav-reveal UNA sola vez, al liberar el takeover.
+   Reusa la misma entrada con línea que ya tenía kolortec (.kt-nav-enter). */
+body.scrolly-nav-reveal .site-header {
+  animation: kt-nav-reveal 0.55s cubic-bezier(0.22, 0.9, 0.3, 1) 0.14s both;
+}
+body.scrolly-nav-reveal .site-header .kt-nav-line {
+  animation: kt-nav-line 0.95s ease-out forwards;
+}

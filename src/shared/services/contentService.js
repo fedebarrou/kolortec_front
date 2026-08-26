@@ -16,6 +16,7 @@
 import { defaultLandingContent } from '../../features/landing/data/landingData.js'
 import { resolveAccountHost } from './accountHost.js'
 import { DEMO_MODE } from '../../config.js'
+import { normalizeScrollDesign } from '../../features/landing/_hero-renderer/scroll-contract.js'
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || ''
 
@@ -366,16 +367,75 @@ const DEFAULT_THEME = {
   shadow: 'md',
 }
 
+/**
+ * labConfigFromCarousel — arma el config del renderer a partir de un design
+ * (carrusel O scrolltelling) del payload de /public/hero-config.
+ *
+ * ⚠ ESPEJO de tiendita-store/lib/api.js#labConfigFromCarousel. El renderer de
+ * kolortec es byte-idéntico al del store/admin, así que el mapeo de entrada
+ * también tiene que serlo: si cambia allá, cambiar acá.
+ *
+ * `marker` (fracción 0..1 del tramo de video/frames) y `scrim` ('kolortec' = las
+ * 4 capas fijas de legibilidad) solo se propagan cuando vienen: un design de
+ * carrusel no los trae y el renderer los trata como ausentes.
+ */
+function labConfigFromCarousel(carousel) {
+  const scenes = Array.isArray(carousel?.scenes) ? carousel.scenes : []
+  const isLab = scenes.some((s) => s?.builder === 'lab' || Array.isArray(s?.elements))
+  if (!isLab) return null
+  // filter por objeto: el back puede emitir null para scenes corruptas en DB.
+  const publicScenes = scenes.filter((s) => s && typeof s === 'object' && !s.hidden)
+  if (publicScenes.length === 0) return null
+  return normalizeScrollDesign({
+    version: 1,
+    settings: carousel?.settings ?? null,
+    theme: carousel?.theme ?? DEFAULT_THEME,
+    background: carousel?.background ?? { type: 'none' },
+    slides: publicScenes.map((s) => ({
+      id: s.id,
+      overlay: s.overlay ?? 0.2,
+      background: s.background ?? null,
+      elements: Array.isArray(s.elements) ? s.elements : [],
+      ...(typeof s.marker === 'number' ? { marker: s.marker } : {}),
+      ...(s.scrim === 'kolortec' ? { scrim: 'kolortec' } : {}),
+    })),
+  })
+}
+
 function mapHeroConfig(heroCfg) {
   const carousels = heroCfg?.carousels
-  const carousel = Array.isArray(carousels) && carousels.length ? carousels[0] : null
+  const hasVisibleScene = (item) => Array.isArray(item?.scenes) && item.scenes.some((scene) => !scene?.hidden)
+  // El Encabezado usa el design de `active_carousel_id`. ANTES se tomaba
+  // carousels[0], que funcionaba de casualidad mientras hubo un solo design;
+  // desde que el payload trae también el scrolltelling, tomar el primero podía
+  // renderizar la historia como carrusel. Si el activo no tiene escenas
+  // visibles, caemos al primero que sí las tenga (misma decisión que el store:
+  // preferimos mostrar otro design antes que dejar el hero en blanco).
+  const activeCarousel = Array.isArray(carousels)
+    ? carousels.find((item) => item?.id === heroCfg?.active_carousel_id)
+    : null
+  const carousel = hasVisibleScene(activeCarousel)
+    ? activeCarousel
+    : (Array.isArray(carousels) ? carousels.find(hasVisibleScene) : null) || activeCarousel || null
+
+  // ── Sección Scrolltelling (independiente del Encabezado) ──────────────────
+  // Design de `active_scroll_id`. Guard anti-doble-render: si es el MISMO
+  // design que ya muestra el Encabezado, la sección no recibe config (null).
+  const scrollList = Array.isArray(carousels) ? carousels.filter((c) => c?.settings?.mode === 'scroll') : []
+  const scrollDesign = scrollList.find((c) => c?.id === heroCfg?.active_scroll_id) || null
+  const scrollLabConfig = scrollDesign && scrollDesign.id !== carousel?.id
+    ? labConfigFromCarousel(scrollDesign)
+    : null
+
   const scenes = carousel?.scenes
   if (!Array.isArray(scenes) || scenes.length === 0) {
     // Sin carrusel creado en tiendita: mock solo en modo vidriera; en real, hero sin slides
     // (la sección se oculta) en vez de mostrar los 3 slides hardcodeados (data fantasma).
+    // OJO: el scrolltelling es independiente del Encabezado — se devuelve igual
+    // aunque no haya carrusel, si no la historia desaparecería con él.
     return DEMO_MODE
-      ? defaultLandingContent.hero
-      : { intervalMs: defaultLandingContent.hero?.intervalMs || 7000, slides: [], labConfig: null }
+      ? { ...defaultLandingContent.hero, scrollLabConfig }
+      : { intervalMs: defaultLandingContent.hero?.intervalMs || 7000, slides: [], labConfig: null, scrollLabConfig }
   }
 
   // Detectar si alguna scene es del hero-lab (tiene elementos libres).
@@ -428,24 +488,15 @@ function mapHeroConfig(heroCfg) {
   })
 
   // Config para el CarouselRenderer (path lab). Solo se incluye cuando hay scenes lab.
-  const labConfig = isLab && publicScenes.length
-    ? {
-        version: 1,
-        settings: carousel.settings ?? null,
-        theme: carousel.theme ?? DEFAULT_THEME,
-        slides: publicScenes.map((s) => ({
-          id: s.id,
-          overlay: s.overlay ?? 0.2,
-          background: s.background ?? null,
-          elements: Array.isArray(s.elements) ? s.elements : [],
-        })),
-      }
-    : null
+  // Usa el MISMO helper que el scrolltelling para que el mapeo de entrada sea
+  // uno solo (antes esto estaba duplicado inline y se quedaba atrás).
+  const labConfig = isLab ? labConfigFromCarousel(carousel) : null
 
   return {
     intervalMs: defaultLandingContent.hero?.intervalMs || 7000,
     slides,
     labConfig,
+    scrollLabConfig,
   }
 }
 

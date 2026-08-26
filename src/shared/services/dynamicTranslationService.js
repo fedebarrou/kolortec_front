@@ -82,27 +82,40 @@ export async function autoTranslateText({ text, from = 'es', to = 'en' }) {
     const customApiKey = import.meta.env.VITE_TRANSLATE_API_KEY
 
     if (customEndpoint) {
-      const headers = { 'Content-Type': 'application/json' }
-      if (customApiKey) {
-        headers.Authorization = `Bearer ${customApiKey}`
-      }
+      // El endpoint custom (LibreTranslate/Argos) puede estar caído o bloqueado
+      // por CORS. Su error NO debe tumbar la traducción: se captura acá adentro
+      // para poder caer a MyMemory abajo, en vez de propagar al catch general
+      // (que devolvía el texto sin traducir). Esto pasaba de verdad:
+      // translate.argosopentech.com — el valor de .env.example y .env.development —
+      // dejó de responder, y la traducción quedó silenciosamente rota.
+      try {
+        const headers = { 'Content-Type': 'application/json' }
+        if (customApiKey) {
+          headers.Authorization = `Bearer ${customApiKey}`
+        }
 
-      const response = await fetch(customEndpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          q: normalized,
-          source: from,
-          target: to,
-          format: 'text',
-        }),
-      })
+        const response = await fetch(customEndpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            q: normalized,
+            source: from,
+            target: to,
+            format: 'text',
+          }),
+        })
 
-      if (response.ok) {
-        const data = await response.json()
-        translated = getLibreTranslatedText(data)
+        if (response.ok) {
+          const data = await response.json()
+          translated = getLibreTranslatedText(data)
+        }
+      } catch {
+        translated = ''
       }
-    } else {
+    }
+
+    // Sin endpoint custom, o si ese no devolvió nada: MyMemory (público, sin key).
+    if (!normalizeText(translated)) {
       const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(normalized)}&langpair=${from}|${to}`
       const response = await fetch(url)
       if (response.ok) {

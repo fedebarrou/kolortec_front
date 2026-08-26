@@ -4,11 +4,16 @@ import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
 import RentalTeaserSection from './RentalTeaserSection'
-import ScrollytellingSection from './ScrollytellingSection'
+import ScrolltellingSection from './ScrolltellingSection'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
 import SectionErrorBoundary from './SectionErrorBoundary'
 import { useLandingContent } from '../hooks/useLandingContent'
+
+// Logo de la barra superior del scrolltelling (SnapChrome). Mismo asset que usaba
+// el ScrollytellingSection hardcodeado. OJO: el archivo tiene extensión .jpeg pero
+// en realidad es WebP — no cambiar el nombre sin re-exportarlo.
+const KOLORTEC_LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
 /**
  * Landing DATA-DRIVEN: refleja EXACTO lo cargado en tiendita para la cuenta. Cada sección mantiene
@@ -27,8 +32,12 @@ function LandingPage() {
 
   return (
     <>
-      <SectionErrorBoundary name="Scrollytelling">
-        <ScrollytellingSection lines={content.lines} />
+      {/* La historia sale del diseño configurado en el admin de Modora
+          (active_scroll_id), no de código. Sin diseño activo no renderiza nada.
+          isFirst: es lo primero de la página (takeover + navbar oculto hasta
+          que termina). */}
+      <SectionErrorBoundary name="Scrolltelling">
+        <ScrolltellingSection config={content.hero?.scrollLabConfig} logoUrl={KOLORTEC_LOGO} isFirst />
       </SectionErrorBoundary>
       <Divider />
       {/* Reserva el alto del navbar (que aparece al terminar el scrollytelling) para que no tape el

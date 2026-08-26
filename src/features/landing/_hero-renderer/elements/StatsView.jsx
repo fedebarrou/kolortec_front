@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { cqw, cqwType } from '../responsive'
+import { cqw } from '../responsive'
+import { typoStyle } from './typo'
 
 const cross = { left: 'flex-start', center: 'center', right: 'flex-end' }
 const BACKDROP = 'radial-gradient(ellipse 56% 54% at 50% 50%, rgba(8,4,20,.70) 0%, rgba(8,4,20,.44) 46%, rgba(8,4,20,0) 76%)'
 const NUM_GLOW = '0 1px 2px rgba(10,6,24,.78), 0 0 22px rgba(255,250,255,.55), 0 0 50px rgba(196,150,255,.45)'
+// Slots tipográficos (mismas claves que _editor/typoSlots.js#stats — no se
+// importan desde acá para que este archivo se pueda copiar byte-idéntico a
+// la store, que no tiene _editor/).
+const NUM_SLOT = { font: 'fontFamily', weight: 'numWeight', size: 'numSize', lh: 'numLineHeight', ls: 'numLetterSpacingEm', color: 'color' }
+const LABEL_SLOT = { font: 'labelFontFamily', weight: 'labelWeight', size: 'labelSize', ls: 'labelLetterSpacingEm', color: 'labelColor', transform: 'labelTransform' }
 
 function parseValue(raw) {
   const m = raw.match(/^(\D*)([\d.,]+)(.*)$/)
@@ -25,7 +31,6 @@ function formatCount(raw, r) {
 }
 
 export function StatsView({ p, reveal }) {
-  const numFont = p.fontFamily || '"Schibsted Grotesk", sans-serif'
   const visible = (reveal ?? 1) > 0.02
   const [prog, setProg] = useState(1)
   const raf = useRef(0)
@@ -44,19 +49,24 @@ export function StatsView({ p, reveal }) {
     return () => cancelAnimationFrame(raf.current)
   }, [visible, p.countUp])
   const shown = (v) => (p.countUp ? formatCount(v, prog) : v)
-  const items = Array.isArray(p.items) ? p.items : []
+  // numSize/numLineHeight/numLetterSpacingEm/labelSize/labelLetterSpacingEm/
+  // labelTransform ya vienen bakeados en defaults.js (42/1/-.01/11/.2/
+  // 'uppercase') — acá sólo el fallback de fontFamily (y, para la etiqueta,
+  // de color, que hoy comparte el `color` de la cifra).
+  const numTypo = typoStyle(p, NUM_SLOT, { fontFamily: '"Schibsted Grotesk", sans-serif' })
+  const labelTypo = typoStyle(p, LABEL_SLOT, { fontFamily: '"Archivo", system-ui, sans-serif', color: p.color })
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: cross[p.align] }}>
       <div data-fit style={{ position: 'relative', display: 'inline-flex', alignItems: 'stretch', gap: 0, maxWidth: '100%' }}>
         {p.glow && (
           <span aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '128%', height: '210%', background: BACKDROP, filter: 'blur(9px)', zIndex: 0, pointerEvents: 'none' }} />
         )}
-        {items.map((it, i) => (
+        {p.items.map((it, i) => (
           <div key={i} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? `1px solid ${p.color}59` : undefined }}>
-            <span style={{ fontFamily: numFont, fontWeight: 800, fontSize: cqwType(42), lineHeight: 1, color: p.color, letterSpacing: '-.01em', textShadow: p.glow ? NUM_GLOW : '0 2px 18px rgba(0,0,0,.45)' }}>
+            <span style={{ ...numTypo, textShadow: p.glow ? NUM_GLOW : '0 2px 18px rgba(0,0,0,.45)' }}>
               {shown(it.value)}
             </span>
-            <span style={{ fontFamily: '"Archivo", system-ui, sans-serif', fontWeight: 700, fontSize: cqwType(11), letterSpacing: '.2em', textTransform: 'uppercase', color: p.color, opacity: .76, marginTop: cqw(7), textShadow: '0 1px 10px rgba(10,6,24,.7)' }}>
+            <span style={{ ...labelTypo, opacity: .76, marginTop: cqw(7), textShadow: '0 1px 10px rgba(10,6,24,.7)' }}>
               {it.label}
             </span>
           </div>
