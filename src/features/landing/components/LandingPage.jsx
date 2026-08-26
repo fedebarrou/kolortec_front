@@ -39,15 +39,19 @@ function LandingPage() {
       <SectionErrorBoundary name="Scrolltelling">
         <ScrolltellingSection config={content.hero?.scrollLabConfig} logoUrl={KOLORTEC_LOGO} isFirst />
       </SectionErrorBoundary>
-      <Divider />
-      {/* Reserva el alto del navbar (que aparece al terminar el scrollytelling) para que no tape el
-          heading de la primera sección. Compensado por el zoom del .kt-zoom-canvas.
+      {/* SIN spacer y SIN Divider entre la historia y el hero: los dos son
+          full-bleed y van pegados, uno cubriendo el viewport después del otro.
+          Antes acá había un padding-top de 84px "para reservar el alto del
+          navbar" — escrito cuando lo que seguía era una sección de texto cuyo
+          heading el navbar sticky tapaba. Con un hero a pantalla completa eso
+          sólo dejaba una banda negra, y encima se sumaba a la resta que ya hacía
+          HeroSection: entre las dos se comían 164px del viewport.
+          El navbar es `sticky top-0` y va POR ENCIMA del hero (es translúcido
+          con backdrop-blur), que es como se monta un hero full-bleed.
           Orden pedido por el cliente post-scroll: Hero (banner) → Instagram → Productos. */}
-      <div style={{ paddingTop: 'calc(84px / var(--kt-canvas-scale, 1))' }}>
-        <SectionErrorBoundary name="Hero">
-          <HeroSection hero={content.hero} />
-        </SectionErrorBoundary>
-      </div>
+      <SectionErrorBoundary name="Hero">
+        <HeroSection hero={content.hero} />
+      </SectionErrorBoundary>
       <Divider />
       <SectionErrorBoundary name="Instagram">
         <InstagramSection gallery={content.gallery} />

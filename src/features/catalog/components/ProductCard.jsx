@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAutoTranslatedDict } from '../../../shared/services/useAutoTranslatedDict'
 
 const slugifyProductName = (value) =>
   value
@@ -9,6 +10,12 @@ const slugifyProductName = (value) =>
 
 function ProductCard({ item, className = '', style, showDetailLink = true, detailHref }) {
   const [imgFailed, setImgFailed] = useState(false)
+  // El nombre y la descripción vienen de la DB de tiendita, siempre en
+  // castellano — el i18n estático no los alcanza. Se traducen al vuelo y se
+  // muestra el original hasta que llega la traducción.
+  const dict = useAutoTranslatedDict(useMemo(() => [item.name, item.description], [item.name, item.description]))
+  const name = dict.get(item.name) || item.name
+  const description = dict.get(item.description) || item.description
   const showImage = !!item.image && !imgFailed
   // Linkea SIEMPRE al producto real (por su id/slug de la API). El detalle se carga data-driven.
   const detailId = item.slug || item.id || slugifyProductName(item.name)
@@ -59,12 +66,12 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
 
         <div className="absolute inset-x-0 bottom-0 p-4">
           <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
-            {item.name}
+            {name}
             <span className="text-primary">.</span>
           </h3>
           {item.description ? (
             <p className="mt-1 text-[0.68rem] uppercase tracking-[0.12em] text-white/65 drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)]">
-              {item.description}
+              {description}
             </p>
           ) : null}
         </div>

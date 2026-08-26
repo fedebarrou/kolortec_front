@@ -24,7 +24,10 @@ function withAccentDot(content, accentDot, accentColor) {
   return <>{content.slice(0, -1)}<span style={{ color: accentColor }}>{last}</span></>
 }
 
-export function TextView({ p, accentColor, themePreset }) {
+// props.accentColor pisa el acento del DISEÑO solo para este elemento (punto
+// final + rayita del antetitulo). Igual que en MessageView.
+export function TextView({ p, accentColor: designAccent, themePreset }) {
+  const accentColor = p.accentColor || designAccent
   const fs = Number(p.fontSize) || 0
   const isTitleLike = p.role === 'title' || fs >= 40
   // kolortec: el eyebrow (texto chico, ≤ 14px) NO lleva sombra; solo título y cuerpo.

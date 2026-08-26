@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { Background } from './Background'
 import { ElementView, boxAt } from './elements/ElementView'
 import { useCarousel } from './useCarousel'
+import { ScrollScrim } from './ScrollRenderer'
 
 const shadowOf = (s) =>
   ({ none: 'none', sm: '0 1px 4px rgba(0,0,0,.2)', md: '0 6px 20px rgba(0,0,0,.3)', lg: '0 12px 40px rgba(0,0,0,.45)' }[s])
@@ -28,6 +29,10 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
   return (
     <div style={slideStyle(visible, slideIndex, activeIndex, isSlide)} data-slide>
       <Background bg={slide.background} />
+      {/* Scrim de escena: el mismo campo `slide.scrim` del modo scroll. Antes
+          el carrusel lo IGNORABA, asi que una escena con scrim se veia sin el.
+          Va despues del fondo y antes de los elementos, igual que en ScrollStage. */}
+      {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={bp} variant={slide.scrim} /> : null}
       {slide.overlay > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${slide.overlay})` }} />}
       {[...slide.elements].sort((a, b) => a.z - b.z).map((el) => {
         const box = boxAt(el, bp)
@@ -63,8 +68,12 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   const height = containerHeight ?? (settings.fullHeight ? 'var(--vh-full, 100vh)' : (breakpoint === 'mobile' ? settings.heightMobile : settings.heightDesktop))
   const isSlide = settings.transition === 'slide'
   const accent = theme.colors?.accent || '#fff'
+  // containerName 'hc-stage': SIN el nombre, las reglas `@container hc-stage`
+  // (hero-anim.css) no matchean y el widget `message` preset kolortec cae al
+  // layout mobile (centrado abajo) en vez del desktop (derecha, centrado).
+  // Faltaba en las 3 copias del renderer, no solo acá.
   return (
-    <div style={{ position: 'relative', width: '100%', height, overflow: 'hidden', borderRadius: bleed ? 0 : theme.radius, boxShadow: bleed ? 'none' : shadowOf(theme.shadow), fontFamily: theme.fontFamily || 'var(--site-font, Inter, sans-serif)', background: theme.colors.bg, containerType: 'inline-size' }}>
+    <div style={{ position: 'relative', width: '100%', height, overflow: 'hidden', borderRadius: bleed ? 0 : theme.radius, boxShadow: bleed ? 'none' : shadowOf(theme.shadow), fontFamily: theme.fontFamily || 'var(--site-font, Inter, sans-serif)', background: theme.colors.bg, containerType: 'inline-size', containerName: 'hc-stage' }}>
       {config.background && config.background.type !== 'none' && (
         <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} /></div>
       )}

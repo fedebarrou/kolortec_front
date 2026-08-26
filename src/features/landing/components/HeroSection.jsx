@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
 import { CarouselRenderer } from '../_hero-renderer/CarouselRenderer'
 
 // Detect breakpoint once per mount (matchMedia — not reactive to resize, good enough for hero).
@@ -54,6 +55,12 @@ function HeroSection({ hero }) {
   // El path lab usa su propio carrusel (CarouselRenderer/useCarousel); este intervalo
   // sólo aplica al hero legacy. Se corta solo cuando hay labConfig o <=1 slide.
   const isLab = !!hero?.labConfig
+  // Traducción al vuelo de los textos del carrusel. ANTES el Encabezado no se
+  // traducía en absoluto: el diseño se edita en castellano en el admin y salía
+  // así aunque el sitio estuviera en inglés. Mismo camino que el scrolltelling.
+  // Va acá arriba por la regla de hooks del comentario de más arriba.
+  const labConfigTranslated = useHeroTranslation(hero?.labConfig)
+
   useEffect(() => {
     if (isLab || slides.length <= 1) return undefined
 
@@ -68,13 +75,16 @@ function HeroSection({ hero }) {
   // Lab path: render with CarouselRenderer when the backend emits lab elements.
   if (hero?.labConfig) {
     const config = {
-      ...hero.labConfig,
+      ...labConfigTranslated,
       settings: hero.labConfig.settings ?? DEFAULT_SETTINGS,
     }
-    // Full-viewport como el hero legacy: alto = viewport menos navbar (72 mobile /
-    // 80 desktop), dividido por la escala del canvas (.kt-zoom-canvas usa zoom).
-    const navH = bp === 'mobile' ? 72 : 80
-    const containerHeight = `calc((100dvh - ${navH}px) / var(--kt-canvas-scale, 1))`
+    // Viewport COMPLETO, sin restarle el navbar. Antes era `100dvh - navH`
+    // (72 mobile / 80 desktop), que asume que el navbar ocupa lugar JUSTO
+    // ARRIBA del hero — y no lo hace: es `sticky top-0` desde el tope del
+    // documento, así que flota por encima. Restarle su alto sólo dejaba al hero
+    // más corto que la pantalla (783px en un viewport de 863). Dividido por la
+    // escala del canvas (.kt-zoom-canvas usa zoom).
+    const containerHeight = 'calc(100dvh / var(--kt-canvas-scale, 1))'
     return (
       <section
         className="kt-section-reveal"

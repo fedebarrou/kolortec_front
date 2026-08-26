@@ -44,8 +44,14 @@ function EyebrowLine({ accentColor }) {
 // es font-weight 400 (Manrope regular) ahí, no 500.
 const KOLORTEC_TITLE_SHADOW = '0 2px 24px rgba(0,0,0,.9), 0 1px 3px rgba(0,0,0,.85)'
 const KOLORTEC_SUB_SHADOW = '0 1px 12px rgba(0,0,0,.9)'
-const KOLORTEC_TITLE_SIZE = 'clamp(1.9rem, 6cqw, 4.6rem)'
-const KOLORTEC_SUB_SIZE = 'clamp(.95rem, 1.6cqw, 1.25rem)'
+// ⚠ 2026-08-26: los 4 tamaños del preset se escalaron ×1.15 respecto del clon
+// literal de kolortec (4.6rem→5.3rem · 1.25rem→1.44rem · .72rem→.83rem ·
+// .82rem→.94rem). Se escala el CLAMP ENTERO (min/slope/max), no sólo el tope,
+// para que el aumento sea el mismo en todos los anchos de stage. NO se puede
+// hacer por config: props.titleSize pasa por cqwType(), cuyo slope (px/1440) y
+// factores (.62/1.2) dan otra curva responsive. EN SYNC en las 3 copias.
+const KOLORTEC_TITLE_SIZE = 'clamp(2.2rem, 6.9cqw, 5.3rem)'
+const KOLORTEC_SUB_SIZE = 'clamp(1.1rem, 1.85cqw, 1.44rem)'
 
 // Fallbacks tipográficos del preset Kolortec, uno por slot — EN SYNC con
 // KOLORTEC_MESSAGE_PROPS de ../../_schema/defaults.js (duplicado a propósito:
@@ -60,8 +66,8 @@ const KOLORTEC_SUB_FALLBACKS = { fontSize: KOLORTEC_SUB_SIZE, lineHeight: 1.55, 
 // constante no traía `lineHeight` → typoStyle() lo dejaba sin setear y el
 // span heredaba el 1.55 del subtítulo vecino en vez de 1.5 (getComputedStyle
 // localhost:5173). EN SYNC con KOLORTEC_MESSAGE_PROPS (defaults.js).
-const KOLORTEC_EYEBROW_FALLBACKS = { fontSize: '0.72rem', fontWeight: 700, lineHeight: 1.5, letterSpacing: '.24em', textTransform: 'uppercase' }
-const KOLORTEC_CTA_FALLBACKS = { fontSize: '.82rem', fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#000' }
+const KOLORTEC_EYEBROW_FALLBACKS = { fontSize: '0.83rem', fontWeight: 700, lineHeight: 1.5, letterSpacing: '.24em', textTransform: 'uppercase' }
+const KOLORTEC_CTA_FALLBACKS = { fontSize: '.94rem', fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#000' }
 
 // margin-left/right para forzar el align EXPLÍCITO del usuario en el
 // subtítulo cuando difiere del default kolortec ('right'): 'left' → pegado
@@ -74,7 +80,16 @@ const alignMargin = (align) => ({
 })
 
 /** Clon literal del TextBlock de kolortec (preset:'kolortec'). */
-function KolortecMessage({ p, accentColor }) {
+// accentColor por ELEMENTO. `accentColor` (la prop) viene del DISEÑO
+// (theme.colors.primary) y la comparten todos los elementos; `props.accentColor`
+// la pisa solo para este. Hace falta para escenas sobre fondo claro, donde el
+// amarillo de marca no se ve: ahi el punto final y la rayita del antetitulo van
+// en otro color. `props.ctaBg` hace lo mismo con el fondo del boton, que antes
+// tambien salia del acento del diseño sin forma de cambiarlo.
+const accentOf = (p, accentColor) => p.accentColor || accentColor
+
+function KolortecMessage({ p, accentColor: designAccent }) {
+  const accentColor = accentOf(p, designAccent)
   // explicitAlign: sólo distinto de null cuando el usuario tocó `align` desde
   // el Inspector a algo != 'right' (default kolortec). En ese caso fuerza ese
   // align en TODOS los tiers vía las custom properties --hc-kt-h/--hc-kt-text
@@ -116,7 +131,7 @@ function KolortecMessage({ p, accentColor }) {
           </div>
         )}
         {p.cta && (
-          <a href={p.ctaHref || '#'} style={{ marginTop: 32, display: 'inline-flex', minHeight: 44, alignItems: 'center', background: accentColor, padding: '0 28px', textDecoration: 'none', boxShadow: '0 10px 30px rgba(0,0,0,.4)', borderRadius: 0, ...ctaTypo }}>
+          <a href={p.ctaHref || '#'} style={{ marginTop: 32, display: 'inline-flex', minHeight: 44, alignItems: 'center', background: p.ctaBg || accentColor, padding: '0 28px', textDecoration: 'none', boxShadow: '0 10px 30px rgba(0,0,0,.4)', borderRadius: 0, ...ctaTypo }}>
             {p.cta}
           </a>
         )}
@@ -125,7 +140,8 @@ function KolortecMessage({ p, accentColor }) {
   )
 }
 
-export function MessageView({ p, accentColor }) {
+export function MessageView({ p, accentColor: designAccent }) {
+  const accentColor = accentOf(p, designAccent)
   if (p.preset === 'kolortec') return <KolortecMessage p={p} accentColor={accentColor} />
 
   // titleSize ausente → sigue la fórmula relativa a titleScale de siempre

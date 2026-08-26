@@ -1,0 +1,141 @@
+/* hero-anim.css — CSS del renderer de hero (Hero Labs) para kolortec.
+ *
+ * COPIA SINCRONIZADA de tiendita-store/app/globals.css (bloque "Hero Labs")
+ * y de tiendita-front/app/(admin)/admin/hero-lab/_renderer/hero-anim.css.
+ * El JSX de `_hero-renderer/` es byte-identico en los tres proyectos; este
+ * archivo es la mitad CSS que faltaba aca — sin el, el widget `message`
+ * (preset kolortec) renderiza sin posicionar y los scrims no pintan.
+ *
+ * VA FUERA DE @layer a proposito: kolortec usa Tailwind v4 con
+ * `@layer base, components, utilities` y cualquier regla dentro de una capa
+ * pierde contra las utilidades. Se importa desde ScrolltellingSection.jsx.
+ */
+
+/* Hero Labs: animaciones de entrada de los elementos (ElementView usa
+   `hc-{type}` en carrusel y en scroll "por pasos"). COPIA SINCRONIZADA del
+   bloque de tiendita-front/app/(admin)/admin/hero-lab/hero-lab.css. */
+@keyframes hc-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes hc-slide-up { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes hc-slide-down { from { opacity: 0; transform: translateY(-24px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes hc-zoom { from { opacity: 0; transform: scale(.85) } to { opacity: 1; transform: scale(1) } }
+@keyframes hc-bounce {
+  0% { opacity: 0; transform: translateY(24px) }
+  60% { opacity: 1; transform: translateY(-8px) }
+  100% { opacity: 1; transform: translateY(0) }
+}
+@keyframes hc-focus { from { opacity: 0; transform: translateY(16px); filter: blur(5px) } to { opacity: 1; transform: translateY(0); filter: blur(0) } }
+@media (prefers-reduced-motion: reduce) {
+  [data-hero-anim] { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; }
+}
+
+/* ── Hero Labs: SnapChrome (chrome kolortec del modo snap) + scrim + eyebrow-line.
+   COPIA SINCRONIZADA en hero-lab.css / hero-anim.css (admin). Los breakpoints
+   de SnapChrome son CONTAINER QUERIES contra el container `hc-stage`
+   (containerType:'inline-size' puesto en SnapStage/ScrollStage y el wrapper
+   sticky) — no viewport media queries — para que el preview admin (que a
+   veces anida/escala el canvas) coincida con el store real. ── */
+/* Fallback SIN especificidad (:where) para hosts sin container `hc-stage` en
+   su árbol — no debería darse en el store (siempre hay container), se
+   mantiene por paridad con el CSS del admin. Declarado ANTES de las reglas
+   base/@container: misma especificidad (0,1,0) → si hay container y matchea,
+   la regla @container (después) gana el empate y manda la medida real. */
+:where([data-bp="desktop"], [data-bp="tablet"]) .scrolly-progress-seg { width: 56px; }
+:where([data-bp="desktop"], [data-bp="tablet"]) .scrolly-progress { right: 160px; }
+:where([data-bp="desktop"], [data-bp="tablet"]) .scrolly-topbar { padding: 16px 80px; }
+:where([data-bp="desktop"], [data-bp="tablet"]) .scrolly-skip { font-size: 14px; }
+
+.scrolly-progress { position: absolute; bottom: 32px; right: 24px; display: flex; gap: 8px; pointer-events: none; z-index: 4; }
+.scrolly-progress-seg { height: 3px; width: 36px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.2); }
+.scrolly-progress-fill { height: 100%; background: var(--scrolly-accent, #fff); }
+@container hc-stage (min-width: 640px) { .scrolly-progress-seg { width: 56px; } }
+@container hc-stage (min-width: 1024px) { .scrolly-progress { right: 64px; } }
+@container hc-stage (min-width: 1280px) { .scrolly-progress { right: 160px; } }
+
+.scrolly-hint { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,.7); pointer-events: none; z-index: 4; transition: opacity .5s cubic-bezier(.4,0,.2,1); }
+.scrolly-hint span { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .22em; }
+
+.scrolly-topbar { position: absolute; inset: 0 0 auto 0; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; z-index: 5; pointer-events: none; }
+@container hc-stage (min-width: 1024px) { .scrolly-topbar { padding: 16px 40px; } }
+@container hc-stage (min-width: 1280px) { .scrolly-topbar { padding: 16px 80px; } }
+
+.scrolly-skip { pointer-events: auto; background: none; border: none; padding: 0; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: #f1f5f9; transition: all .15s cubic-bezier(.4,0,.2,1); }
+.scrolly-skip:hover { color: var(--scrolly-accent, #fff); }
+@container hc-stage (min-width: 1280px) { .scrolly-skip { font-size: 14px; } }
+
+.scrolly-logo-btn { pointer-events: auto; background: none; border: none; padding: 0; cursor: pointer; display: inline-flex; align-items: center; transition: opacity .2s ease; }
+.scrolly-logo-btn:hover { opacity: .8; }
+
+/* Scrims kolortec (slide.scrim==='kolortec'): 4 capas fijas de legibilidad,
+   ScrollytellingSection.jsx:435-444. Render: después del backdrop, antes de
+   los elementos (ver ScrollRenderer.jsx SnapStage). */
+/* ⚠ 2026-08-26: alfas BAJADAS ~30% respecto del clon literal de
+   ScrollytellingSection.jsx (.85/.45 → .6/.3 · .55/.5 → .38/.35 · .6 → .42 ·
+   .9/.4 → .63/.28). El oscurecimiento original tapaba demasiado los frames;
+   el título ya trae su propio text-shadow (KOLORTEC_TITLE_SHADOW), así que la
+   legibilidad se sostiene. NO revertir a los valores del original "por
+   fidelidad": es una decisión de diseño posterior. Sincronizar en las 4
+   copias (hero-lab.css · _renderer/hero-anim.css · store globals.css ·
+   kolortec _hero-renderer/hero-anim.css). */
+.scrolly-scrim { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.scrolly-scrim-1 { display: none; background: linear-gradient(to left, rgba(0,0,0,.6), rgba(0,0,0,.3), transparent); }
+.scrolly-scrim-2 { background: linear-gradient(to bottom, rgba(0,0,0,.38), transparent, rgba(0,0,0,.35)); }
+.scrolly-scrim-3 { display: none; background: radial-gradient(ellipse 58% 62% at 78% 50%, rgba(0,0,0,.42), transparent 72%); }
+.scrolly-scrim-4 { background: linear-gradient(to top, rgba(0,0,0,.63), rgba(0,0,0,.28), transparent); }
+.scrolly-scrim > span { position: absolute; inset: 0; display: block; }
+@container hc-stage (min-width: 768px) {
+  .scrolly-scrim-1, .scrolly-scrim-3 { display: block; }
+  .scrolly-scrim-4 { display: none; }
+}
+/* .scrolly-scrim--mobile: fuerza la variante <md (preview admin en breakpoint
+   'mobile', donde el container real puede no ser angosto). Sin uso hoy en el
+   store (breakpoint real = viewport real), se mantiene por paridad de clases. */
+.scrolly-scrim--mobile .scrolly-scrim-1, .scrolly-scrim--mobile .scrolly-scrim-3 { display: none !important; }
+.scrolly-scrim--mobile .scrolly-scrim-4 { display: block !important; }
+
+/* Variante CLARA (slide.scrim === 'kolortec-light'): las mismas 4 capas, en
+   crema, para escenas sobre fondo claro — el scrim negro las ensucia. Misma
+   geometría y mismos breakpoints; sólo cambia el color. Sincronizar en las 4
+   copias junto con el resto del bloque. */
+.scrolly-scrim--light .scrolly-scrim-1 { background: linear-gradient(to left, rgba(246,240,230,.95), rgba(246,240,230,.58), transparent); }
+.scrolly-scrim--light .scrolly-scrim-2 { background: linear-gradient(to bottom, rgba(246,240,230,.5), transparent, rgba(246,240,230,.45)); }
+.scrolly-scrim--light .scrolly-scrim-3 { background: radial-gradient(ellipse 58% 62% at 78% 50%, rgba(246,240,230,.6), transparent 72%); }
+.scrolly-scrim--light .scrolly-scrim-4 { background: linear-gradient(to top, rgba(246,240,230,.92), rgba(246,240,230,.45), transparent); }
+
+/* Eyebrow con línea (text.eyebrowLine): raya de acento antes del texto —
+   geometría fija; el color (accentColor) lo pone TextView.jsx inline. */
+.hc-eyebrow-line { display: inline-block; width: 36px; height: 2px; flex: none; }
+
+/* hc-kt-block (MessageView.jsx KolortecMessage, preset:'kolortec'): clon del
+   contenedor kolortec TextBlock (ScrollytellingSection.jsx L340-343) — el
+   bloque ocupa 100%×100% de la caja del elemento (pos={x:0,y:0,w:100,h:100},
+   CloneKolortecScroll.php messageEl()) y se posiciona con flex+padding en
+   tiers vía @container hc-stage, no con el rect en % de siempre (a otro
+   ancho de stage que no fuera 1440px el borde derecho quedaba a una
+   distancia distinta de la de kolortec: pr-40=160px fijo + max-w-[40rem]).
+   Mobile (base, <768, kolortec `px-5 pb-16`): bloque abajo-centrado. Desktop
+   (≥768, kolortec `md:items-center md:justify-end`): centrado vertical,
+   pegado a la derecha, con padding horizontal por tier (md/lg/xl kolortec).
+   --hc-kt-h (flex-start/center/flex-end) / --hc-kt-text (left/center/right):
+   las setea inline KolortecMessage SÓLO cuando `align` viene explícito y
+   distinto del default 'right' — ahí mandan en TODOS los tiers y reemplazan
+   este responsive center-mobile/right-desktop clon de kolortec. COPIA
+   SINCRONIZADA en hero-lab.css / hero-anim.css (admin). */
+/* Fallback SIN especificidad (:where) — no debería darse en el store (siempre
+   hay container `hc-stage`), se mantiene por paridad con el CSS del admin.
+   Declarado ANTES de las reglas base/@container: misma especificidad
+   (0,1,0) → si hay container y matchea, la regla @container (después) gana
+   el empate y manda la medida real. */
+:where([data-bp="desktop"], [data-bp="tablet"]) .hc-kt-block { align-items: center; justify-content: var(--hc-kt-h, flex-end); padding: 0 160px 0 96px; }
+:where([data-bp="desktop"], [data-bp="tablet"]) .hc-kt-block > [data-fit] { align-items: var(--hc-kt-h, flex-end); text-align: var(--hc-kt-text, right); }
+:where([data-bp="desktop"], [data-bp="tablet"]) .hc-kt-eyebrow-wrap { justify-content: var(--hc-kt-h, flex-end); }
+
+.hc-kt-block { width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: var(--hc-kt-h, center); padding: 0 20px 64px; }
+.hc-kt-block > [data-fit] { display: inline-flex; flex-direction: column; align-items: var(--hc-kt-h, center); text-align: var(--hc-kt-text, center); }
+.hc-kt-eyebrow-wrap { justify-content: var(--hc-kt-h, center); }
+@container hc-stage (min-width: 768px) {
+  .hc-kt-block { align-items: center; justify-content: var(--hc-kt-h, flex-end); padding: 0 24px; }
+  .hc-kt-block > [data-fit] { align-items: var(--hc-kt-h, flex-end); text-align: var(--hc-kt-text, right); }
+  .hc-kt-eyebrow-wrap { justify-content: var(--hc-kt-h, flex-end); }
+}
+@container hc-stage (min-width: 1024px) { .hc-kt-block { padding: 0 64px; } }
+@container hc-stage (min-width: 1280px) { .hc-kt-block { padding: 0 160px 0 96px; } }

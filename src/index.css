@@ -15,6 +15,21 @@
   font-display: swap;
 }
 
+/* MISMO archivo, nombre CANÓNICO del ecosistema (con espacios): es el que usan
+   tiendita-front/app/fonts.css y tiendita-store/app/globals.css, y por lo tanto
+   el que viaja en la config del hero (`props.fontFamily` del widget `message`,
+   CloneKolortecScroll.php) y el que heroFonts.js tiene en su SKIP para no
+   pedirla a Google. kolortec la tenía registrada SOLO como
+   'FuturaExtraBlackCondensed' (sin espacios), así que el scrolltelling caía a
+   Impact. Alias, no duplicado: el .otf se descarga una sola vez. */
+@font-face {
+  font-family: 'Futura Extra Black Condensed';
+  src: url('/fonts/futura-extra-black-condensed.otf') format('opentype');
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'Manrope';
   src: url('/fonts/manrope-latin.woff2') format('woff2');
@@ -146,9 +161,29 @@
   .title-font {
     font-family: 'FuturaExtraBlackCondensed', 'Arial Narrow', Impact, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
     line-height: 1.06;
     font-weight: 900;
+  }
+
+  /* letter-spacing SEPARADO y envuelto en :where() (especificidad 0,0,0) a
+     propósito.
+     0 (antes .06em): la Futura Extra Black Condensed ya viene dibujada cerrada
+     y el tracking extra la abría; igualado al del scrolltelling
+     (CloneKolortecScroll.php messageEl → titleLetterSpacingEm=0) para que toda
+     la marca use la MISMA medida.
+     ¿Por qué :where()? `.title-font` se declara DESPUÉS de las utilidades de
+     Tailwind y vive en la MISMA capa (@layer utilities), así que con
+     especificidad normal (0,1,0) le ganaba por orden a los `tracking-[...]`
+     explícitos — los ~12 labels chicos en mayúscula de Distribuidores /
+     Rentals / ficha de producto pedían .14–.18em y renderizaban el valor de
+     acá (verificado por getComputedStyle: daban "normal"/.06em, nunca el suyo).
+     Con :where() esta regla pierde contra CUALQUIER utilidad, así que esos
+     usos por fin mandan ellos y el resto de los títulos cae al 0.
+     ⚠ NO meter esto de vuelta adentro de `.title-font`. Y ojo: `line-height`
+     SÍ queda con especificidad normal a propósito — hay lugares que dependen
+     de que el 1.06 le gane a un `leading-[...]` de utilidad. */
+  :where(.title-font) {
+    letter-spacing: 0;
   }
 
   .body-font {

@@ -59,7 +59,15 @@ function getCacheKey(text, from, to) {
 
 function getMyMemoryTranslatedText(payload) {
   if (!payload || typeof payload !== 'object') return ''
-  return payload?.responseData?.translatedText || ''
+  // MyMemory devuelve a veces HTTP 200 con el error DENTRO del body
+  // (`responseStatus: 429` al agotarse la cuota diaria) y mete el aviso en
+  // `translatedText`. Sin este guard ese cartel se muestra como si fuera la
+  // traducción — y peor, queda cacheado en localStorage para siempre.
+  const status = Number(payload.responseStatus)
+  if (Number.isFinite(status) && status !== 200) return ''
+  const text = payload?.responseData?.translatedText || ''
+  if (/^\s*MYMEMORY\s+WARNING/i.test(text)) return ''
+  return text
 }
 
 function getLibreTranslatedText(payload) {

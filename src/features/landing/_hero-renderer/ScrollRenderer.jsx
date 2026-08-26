@@ -169,9 +169,9 @@ function ContinuousScrollRenderer({ config, breakpoint }) {
 
 // Scrim kolortec (4 capas fijas de legibilidad, ScrollytellingSection.jsx:435-444).
 // Geometría/gradientes: app/globals.css bloque "Hero Labs: SnapChrome".
-function ScrollScrim({ breakpoint }) {
+export function ScrollScrim({ breakpoint, variant }) {
   return (
-    <div className={`scrolly-scrim${breakpoint === "mobile" ? " scrolly-scrim--mobile" : ""}`} aria-hidden="true">
+    <div className={`scrolly-scrim${breakpoint === "mobile" ? " scrolly-scrim--mobile" : ""}${variant === "kolortec-light" ? " scrolly-scrim--light" : ""}`} aria-hidden="true">
       <span className="scrolly-scrim-1" />
       <span className="scrolly-scrim-2" />
       <span className="scrolly-scrim-3" />
@@ -189,7 +189,7 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
       <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} scrubAlways />
     </div>
     {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${slide.overlay})` }} /> : null}
-    {slide.scrim === "kolortec" ? <ScrollScrim breakpoint={breakpoint} /> : null}
+    {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} /> : null}
     {/* Paso SALIENTE (Fase 1c, kolortec: bloques saliente/entrante montados a la
         vez): se mantiene ~700ms animando afuera (snapState="leaving") mientras
         el entrante hace lo mismo al revés — ver ElementView SNAP_TRANSITION. */}

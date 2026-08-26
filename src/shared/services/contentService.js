@@ -18,6 +18,13 @@ import { resolveAccountHost } from './accountHost.js'
 import { DEMO_MODE } from '../../config.js'
 import { normalizeScrollDesign } from '../../features/landing/_hero-renderer/scroll-contract.js'
 
+// Valores admitidos de `slide.scrim`. 'kolortec' = 4 capas NEGRAS (look original);
+// 'kolortec-light' = las mismas capas en crema, para escenas sobre fondo claro.
+// Agregar un valor acá obliga a agregarlo en TODAS las whitelists (ver el
+// contrato scroll-hero-contract.md, "regla de oro").
+export const SCRIM_VALUES = ['kolortec', 'kolortec-light']
+
+
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || ''
 
 // Re-export para no romper los consumidores que ya importan DEMO_MODE desde este adapter
@@ -397,7 +404,7 @@ function labConfigFromCarousel(carousel) {
       background: s.background ?? null,
       elements: Array.isArray(s.elements) ? s.elements : [],
       ...(typeof s.marker === 'number' ? { marker: s.marker } : {}),
-      ...(s.scrim === 'kolortec' ? { scrim: 'kolortec' } : {}),
+      ...(SCRIM_VALUES.includes(s.scrim) ? { scrim: s.scrim } : {}),
     })),
   })
 }
