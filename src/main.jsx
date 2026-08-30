@@ -27,6 +27,13 @@ function CanvasScaler() {
       const w = window.innerWidth
       const scale = w >= 1024 ? Math.min(1, w / 1920) : 1
       document.documentElement.style.setProperty('--kt-canvas-scale', String(scale))
+      // --hero-viewport-scale: el MISMO valor, con el nombre que espera el
+      // renderer del hero (scroll-contract.js). El renderer es compartido con
+      // el admin y con tiendita-store, así que no puede conocer una variable
+      // que se llama "kt-": lee la genérica, que sin declarar vale 1.
+      // Sin esto el escenario del scrolltelling se dibuja al `scale` por ciento
+      // del alto real y el JS calcula los umbrales sobre otro alto.
+      document.documentElement.style.setProperty('--hero-viewport-scale', String(scale))
     }
 
     update()

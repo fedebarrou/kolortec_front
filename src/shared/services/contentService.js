@@ -112,6 +112,19 @@ function mapProducto(p) {
 }
 
 /**
+ * La API manda `size` en BYTES (número). La ficha lo imprime tal cual junto al tipo
+ * ("597 - PDF"), así que sin formatear se lee como un número suelto sin unidad.
+ * Devuelve '' cuando no hay dato, para que la ficha no muestre "0 B".
+ */
+function formatBytes(size) {
+  const n = Number(size)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1).replace('.', ',')} KB`
+  return `${(n / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`
+}
+
+/**
  * Mapea un producto de /public/productos al shape COMPLETO que consume ProductDetailPage.
  * Todo data-driven de la API (galería, precio, specs, docs, variantes). Los campos que la API no
  * tiene (videos, accesorios, family, tagline) quedan vacíos → la página oculta esas secciones.
@@ -138,7 +151,13 @@ function mapProductoDetail(p) {
       .map((s) => [s.nombre || '', s.valor || '']),
     downloads: (Array.isArray(p.docs) ? p.docs : [])
       .filter((d) => d && d.url)
-      .map((d) => ({ label: d.title || 'Documento', size: d.size || '', type: String(d.extension || d.tipo || '').toUpperCase(), url: d.url })),
+      .map((d) => ({ label: d.title || 'Documento', size: formatBytes(d.size), type: String(d.extension || d.tipo || '').toUpperCase(), url: d.url })),
+    // Material externo: links de referencia cargados en el admin (productos.material_externo).
+    // La API los venía emitiendo y tiendita-store ya los mostraba, pero este adapter no los
+    // leía, así que en kolortec no se veían nunca por más que estuvieran cargados.
+    materialExterno: (Array.isArray(p.material_externo) ? p.material_externo : [])
+      .filter((l) => l && l.url)
+      .map((l) => ({ label: l.label || l.url, url: l.url })),
     variants: (Array.isArray(p.variantes) ? p.variantes : [])
       .map((v) => ({ id: v.id, sku: v.sku, price: v.precio, image: heroImage })),
     videos: (Array.isArray(p.media) ? p.media : [])

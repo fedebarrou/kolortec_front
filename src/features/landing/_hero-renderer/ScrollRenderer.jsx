@@ -15,7 +15,79 @@ import { ElementView, boxAt } from "./elements/ElementView";
 import { createSnapEngine } from "./snapEngine";
 import { SnapChrome } from "./SnapChrome";
 import { createBreathing, parallaxFor } from "./snapIdle";
-import { SNAP_DEFAULTS } from "./scroll-contract";
+import { SNAP_DEFAULTS, SCROLL_SIZE_COMPAT_DEFAULTS, scrollStepHeight, scrollStepPx, scrollBleedWidth, viewportScale } from "./scroll-contract";
+
+/**
+ * Full-bleed del escenario: lo saca del contenedor y lo lleva al ancho real de
+ * la pantalla. Se aplica sólo con `settings.scrollFullWidth` encendido.
+ *
+ * No usa `100vw` (incluye la barra de scroll: dejaría ~10px de overflow, que en
+ * kolortec tapa el overflow-x:clip pero en el store sería una barra horizontal
+ * en toda la página) ni el 50% del padre (asume que el contenedor está
+ * centrado, y el lienzo de kolortec no siempre lo está). Mide y corrige.
+ *
+ * Hasta que corre, el escenario se ve con el ancho del contenedor, que es el
+ * comportamiento de siempre — no hay estado intermedio roto.
+ */
+function useBleed(enabled, ref) {
+  const mlRef = useRef(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!enabled) {
+      mlRef.current = 0;
+      if (el) { el.style.width = ""; el.style.maxWidth = ""; el.style.marginLeft = ""; }
+      return;
+    }
+    // El margen NO se calcula con el 50% del padre: eso asume que el contenedor
+    // está centrado en la pantalla, y no siempre lo está — el lienzo de kolortec
+    // mide 1920 fijos y cuando la ventana es más angosta desborda hacia la
+    // derecha en vez de centrarse, así que la cuenta daba 5px corrida.
+    // Se corrige contra la posición REAL medida: cada pasada resta lo que al
+    // elemento le falta para tocar el borde izquierdo. Converge en un paso y no
+    // depende de cómo esté maquetado lo que lo contiene.
+    const medir = () => {
+      const nodo = ref.current;
+      if (!nodo) return;
+      const escala = viewportScale();
+      const ancho = scrollBleedWidth();
+      if (!ancho) return;
+      const desvio = nodo.getBoundingClientRect().left / escala;
+      const ml = Math.abs(desvio) < 0.5 ? mlRef.current : mlRef.current - desvio;
+      mlRef.current = ml;
+      nodo.style.width = `${ancho}px`;
+      nodo.style.maxWidth = "none";
+      nodo.style.marginLeft = `${ml}px`;
+    };
+    // Se escribe DIRECTO en el nodo en vez de pasar por estado de React.
+    // Es una corrección que depende de medir el layout ya pintado, así que no
+    // puede salir del render; y sobre todo, no puede depender de
+    // requestAnimationFrame: en una pestaña en segundo plano rAF no corre, y el
+    // hero quedaría sin el ancho hasta que alguien mire la pestaña.
+    // React no las pisa: sólo toca las propiedades que están en su prop `style`,
+    // y width/maxWidth/marginLeft nunca están ahí.
+    medir();
+    // ResizeObserver además del resize: cuando la historia hace crecer el
+    // documento aparece la barra de scroll vertical y el ancho útil baja ~10px,
+    // pero eso NO dispara `resize`. Sin observarlo el escenario queda 10px más
+    // ancho que la pantalla — invisible en kolortec, que clipea el overflow,
+    // pero en el store sería una barra horizontal en toda la página.
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(medir) : null;
+    ro?.observe(document.documentElement);
+    window.addEventListener("resize", medir);
+    // Remediciones diferidas además del observer. La primera medición pasa
+    // ANTES de que la historia haya estirado el documento, así que todavía no
+    // existe la barra de scroll vertical y el ancho útil se lee 10px de más.
+    // Los timers cubren ese momento sin depender del ResizeObserver, que no
+    // entrega en todos los contextos. medir() es idempotente: si el valor no
+    // cambió, reescribe lo mismo.
+    const timers = [0, 250, 1000, 2500].map((ms) => setTimeout(medir, ms));
+    return () => {
+      timers.forEach(clearTimeout);
+      ro?.disconnect();
+      window.removeEventListener("resize", medir);
+    };
+  }, [enabled, ref]);
+}
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -144,17 +216,23 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
 function ContinuousScrollRenderer({ config, breakpoint }) {
   const ref = useRef(null);
   const [time, setTime] = useState(0);
+  const stepH = scrollStepHeight(config.settings, breakpoint);
+  useBleed(config.settings?.scrollFullWidth ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollFullWidth, ref);
   const slides = (config.slides || []).filter((slide) => !slide.hidden);
   const fallbackDuration = config.settings.scrollDurationSec || 8;
   const durations = slides.map((slide) => config.settings.stepDurations?.[slide.id] || fallbackDuration);
   const totalDuration = durations.reduce((total, duration) => total + duration, 0) || fallbackDuration;
   useEffect(() => {
     let raf = 0;
-    const update = () => { const el = ref.current; if (!el) return; const total = el.offsetHeight - window.innerHeight; const p = total > 0 ? clamp(-el.getBoundingClientRect().top / total, 0, 1) : 0; setTime(p * totalDuration); };
+    // Todo en píxeles FÍSICOS: getBoundingClientRect ya viene con el zoom del
+    // contenedor aplicado, así que el alto del sticky tiene que venir de
+    // scrollStepPx y no de innerHeight — si no, el recorrido termina antes o
+    // después de donde se ve.
+    const update = () => { const el = ref.current; if (!el) return; const rect = el.getBoundingClientRect(); const total = rect.height - scrollStepPx(config.settings, breakpoint); const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 0; setTime(p * totalDuration); };
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
     update(); window.addEventListener("scroll", onScroll, true); window.addEventListener("resize", onScroll);
     return () => { window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", onScroll); cancelAnimationFrame(raf); };
-  }, [totalDuration]);
+  }, [totalDuration, config.settings, breakpoint]);
   let stepIndex = 0;
   let stepStart = 0;
   for (let index = 0; index < durations.length; index += 1) {
@@ -178,7 +256,7 @@ function ContinuousScrollRenderer({ config, breakpoint }) {
     const u = duration > 0 ? clamp(stepTime / duration, 0, 1) : 0;
     videoProgress = clamp(segStart + u * (segEnd - segStart), 0, 1);
   }
-  return <div ref={ref} data-scroll-hero style={{ position: "relative", height: Math.max(1, totalDuration) * 200 }}><div style={{ position: "sticky", top: 0, height: "var(--vh-full, 100vh)" }}><ScrollStage config={config} slide={slide} breakpoint={breakpoint} time={stepTime} duration={duration} videoProgress={videoProgress} /></div></div>;
+  return <div ref={ref} data-scroll-hero style={{ position: "relative", height: Math.max(1, totalDuration) * 200 }}><div style={{ position: "sticky", top: 0, height: stepH }}><ScrollStage config={config} slide={slide} breakpoint={breakpoint} time={stepTime} duration={duration} videoProgress={videoProgress} /></div></div>;
 }
 
 /* ── Modo SNAP (kolortec) ──────────────────────────────────────────────────── */
@@ -292,6 +370,14 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
   // tween del engine (from/to = índices, t = fracción lineal) — alimenta el
   // fill continuo de SnapChrome y el hint (independiente del marker/video).
   const [position, setPosition] = useState(0);
+  // Tamaño del escenario. `stepH` es el alto CSS de UN paso y `pasoPx()` el
+  // mismo alto en píxeles FÍSICOS de scroll, que es contra lo que se comparan
+  // los umbrales. Los dos salen del contrato para que no se separen: si el CSS
+  // dice una cosa y el JS otra, los pasos disparan corridos.
+  const stepH = scrollStepHeight(config.settings, breakpoint);
+  useBleed(config.settings?.scrollFullWidth ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollFullWidth, wrapRef);
+  const pasoPx = () => scrollStepPx(config.settings, breakpoint);
+
   // Efectos idle (kolortec): breathing (grayscale pulsante) + parallax sutil.
   const [breatheG, setBreatheG] = useState(0);
   const [parallaxY, setParallaxY] = useState(0);
@@ -362,7 +448,9 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
     });
     engineRef.current = engine;
 
-    const vh = () => window.innerHeight || 800;
+    // Alto de un paso en píxeles reales de scroll. Antes era window.innerHeight
+    // a secas, que solo coincide con lo pintado cuando el contenedor no escala.
+    const vh = () => pasoPx();
     // Takeover: activo desde el MONTAJE (no recién al pinear) mientras
     // window.scrollY < wrapTop + N*vh, es decir, mientras no se haya scrolleado
     // por completo más allá del recorrido. wrapTop se mide en vivo (posición
@@ -622,7 +710,7 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
     const last = markers.length - 1;
     if (last < 0) return;
     const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-    const vh = window.innerHeight || 800;
+    const vh = pasoPx();
     const startY = window.scrollY;
     const wrapTop = startY + wrap.getBoundingClientRect().top;
     // MISMO punto que la salida natural: el final del spacer, ni un pixel mas.
@@ -659,7 +747,7 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
   return <div ref={wrapRef} data-scroll-hero data-scroll-mode="snap" style={{
       "--site-header-h": `${headerH}px`,
       position: "relative",
-      height: `calc(${Math.max(1, slides.length)} * var(--vh-full, 100vh))`,
+      height: `calc(${Math.max(1, slides.length)} * ${stepH})`,
       // ESPACIO FISICO entre la historia y lo que sigue = alto del navbar + un
       // margen. Va como margin-bottom (FUERA del wrap) a proposito: sumarlo al
       // `height` no sirve — ahi el colchon queda DENTRO del spacer y solo alarga
@@ -669,7 +757,7 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
       // aire. `--story-gap` para ajustar el margen por sitio.
       marginBottom: `calc(var(--site-header-h, 0px) + var(--story-gap, 2rem))`,
     }}>
-    <div style={{ position: "sticky", top: 0, height: "var(--vh-full, 100vh)", fontFamily: config.theme?.fontFamily || "var(--site-font, Inter, sans-serif)", containerType: "inline-size", containerName: "hc-stage" }}>
+    <div style={{ position: "sticky", top: 0, height: stepH, fontFamily: config.theme?.fontFamily || "var(--site-font, Inter, sans-serif)", containerType: "inline-size", containerName: "hc-stage" }}>
       <SnapStage config={config} slide={slide} breakpoint={breakpoint} progress={progress} arrived={arrived && !pastEnd} leavingSlide={leavingSlide} breatheG={snap.breathing ? breatheG : 0} parallaxY={snap.parallax ? parallaxY : 0} />
       <SnapChrome
         snap={snap}

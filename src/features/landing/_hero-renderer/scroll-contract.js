@@ -57,6 +57,92 @@ export function heroSizeMode(settings) {
   return full && width === 'full' ? 'full' : 'contained';
 }
 
+/**
+ * TAMAÑO del escenario (modo SCROLLTELLING). Dos ajustes INDEPENDIENTES —
+ * espejo de SCROLL_SIZE_COMPAT_DEFAULTS en el admin (_schema/defaults.js).
+ * Si se edita allá, editar acá.
+ *
+ *   scrollFullWidth  : el escenario se sale del contenedor y ocupa el ancho
+ *                      real de la pantalla. Default FALSE = como venía,
+ *                      hereda el ancho de quien lo contiene.
+ *   scrollFullHeight : cada paso ocupa el alto real de la pantalla. Default
+ *                      TRUE = como venía (el sticky siempre fue 100vh).
+ *                      En false, cada paso mide scrollHeight{Desktop,Mobile}.
+ *
+ * Los defaults preservan el render de cualquier diseño ya guardado.
+ *
+ * `--hero-viewport-scale`: factor de zoom del contenedor que envuelve al
+ * renderer, para los sitios que escalan el layout entero. Sin declarar vale 1
+ * y todo esto se comporta como antes. Existe porque kolortec mete TODO el
+ * sitio en un lienzo de 1920px con `zoom` (.kt-zoom-canvas): adentro de un
+ * `zoom: s`, `100dvh` se dibuja al s por ciento del alto real, así que el
+ * escenario quedaba MÁS CORTO que la pantalla en cualquier monitor de menos
+ * de 1920 — y el JS, que mide con window.innerHeight, calculaba los umbrales
+ * de cada paso sobre un alto que no era el que se estaba pintando.
+ */
+export const SCROLL_SIZE_COMPAT_DEFAULTS = {
+  scrollFullWidth: false,
+  scrollFullHeight: true,
+  scrollHeightDesktop: 720,
+  scrollHeightMobile: 560,
+};
+
+/** Lee el factor de zoom del contenedor. Sin la var declarada devuelve 1. */
+export function viewportScale() {
+  if (typeof window === "undefined") return 1;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue("--hero-viewport-scale");
+  const n = parseFloat(raw);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+/**
+ * Alto CSS de UN paso. Con full height se divide por la escala del contenedor,
+ * que es lo que hace que el paso mida la pantalla ENTERA y no un porcentaje.
+ */
+export function scrollStepHeight(settings, breakpoint) {
+  const s = settings || {};
+  const full = s.scrollFullHeight ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollFullHeight;
+  if (full) return "calc(var(--vh-full, 100vh) / var(--hero-viewport-scale, 1))";
+  const px = breakpoint === "mobile"
+    ? (s.scrollHeightMobile ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightMobile)
+    : (s.scrollHeightDesktop ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightDesktop);
+  return `${px}px`;
+}
+
+/**
+ * Alto FÍSICO de un paso en píxeles de scroll, que es contra lo que el JS
+ * compara los umbrales. Con full height es el viewport real; con alto fijo es
+ * el valor en px multiplicado por la escala, porque eso es lo que ocupa en
+ * pantalla una vez aplicado el zoom del contenedor.
+ */
+export function scrollStepPx(settings, breakpoint) {
+  const s = settings || {};
+  const full = s.scrollFullHeight ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollFullHeight;
+  if (full) return (typeof window !== "undefined" && window.innerHeight) || 800;
+  const px = breakpoint === "mobile"
+    ? (s.scrollHeightMobile ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightMobile)
+    : (s.scrollHeightDesktop ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightDesktop);
+  return px * viewportScale();
+}
+
+/**
+ * Ancho del escenario cuando va a pantalla completa, medido en JS.
+ *
+ * NO se usa `100vw`: incluye la barra de scroll, así que romper con vw deja
+ * ~15px de overflow horizontal. En kolortec lo tapa el `overflow-x: clip` del
+ * lienzo, pero el store NO lo tiene y aparecería una barra horizontal en toda
+ * la página. `documentElement.clientWidth` es el viewport sin la barra.
+ *
+ * Se divide por la escala por lo mismo que el alto: adentro de un `zoom: s`
+ * hay que pedir 1/s para ocupar el ancho real.
+ */
+export function scrollBleedWidth() {
+  if (typeof window === "undefined") return null;
+  const w = document.documentElement.clientWidth;
+  if (!w) return null;
+  return w / viewportScale();
+}
+
 const clamp01 = (n) => Math.min(1, Math.max(0, n));
 
 /**

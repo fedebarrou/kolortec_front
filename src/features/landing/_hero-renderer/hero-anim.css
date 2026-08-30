@@ -216,3 +216,24 @@
 }
 @container hc-stage (min-width: 1024px) { .hc-kt-block { padding: 0 64px; } }
 @container hc-stage (min-width: 1280px) { .hc-kt-block { padding: 0 160px 0 96px; } }
+
+/* ── Rebote del chevron del hint "Scrolleá" ─────────────────────────────────
+   Faltaba SOLO en kolortec: SnapChrome aplica `animation: scrolly-bounce ...`
+   al chevron, pero el keyframe no existía en ninguna hoja de este sitio, así
+   que el hint se quedaba quieto. Copia exacta de tiendita-store/app/globals.css
+   y de _renderer/hero-anim.css del admin. */
+@keyframes scrolly-bounce {
+  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+}
+
+/* ── Aura del título (widget `message`, opción "Glow") ──────────────────────
+   Existía SOLO en hero-lab.css y encima scopeada a .hero-lab-root, así que el
+   resplandor pulsaba dentro del editor y en ningún lado más: el usuario prendía
+   el glow, lo veía animar, publicaba, y en la web quedaba estático.
+   Sin prefijo de scope: acá el renderer es el de producción. */
+@keyframes rl-aura-breathe {
+  0%, 100% { text-shadow: 0 1px 2px rgba(10,6,40,.78), 0 0 17px rgba(200,180,255,.5), 0 0 40px rgba(160,120,255,.3) }
+  50% { text-shadow: 0 1px 2px rgba(10,6,40,.78), 0 0 30px rgba(200,180,255,.82), 0 0 72px rgba(160,120,255,.52) }
+}
+.rl-aura { animation: rl-aura-breathe 3.6s ease-in-out infinite; }

@@ -686,6 +686,38 @@ function ProductDetailPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Material de referencia: son links que SALEN del sitio, así que no van
+                      mezclados con las descargas —esas bajan un archivo— ni disfrazados de
+                      botón "Descargar". Van aparte, con target _blank y rel noopener. */}
+                  {product.materialExterno.length > 0 ? (
+                    <div className="mt-10">
+                      <strong className="title-font block text-[1.25rem] leading-[1.05]">
+                        {t('productDetail.downloads.externalMaterial', 'Material de referencia')}
+                      </strong>
+                      <div className="mt-4 border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
+                        {product.materialExterno.map((item) => (
+                          <a
+                            key={item.url}
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="kt-reveal-item flex items-center justify-between gap-4 py-3.5 transition hover:text-primary"
+                          >
+                            <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
+                            <span
+                              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#383838]"
+                              aria-hidden="true"
+                            >
+                              <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+                                <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5" />
+                              </svg>
+                            </span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               )}
             </section>
