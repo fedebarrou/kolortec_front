@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
 import { CarouselRenderer } from '../_hero-renderer/CarouselRenderer'
+import { heroSizeMode } from '../_hero-renderer/scroll-contract'
 
 // Detect breakpoint once per mount (matchMedia — not reactive to resize, good enough for hero).
 function useBreakpoint() {
@@ -78,13 +79,22 @@ function HeroSection({ hero }) {
       ...labConfigTranslated,
       settings: hero.labConfig.settings ?? DEFAULT_SETTINGS,
     }
-    // Viewport COMPLETO, sin restarle el navbar. Antes era `100dvh - navH`
-    // (72 mobile / 80 desktop), que asume que el navbar ocupa lugar JUSTO
-    // ARRIBA del hero — y no lo hace: es `sticky top-0` desde el tope del
-    // documento, así que flota por encima. Restarle su alto sólo dejaba al hero
-    // más corto que la pantalla (783px en un viewport de 863). Dividido por la
-    // escala del canvas (.kt-zoom-canvas usa zoom).
-    const containerHeight = 'calc(100dvh / var(--kt-canvas-scale, 1))'
+    // Alto SÓLO en modo Pantalla completa. `containerHeight` le gana al alto del
+    // diseño dentro del CarouselRenderer, así que pasarlo siempre hacía que el
+    // modo Encabezado (alto fijo 280/320) NUNCA se viera acá: el hero salía a
+    // pantalla completa aunque el diseño dijera otra cosa — y el ancho/el radio
+    // sí se aplicaban, lo que confundía más ("respeta unas cosas y otras no").
+    // En modo Encabezado va `undefined` y manda settings.heightDesktop/Mobile.
+    //
+    // En modo full: viewport COMPLETO, sin restarle el navbar. Antes era
+    // `100dvh - navH` (72 mobile / 80 desktop), que asume que el navbar ocupa
+    // lugar JUSTO ARRIBA del hero — y no lo hace: es `sticky top-0` desde el tope
+    // del documento, así que flota por encima. Restarle su alto sólo dejaba al
+    // hero más corto que la pantalla (783px en un viewport de 863). Dividido por
+    // la escala del canvas (.kt-zoom-canvas usa zoom).
+    const containerHeight = heroSizeMode(config.settings) === 'full'
+      ? 'calc(100dvh / var(--kt-canvas-scale, 1))'
+      : undefined
     return (
       <section
         className="kt-section-reveal"

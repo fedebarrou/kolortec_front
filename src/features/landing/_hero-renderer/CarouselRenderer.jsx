@@ -3,6 +3,7 @@ import { Background } from './Background'
 import { ElementView, boxAt } from './elements/ElementView'
 import { useCarousel } from './useCarousel'
 import { ScrollScrim } from './ScrollRenderer'
+import { SIZE_COMPAT_DEFAULTS } from './scroll-contract'
 
 const shadowOf = (s) =>
   ({ none: 'none', sm: '0 1px 4px rgba(0,0,0,.2)', md: '0 6px 20px rgba(0,0,0,.3)', lg: '0 12px 40px rgba(0,0,0,.45)' }[s])
@@ -47,7 +48,7 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
   )
 }
 
-export function CarouselRenderer({ config, breakpoint, activeIndex, containerHeight, bleed }) {
+export function CarouselRenderer({ config, breakpoint, activeIndex, containerHeight, bleed, fillWidth }) {
   const { settings, slides, theme } = config
   // Duración de autoplay por-slide (settings.slideDurations[slideId], ms) — sin
   // valor propio cae a settings.intervalMs. Memoizado por firma de contenido (no
@@ -65,7 +66,47 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   const index = activeIndex ?? auto.index
   // containerHeight/bleed opcionales (sync con store/kolortec). bleed = full-bleed
   // (sin radio ni sombra) para que el preview coincida con el hero publicado.
-  const height = containerHeight ?? (settings.fullHeight ? 'var(--vh-full, 100vh)' : (breakpoint === 'mobile' ? settings.heightMobile : settings.heightDesktop))
+  // Claves de tamaño ausentes → SIZE_COMPAT_DEFAULTS (`??` para no pisar un
+  // fullHeight:false explícito). Un diseño sin ellas rendereaba `height:
+  // undefined` acá mientras el admin lo mostraba full — ver scroll-contract.js.
+  const fullHeight = settings.fullHeight ?? SIZE_COMPAT_DEFAULTS.fullHeight
+  const heightDesktop = settings.heightDesktop ?? SIZE_COMPAT_DEFAULTS.heightDesktop
+  const heightMobile = settings.heightMobile ?? SIZE_COMPAT_DEFAULTS.heightMobile
+  // MODO CONTENEDOR: el hero deja de ser full-bleed y respeta los márgenes
+  // laterales de la página, como el `.hero--contained` del renderer legacy.
+  // El ancho lo declara CADA SITIO con `--hero-gutter` / `--hero-maxw`, para que
+  // el hero quede alineado con SUS secciones. No se puede hardcodear: la store
+  // capea en su container (1200 - 2x gutter = 1136) y kolortec NO capea (su
+  // .kt-container es full width con padding-inline 1.5rem / 10rem >=1024px).
+  // Antes iba el numero de la store, y en kolortec el hero salia mucho mas
+  // angosto que las secciones de al lado. (`--content-max` lo
+  // setea Apariencia, `--container-maxw` es el default del sitio, 1200px es el
+  // fallback para el admin, donde esas vars no existen). Lo que distingue a este
+  // modo del full NO es un ancho más chico: es respetar los márgenes de la web
+  // y usar un alto de encabezado (la mitad).
+  // El gutter va en el width (no como padding) para que sea margen EXTERIOR.
+  // `fillWidth`: las miniaturas del editor ignoran el modo contenedor — ahí el
+  // recuadro chico YA es el encuadre y un gutter de 24px se comería la miniatura.
+  // La regla es la MISMA que heroSizeMode() del Inspector (contenedor salvo que
+  // las DOS claves sean full), si no el selector diría una cosa y esto otra.
+  const heroWidth = settings.heroWidth ?? SIZE_COMPAT_DEFAULTS.heroWidth
+  const contained = !fillWidth && !(fullHeight && heroWidth === 'full')
+  // RELACION DE ASPECTO (modo Encabezado): con una relacion puesta el alto sale
+  // del ancho, que a su vez es el del contenido de las secciones. Sin relacion
+  // (diseno viejo) se cae al alto en px de siempre. `containerHeight` sigue
+  // ganando: si el host fuerza un alto, no hay aspecto que valga.
+  const aspecto = contained
+    ? (breakpoint === 'mobile'
+        ? (settings.aspectMobile ?? SIZE_COMPAT_DEFAULTS.aspectMobile)
+        : (settings.aspectDesktop ?? SIZE_COMPAT_DEFAULTS.aspectDesktop))
+    : null
+  const usaAspecto = !!aspecto && containerHeight == null
+  // Parentesis obligatorios: `??` liga mas fuerte que `?:`, sin ellos
+  // `containerHeight ?? usaAspecto ? a : b` se evalua como `(containerHeight ?? usaAspecto) ? a : b`
+  // y un containerHeight presente daria undefined (hero sin alto).
+  const height = containerHeight ?? (usaAspecto ? undefined : (fullHeight ? 'var(--vh-full, 100vh)' : (breakpoint === 'mobile' ? heightMobile : heightDesktop)))
+  const radius = contained ? theme.radius : (bleed ? 0 : theme.radius)
+  const shadow = contained ? shadowOf(theme.shadow) : (bleed ? 'none' : shadowOf(theme.shadow))
   const isSlide = settings.transition === 'slide'
   const accent = theme.colors?.accent || '#fff'
   // containerName 'hc-stage': SIN el nombre, las reglas `@container hc-stage`
@@ -73,7 +114,7 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // layout mobile (centrado abajo) en vez del desktop (derecha, centrado).
   // Faltaba en las 3 copias del renderer, no solo acá.
   return (
-    <div style={{ position: 'relative', width: '100%', height, overflow: 'hidden', borderRadius: bleed ? 0 : theme.radius, boxShadow: bleed ? 'none' : shadowOf(theme.shadow), fontFamily: theme.fontFamily || 'var(--site-font, Inter, sans-serif)', background: theme.colors.bg, containerType: 'inline-size', containerName: 'hc-stage' }}>
+    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: theme.fontFamily || 'var(--site-font, Inter, sans-serif)', background: theme.colors.bg, containerType: 'inline-size', containerName: 'hc-stage' }}>
       {config.background && config.background.type !== 'none' && (
         <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} /></div>
       )}

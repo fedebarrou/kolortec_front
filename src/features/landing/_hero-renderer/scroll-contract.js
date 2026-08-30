@@ -19,6 +19,44 @@ export const SNAP_DEFAULTS = { stepDurationMs: 1100, gestureGapMs: 130, revealDe
 // stepArrows:false — kolortec no tiene flechas laterales.
 export const SNAP_KOLORTEC_PRESET = { stepDurationMs: 1100, gestureGapMs: 130, revealDelayMs: 0, breathing: true, parallax: true, hideNav: true, progress: true, hint: true, stepArrows: false, skipButton: true, logoBar: true, takeover: true };
 
+/**
+ * TAMAÑO del hero (modo CARRUSEL) — espejo de SIZE_COMPAT_DEFAULTS en el admin
+ * (tiendita-front/app/(admin)/admin/hero-lab/_schema/defaults.js). Si se edita
+ * allá, editar acá.
+ *
+ * Son DOS MODOS, que en los datos viajan como dos claves:
+ *   full      → heroWidth:'full'      + fullHeight:true   (full-bleed + 100vh)
+ *   contained → heroWidth:'contained' + fullHeight:false  (márgenes + alto fijo)
+ * `contained` es el mismo concepto que el `.hero--contained` del renderer legacy
+ * (tiendita-store/app/globals.css) y que `scene.viewport.hero_width`.
+ *
+ * Estos son los valores con los que se venía renderizando un diseño guardado al
+ * que le falten esas claves. Sin este fallback ese diseño rendereaba
+ * `height: undefined` (hero colapsado) en la web publicada, mientras el admin
+ * lo mostraba a pantalla completa — el admin sí completa las claves ausentes
+ * vía normalizeConfig(), el store no tenía equivalente.
+ *
+ * Un hero NUEVO nace en modo `contained`; eso lo decide el admin al crearlo
+ * (newConfig()), no acá.
+ */
+export const SIZE_COMPAT_DEFAULTS = { heightDesktop: 420, heightMobile: 360, fullHeight: true, heroWidth: "full" };
+
+/**
+ * heroSizeMode(settings) -> 'full' | 'contained'
+ * Espejo de heroSizeMode() en el admin (_schema/defaults.js). `full` SOLO si las
+ * dos claves lo son; cualquier otra combinacion es contenedor.
+ *
+ * Lo usan los HOSTS que fuerzan un alto propio via `containerHeight`: ese prop
+ * gana sobre el alto del diseno, asi que si lo pasan siempre el modo Encabezado
+ * no se ve nunca. Deben pasarlo SOLO en modo `full`.
+ */
+export function heroSizeMode(settings) {
+  const s = settings || {};
+  const width = s.heroWidth ?? SIZE_COMPAT_DEFAULTS.heroWidth;
+  const full = s.fullHeight ?? SIZE_COMPAT_DEFAULTS.fullHeight;
+  return full && width === 'full' ? 'full' : 'contained';
+}
+
 const clamp01 = (n) => Math.min(1, Math.max(0, n));
 
 /**

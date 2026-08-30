@@ -295,6 +295,21 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
   // Efectos idle (kolortec): breathing (grayscale pulsante) + parallax sutil.
   const [breatheG, setBreatheG] = useState(0);
   const [parallaxY, setParallaxY] = useState(0);
+
+  // --site-header-h: alto REAL del navbar del sitio. Se publica como var en el
+  // wrap para que el spacer de la historia reserve ESE espacio fisico, de modo
+  // que al terminar el recorrido la seccion siguiente no quede debajo del
+  // navbar. Se mide (no se hardcodea) porque cambia entre desktop y movil.
+  const [headerH, setHeaderH] = useState(0);
+  useEffect(() => {
+    const medir = () => {
+      const el = document.querySelector(".site-header");
+      setHeaderH(el ? Math.round(el.getBoundingClientRect().height) : 0);
+    };
+    medir();
+    window.addEventListener("resize", medir);
+    return () => window.removeEventListener("resize", medir);
+  }, []);
   // Chrome kolortec: hint hasta el primer gesto + gesto programático (flechas/Saltar).
   const [started, setStarted] = useState(false);
   const gestureRef = useRef(null);
@@ -610,7 +625,12 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
     const vh = window.innerHeight || 800;
     const startY = window.scrollY;
     const wrapTop = startY + wrap.getBoundingClientRect().top;
-    const endY = wrapTop + slides.length * vh; // fin del spacer = primer pixel de la sección siguiente
+    // MISMO punto que la salida natural: el final del spacer, ni un pixel mas.
+    // NO se resta el alto del navbar — ese espacio ya lo reserva el margin-bottom
+    // del wrap. Restarlo aca hacia que "Saltar" aterrizara headerH mas arriba que
+    // scrollear hasta el final (medido: heroTop 184 vs 116), o sea dos resultados
+    // distintos para la misma accion.
+    const endY = wrapTop + slides.length * vh;
     setStarted(true);
     engine.syncToStep(last, { instant: true });
     skippingRef.current = true;
@@ -636,7 +656,19 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
   const slide = slides[Math.min(stepIndex, slides.length - 1)];
   if (!slide) return null;
   const accent = config.theme?.colors?.primary || "#fff";
-  return <div ref={wrapRef} data-scroll-hero data-scroll-mode="snap" style={{ position: "relative", height: `calc(${Math.max(1, slides.length)} * var(--vh-full, 100vh))` }}>
+  return <div ref={wrapRef} data-scroll-hero data-scroll-mode="snap" style={{
+      "--site-header-h": `${headerH}px`,
+      position: "relative",
+      height: `calc(${Math.max(1, slides.length)} * var(--vh-full, 100vh))`,
+      // ESPACIO FISICO entre la historia y lo que sigue = alto del navbar + un
+      // margen. Va como margin-bottom (FUERA del wrap) a proposito: sumarlo al
+      // `height` no sirve — ahi el colchon queda DENTRO del spacer y solo alarga
+      // el recorrido, la seccion siguiente igual termina apoyando en viewport 0.
+      // Como margen exterior corre el inicio del proximo elemento en el
+      // documento, asi que al terminar la historia queda debajo del navbar y con
+      // aire. `--story-gap` para ajustar el margen por sitio.
+      marginBottom: `calc(var(--site-header-h, 0px) + var(--story-gap, 2rem))`,
+    }}>
     <div style={{ position: "sticky", top: 0, height: "var(--vh-full, 100vh)", fontFamily: config.theme?.fontFamily || "var(--site-font, Inter, sans-serif)", containerType: "inline-size", containerName: "hc-stage" }}>
       <SnapStage config={config} slide={slide} breakpoint={breakpoint} progress={progress} arrived={arrived && !pastEnd} leavingSlide={leavingSlide} breatheG={snap.breathing ? breatheG : 0} parallaxY={snap.parallax ? parallaxY : 0} />
       <SnapChrome

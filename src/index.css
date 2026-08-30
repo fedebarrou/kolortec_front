@@ -1,3 +1,10 @@
+/* El navbar es sticky y flota sobre el contenido: sin esto, cualquier
+   posicionamiento por scroll (anchors, scrollIntoView, scroll-snap) deja el
+   destino DEBAJO del navbar. --site-header-h la publica ScrollRenderer. */
+html {
+  scroll-padding-top: var(--site-header-h, 0px);
+}
+
 @import "tailwindcss";
 @layer base, components, utilities;
 
@@ -539,6 +546,15 @@
     width: 100%;
     margin: 0;
     padding-inline: 1.5rem;
+  }
+
+  /* Hero del builder (modo Encabezado): mismo gutter que .kt-container y SIN
+     tope de ancho, para que el hero quede alineado con las secciones de al lado.
+     El renderer lee estas dos vars; sin ellas caia a los valores de la store
+     (tope 1136px) y el hero salia visiblemente mas angosto que todo lo demas. */
+  :root {
+    --hero-gutter: 1.5rem;
+    --hero-maxw: none;
   }
 
   .kt-detail-page {
@@ -2241,6 +2257,10 @@
   @media (min-width: 1024px) {
     .kt-container {
       padding-inline: 10rem;
+    }
+
+    :root {
+      --hero-gutter: 10rem;
     }
 
     .kt-detail-tabs {
