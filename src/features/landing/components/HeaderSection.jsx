@@ -5,7 +5,7 @@ import { defaultLandingContent } from '../data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useAuth } from '../../../shared/auth/AuthContext'
-import { irASeccion } from '../../../shared/utils/irASeccion'
+import { irASeccion, irASeccionCuandoAparezca } from '../../../shared/utils/irASeccion'
 
 const normalizeText = (value) =>
   value
@@ -188,7 +188,9 @@ function HeaderSection() {
 
   useEffect(() => {
     if (hash !== '#shop') return
-    irASeccion('shop')
+    // Al venir de otra página la home recién monta y `#shop` todavía no existe
+    // (las secciones salen de la API): hay que esperarla, no intentar una vez.
+    return irASeccionCuandoAparezca('shop')
   }, [hash, pathname])
 
   const handleSupportNav = (event) => {

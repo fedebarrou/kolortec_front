@@ -66,7 +66,12 @@
             // Sacar el atributo ANTES del scrollTo: mientras esta puesto el documento
             // tiene overflow:hidden y el scroll no se moveria.
             d.removeAttribute('data-kt-boot');
-            try { window.scrollTo(0, 0); } catch (e) {}
+            // El reset a cero es para que una carga normal empiece arriba. Pero si
+            // el visitante pidio una seccion (hay hash), pisarlo lo devolvia al
+            // tope: tocar SOPORTE desde otra pagina te dejaba arriba de todo, o
+            // sea obligado a pasar por el scrolltelling. El salto lo hace React
+            // ~antes~ de que esto corra, asi que este scrollTo lo borraba.
+            try { if (!window.location.hash) window.scrollTo(0, 0); } catch (e) {}
             el.className = 'is-leaving';
             window.setTimeout(function () {
               if (el.parentNode) el.parentNode.removeChild(el);
