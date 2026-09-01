@@ -3,6 +3,8 @@ import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
 import ScrolltellingSection from './ScrolltellingSection'
+import ClosingPhoto from './ClosingPhoto'
+import StackOver from './StackOver'
 import JoinTeaserSection from './JoinTeaserSection'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
@@ -74,25 +76,36 @@ function LandingPage() {
           <Divider />
         </>
       ) : null}
-      <SectionErrorBoundary name="Shop">
-        <ShopSection shop={content.shop} ready={!loading} />
-      </SectionErrorBoundary>
-      {/* AIRE (sin hairline) después de la amarilla: termina a sangre en negro pleno
-          y lo que sigue pegado se lee como parte de ella. La raya la pone el propio
-          JoinTeaserSection, que trae su border-t — dos líneas juntas sobraban. */}
-      <div aria-hidden="true" className="h-[clamp(56px,8vw,112px)]" />
+      {/* APILADO: la amarilla se queda clavada al tope y Sumate sube por encima,
+          en vez de empujarla. Es el momento inmersivo de la home — la sección ya
+          ocupa la pantalla entera, así que el recurso cae natural ahí y no hace
+          falta tocar el resto. Se fue el spacer que había acá: ahora no hay
+          costura que suavizar, una tapa a la otra. */}
+      <div className="kt-stack-pin">
+        <SectionErrorBoundary name="Shop">
+          <ShopSection shop={content.shop} ready={!loading} />
+        </SectionErrorBoundary>
+      </div>
       {/* "Sumate" va DESPUÉS de la sección amarilla: primero se muestra lo que
           Kolortec hace por vos (soporte, garantía, guías) y recién ahí se invita
           a sumarse. Antes eran DOS teasers espejados —distribuidores y rental—
-          arriba del amarillo, compitiendo entre sí por la misma decisión. */}
-      <SectionErrorBoundary name="Join">
-        <JoinTeaserSection join={content.join} />
-      </SectionErrorBoundary>
-      {/* Contactanos cierra la página: Sumate ya trae su border-b, así que no hace
-          falta Divider en la costura. */}
-      <SectionErrorBoundary name="Support">
-        <SupportSection support={content.support} loading={loading} />
-      </SectionErrorBoundary>
+          arriba del amarillo, compitiendo entre sí por la misma decisión.
+          `kt-stack-over` + su fondo opaco es lo que la deja tapar a la amarilla. */}
+      <StackOver>
+        <SectionErrorBoundary name="Join">
+          <JoinTeaserSection join={content.join} />
+        </SectionErrorBoundary>
+        {/* Contactanos cierra la página: Sumate ya trae su border-b, así que no hace
+            falta Divider en la costura. */}
+        <SectionErrorBoundary name="Support">
+          <SupportSection support={content.support} loading={loading} />
+        </SectionErrorBoundary>
+        {/* Foto a sangre antes del pie: el cierre venía siendo texto sobre negro
+            hasta el footer. Sale de la galería de la cuenta; sin galería, no va. */}
+        <SectionErrorBoundary name="ClosingPhoto">
+          <ClosingPhoto images={content.gallery?.images} alt="" />
+        </SectionErrorBoundary>
+      </StackOver>
     </>
   )
 }

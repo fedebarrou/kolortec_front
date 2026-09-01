@@ -26,14 +26,12 @@ function ProductDetailPage() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
 
-  // Volver: si el visitante llego navegando por el sitio, lo devolvemos a donde
-  // estaba (conserva el scroll y los filtros del catalogo). Si entro DIRECTO —un
-  // link compartido, el QR de un producto, un resultado de buscador— no hay a
-  // donde volver: history.back() lo sacaria del sitio. En ese caso, al catalogo.
-  const volver = () => {
-    if (window.history.state?.idx > 0) navigate(-1)
-    else navigate('/products')
-  }
+  // Volver SIEMPRE al listado de categorias, no al historial. history.back() te
+  // devolvia a donde vinieras: desde el buscador del navbar, desde un link
+  // compartido o desde otra ficha, "volver" te sacaba a cualquier lado o
+  // directamente afuera del sitio. Desde una ficha de producto el destino que
+  // siempre tiene sentido es el catalogo.
+  const volver = () => navigate('/products')
   const { slug } = useParams()
   // Data-driven: cargamos el producto REAL desde la API de tiendita por su id/slug.
   const [product, setProduct] = useState(null)

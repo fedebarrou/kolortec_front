@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getProductReviews, submitProductReview } from '../../../shared/services/contentService'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import Rail from '../../../shared/components/Rail'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 /**
@@ -69,13 +70,20 @@ function RatingInput({ value, onChange, disabled }) {
   )
 }
 
+/**
+ * Un comentario, como tarjeta de carrusel.
+ *
+ * Era una lista vertical: con veinte comentarios la ficha se estiraba y el
+ * formulario para dejar el tuyo quedaba enterrado arriba, lejos de lo que
+ * acababas de leer. En carrusel los comentarios ocupan una franja fija, se
+ * recorren de a uno y el formulario queda SIEMPRE abajo, que es el orden en el
+ * que se usa: leo lo que dicen otros, y después escribo el mío.
+ */
 function ReviewItem({ review, pending = false, pendingLabel }) {
   return (
-    <li className="kt-reveal-item border-b border-[#2a2a2a] py-5 last:border-b-0">
-      <div className="flex flex-wrap items-center gap-3">
-        <strong className="text-[0.95rem] text-[#f2f2f2]">{review.nombre || 'Anónimo'}</strong>
+    <article className="flex h-full flex-col gap-3 border border-[#2a2a2a] bg-[#0d0d0e] p-5">
+      <div className="flex flex-wrap items-center gap-2.5">
         <Stars value={review.rating} size="sm" />
-        {review.fecha ? <span className="text-[0.72rem] text-[#8b919b]">{review.fecha}</span> : null}
         {pending ? (
           <span className="border border-[rgba(244,223,51,0.45)] px-2 py-[2px] text-[0.6rem] font-bold uppercase tracking-[0.1em] text-primary">
             {pendingLabel}
@@ -83,9 +91,13 @@ function ReviewItem({ review, pending = false, pendingLabel }) {
         ) : null}
       </div>
       {review.comentario ? (
-        <p className="mt-2 max-w-[78ch] text-[0.9rem] leading-[1.55] text-[#b8bec7]">{review.comentario}</p>
+        <p className="m-0 text-[0.9rem] leading-[1.55] text-[#b8bec7]">{review.comentario}</p>
       ) : null}
-    </li>
+      <div className="mt-auto flex flex-wrap items-baseline gap-2 border-t border-[#232323] pt-3">
+        <strong className="text-[0.9rem] text-[#f2f2f2]">{review.nombre || 'Anónimo'}</strong>
+        {review.fecha ? <span className="text-[0.72rem] text-[#8b919b]">{review.fecha}</span> : null}
+      </div>
+    </article>
   )
 }
 
@@ -160,6 +172,17 @@ function ProductReviews({ productId }) {
         </span>
       </div>
 
+      {/* Carrusel de comentarios. El propio pendiente va PRIMERO: es lo que el
+          autor viene a buscar después de mandarlo. */}
+      {minePending || reviews.length > 0 ? (
+        <Rail className="mt-8" label={t('productDetail.reviews.title', 'Comentarios')}>
+          {minePending ? <ReviewItem review={minePending} pending pendingLabel={pendingLabel} /> : null}
+          {reviews.map((r) => (
+            <ReviewItem key={r.id} review={r} />
+          ))}
+        </Rail>
+      ) : null}
+
       {/* Formulario: sólo con sesión iniciada. */}
       <div className="mx-auto mt-8 max-w-[720px]">
         {authLoading ? null : user ? (
@@ -222,14 +245,6 @@ function ProductReviews({ productId }) {
         )}
       </div>
 
-      {minePending || reviews.length > 0 ? (
-        <ul className="mx-auto mt-8 max-w-[900px] list-none border-t border-[#2a2a2a] p-0">
-          {minePending ? <ReviewItem review={minePending} pending pendingLabel={pendingLabel} /> : null}
-          {reviews.map((r) => (
-            <ReviewItem key={r.id} review={r} />
-          ))}
-        </ul>
-      ) : null}
     </section>
   )
 }

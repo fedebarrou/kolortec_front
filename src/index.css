@@ -528,13 +528,16 @@ html {
     flex: 0 0 auto;
   }
 
+  /* Galeria del footer e Instagram. Subidas: a 240px de tope, en un monitor
+     ancho entraban diez fotos por pantalla y no se veia lo que hay adentro de
+     ninguna — que es todo el punto de una tira de fotos. */
   .kt-marquee-item-square {
-    width: clamp(170px, 14vw, 240px);
+    width: clamp(210px, 19vw, 340px);
     aspect-ratio: 1 / 1;
   }
 
   .kt-marquee-item-portrait {
-    width: clamp(180px, 14vw, 240px);
+    width: clamp(220px, 19vw, 340px);
     aspect-ratio: 4 / 5;
   }
 
@@ -1349,8 +1352,70 @@ html {
     display: none;
   }
 
+  /* Apilado inmersivo: la sección amarilla se queda CLAVADA al tope y lo que
+     sigue sube por encima, en vez de empujarla hacia arriba. Es el recurso de
+     fedev.dev y de Cloudbeds — la sección anterior no se va, se tapa.
+     Requisitos para que funcione: la que sube tiene que tener fondo OPACO (si no
+     se ven las dos a la vez) y ningún ancestro con `overflow: hidden`, que mata
+     el sticky. */
+  .kt-stack-pin {
+    position: sticky;
+    top: 0;
+    z-index: 0;
+  }
+
+  /* Lo que sube va por encima y con fondo propio. */
+  .kt-stack-over {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Telón a sangre por detrás del contenido: es lo que TAPA a la sección clavada.
+     Va absoluto y con z-index negativo para no interferir con nada de adentro; el
+     ancho real se lo pone useFullBleed desde StackOver.jsx. */
+  .kt-stack-over-bg {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+    background: #050505;
+    pointer-events: none;
+  }
+
+  /* Foto de cierre, antes del footer. */
+  .kt-closing-photo {
+    position: relative;
+    display: block;
+    height: clamp(340px, 62vh, 720px);
+    overflow: hidden;
+    background: #050505;
+  }
+
+  .kt-closing-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .kt-closing-photo-fade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(5, 5, 5, 0.55) 0%,
+      rgba(5, 5, 5, 0.12) 32%,
+      rgba(5, 5, 5, 0.55) 78%,
+      #050505 100%
+    );
+  }
+
+  /* Slides, no fichitas. Con 320px de tope entraban cinco por pantalla y tanto
+     las notas como el material de referencia se leian como una lista de items
+     chicos; a este ancho cada uno es una diapositiva. */
   .kt-rail > * {
-    flex: 0 0 clamp(232px, 27vw, 320px);
+    flex: 0 0 clamp(288px, 33vw, 460px);
     scroll-snap-align: start;
   }
 
@@ -1382,7 +1447,7 @@ html {
   .kt-rail-card-media {
     grid-template-rows: auto auto 1fr auto;
     padding: 0;
-    min-height: 258px;
+    min-height: 330px;
     overflow: hidden;
   }
 
@@ -1854,10 +1919,21 @@ html {
    el fundido. Los tres numeros (3200ms de espera + 4500ms de fundido = 7700ms)
    son los MISMOS de .kt-shop-ink y del setTimeout de ShopSection: si tocas uno,
    tocalos todos o el cambio de color se corta de golpe. */
-.kt-shop-rule { border-color: rgba(11, 11, 11, 0.22); }
-.kt-shop-section.is-playing .kt-shop-rule { animation: kt-shop-rule-flip 4500ms 3200ms ease-in-out forwards; }
-.kt-shop-section.is-done .kt-shop-rule { border-color: rgba(255, 255, 255, 0.18); }
-@keyframes kt-shop-rule-flip { to { border-color: rgba(255, 255, 255, 0.18); } }
+/* Los separadores son parte del EFECTO, no de la maqueta: no existen antes de que
+   aparezca el amarillo y se van con él. Antes estaban puestos desde el primer
+   frame (se veian las rayas sobre la seccion todavia quieta) y se quedaban para
+   siempre como rayas blancas sobre el negro final. Ahora entran con la cortina y
+   se apagan con el fundido: mientras dura el amarillo ordenan la lista, después
+   el espaciado solo alcanza. */
+.kt-shop-rule { border-color: transparent; }
+.kt-shop-section.is-playing .kt-shop-rule { animation: kt-shop-rule-flip 7700ms ease-in-out forwards; }
+.kt-shop-section.is-done .kt-shop-rule { border-color: transparent; }
+@keyframes kt-shop-rule-flip {
+  0%   { border-color: transparent; }
+  12%  { border-color: rgba(11, 11, 11, 0.22); }
+  42%  { border-color: rgba(11, 11, 11, 0.22); }
+  100% { border-color: transparent; }
+}
 
 /* Los acentos amarillos de la marca: sobre el amarillo eran INVISIBLES (amarillo
    sobre amarillo). Van oscuros mientras dura, y recuperan el amarillo en negro. */

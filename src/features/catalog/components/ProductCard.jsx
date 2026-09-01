@@ -130,7 +130,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
             media foto en cuanto había dos o tres. `justify-end` para que el
             renglón incompleto quede pegado al borde derecho, no al izquierdo. */}
         {item.badge || tags.length > 0 ? (
-          <div className="absolute right-0 top-0 z-[2] flex max-w-[85%] flex-wrap justify-end gap-px">
+          <div className="absolute right-2 top-2 z-[2] flex max-w-[85%] flex-wrap justify-end gap-1.5">
             {item.badge ? (
               <span className="bg-primary px-2 py-1 text-[11px] font-black uppercase tracking-[0.06em] text-[#111]">
                 {item.badge}
@@ -152,32 +152,33 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
         ) : null}
 
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
-            {name}
-            <span className="text-primary">.</span>
-          </h3>
+          {/* Nombre y CTA en el MISMO renglón: el botón amarillo debajo empujaba
+              el nombre hacia arriba al aparecer y movía toda la card. Como link
+              subrayado al lado del nombre no ocupa lugar propio, y se lee como lo
+              que es —un enlace— en vez de competirle al nombre. */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
+              {name}
+              <span className="text-primary">.</span>
+            </h3>
+
+            {showDetailLink ? (
+              <Link
+                to={resolvedDetailHref}
+                className="kt-product-card-cta relative z-20 text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-primary underline decoration-primary/60 decoration-[1.5px] underline-offset-[5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition hover:decoration-primary"
+                tabIndex={focusable ? undefined : -1}
+              >
+                {ctaLabel}
+              </Link>
+            ) : null}
+          </div>
 
           {/* Categoría: acompaña al CTA en el hover. En reposo, abajo va SÓLO el
               nombre — es lo que identifica el equipo de un vistazo en la grilla. */}
           {category ? (
-            <p className="kt-product-card-more m-0 mt-1 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-primary/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+            <p className="kt-product-card-more m-0 mt-1 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
               {category}
             </p>
-          ) : null}
-
-          {/* CTA: siempre presente en el DOM (accesible y clickeable en touch);
-              en desktop aparece al hover/focus junto con el resto de la card. */}
-          {showDetailLink ? (
-            <Link
-              to={resolvedDetailHref}
-              className="kt-product-card-cta relative z-20 mt-3 inline-flex items-center gap-1.5 rounded-[6px] bg-primary px-3 py-2 text-[0.65rem] font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:brightness-110"
-              tabIndex={focusable ? undefined : -1}
-            >
-              {ctaLabel}
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </Link>
           ) : null}
         </div>
       </div>
