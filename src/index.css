@@ -1898,16 +1898,67 @@ html {
   }
 
 
-  /* Separadores de Contactanos: SIN LINEA.
-     Estuvieron primero cruzando la seccion entera y despues difuminandose hacia
-     la derecha, y en las dos versiones ensuciaban: cortaban la foto ghost que
-     sangra por ese lado y le agregaban ruido a lo unico accionable de la seccion,
-     que es la lista de contactos. La separacion la da el aire, no una raya.
-     La clase se conserva —esta en cinco lugares del JSX junto a `border-y` /
-     `border-b` de Tailwind— y lo que hace ahora es anular ese borde. */
+  /* Separadores de Contactanos: una SOMBRA, no una linea.
+     Historia: primero cruzaban la seccion entera, despues se difuminaban hacia la
+     derecha, y despues se sacaron del todo. Sacarlas fue peor: las filas quedaban
+     flotando y se perdia la estructura de la lista, que es lo unico accionable de
+     la seccion. Lo que molestaba no era la separacion sino el FILO de 1px.
+     Ahora la separacion cae en degrade vertical —no tiene borde duro— y ademas se
+     apaga hacia la derecha antes de llegar a la foto ghost que sangra por ese
+     lado, que es lo que antes se cortaba en seco.
+     El ancho del borde de Tailwind se conserva (solo se transparenta el color)
+     porque es el que da el espaciado entre filas: si se quitara, la lista se
+     recompactaria. */
 .kt-support-rule {
   border-color: transparent;
   border-image: none;
+  position: relative;
+}
+
+.kt-support-rule::after,
+.kt-support-rule.border-y::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10px;
+  pointer-events: none;
+  /* La caida vertical es lo que la hace leer como sombra y no como raya. */
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.13),
+    rgba(255, 255, 255, 0)
+  );
+  /* Y esto la apaga de izquierda a derecha. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 38%,
+    rgba(0, 0, 0, 0.28) 68%,
+    transparent 90%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 38%,
+    rgba(0, 0, 0, 0.28) 68%,
+    transparent 90%
+  );
+}
+
+.kt-support-rule::after {
+  top: 100%;
+}
+
+/* El marco de la lista: la de arriba cae hacia adentro. */
+.kt-support-rule.border-y::before {
+  top: 0;
+}
+
+/* Espejo de `last:border-b-0` del JSX: la ultima fila no lleva separador, el
+   cierre lo pone el marco del <ul>. */
+.kt-support-rule.border-b:last-child::after {
+  content: none;
 }
 
 
