@@ -1383,62 +1383,72 @@ html {
   }
 
   /* FONDO FIJO del cierre: la foto del show detrás de Sumate y Contactanos.
-     La imagen se queda quieta y el contenido pasa por encima. */
+     Es lo mismo que hace Cloudbeds en "Growth is easier with the right partner":
+     `background-attachment: fixed`, el fondo se posiciona contra el viewport y el
+     contenido pasa por delante de una foto que no se mueve.
+     El contenido NO se toca: las secciones de adentro van a todo el ancho, igual
+     que cuando el fondo era negro. */
   .kt-closing-backdrop {
     position: relative;
     isolation: isolate;
   }
 
-  /* Recorta el fondo al bloque: fuera de acá la foto no existe. */
   .kt-closing-backdrop-bg {
     position: absolute;
     top: 0;
     bottom: 0;
     z-index: -1;
     overflow: hidden;
-    background: #050505;
+    background-color: #050505;
+    background-position: 50% 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     pointer-events: none;
   }
 
-  /* ESTO es lo que la deja fija: un sticky de un alto de pantalla adentro del
-     recorte. La imagen se pega arriba mientras el bloque pasa por delante — el
-     mismo efecto que `background-attachment: fixed`, pero sin sus dos problemas
-     (Safari lo ignora al scrollear y obliga a repintar la capa entera).
-     El alto va dividido por la escala del lienzo: adentro de un `zoom: s` hay que
-     pedir 1/s para ocupar la pantalla completa. */
-  .kt-closing-backdrop-fixed {
-    position: sticky;
-    top: 0;
-    height: calc(100dvh / var(--kt-canvas-scale, 1));
-    width: 100%;
-  }
-
-  .kt-closing-backdrop-fixed img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  /* La foto se ve A FULL: un velo encima no deja una foto, deja una mancha
-     oscura. La legibilidad la resuelven las tarjetas. Acá sólo quedan los
-     fundidos de las dos puntas, para que la costura con la sección de arriba y
-     con el footer no sea un corte duro. */
-  .kt-closing-backdrop-scrim {
+  /* Velo parejo: la foto es un show con haces BLANCOS y el texto de las secciones
+     también es blanco. Cloudbeds no lo necesita porque mete el texto en una
+     tarjeta; acá el contenido va suelto a todo el ancho, así que el que tiene que
+     ceder es el fondo. Lo justo para que se lea sin apagar el show. */
+  .kt-closing-fade-sides {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(5, 5, 5, 0.35) 0%,
-      rgba(5, 5, 5, 0) 26%,
-      rgba(5, 5, 5, 0) 74%,
-      rgba(5, 5, 5, 0.35) 100%
-    );
+    background: rgba(5, 5, 5, 0.45);
+  }
+
+  /* Fundidos contra el negro de la página, arriba y abajo: sin ellos la foto
+     corta con un borde duro contra la sección anterior y contra el footer. */
+  .kt-closing-fade-top {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: clamp(120px, 18vh, 260px);
+    background: linear-gradient(to bottom, #050505 0%, rgba(5, 5, 5, 0) 100%);
+  }
+
+  .kt-closing-fade-bottom {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: clamp(140px, 22vh, 320px);
+    background: linear-gradient(to top, #050505 0%, rgba(5, 5, 5, 0) 100%);
   }
 
   .kt-closing-backdrop-content {
     position: relative;
     z-index: 1;
+  }
+
+  /* El ghost lateral de Contactanos es un recorte de la MISMA foto de show: sobre
+     el fondo se duplicaba la imagen contra sí misma. */
+  .kt-closing-backdrop .kt-support-ghost {
+    display: none;
+  }
+
+  /* iOS ignora `fixed` al scrollear y el resultado es peor que no tenerlo. */
+  @media (max-width: 960px) {
+    .kt-closing-backdrop-bg {
+      background-attachment: scroll;
+    }
   }
 
   /* Slides, no fichitas. Con 320px de tope entraban cinco por pantalla y tanto
@@ -2690,66 +2700,14 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
   animation: kt-nav-line 0.95s ease-out forwards;
 }
 
+/* Sumate trae su propio fondo negro a todo el ancho (bg-[#050505] en el markup):
+   sobre la foto la taparía entera. Se vuelve transparente — el resto de su
+   maqueta no se toca, sigue a todo el ancho como siempre.
 
-/* ───────────────────────────────────────────────────────────────────────────
-   Cierre sobre la foto: TARJETAS.
-
-   Va FUERA de @layer a propósito. Las utilidades de Tailwind viven en la capa
-   `utilities`, que es la última: una regla en `components` pierde contra ellas
-   por más específica que sea (las capas mandan antes que la especificidad). Y
-   acá hay que ganarle justamente a utilidades del propio markup —el fondo, el
-   padding y el grid de dos columnas de Sumate—, que adentro de una tarjeta de
-   560px dejaban el botón colgando afuera. Sin capa, esto gana.
-   ─────────────────────────────────────────────────────────────────────────── */
-/* TARJETAS sólidas sobre la foto: es lo que hace legible el texto sin apagar
-   la imagen (el recurso de Cloudbeds). Van a la izquierda y ocupan poco más de
-   un tercio, para que la foto —el motivo por el que está la sección— se siga
-   viendo. Se aplican SOLO si hay foto: sin foto las secciones quedan como
-   siempre, a todo el ancho. */
-.kt-closing-backdrop.has-photo .kt-support-section,
-.kt-closing-backdrop.has-photo .kt-join-section {
-  width: min(560px, 100%);
-  margin-left: clamp(1.5rem, 10vw, 10rem);
-  padding: clamp(28px, 3vw, 44px);
-  background: #0b0b0b;
-  border-radius: 10px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+   Va FUERA de @layer a propósito: las utilidades de Tailwind viven en la capa
+   `utilities`, que es la última, y le ganan a cualquier regla de `components` por
+   más específica que sea (las capas mandan antes que la especificidad). Sin capa,
+   esto gana. */
+.kt-closing-backdrop .kt-join-section {
+  background: transparent;
 }
-
-/* Adentro de la tarjeta, Sumate va en UNA columna: su layout de dos columnas
-   (texto + CTA a la derecha) está pensado para el ancho completo de la home, y
-   en 560px el botón se salía por el borde derecho. Título más chico por lo
-   mismo: a tamaño completo entraba en cuatro renglones. */
-.kt-closing-backdrop.has-photo .kt-join-grid {
-  grid-template-columns: 1fr;
-  gap: 1.75rem;
-}
-
-.kt-closing-backdrop.has-photo .kt-join-cta {
-  justify-content: flex-start;
-}
-
-.kt-closing-backdrop.has-photo .kt-join-section h2 {
-  font-size: clamp(1.5rem, 2.6vw, 2.2rem);
-}
-
-.kt-closing-backdrop.has-photo .kt-closing-backdrop-content {
-  padding-block: clamp(48px, 7vw, 96px);
-  display: grid;
-  gap: clamp(40px, 6vw, 88px);
-}
-
-/* El ghost lateral de Contactanos es un recorte de la MISMA foto de show: sobre
-   el fondo se duplicaba la imagen contra sí misma. Con fondo, sobra. */
-.kt-closing-backdrop.has-photo .kt-support-ghost {
-  display: none;
-}
-
-@media (max-width: 960px) {
-  .kt-closing-backdrop.has-photo .kt-support-section,
-  .kt-closing-backdrop.has-photo .kt-join-section {
-    width: auto;
-    margin-inline: 1.5rem;
-  }
-}
-

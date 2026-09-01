@@ -2,26 +2,29 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFullBleed } from '../../../shared/hooks/useFullBleed'
 
 /**
- * ClosingBackdrop — la foto del show como fondo FIJO del cierre de la home.
+ * ClosingBackdrop — la foto del show como fondo FIJO de la página, detrás del
+ * cierre (Sumate y Contactanos).
  *
- * La imagen se queda QUIETA y el contenido pasa por encima: Sumate y Contactanos
- * scrollean sobre una foto que no se mueve. Es lo que hace Cloudbeds en "Growth
- * is easier with the right partner" y lo que pidió el cliente — no un parallax
- * (que fue el intento anterior: la foto se movía más lento, pero se movía).
+ * Es, literalmente, lo que hace Cloudbeds en "Growth is easier with the right
+ * partner":
  *
- * Cómo se fija, y por qué NO con `background-attachment: fixed`, que sería lo
- * obvio: Safari lo ignora al scrollear (en iOS queda pegado o tiembla) y obliga
- * al navegador a repintar la capa entera en cada frame. Acá el truco es un
- * `position: sticky` de un alto de pantalla adentro de un contenedor recortado:
- * la imagen se pega arriba mientras el bloque pasa, que es exactamente el mismo
- * efecto, va en la GPU y funciona igual en todos lados.
+ *     background-image: url(...);
+ *     background-attachment: fixed;
+ *     background-size: cover;
+ *     background-color: <color de la página>;
  *
- * El alto se divide por la escala del lienzo (`--kt-canvas-scale`) por lo mismo
- * que el hero: adentro de un `zoom: s` hay que pedir 1/s para ocupar la pantalla.
+ * más tres degradados que funden la foto contra el color de la página en los
+ * bordes. El contenido va ENCIMA y A TODO EL ANCHO, sin tocarse: las secciones
+ * de adentro se siguen viendo exactamente como cuando el fondo era negro.
  *
- * La foto se ve A FULL, sin velo encima. La legibilidad la resuelven las TARJETAS
- * sólidas del contenido (ver `.kt-closing-card` en index.css): un scrim sobre la
- * imagen no deja una foto, deja una mancha oscura.
+ * `background-attachment: fixed` es lo que fija la imagen: el fondo se posiciona
+ * contra el viewport, así que al scrollear el contenido pasa por delante de una
+ * foto que no se mueve. (Es también el motivo por el que Cloudbeds llama al
+ * archivo "img-home-parallax".) En pantallas chicas se degrada a `scroll`: iOS
+ * ignora `fixed` al scrollear y el resultado ahí es peor que no tenerlo.
+ *
+ * El bloque mantiene el ancho del lienzo —el contenido tiene que seguir alineado
+ * con el resto de la home— y el que rompe a sangre es SOLO la capa del fondo.
  */
 function ClosingBackdrop({ images, children }) {
   const lista = useMemo(
@@ -30,10 +33,11 @@ function ClosingBackdrop({ images, children }) {
   )
   const [src, setSrc] = useState(null)
   const fondoRef = useRef(null)
-  // El bloque mantiene el ancho del lienzo (el contenido tiene que seguir
-  // alineado con el resto de la home); el que rompe a sangre es el FONDO.
   useFullBleed(fondoRef, !!src)
 
+  // Se elige la imagen ANTES de pintarla, probando cada URL: si la primera no
+  // carga (en dev varias de la galería devuelven 403) pasa a la siguiente, y si
+  // se acaban no hay fondo — mejor negro que un rectángulo roto.
   useEffect(() => {
     let cancelado = false
 
@@ -50,13 +54,19 @@ function ClosingBackdrop({ images, children }) {
   }, [lista])
 
   return (
-    <div className={`kt-closing-backdrop ${src ? 'has-photo' : ''}`}>
+    <div className="kt-closing-backdrop">
       {src ? (
-        <div ref={fondoRef} className="kt-closing-backdrop-bg" aria-hidden="true">
-          <div className="kt-closing-backdrop-fixed">
-            <img src={src} alt="" decoding="async" />
-            <span className="kt-closing-backdrop-scrim" />
-          </div>
+        <div
+          ref={fondoRef}
+          className="kt-closing-backdrop-bg"
+          aria-hidden="true"
+          style={{ backgroundImage: `url("${src}")` }}
+        >
+          {/* Los tres fundidos contra el negro de la página: sin ellos la foto
+              corta con un borde duro contra lo de arriba y contra el footer. */}
+          <span className="kt-closing-fade-top" />
+          <span className="kt-closing-fade-bottom" />
+          <span className="kt-closing-fade-sides" />
         </div>
       ) : null}
       <div className="kt-closing-backdrop-content">{children}</div>
