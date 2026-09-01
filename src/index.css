@@ -551,35 +551,44 @@ html {
          .kt-marquee:hover, así que al apuntar una card la tira se frena y esa
          card es la que se destaca. */
   .kt-marquee-cards {
-    padding-block: 1.5rem;
+    padding-block: 2.25rem;
   }
 
-  @media (hover: hover) {
-    .kt-marquee-cards .kt-marquee-item-product {
+  /* La card crece al pasar el mouse. Vive en LA CARD y no en el contenedor del
+     carrusel, para que sea el mismo gesto en la tira de destacados y en la grilla
+     del catálogo. z-index para que la que crece pase por encima de sus vecinas en
+     vez de meterse abajo; `position: relative` porque un item de grid estático no
+     participa del apilado. */
+  @media (hover: hover) and (min-width: 768px) {
+    .kt-product-card {
+      position: relative;
       transition: transform 340ms cubic-bezier(0.22, 0.61, 0.36, 1);
     }
 
-    .kt-marquee-cards .kt-marquee-item-product:hover,
-    .kt-marquee-cards .kt-marquee-item-product:focus-within {
-      transform: scale(1.07);
-      z-index: 2;
+    .kt-product-card:hover,
+    .kt-product-card:focus-within {
+      transform: scale(1.12);
+      z-index: 5;
     }
   }
 
-  /* CTA "Ver producto": en desktop entra con el hover/focus de la card, para que
+  /* CTA "Ver producto" y categoría: en desktop entran con el hover/focus, para que
      la grilla en reposo sea foto + nombre y no una pared de botones amarillos.
-     Donde NO hay hover (touch) queda siempre visible: ahí el overlay-link que
-     cubre la card está apagado (`hidden md:block`) y este es el único camino al
+     Donde NO hay hover (touch) quedan siempre visibles: ahí el overlay-link que
+     cubre la card está apagado (`hidden md:block`) y el CTA es el único camino al
      detalle desde la card. */
   @media (hover: hover) and (min-width: 768px) {
-    .kt-product-card-cta {
+    .kt-product-card-cta,
+    .kt-product-card-more {
       opacity: 0;
       transform: translateY(8px);
       transition: opacity 240ms ease-out, transform 240ms ease-out, filter 200ms ease-out;
     }
 
     .kt-product-card:hover .kt-product-card-cta,
-    .kt-product-card:focus-within .kt-product-card-cta {
+    .kt-product-card:focus-within .kt-product-card-cta,
+    .kt-product-card:hover .kt-product-card-more,
+    .kt-product-card:focus-within .kt-product-card-more {
       opacity: 1;
       transform: translateY(0);
     }

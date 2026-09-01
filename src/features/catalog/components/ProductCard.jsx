@@ -24,14 +24,38 @@ function normalizeTags(tags) {
 }
 
 /**
+ * Texto legible sobre el color de la etiqueta. El color lo elige el tenant desde
+ * el admin y puede ser cualquier hex: sobre el amarillo kolortec el texto tiene
+ * que ser negro, sobre un azul oscuro tiene que ser blanco. Luminancia percibida
+ * (ITU-R BT.601), que para un chip de 11px alcanza y sobra.
+ */
+function textoSobre(color) {
+  const hex = String(color || '').replace('#', '')
+  const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex
+  if (full.length !== 6) return '#0b0b0b'
+  const r = parseInt(full.slice(0, 2), 16)
+  const g = parseInt(full.slice(2, 4), 16)
+  const b = parseInt(full.slice(4, 6), 16)
+  if (![r, g, b].every(Number.isFinite)) return '#0b0b0b'
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#0b0b0b' : '#f5f5f5'
+}
+
+/**
  * ProductCard — la ficha de producto de TODA la web (destacados, catálogo, línea,
  * relacionados).
  *
- * Muestra NOMBRE + CATEGORÍA + ETIQUETAS, y nada más. Antes imprimía la
- * `descripcion` de la DB en un renglón de 0.68rem en mayúsculas: ese campo es
- * texto libre de varias líneas cargado en el admin, así que en la card salía
- * cortado, en mayúsculas y sin relación con lo que se ve — ruido, no información.
- * Lo que identifica un equipo en una grilla es su nombre y de qué familia es.
+ * En reposo se ve la foto, las ETIQUETAS arriba a la derecha y el NOMBRE abajo.
+ * Nada más. Al pasar el mouse la card crece y recién ahí aparecen la categoría y
+ * el CTA: la grilla en reposo queda limpia y el detalle llega cuando lo pedís.
+ *
+ * Antes imprimía la `descripcion` de la DB en un renglón de 0.68rem en mayúsculas:
+ * ese campo es texto libre de varias líneas cargado en el admin, así que en la
+ * card salía cortado y sin relación con lo que se ve — ruido, no información.
+ *
+ * Las etiquetas van CUADRADAS y arriba a la derecha, en la misma esquina y con la
+ * misma forma que el badge "Destacado" de siempre: son el mismo tipo de dato —una
+ * marca estampada sobre la foto— y tenerlas en dos lenguajes distintos (píldoras
+ * redondas abajo, un rectángulo arriba) hacía ver dos sistemas donde hay uno.
  *
  * El CTA es un <Link> REAL por encima del overlay (z-20): en desktop el overlay
  * invisible cubre toda la card, pero en mobile está apagado (`hidden md:block`),
@@ -58,7 +82,9 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
   const resolvedDetailHref = detailHref || `/producto/${detailId}`
   const ctaLabel = t('productCard.cta', 'Ver producto')
   const articleClassName = [
-    'kt-product-card group relative overflow-hidden transition-all duration-300 ease-out md:hover:-translate-y-1 md:focus-within:-translate-y-1',
+    // El hover (escala + z-index) vive en el CSS: una utilidad de Tailwind con
+    // translate acá le ganaba al transform del escalado y se anulaban entre sí.
+    'kt-product-card group relative overflow-hidden',
     className,
   ]
     .filter(Boolean)
@@ -96,42 +122,43 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
           className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-[#050505] via-[rgba(5,5,5,0.72)] to-transparent"
         />
 
-        {item.badge ? (
-          <span className="absolute right-3 top-3 bg-primary px-2 py-1 text-[11px] font-black text-[#111]">
-            {item.badge}
-          </span>
+        {/* Marcas de la esquina superior derecha: primero "Destacado" (la bandera de
+            la casa), después las etiquetas del tenant. Apiladas, cuadradas y del
+            mismo alto — una sola columna, no dos sistemas. */}
+        {item.badge || tags.length > 0 ? (
+          <div className="absolute right-0 top-0 z-[2] flex flex-col items-end gap-px">
+            {item.badge ? (
+              <span className="bg-primary px-2 py-1 text-[11px] font-black uppercase tracking-[0.06em] text-[#111]">
+                {item.badge}
+              </span>
+            ) : null}
+            {tags.map((tag) => (
+              <span
+                key={tag.label}
+                className="px-2 py-1 text-[11px] font-black uppercase tracking-[0.06em]"
+                style={{
+                  backgroundColor: tag.color || 'rgba(10,10,10,0.82)',
+                  color: tag.color ? textoSobre(tag.color) : '#f5f5f5',
+                }}
+              >
+                {tag.label}
+              </span>
+            ))}
+          </div>
         ) : null}
 
         <div className="absolute inset-x-0 bottom-0 p-4">
-          {category ? (
-            <p className="m-0 mb-1 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-primary/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              {category}
-            </p>
-          ) : null}
-
           <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
             {name}
             <span className="text-primary">.</span>
           </h3>
 
-          {tags.length > 0 ? (
-            <ul className="m-0 mt-2 flex list-none flex-wrap gap-1.5 p-0">
-              {tags.map((tag) => (
-                <li
-                  key={tag.label}
-                  className="rounded-full border px-2 py-[3px] text-[0.6rem] font-bold uppercase tracking-[0.08em] backdrop-blur-[2px]"
-                  style={{
-                    // El color lo elige el tenant por etiqueta (BadgeSanitizer valida el hex).
-                    // Sin color: chip neutro sobre la foto.
-                    borderColor: tag.color ? `${tag.color}` : 'rgba(255,255,255,0.28)',
-                    color: tag.color || 'rgba(255,255,255,0.82)',
-                    backgroundColor: 'rgba(5,5,5,0.42)',
-                  }}
-                >
-                  {tag.label}
-                </li>
-              ))}
-            </ul>
+          {/* Categoría: acompaña al CTA en el hover. En reposo, abajo va SÓLO el
+              nombre — es lo que identifica el equipo de un vistazo en la grilla. */}
+          {category ? (
+            <p className="kt-product-card-more m-0 mt-1 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-primary/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {category}
+            </p>
           ) : null}
 
           {/* CTA: siempre presente en el DOM (accesible y clickeable en touch);

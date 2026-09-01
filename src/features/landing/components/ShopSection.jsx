@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { useFullBleed } from '../../../shared/hooks/useFullBleed'
 
 // Accesos de la sección de soporte (data estática en landingData) → key i18n por icono (ES/EN).
 const ACCESS_KEY_BY_ICON = {
@@ -28,6 +29,9 @@ function ShopSection({ shop, ready = true }) {
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const sectionRef = useRef(null)
+  // A pantalla completa: rompe el lienzo de 1920 para tocar los dos bordes de la
+  // pantalla (en un 2K el lienzo se centra y quedaban bandas negras a los lados).
+  useFullBleed(sectionRef)
   const videoRef = useRef(null)
   const [introPhase, setIntroPhase] = useState(prefersReducedMotion ? 'done' : 'priming')
 
@@ -169,7 +173,14 @@ function ShopSection({ shop, ready = true }) {
     <section
       id="shop"
       ref={sectionRef}
-      className={`kt-shop-section ${phaseClass} relative isolate flex min-h-[600px] items-center overflow-hidden bg-primary py-[clamp(72px,10vw,128px)]`}
+      className={`kt-shop-section ${phaseClass} relative isolate flex items-center overflow-hidden bg-primary py-[clamp(72px,10vw,128px)]`}
+      style={{
+        // Alto = pantalla ENTERA. Dividido por la escala del lienzo por lo mismo
+        // que el hero: adentro de un `zoom: s` hay que pedir 1/s para ocupar el
+        // alto real. Es `min-height` y no `height` para que en una pantalla baja
+        // el contenido pueda empujar en vez de recortarse.
+        minHeight: 'calc(100dvh / var(--kt-canvas-scale, 1))',
+      }}
     >
       {/* Fundido amarillo → negro al terminar la intro (equivalente invertido del kt2-white del mockup) */}
       <div className="kt-shop-dark" aria-hidden="true" />

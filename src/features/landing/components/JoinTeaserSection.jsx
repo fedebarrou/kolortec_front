@@ -23,17 +23,14 @@ function JoinTeaserSection({ join }) {
 
   return (
     <section
-      className="kt-section-reveal relative isolate overflow-hidden border-t border-b border-[#1a1a1a] bg-[#070707] px-6 py-[clamp(64px,9vw,112px)] lg:px-40"
+      className="kt-section-reveal relative isolate overflow-hidden border-t border-b border-[#1a1a1a] bg-[#050505] px-6 py-[clamp(64px,9vw,112px)] lg:px-40"
       style={{ '--reveal-delay': '120ms' }}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.18]"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse 60% 50% at 12% 50%, rgba(244, 223, 51, 0.4), transparent 70%), radial-gradient(ellipse 55% 45% at 88% 50%, rgba(244, 223, 51, 0.18), transparent 75%)',
-        }}
-      />
+      {/* SIN el resplandor amarillo que había acá (dos radiales de rgba(244,223,51)
+          al 18%): sobre el negro no daba "brillo", daba un lavado MARRÓN, y la
+          sección se leía como una banda color barro justo después de la amarilla.
+          El acento amarillo lo ponen la rayita del eyebrow, el punto del título y
+          el botón — sobre negro pleno pegan mucho más. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1px] bg-gradient-to-r from-transparent via-[rgba(244,223,51,0.4)] to-transparent"
