@@ -46,15 +46,23 @@ function SupportSection({ support, loading = false }) {
                     href={item.href}
                     target={item.href.startsWith('http') ? '_blank' : undefined}
                     rel={item.href.startsWith('http') ? 'noreferrer' : undefined}
-                    className="grid gap-1 py-3.5 transition hover:translate-x-0.5"
+                    /* Sin separadores, lo que ordena la lista es la jerarquía:
+                       el ícono y el DATO mandan, la etiqueta acompaña. El ícono
+                       pasa a 44px —tamaño de toque cómodo, antes eran 24— y va
+                       en su propia columna a la izquierda, así el ojo baja por
+                       una sola línea de íconos en vez de buscar el renglón. */
+                    className="grid grid-cols-[44px_1fr] items-center gap-x-4 gap-y-0.5 py-5 transition hover:translate-x-0.5"
                   >
-                    <strong className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.08em] text-[#f2f4f8]">
-                      <span className="material-symbols-outlined inline-flex h-6 w-6 items-center justify-center rounded-full border border-[rgba(244,223,51,0.45)] text-[15px] text-primary" aria-hidden="true">
-                        {item.href.startsWith('mailto') ? 'mail' : 'chat'}
-                      </span>
+                    <span
+                      className="material-symbols-outlined row-span-2 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(244,223,51,0.45)] text-[22px] text-primary"
+                      aria-hidden="true"
+                    >
+                      {item.href.startsWith('mailto') ? 'mail' : 'chat'}
+                    </span>
+                    <strong className="text-[0.68rem] uppercase tracking-[0.12em] text-[#8d949f]">
                       {item.label}
                     </strong>
-                    <span className="text-[0.9rem] text-[#aeb5bf]">{item.value}</span>
+                    <span className="text-[1.15rem] leading-tight text-[#f2f4f8]">{item.value}</span>
                   </a>
                 </li>
               ))}
