@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { trackEvent } from '../../../shared/services/tracking'
-import { getProductDetail, getSiteConfig } from '../../../shared/services/contentService'
+import { getProductBlogs, getProductDetail, getSiteConfig } from '../../../shared/services/contentService'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
+import ProductBlogs from '../components/ProductBlogs'
+import ProductReviews from '../components/ProductReviews'
+import ReferenceMaterial from '../components/ReferenceMaterial'
+import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
+import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
 import { SITE } from '../../../shared/seo/Seo'
@@ -34,6 +39,7 @@ function ProductDetailPage() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showPrices, setShowPrices] = useState(true)
+  const [showReviews, setShowReviews] = useState(true)
   useEffect(() => {
     let mounted = true
     setLoading(true)
@@ -42,9 +48,36 @@ function ProductDetailPage() {
   }, [slug])
   useEffect(() => {
     let mounted = true
-    getSiteConfig().then((c) => { if (mounted) setShowPrices(c.showPrices) })
+    getSiteConfig().then((c) => {
+      if (!mounted) return
+      setShowPrices(c.showPrices)
+      setShowReviews(c.showReviews)
+    })
     return () => { mounted = false }
   }, [])
+  // Notas del blog asociadas a ESTE producto (relación ya cargada en tiendita).
+  // Va por el id interno, que es lo que filtra /public/blog?producto_id=.
+  //
+  // Se guarda { id, posts } y no una lista suelta: navegando de un producto a otro,
+  // una lista suelta seguiría mostrando las notas del ANTERIOR hasta que resuelva el
+  // fetch nuevo. Con el id adentro, el render descarta lo que no es de este producto
+  // sin necesidad de vaciar el estado en el cuerpo del efecto.
+  const [blogsByProduct, setBlogsByProduct] = useState({ id: null, posts: [] })
+  useEffect(() => {
+    const productId = product?.id
+    if (!productId) return undefined
+    let mounted = true
+    getProductBlogs(productId).then((posts) => {
+      if (mounted) setBlogsByProduct({ id: productId, posts })
+    })
+    return () => { mounted = false }
+  }, [product?.id])
+  const productBlogs = blogsByProduct.id && blogsByProduct.id === product?.id ? blogsByProduct.posts : []
+  // Relacionados: el carrusel se repite hasta tapar el ancho de pantalla (ver
+  // useMarqueeFill). Con 10 productos y un monitor ancho, duplicar el set dejaba
+  // media pista más angosta que el viewport y se veía el hueco girando.
+  const relatedCount = product?.related?.length ?? 0
+  const [relatedFillRef, relatedRepeats] = useMarqueeFill(relatedCount, 12)
   const detailBodyRef = useRef(null)
   const heroImageRef = useRef(null)
   const lensRef = useRef(null)
@@ -228,7 +261,12 @@ function ProductDetailPage() {
     return () => {
       observer.disconnect()
     }
-  }, [product])
+    // productBlogs.length en las deps: "Notas relacionadas" se monta cuando resuelve
+    // SU propio fetch, después de este efecto. Sin volver a correr, esa sección nunca
+    // entraba al observer, se quedaba en opacity:0 para siempre y el bloque existía en
+    // el DOM pero no se veía. Va .length y no el array: el ternario que lo calcula
+    // devuelve un [] nuevo en cada render y colgaría el efecto en loop.
+  }, [product, productBlogs.length])
 
   const selectedVariant = useMemo(
     () => product?.variants?.find((variant) => variant.id === selectedVariantId) ?? product?.variants?.[0],
@@ -421,6 +459,48 @@ function ProductDetailPage() {
                   <img src={galleryImages[activeImageIndex] || product.heroImage} alt={product.name} />
                 </button>
                 <span ref={lensRef} className="kt-zoom-lens" aria-hidden="true" />
+                {/* Las miniaturas del resto de la galería viven DENTRO del contenedor
+                    de la imagen, apoyadas en su borde inferior sobre un degradado.
+                    Antes eran una tira aparte, a todo el ancho debajo del hero
+                    (lg:col-span-2), y quedaban lejos de la foto que cambian.
+                    Frenan el mousemove y apagan la lupa: si no, al apuntar una
+                    miniatura la lupa seguía magnificando la foto de atrás. */}
+                {previewImages.length > 0 ? (
+                  <div
+                    className="kt-detail-preview-overlay kt-reveal-item"
+                    onMouseEnter={handleHeroMouseLeave}
+                    onMouseMove={(event) => event.stopPropagation()}
+                  >
+                    <div ref={previewStripRef} className="kt-detail-preview-strip" onScroll={onPreviewScroll}>
+                      {previewImages.map((img, index) => (
+                        <button
+                          key={`${img}-${index}`}
+                          type="button"
+                          className={`kt-detail-preview-btn ${activeImageIndex === index + 1 ? 'is-active' : ''}`}
+                          onClick={() => setActiveImageIndex(index + 1)}
+                          aria-label={`Ver imagen ${index + 2} de ${product.name}`}
+                          aria-current={activeImageIndex === index + 1 ? 'true' : undefined}
+                        >
+                          <img src={img} alt={`${product.name} vista ${index + 2}`} loading="lazy" />
+                        </button>
+                      ))}
+                    </div>
+                    {previewImages.length > 1 ? (
+                      <div className="mt-2.5 flex justify-center gap-2 md:hidden" aria-label={t('a11y.gallery', 'Paginación de la galería')}>
+                        {previewImages.map((_, index) => (
+                          <button
+                            key={`gallery-dot-${index}`}
+                            type="button"
+                            className={`h-2.5 w-2.5 rounded-full transition ${index === previewActivePage ? 'bg-primary' : 'bg-white/35'}`}
+                            onClick={() => scrollToPage(previewStripRef, index)}
+                            aria-label={`Ir a imagen ${index + 2}`}
+                            aria-current={index === previewActivePage ? 'true' : undefined}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </figure>
 
               <div className="kt-detail-summary">
@@ -456,36 +536,6 @@ function ProductDetailPage() {
                 ) : null}
               </div>
 
-              <div className="kt-reveal-item kt-detail-preview-strip-wrap mt-4 lg:col-span-2">
-                <div ref={previewStripRef} className="kt-detail-preview-strip" onScroll={onPreviewScroll}>
-                {previewImages.map((img, index) => (
-                  <button
-                    key={`${img}-${index}`}
-                    type="button"
-                    className={`kt-detail-preview-btn ${activeImageIndex === index + 1 ? 'is-active' : ''}`}
-                    onClick={() => setActiveImageIndex(index + 1)}
-                    aria-label={`Ver imagen ${index + 2} de ${product.name}`}
-                    aria-current={activeImageIndex === index + 1 ? 'true' : undefined}
-                  >
-                    <img src={img} alt={`${product.name} vista ${index + 2}`} loading="lazy" />
-                  </button>
-                ))}
-                </div>
-                {previewImages.length > 1 ? (
-                  <div className="mt-3 flex justify-center gap-2 md:hidden" aria-label={t('a11y.gallery', 'Paginación de la galería')}>
-                    {previewImages.map((_, index) => (
-                      <button
-                        key={`gallery-dot-${index}`}
-                        type="button"
-                        className={`h-2.5 w-2.5 rounded-full transition ${index === previewActivePage ? 'bg-primary' : 'bg-white/35'}`}
-                        onClick={() => scrollToPage(previewStripRef, index)}
-                        aria-label={`Ir a imagen ${index + 2}`}
-                        aria-current={index === previewActivePage ? 'true' : undefined}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
             </section>
 
             {product.videos.length > 0 ? (
@@ -687,41 +737,21 @@ function ProductDetailPage() {
                     )}
                   </div>
 
-                  {/* Material de referencia: son links que SALEN del sitio, así que no van
-                      mezclados con las descargas —esas bajan un archivo— ni disfrazados de
-                      botón "Descargar". Van aparte, con target _blank y rel noopener. */}
-                  {product.materialExterno.length > 0 ? (
-                    <div className="mt-10">
-                      <strong className="title-font block text-[1.25rem] leading-[1.05]">
-                        {t('productDetail.downloads.externalMaterial', 'Material de referencia')}
-                      </strong>
-                      <div className="mt-4 border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
-                        {product.materialExterno.map((item) => (
-                          <a
-                            key={item.url}
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="kt-reveal-item flex items-center justify-between gap-4 py-3.5 transition hover:text-primary"
-                          >
-                            <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
-                            <span
-                              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#383838]"
-                              aria-hidden="true"
-                            >
-                              <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
-                                <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5" />
-                              </svg>
-                            </span>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
               )}
             </section>
             </>
+            ) : null}
+
+            {/* Material de referencia: sección PROPIA, no un apéndice del acordeón de
+                Descargas. Son links que SALEN del sitio y muchas veces son páginas,
+                no archivos: mezclarlos con los documentos descargables hacía que se
+                leyeran como un "Descargar" más. Ver ReferenceMaterial.jsx. */}
+            {product.materialExterno.length > 0 ? (
+              <>
+              <div className="kt-graphene-separator" aria-hidden="true" />
+              <ReferenceMaterial items={product.materialExterno} />
+              </>
             ) : null}
 
             {product.accessories.length > 0 ? (
@@ -747,7 +777,7 @@ function ProductDetailPage() {
               </button>
 
               {isAccessoriesOpen && (
-                <div ref={relatedMarqueeCallbackRef} className="kt-marquee mt-8" style={{ '--kt-marquee-duration': '38s' }}>
+                <div ref={relatedMarqueeCallbackRef} className="kt-marquee kt-marquee-cards mt-8" style={{ '--kt-marquee-duration': '38s' }}>
                   <div className="kt-marquee-track">
                     {marqueeAccessories.map((item, index) => (
                       <div
@@ -757,7 +787,7 @@ function ProductDetailPage() {
                         <ProductCard
                           item={{
                             name: item.name,
-                            description: item.description || 'Accessory',
+                            category: item.category || t('productDetail.tabs.accessories', 'Accesorios'),
                             image: product.gallery[index % product.gallery.length],
                           }}
                           detailHref={`/producto/${product.slug || slug}`}
@@ -799,17 +829,56 @@ function ProductDetailPage() {
             {product.related && product.related.length > 0 ? (
               <>
               <div className="kt-graphene-separator" aria-hidden="true" />
-              <section className="kt-detail-anim px-6 py-[clamp(48px,7vw,88px)] lg:px-40" id="related">
-                <h3 className="kt-detail-tech-title text-[clamp(1.8rem,3vw,2.6rem)] leading-[1.05]">
+              {/* Mismo caparazón que Descargas / Especificación técnica: el gutter
+                  lateral lo pone .kt-container, una sola vez. Antes esta sección
+                  agregaba SU PROPIO `px-6 lg:px-40` encima del contenedor, así que
+                  el carrusel arrancaba 10rem más adentro que todo el resto de la
+                  ficha y se leía como un bloque ajeno. */}
+              <section className="kt-detail-tech-shell kt-detail-shell-short kt-detail-anim" id="related">
+                <h3 className="kt-detail-tech-title text-[clamp(2.1rem,3.3vw,3.1rem)] leading-[1.05]">
                   {t('productDetail.related', 'También te puede interesar')}
                   <span className="kt-title-dot">.</span>
                 </h3>
-                <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                  {product.related.map((item) => (
-                    <ProductCard key={item.slug || item.id} item={item} />
-                  ))}
+                {/* Carrusel, no grilla fija de 4: mismo tratamiento que Destacados
+                    (pausa + agrandado al hover, velocidad constante en px/s). */}
+                <div
+                  ref={relatedFillRef}
+                  className="kt-marquee kt-marquee-cards mt-8"
+                  style={{ '--kt-marquee-duration': marqueeDuration(product.related.length, 11, 54) }}
+                >
+                  <div className="kt-marquee-track">
+                    {buildMarqueeLoop(product.related, relatedRepeats).map((item, index) => (
+                      <div
+                        key={`related-${item.slug || item.id || item.name}-${index}`}
+                        className="kt-marquee-item kt-marquee-item-product"
+                        aria-hidden={index >= product.related.length ? 'true' : undefined}
+                      >
+                        <ProductCard item={item} focusable={index < product.related.length} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
+              </>
+            ) : null}
+
+            {/* Orden del cierre pedido por el cliente: relacionados → notas →
+                comentarios. Va de lo más comercial (otros equipos) a lo más
+                editorial (cómo se usa) y termina en la voz de otros clientes. */}
+            {productBlogs.length > 0 ? (
+              <>
+              <div className="kt-graphene-separator" aria-hidden="true" />
+              <ProductBlogs posts={productBlogs} />
+              </>
+            ) : null}
+
+            {/* Comentarios: sólo clientes registrados comentan, y lo publicado es lo
+                aprobado desde el admin de tiendita. La cuenta los puede apagar
+                entera desde el admin (web_config.show_reviews). */}
+            {showReviews ? (
+              <>
+              <div className="kt-graphene-separator" aria-hidden="true" />
+              <ProductReviews productId={product.id} />
               </>
             ) : null}
           </div>

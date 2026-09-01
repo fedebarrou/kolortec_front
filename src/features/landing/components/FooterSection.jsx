@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
+import PartnersStrip from './PartnersStrip'
+import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
+import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { getFooterData, getCategorias } from '../../../shared/services/contentService'
@@ -9,9 +12,9 @@ function FooterSection() {
   const { t } = useLanguage()
   // Data-driven: partners (marcas) + galería salen de la cuenta en tiendita. Vacío → se ocultan
   // (antes usaba defaultLandingContent.footer → mostraba partners/imágenes hardcodeados siempre).
-  // La TIRA DE MARCAS se mudó a la home (PartnersStrip, entre Contacto y Sumate):
-  // el footer es global y la mostraba en todas las páginas. getFooterData() sigue
-  // usándose acá por la galería; sus clientLogos ya no se leen en este componente.
+  // La TIRA DE MARCAS (PartnersStrip) vive acá: estuvo un tiempo en la home, entre
+  // la sección amarilla y Contactanos, y volvió al footer — se ve en todas las
+  // páginas y no le compite a ninguna sección. Sale de los mismos clientLogos.
   const [footerData, setFooterData] = useState({ gallery: [], clientLogos: [] })
   useEffect(() => {
     let mounted = true
@@ -19,7 +22,12 @@ function FooterSection() {
     return () => { mounted = false }
   }, [])
   const galleryImages = footerData.gallery
-  const loopImages = useMemo(() => [...galleryImages, ...galleryImages], [galleryImages])
+  // Misma regla que la tira de marcas: el track se repite hasta llenar la pantalla
+  // (par de veces, por el -50% del keyframe). Con 3 o 4 fotos cargadas duplicar una
+  // sola vez dejaba media tira vacía girando.
+  const [marqueeRef, repeats] = useMarqueeFill(galleryImages.length, 14)
+  const loopImages = useMemo(() => buildMarqueeLoop(galleryImages, repeats), [galleryImages, repeats])
+  const galleryDuration = marqueeDuration(galleryImages.length, 8, 40)
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   // Columna "Productos" del footer = categorías reales de la cuenta (tiendita). Vacío → "Ver productos".
   const [categorias, setCategorias] = useState([])
@@ -44,7 +52,7 @@ function FooterSection() {
     <footer className="bg-deep-black border-t border-slate-800 py-10">
       {galleryImages.length > 0 ? (
       <div className="mb-16 w-full px-6 lg:px-40 md:mb-20">
-        <div className="kt-marquee">
+        <div ref={marqueeRef} className="kt-marquee" style={{ '--kt-marquee-duration': galleryDuration }}>
           <div className="kt-marquee-track">
             {loopImages.map((src, index) => (
               <button
@@ -121,6 +129,8 @@ function FooterSection() {
         </div>
       </div>
 
+
+      <PartnersStrip logos={footerData.clientLogos} />
 
       <div className="w-full mt-6 px-6 pt-5 border-t border-slate-800 flex flex-col gap-3 text-xs text-slate-600 md:flex-row md:items-center md:justify-between lg:px-40">
         <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>

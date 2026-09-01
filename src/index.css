@@ -542,6 +542,49 @@ html {
     width: clamp(220px, 22vw, 300px);
   }
 
+  /* Carrusel de CARDS (destacados / relacionados / accesorios).
+     Dos cosas que el marquee genérico no hace:
+      1) padding vertical en el CONTENEDOR — .kt-marquee es overflow:hidden y el
+         clip corre por el borde del padding box, así que este colchón es lo que
+         deja lugar para que la card crezca sin que se le corte la cabeza.
+      2) la card bajo el mouse se agranda. La PAUSA del giro ya la trae
+         .kt-marquee:hover, así que al apuntar una card la tira se frena y esa
+         card es la que se destaca. */
+  .kt-marquee-cards {
+    padding-block: 1.5rem;
+  }
+
+  @media (hover: hover) {
+    .kt-marquee-cards .kt-marquee-item-product {
+      transition: transform 340ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .kt-marquee-cards .kt-marquee-item-product:hover,
+    .kt-marquee-cards .kt-marquee-item-product:focus-within {
+      transform: scale(1.07);
+      z-index: 2;
+    }
+  }
+
+  /* CTA "Ver producto": en desktop entra con el hover/focus de la card, para que
+     la grilla en reposo sea foto + nombre y no una pared de botones amarillos.
+     Donde NO hay hover (touch) queda siempre visible: ahí el overlay-link que
+     cubre la card está apagado (`hidden md:block`) y este es el único camino al
+     detalle desde la card. */
+  @media (hover: hover) and (min-width: 768px) {
+    .kt-product-card-cta {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 240ms ease-out, transform 240ms ease-out, filter 200ms ease-out;
+    }
+
+    .kt-product-card:hover .kt-product-card-cta,
+    .kt-product-card:focus-within .kt-product-card-cta {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .kt-container {
     width: 100%;
     margin: 0;
@@ -555,6 +598,13 @@ html {
   :root {
     --hero-gutter: 1.5rem;
     --hero-maxw: none;
+    /* Aire entre el final del scrolltelling y la seccion que sigue. El
+       ScrollRenderer se reserva `--site-header-h + --story-gap` como margin-bottom
+       (alto REAL del navbar medido en vivo + este colchon). El default del renderer
+       es 2rem: alcanzaba para que la seccion no quedara TAPADA, pero quedaba
+       respirando contra el navbar. Se sube para que la historia cierre y la
+       siguiente empiece, en vez de encimarse. */
+    --story-gap: clamp(64px, 9vw, 132px);
   }
 
   .kt-detail-page {
@@ -1130,6 +1180,18 @@ html {
     contain-intrinsic-size: 780px;
   }
 
+  /* Secciones CORTAS de la ficha (material de referencia, notas, comentarios).
+     Reusan .kt-detail-tech-shell por el margen y la tipografía del título, pero
+     NO su `content-visibility: auto`: el alto estimado de 780px es casi el triple
+     del real (material de referencia mide ~300px), así que mientras no se
+     renderizan el documento declara un alto que no tiene — la barra de scroll y
+     los anclajes apuntan mal hasta que cada una entra en pantalla. Son livianas:
+     saltearles el render no compra nada y mentir el alto sí cuesta. */
+  .kt-detail-shell-short {
+    content-visibility: visible;
+    contain-intrinsic-size: auto;
+  }
+
   .kt-section-reveal {
     content-visibility: auto;
     contain-intrinsic-size: 760px;
@@ -1252,6 +1314,101 @@ html {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
+  }
+
+  /* Riel de slides (Rail.jsx): material de referencia, notas del producto.
+     Scroll nativo + snap; las flechas sólo empujan este mismo scroll, así que en
+     touch funciona igual sin JS de arrastre. La barra se oculta pero el scroll
+     sigue siendo real (teclado y rueda incluidos). */
+  .kt-rail {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 2px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .kt-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kt-rail > * {
+    flex: 0 0 clamp(232px, 27vw, 320px);
+    scroll-snap-align: start;
+  }
+
+  /* Card del riel: misma familia visual que .kt-download-card (borde fino sobre
+     negro, sin radio) para que las secciones de la ficha se lean como una sola. */
+  .kt-rail-card {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 10px;
+    min-height: 178px;
+    padding: 18px 16px;
+    border: 1px solid #2f2f2f;
+    background: transparent;
+    color: #f5f5f5;
+    text-align: left;
+    transition: border-color 220ms ease-out, transform 220ms ease-out, background-color 220ms ease-out;
+  }
+
+  .kt-rail-card:hover,
+  .kt-rail-card:focus-visible {
+    border-color: rgba(244, 223, 51, 0.55);
+    background-color: rgba(244, 223, 51, 0.05);
+    transform: translateY(-3px);
+  }
+
+  /* Variante con foto arriba (notas del blog): la card se arma sola, sin padding
+     exterior, y el texto lleva el suyo. Sin esta clase habia que pelearle la
+     especificidad a .kt-rail-card con utilidades !important desde el JSX. */
+  .kt-rail-card-media {
+    grid-template-rows: auto auto 1fr auto;
+    padding: 0;
+    min-height: 258px;
+    overflow: hidden;
+  }
+
+  /* Miniatura de la card del riel. El alto lo fija el aspect-ratio para que la
+     fila de cards quede pareja aunque una traiga foto y otra sólo el favicon. */
+  .kt-rail-media {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    overflow: hidden;
+    background: #050505;
+  }
+
+  /* Chapita de play sobre la miniatura de un video. */
+  .kt-rail-play {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: var(--primary, #f4df33);
+    color: #090909;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  }
+
+  .kt-rail-kind {
+    justify-self: start;
+    border: 1px solid rgba(244, 223, 51, 0.45);
+    color: var(--primary, #f4df33);
+    padding: 3px 8px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .kt-download-card {
@@ -1429,6 +1586,64 @@ html {
 
   .kt-detail-preview-strip-wrap {
     width: 100%;
+  }
+
+  /* Miniaturas apoyadas en el borde inferior de la foto principal.
+     z-index 7: por ENCIMA de la lupa (.kt-zoom-lens, z:6). La lupa mide 240px y
+     al pasar el mouse cerca del borde inferior tapaba las miniaturas; entre una
+     magnificación de la foto y el control para cambiarla, manda el control. El
+     degradado propio es lo que las hace legibles sobre cualquier foto. */
+  .kt-detail-preview-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 7;
+    padding: 34px 14px 12px;
+    background: linear-gradient(
+      to top,
+      rgba(5, 5, 5, 0.94) 10%,
+      rgba(5, 5, 5, 0.72) 52%,
+      rgba(5, 5, 5, 0) 100%
+    );
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+
+  /* Sin barra de scroll acá: encima de la foto, una barra amarilla de 7px pesa
+     más que las miniaturas. El arrastre y el snap siguen funcionando igual.
+     Columnas de ancho FIJO (no 1/5 del contenedor): son miniaturas, y con dos o
+     tres imágenes un quinto del ancho las volvía láminas gigantes. */
+  .kt-detail-preview-overlay .kt-detail-preview-strip {
+    padding-bottom: 0;
+    scrollbar-width: none;
+    grid-auto-columns: clamp(68px, 7.5vw, 100px);
+    justify-content: start;
+  }
+
+  .kt-detail-preview-overlay .kt-detail-preview-strip::-webkit-scrollbar {
+    height: 0;
+    display: none;
+  }
+
+  .kt-detail-preview-overlay .kt-detail-preview-btn {
+    height: clamp(56px, 6.2vw, 82px);
+  }
+
+  /* `.kt-detail-image img` fija min-height:500px / max-height:720px: se escribió
+     para LA foto principal, cuando era la única imagen del contenedor. Ahora las
+     miniaturas viven adentro y heredaban ese alto — salían de 500px, más altas
+     que la mitad de la foto. Se resetea acá en vez de reescribir la regla del
+     hero, que sigue siendo correcta para lo suyo. */
+  .kt-detail-preview-overlay .kt-detail-preview-btn img {
+    min-height: 0;
+    max-height: none;
+    height: 100%;
+    width: 100%;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+    object-fit: cover;
   }
 
   .kt-detail-preview-strip {

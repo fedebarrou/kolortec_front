@@ -92,12 +92,30 @@ async function fetchWithFallback(path, fallbackValue) {
  * /public/productos → products.items[] shape
  * { name, description, image, category, badge, price, slug }
  */
+/**
+ * Etiquetas del producto. La API las emite como `badges` ([{label,color}], saneadas
+ * por BadgeSanitizer: máximo 3, label ≤ 20 chars). Están a nivel producto (salen de
+ * la variante principal) y también dentro de cada variante; se lee lo primero que
+ * haya para no depender de que el producto tenga variantes cargadas.
+ */
+function mapBadges(p) {
+  const raw = Array.isArray(p?.badges) && p.badges.length > 0
+    ? p.badges
+    : (Array.isArray(p?.variantes) ? p.variantes[0]?.badges : null)
+  if (!Array.isArray(raw)) return []
+  return raw
+    .filter((b) => b && typeof b.label === 'string' && b.label.trim() !== '')
+    .map((b) => ({ label: b.label.trim(), color: b.color || null }))
+    .slice(0, 3)
+}
+
 function mapProducto(p) {
   return {
     id: p.id,
     name: p.nombre,
     description: p.descripcion,
     longDescription: p.descripcion,
+    tags: mapBadges(p),
     image: p.img_url || (p.media && p.media[0]?.url) || '',
     category: p.categoria,
     // line: la LINEA de producto (campo libre en el admin). Se mapeaba a nada, asi
@@ -146,6 +164,7 @@ function mapProductoDetail(p) {
     price: p.precio,
     moneda: p.moneda,
     category: p.categoria,
+    tags: mapBadges(p),
     technicalSpecs: (Array.isArray(p.specs) ? p.specs : [])
       .filter((s) => s && (s.nombre || s.valor))
       .map((s) => [s.nombre || '', s.valor || '']),
@@ -734,7 +753,9 @@ export async function getProductDetail(slug) {
   const others = raw.filter((p) => String(p.id) !== String(match.id))
   const sameCat = others.filter((p) => p.categoria && p.categoria === match.categoria)
   const rest = others.filter((p) => !sameCat.includes(p))
-  detail.related = [...sameCat, ...rest].slice(0, 4).map(mapProducto)
+  // 10 y no 4: los relacionados pasaron de ser una grilla fija de 4 a un carrusel.
+  // Con 4 items el track no llena la pantalla y la tira gira medio vacía.
+  detail.related = [...sameCat, ...rest].slice(0, 10).map(mapProducto)
   return detail
 }
 
@@ -745,7 +766,9 @@ export async function getProductDetail(slug) {
  */
 /**
  * getSiteConfig()
- * Config pública de la web (flags). Hoy: showPrices (mostrar/ocultar precios). Fallback: showPrices=true.
+ * Config pública de la web (flags): showPrices, showReviews, published. Los flags que
+ * faltan se asumen en TRUE — la misma regla que aplica el back cuando la cuenta
+ * todavía no los configuró.
  */
 export async function getSiteConfig() {
   // Vista previa: un token en la URL (?preview=<token>) se persiste en sessionStorage para que
@@ -772,6 +795,8 @@ export async function getSiteConfig() {
   const cfg = await fetchWithFallback(path, null)
   return {
     showPrices: cfg ? cfg.show_prices !== false : true,
+    // Comentarios de producto: el tenant los puede apagar desde el admin.
+    showReviews: cfg ? cfg.show_reviews !== false : true,
     // published: si la cuenta despublicó su web desde tiendita → false. Fail-open: si no hay
     // config (API caída) asumimos publicado para no dejar un sitio sano en "mantenimiento".
     published: cfg ? cfg.published !== false : true,
@@ -810,13 +835,92 @@ export async function getFooterData() {
 
 /**
  * getGuideBySlug(slug)
- * Finds a single guide by slug from the remote list.
- * Falls back to the hardcoded entry if remote fails or slug is not found.
+ * Busca una nota por slug. Primero en las guías (/public/blog?tipo=guia); si no
+ * está, pide el post por slug directo.
+ *
+ * El fallback existe porque las notas que se linkean desde la ficha de producto
+ * (getProductBlogs) NO son necesariamente `tipo=guia`: son cualquier post asociado
+ * al producto en el admin. Sin esto, esos links caían en un 404 del detalle.
  */
 export async function getGuideBySlug(slug) {
   if (!slug) return null
   const all = await getGuides()
-  return all.find((g) => g.slug === slug) ?? null
+  const found = all.find((g) => g.slug === slug)
+  if (found) return found
+
+  const raw = await fetchWithFallback(`/public/blog?slug=${encodeURIComponent(slug)}`, null)
+  const mapped = mapBlogToGuides(raw)
+  return mapped?.[0] ?? null
+}
+
+/**
+ * getProductBlogs(productId)
+ * Notas del blog ASOCIADAS a un producto (relación productos ↔ blog_posts que ya
+ * existe en tiendita): GET /public/blog?producto_id=X. Sin notas asociadas → [],
+ * y la ficha oculta la sección.
+ */
+export async function getProductBlogs(productId) {
+  if (!productId) return []
+  const raw = await fetchWithFallback(
+    `/public/blog?producto_id=${encodeURIComponent(productId)}`,
+    null,
+  )
+  return mapBlogToGuides(raw) || []
+}
+
+// ---------------------------------------------------------------------------
+// Reseñas de producto (comentarios)
+// ---------------------------------------------------------------------------
+
+/**
+ * getProductReviews(productId)
+ * GET /public/productos/{id}/resenas → { avg_rating, count, reviews[], mine }.
+ *
+ * NO pasa por fetchWithFallback a propósito: esa cache guarda la promesa por toda
+ * la sesión, y acá hace falta releer justo después de publicar un comentario.
+ * `credentials: include` es lo que hace que el back reconozca la sesión y devuelva
+ * `mine` (tu propio comentario, aunque todavía esté pendiente de aprobación).
+ */
+export async function getProductReviews(productId) {
+  if (!productId) return { avgRating: 0, count: 0, reviews: [], mine: null }
+  try {
+    const data = await fetchJson(`/public/productos/${encodeURIComponent(productId)}/resenas`)
+    return {
+      avgRating: Number(data?.avg_rating) || 0,
+      count: Number(data?.count) || 0,
+      reviews: Array.isArray(data?.reviews) ? data.reviews : [],
+      mine: data?.mine ?? null,
+    }
+  } catch {
+    return { avgRating: 0, count: 0, reviews: [], mine: null }
+  }
+}
+
+/**
+ * submitProductReview({ productId, rating, comentario })
+ * POST /public/resenas. Requiere sesión pública (el back exige auth.public): la
+ * ficha sólo muestra el formulario a quien está logueado.
+ * La reseña nace con aprobado=false — se ve en la web recién cuando la aprueban
+ * desde el admin de tiendita. Devuelve { ok } o lanza con el mensaje del server.
+ */
+export async function submitProductReview({ productId, rating, comentario }) {
+  const res = await fetch(`${API_BASE_URL}/public/resenas`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify({
+      producto_id: productId,
+      rating: Number(rating),
+      ...(comentario ? { comentario } : {}),
+    }),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    const err = new Error(data.message || `Error ${res.status}`)
+    err.status = res.status
+    throw err
+  }
+  return data
 }
 
 /**

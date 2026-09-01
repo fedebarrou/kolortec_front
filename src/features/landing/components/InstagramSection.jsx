@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
+import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
+import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 
 const INSTAGRAM = SOCIAL_LINKS.find((s) => s.key === 'instagram')
 
@@ -17,7 +19,14 @@ function InstagramSection({ gallery }) {
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   // El carrusel se muestra SOLO si hay un Instagram REAL conectado al tenant (no galería).
   const showCarousel = !!gallery.connected && gallery.images.length > 0
-  const loopImages = showCarousel ? [...gallery.images, ...gallery.images] : []
+  // Repetido hasta llenar la tira (ver marquee.js): con pocas fotos de IG el track
+  // medía menos que la pantalla y se veía el hueco girando.
+  const [marqueeRef, repeats] = useMarqueeFill(showCarousel ? gallery.images.length : 0, 14)
+  const loopImages = useMemo(
+    () => (showCarousel ? buildMarqueeLoop(gallery.images, repeats) : []),
+    [showCarousel, gallery.images, repeats],
+  )
+  const igDuration = marqueeDuration(gallery.images.length, 8, 44)
 
   return (
     <section className="px-6 pt-[clamp(40px,6vw,72px)] pb-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" style={{ '--reveal-delay': '80ms' }}>
@@ -49,7 +58,7 @@ function InstagramSection({ gallery }) {
         </div>
 
         {showCarousel ? (
-        <div className="kt-marquee" style={{ '--kt-marquee-duration': '60s' }}>
+        <div ref={marqueeRef} className="kt-marquee" style={{ '--kt-marquee-duration': igDuration }}>
           <div className="kt-marquee-track">
             {loopImages.map((src, index) => (
               <button

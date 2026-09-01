@@ -4,7 +4,6 @@ import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
 import ScrolltellingSection from './ScrolltellingSection'
 import JoinTeaserSection from './JoinTeaserSection'
-import PartnersStrip from './PartnersStrip'
 import ShopSection from './ShopSection'
 import SupportSection from './SupportSection'
 import SectionErrorBoundary from './SectionErrorBoundary'
@@ -25,6 +24,9 @@ const KOLORTEC_LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
  *    derecho): siempre; la biblioteca de guías vive en /soporte/guias vía su acceso.
  *  - Contactanos (SupportSection): siempre, con su carrusel de imagen; contactos ocultos si vacío.
  * Las secciones de marketing hardcodeadas (Distribuidores / Alquiler) siguen quitadas.
+ *
+ * ORDEN (pedido del cliente): historia → Instagram → Hero → Destacados → Centro de soporte →
+ * Sumate → Contactanos. La tira de marcas volvió al FOOTER (FooterSection), donde estaba antes.
  */
 function LandingPage() {
   const { content, loading } = useLandingContent()
@@ -36,9 +38,6 @@ function LandingPage() {
   useHideBootScreen(!loading)
 
   const hasProducts = (content.products?.items?.length ?? 0) > 0
-  // Igual que hasProducts: sin marcas cargadas se van la seccion Y su divisor.
-  // Si no, quedarian dos <Divider /> seguidos y una raya huerfana en el medio.
-  const hasPartners = (content.footer?.clientLogos?.length ?? 0) > 0
 
   return (
     <>
@@ -49,62 +48,50 @@ function LandingPage() {
       <SectionErrorBoundary name="Scrolltelling">
         <ScrolltellingSection config={content.hero?.scrollLabConfig} logoUrl={KOLORTEC_LOGO} isFirst />
       </SectionErrorBoundary>
-      {/* SIN spacer y SIN Divider entre la historia y el hero: los dos son
-          full-bleed y van pegados, uno cubriendo el viewport después del otro.
-          Antes acá había un padding-top de 84px "para reservar el alto del
-          navbar" — escrito cuando lo que seguía era una sección de texto cuyo
-          heading el navbar sticky tapaba. Con un hero a pantalla completa eso
-          sólo dejaba una banda negra, y encima se sumaba a la resta que ya hacía
-          HeroSection: entre las dos se comían 164px del viewport.
-          El navbar es `sticky top-0` y va POR ENCIMA del hero (es translúcido
-          con backdrop-blur), que es como se monta un hero full-bleed.
-          Orden pedido por el cliente post-scroll: Hero (banner) → Instagram → Productos. */}
-      <SectionErrorBoundary name="Hero">
-        <HeroSection hero={content.hero} />
-      </SectionErrorBoundary>
-      <Divider space />
+      {/* SIN spacer propio entre la historia y lo que sigue: el ScrollRenderer ya
+          se deja un margin-bottom de `--site-header-h + --story-gap`, o sea el alto
+          REAL del navbar medido en vivo más aire. Agregarle un padding acá (había
+          uno de 84px hardcodeado) duplicaba la reserva y dejaba una banda negra. */}
       <SectionErrorBoundary name="Instagram">
         <InstagramSection gallery={content.gallery} />
       </SectionErrorBoundary>
+      <Divider />
+      {/* El hero es full-bleed y arranca justo en el filo de la foto: el navbar es
+          `sticky top-0` y va POR ENCIMA (es translúcido con backdrop-blur), que es
+          como se monta un hero a pantalla completa. Por eso HeroSection NO le resta
+          el alto del navbar al viewport. */}
+      <SectionErrorBoundary name="Hero">
+        <HeroSection hero={content.hero} />
+      </SectionErrorBoundary>
+      {/* Divider CON aire: el hero termina a sangre en el borde del viewport y la
+          línea pegada al filo de la foto hace que las dos secciones se lean como una. */}
+      <Divider space />
       {hasProducts ? (
         <>
-          <Divider />
           <SectionErrorBoundary name="Featured">
             <FeaturedSection products={content.products} />
           </SectionErrorBoundary>
+          <Divider />
         </>
       ) : null}
-      <Divider />
       <SectionErrorBoundary name="Shop">
         <ShopSection shop={content.shop} ready={!loading} />
       </SectionErrorBoundary>
+      {/* AIRE (sin hairline) después de la amarilla: termina a sangre en negro pleno
+          y lo que sigue pegado se lee como parte de ella. La raya la pone el propio
+          JoinTeaserSection, que trae su border-t — dos líneas juntas sobraban. */}
+      <div aria-hidden="true" className="h-[clamp(56px,8vw,112px)]" />
       {/* "Sumate" va DESPUÉS de la sección amarilla: primero se muestra lo que
           Kolortec hace por vos (soporte, garantía, guías) y recién ahí se invita
           a sumarse. Antes eran DOS teasers espejados —distribuidores y rental—
           arriba del amarillo, compitiendo entre sí por la misma decisión. */}
-      {/* Orden del cierre: marcas → Contactanos → Sumate. La tira de marcas va
-          arriba de Contactanos a propósito: hace de CORTE con la sección amarilla,
-          que termina en negro pleno, y evita que las dos se lean como una sola.
-          Y Contactanos antes de Sumate porque primero se ofrece la vía directa
-          —hablar con alguien— y recién después la invitación a formar parte, que
-          es un compromiso mayor. */}
-      {hasPartners ? (
-        <>
-          {/* Divider CON aire: la seccion amarilla termina a sangre, en negro pleno,
-              y la tira de marcas pegada se leia como parte de ella. */}
-          <Divider space />
-          <SectionErrorBoundary name="Partners">
-            <PartnersStrip logos={content.footer?.clientLogos} />
-          </SectionErrorBoundary>
-        </>
-      ) : null}
-      <Divider />
-      <SectionErrorBoundary name="Support">
-        <SupportSection support={content.support} loading={loading} />
-      </SectionErrorBoundary>
-      <Divider />
       <SectionErrorBoundary name="Join">
         <JoinTeaserSection join={content.join} />
+      </SectionErrorBoundary>
+      {/* Contactanos cierra la página: Sumate ya trae su border-b, así que no hace
+          falta Divider en la costura. */}
+      <SectionErrorBoundary name="Support">
+        <SupportSection support={content.support} loading={loading} />
       </SectionErrorBoundary>
     </>
   )

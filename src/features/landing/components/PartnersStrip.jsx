@@ -1,11 +1,15 @@
 import { useMemo } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
+import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 
 /**
  * PartnersStrip — la tira de marcas que trabajan con Kolortec.
  *
- * Vivía inline en el footer, o sea en TODAS las páginas. Se movió a la home,
- * entre Contacto y "Querés formar parte", que es donde el cliente la quiere.
+ * Vive en el FOOTER (FooterSection), entre la grilla de columnas y la barra de
+ * copyright, que es donde el cliente la quiere: se ve en todas las páginas y no
+ * le compite a ninguna sección de la home. Estuvo un tiempo en la home, entre la
+ * sección amarilla y Contactanos, pero volvió acá.
  *
  * De paso se arregló algo que estaba roto desde siempre: el mapper de la API
  * (contentService.mapMarcasToClientLogos) devuelve `{ name, logo, link }`, pero
@@ -44,22 +48,33 @@ function Mark({ logo }) {
 
 function PartnersStrip({ logos }) {
   const { t } = useLanguage()
-  const clientLogos = Array.isArray(logos) ? logos : []
-  // La lista va duplicada: el keyframe desplaza -50% y el segundo juego tapa la
-  // costura. La copia es decorativa (aria-hidden) para que no se lea dos veces.
-  const loop = useMemo(() => [...clientLogos, ...clientLogos], [clientLogos])
+  const clientLogos = useMemo(() => (Array.isArray(logos) ? logos : []), [logos])
+  // La lista se REPITE hasta llenar la tira (par de veces: el keyframe desplaza
+  // -50% y la segunda mitad tiene que ser idéntica a la primera para que la
+  // costura no se vea). Duplicarla una sola vez alcanzaba con muchas marcas, pero
+  // con 3 o 4 cargadas el track medía menos que la pantalla y la tira giraba medio
+  // vacía. De última las marcas se repiten, que es lo que se espera de un carrusel
+  // de logos. Las copias son decorativas (aria-hidden): no se leen N veces.
+  const [marqueeRef, repeats] = useMarqueeFill(clientLogos.length, 16)
+  const loop = useMemo(() => buildMarqueeLoop(clientLogos, repeats), [clientLogos, repeats])
+  // Velocidad constante en px/s: la duración fija de 52s hacía que la tira fuera
+  // más rápida cuantas más marcas hubiera cargadas.
+  const duration = marqueeDuration(clientLogos.length, 7, 38)
 
   if (clientLogos.length === 0) return null
 
   return (
     <section
-      className="px-6 py-[clamp(44px,6vw,84px)] lg:px-40 kt-section-reveal"
-      style={{ '--reveal-delay': '40ms' }}
+      className="mt-8 w-full border-t border-slate-800 px-6 pt-6 lg:px-40"
       aria-label={t('landing.partners.aria', 'Marcas que trabajan con Kolortec')}
     >
-      <div className="kt-marquee kt-marquee-reverse" style={{ '--kt-marquee-duration': '52s' }}>
+      <div ref={marqueeRef} className="kt-marquee kt-marquee-reverse" style={{ '--kt-marquee-duration': duration }}>
         <div className="kt-marquee-track">
           {loop.map((logo, index) => {
+            // Copia = todo lo que viene después del set base. Sigue siendo un LINK
+            // (con la tira repetida, las copias son la mayor parte de lo que se ve
+            // girando: dejarlas muertas al click era peor), pero sale del orden de
+            // tabulación y se marca aria-hidden para no leerse N veces.
             const duplicado = index >= clientLogos.length
             const contenido = (
               <>
@@ -67,13 +82,15 @@ function PartnersStrip({ logos }) {
                 <span>{logo.name}</span>
               </>
             )
-            return logo.link && !duplicado ? (
+            return logo.link ? (
               <a
                 key={`${logo.name}-${index}`}
                 href={logo.link}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="kt-marquee-item-clientlogo"
+                aria-hidden={duplicado ? 'true' : undefined}
+                tabIndex={duplicado ? -1 : undefined}
               >
                 {contenido}
               </a>
