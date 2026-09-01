@@ -1897,20 +1897,19 @@ html {
     overflow: hidden;
   }
 
-  /* Separadores de Contactanos: se DIFUMINAN hacia la derecha en vez de cruzar
-   la seccion entera. Antes llegaban hasta el borde y cortaban en seco la foto
-   ghost que sangra por ese lado — dos elementos peleando por el mismo pixel.
-   border-image con un gradiente resuelve las tres variantes (border-y, border-b)
-   de una, sin tener que pintar la linea con pseudo-elementos. */
+
+  /* Separadores de Contactanos: SIN LINEA.
+     Estuvieron primero cruzando la seccion entera y despues difuminandose hacia
+     la derecha, y en las dos versiones ensuciaban: cortaban la foto ghost que
+     sangra por ese lado y le agregaban ruido a lo unico accionable de la seccion,
+     que es la lista de contactos. La separacion la da el aire, no una raya.
+     La clase se conserva —esta en cinco lugares del JSX junto a `border-y` /
+     `border-b` de Tailwind— y lo que hace ahora es anular ese borde. */
 .kt-support-rule {
-  border-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.16) 0%,
-      rgba(255, 255, 255, 0.16) 44%,
-      rgba(255, 255, 255, 0.06) 72%,
-      rgba(255, 255, 255, 0) 88%
-    ) 1;
+  border-color: transparent;
+  border-image: none;
 }
+
 
 .kt-support-ghost {
     position: absolute;

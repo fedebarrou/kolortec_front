@@ -23,7 +23,7 @@ function JoinTeaserSection({ join }) {
 
   return (
     <section
-      className="kt-join-section kt-section-reveal relative isolate flex flex-col justify-center overflow-hidden bg-[#050505] px-6 py-[clamp(110px,15vw,200px)] lg:px-40"
+      className="kt-join-section kt-section-reveal relative isolate flex flex-col justify-center overflow-hidden bg-[#050505] px-6 py-[clamp(110px,15vw,200px)] lg:pr-40 lg:pl-[calc(10rem+var(--kt-bleed-inset,0px))]"
       style={{ '--reveal-delay': '120ms' }}
     >
       {/* SIN el resplandor amarillo que había acá (dos radiales de rgba(244,223,51)

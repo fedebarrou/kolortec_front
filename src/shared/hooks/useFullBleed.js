@@ -35,6 +35,7 @@ export function useFullBleed(ref, enabled = true) {
         el.style.width = ''
         el.style.maxWidth = ''
         el.style.marginLeft = ''
+        el.style.removeProperty('--kt-bleed-inset')
       }
       marginRef.current = 0
       return undefined
@@ -51,6 +52,25 @@ export function useFullBleed(ref, enabled = true) {
       nodo.style.width = `${ancho}px`
       nodo.style.maxWidth = 'none'
       nodo.style.marginLeft = `${ml}px`
+      // Cuánto se corrió la sección para salir del lienzo. Es exactamente lo que
+      // hay que devolverle al gutter del CONTENIDO para que alinee con el resto
+      // del sitio: romper el ancho deja el `lg:px-40` contando desde el borde de
+      // la PANTALLA, mientras el footer y las demás secciones lo cuentan desde el
+      // borde del LIENZO. En un monitor 2K son ~315px de diferencia — el texto de
+      // la amarilla arrancaba en 160 y el del footer en 475.
+      //
+      // Lo consumen las secciones del cierre con
+      // `lg:pl-[calc(10rem+var(--kt-bleed-inset,0px))]` (ShopSection,
+      // JoinTeaserSection, SupportSection). Va en la clase de Tailwind y no en
+      // una regla de index.css a propósito: el gutter lo pone una utilidad que
+      // vive en @layer utilities, así que una regla en @layer components pierde
+      // por orden de capas sin importar la especificidad — se probó y no
+      // aplicaba. Puesto en la propia utilidad no hay cascada que pelear ni
+      // override invisible.
+      //
+      // Se publica como variable y no se escribe el padding acá porque cada
+      // sección tiene su propio gutter y sus propios breakpoints.
+      nodo.style.setProperty('--kt-bleed-inset', `${Math.max(0, -ml)}px`)
     }
 
     medir()

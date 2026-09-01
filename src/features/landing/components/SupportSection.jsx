@@ -10,7 +10,7 @@ function SupportSection({ support, loading = false }) {
   const imagen = support.carouselImages?.[0] ?? null
 
   return (
-    <section className="kt-support-section px-6 py-[clamp(84px,11vw,128px)] lg:px-40 kt-section-reveal" id="support" style={{ '--reveal-delay': '240ms' }}>
+    <section className="kt-support-section px-6 py-[clamp(84px,11vw,128px)] lg:pr-40 lg:pl-[calc(10rem+var(--kt-bleed-inset,0px))] kt-section-reveal" id="support" style={{ '--reveal-delay': '240ms' }}>
       {/* Ghost lateral: la foto sangra por el borde derecho y se disuelve hacia
           la izquierda con una máscara — la misma técnica del video de la sección
           amarilla (.kt-shop-video-edge). Sin borde duro no se lee como una foto

@@ -216,7 +216,7 @@ function ShopSection({ shop, ready = true }) {
         </>
       ) : null}
 
-      <div className="kt-shop-content relative z-10 w-full px-6 lg:pl-40 lg:pr-[min(620px,46vw)]">
+      <div className="kt-shop-content relative z-10 w-full px-6 lg:pl-[calc(10rem+var(--kt-bleed-inset,0px))] lg:pr-[min(620px,46vw)]">
         <div className="kt-shop-from-left flex max-w-[660px] flex-col gap-5">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-8 kt-shop-accent" />
