@@ -1738,6 +1738,37 @@ html {
     object-fit: cover;
   }
 
+  /* ── La tira de miniaturas ─────────────────────────────────────────────────
+     NO tenía definición base: sólo overrides dentro de .kt-detail-preview-rail y
+     en dos media queries de móvil. Sin `display: grid`, el `grid-auto-columns`
+     de más arriba era inerte, el contenedor caía a `display: block` y los
+     botones colapsaban a 2px de ANCHO conservando los ~70px de alto: se veían
+     como rayitas verticales. Y al quedar sin tamaño, las imágenes con
+     `loading="lazy"` ni siquiera se descargaban (naturalWidth 0). */
+  .kt-detail-preview-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: clamp(58px, 6vw, 84px);
+    gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  /* CUADRADAS. El ancho lo da la columna de la grilla y el alto lo sigue por
+     aspect-ratio. Antes el alto era fijo y el ancho quedaba librado a esa grilla
+     que no existía, así que no había forma de que salieran cuadradas. */
+  .kt-detail-preview-rail .kt-detail-preview-btn {
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  /* `contain` y no `cover`: la miniatura está para RECONOCER la foto, y recortar
+     un equipo alargado —una barra de LED, un flightcase— lo deja irreconocible.
+     La celda es cuadrada; la foto entra entera adentro y mantiene su forma. */
+  .kt-detail-preview-rail .kt-detail-preview-btn img {
+    object-fit: contain;
+  }
+
   .kt-detail-preview-btn {
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 8px;

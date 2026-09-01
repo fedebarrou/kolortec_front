@@ -183,7 +183,13 @@ function CategoryPage() {
               <Link
                 key={c.slug}
                 to={`/products/${c.slug}`}
-                className="rounded-full border border-[#303743] bg-transparent px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-[#c8ced8] transition hover:border-[rgba(244,223,51,0.48)] hover:text-white"
+                /* Mismo lenguaje que las etiquetas de la card (ProductCard):
+                   rectangulares, 11px, font-black, mayúsculas y tracking .06 —
+                   la píldora con borde no se parecía a nada más del sitio.
+                   En reposo usa el fondo de una etiqueta común y al pasar por
+                   encima pasa al amarillo del badge destacado, que es el otro
+                   estado que ya existe en la card. */
+                className="bg-[#1b212b] px-2 py-1 text-[11px] font-black uppercase tracking-[0.06em] text-[#c8ced8] transition hover:bg-primary hover:text-[#111]"
               >
                 {lang === 'en' ? c.nameEn || c.name : c.name}
               </Link>
