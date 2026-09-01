@@ -3,6 +3,7 @@ import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
 import ScrolltellingSection from './ScrolltellingSection'
+import PartnersStrip from './PartnersStrip'
 import ClosingBackdrop from './ClosingBackdrop'
 import StackOver from './StackOver'
 import JoinTeaserSection from './JoinTeaserSection'
@@ -106,10 +107,20 @@ function LandingPage() {
             la galería de la cuenta: esa son fotos de producto —un clamp, un bidón
             de líquido de humo— y de fondo no dicen nada. La galería queda de
             respaldo por si algún día cargan fotos de eventos. */}
+        {/* Sumate y las marcas van sobre el NEGRO a sangre de StackOver, no sobre
+            la foto: el bloque negro tiene el ancho del lienzo y si la foto va por
+            detrás asoma por los dos costados, y el negro deja de leerse como un
+            bloque. La foto arranca DESPUÉS, en Contactanos. */}
+        <SectionErrorBoundary name="Join">
+          <JoinTeaserSection join={content.join} />
+        </SectionErrorBoundary>
+        {/* Las marcas, pegadas a Sumate. Estaban en el footer, que es global y
+            las repetía en todas las páginas; acá cierran el bloque negro —
+            "sumate" y "con quiénes ya trabajamos" son el mismo argumento. */}
+        <SectionErrorBoundary name="Partners">
+          <PartnersStrip logos={content.footer?.clientLogos} />
+        </SectionErrorBoundary>
         <ClosingBackdrop images={[FOTO_CIERRE, ...(content.gallery?.images ?? [])]}>
-          <SectionErrorBoundary name="Join">
-            <JoinTeaserSection join={content.join} />
-          </SectionErrorBoundary>
           <SectionErrorBoundary name="Support">
             <SupportSection support={content.support} loading={loading} />
           </SectionErrorBoundary>

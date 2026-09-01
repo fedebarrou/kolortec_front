@@ -1414,7 +1414,7 @@ html {
   .kt-closing-fade-sides {
     position: absolute;
     inset: 0;
-    background: rgba(5, 5, 5, 0.45);
+    background: rgba(5, 5, 5, 0.68);
   }
 
   /* Fundidos contra el negro de la página, arriba y abajo: sin ellos la foto
@@ -2592,3 +2592,4 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
    foto arranca en la nada y nunca se lee como una capa distinta.
    Con Sumate en negro el recorrido queda: amarillo (clavado) → negro → foto. Los
    tres bloques se distinguen, y ahí sí se ve que el fondo cambió. */
+

@@ -6,10 +6,13 @@ import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 /**
  * PartnersStrip — la tira de marcas que trabajan con Kolortec.
  *
- * Vive en el FOOTER (FooterSection), entre la grilla de columnas y la barra de
- * copyright, que es donde el cliente la quiere: se ve en todas las páginas y no
- * le compite a ninguna sección de la home. Estuvo un tiempo en la home, entre la
- * sección amarilla y Contactanos, pero volvió acá.
+ * Vive en la HOME, pegada a "Querés formar parte": los dos dicen lo mismo
+ * —sumate / mirá con quiénes ya trabajamos— y juntos cierran el bloque negro.
+ * Estuvo en el footer, que es global y la repetía en todas las páginas.
+ * Lleva su PROPIO fondo negro: vive sobre la foto del cierre y tiene que leerse
+ * como parte del mismo bloque negro que Sumate, no como una capa aparte. Va en el
+ * markup y no en una regla descendiente de index.css a propósito — el fondo es
+ * parte de lo que este componente es ahora, no algo que le presta el contenedor.
  *
  * De paso se arregló algo que estaba roto desde siempre: el mapper de la API
  * (contentService.mapMarcasToClientLogos) devuelve `{ name, logo, link }`, pero
@@ -65,7 +68,7 @@ function PartnersStrip({ logos }) {
 
   return (
     <section
-      className="mt-8 w-full border-t border-slate-800 px-6 pt-6 lg:px-40"
+      className="kt-partners-strip w-full bg-[#050505] px-6 pb-[clamp(56px,7vw,96px)] lg:px-40"
       aria-label={t('landing.partners.aria', 'Marcas que trabajan con Kolortec')}
     >
       <div ref={marqueeRef} className="kt-marquee kt-marquee-reverse" style={{ '--kt-marquee-duration': duration }}>

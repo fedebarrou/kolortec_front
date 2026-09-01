@@ -104,10 +104,11 @@ function ShopSection({ shop, ready = true }) {
     const isInternal = cta.href.startsWith('/') && !targetId
 
     const className =
-      // SIN líneas divisorias: el aire entre accesos alcanza para separarlos. La
-      // sección amarilla no tiene bordes de ningún tipo — ni entre items, ni
-      // arriba, ni abajo.
-      'group/access flex items-center justify-between gap-4 py-4 text-left transition hover:pl-1'
+      // Separador NEGRO entre accesos, y sólo entre ellos: `last:border-b-0` deja
+      // el último sin línea, así la lista no termina en un borde suelto. Lo que
+      // no lleva la sección es borde propio —ni arriba ni abajo— ni línea sobre
+      // el <nav> que los envuelve; eso le dibujaba un marco al bloque.
+      'group/access flex items-center justify-between gap-4 border-b border-[rgba(11,11,11,0.22)] py-4 text-left transition last:border-b-0 hover:pl-1'
     const inner = (
       <>
         <span className="flex items-center gap-3">

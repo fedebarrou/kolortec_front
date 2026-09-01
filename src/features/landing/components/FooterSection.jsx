@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
-import PartnersStrip from './PartnersStrip'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
@@ -12,9 +11,9 @@ function FooterSection() {
   const { t } = useLanguage()
   // Data-driven: partners (marcas) + galería salen de la cuenta en tiendita. Vacío → se ocultan
   // (antes usaba defaultLandingContent.footer → mostraba partners/imágenes hardcodeados siempre).
-  // La TIRA DE MARCAS (PartnersStrip) vive acá: estuvo un tiempo en la home, entre
-  // la sección amarilla y Contactanos, y volvió al footer — se ve en todas las
-  // páginas y no le compite a ninguna sección. Sale de los mismos clientLogos.
+  // La TIRA DE MARCAS ya NO vive acá: se mudó a la home, justo debajo de "Querés
+  // formar parte" (ver LandingPage). getFooterData() se sigue usando por la
+  // galería; sus clientLogos ya no se leen en este componente.
   const [footerData, setFooterData] = useState({ gallery: [], clientLogos: [] })
   useEffect(() => {
     let mounted = true
@@ -130,9 +129,11 @@ function FooterSection() {
       </div>
 
 
-      <PartnersStrip logos={footerData.clientLogos} />
-
-      <div className="w-full mt-6 px-6 pt-5 border-t border-slate-800 flex flex-col gap-3 text-xs text-slate-600 md:flex-row md:items-center md:justify-between lg:px-40">
+      {/* La barra legal va sobre su PROPIO fondo, un gris oscuro: es el pie del
+          pie, no una fila más del footer, y separarla por color la despega del
+          bloque de links sin necesidad de otra línea divisoria. `mt-10` y no
+          `mt-6` porque ahora tiene fondo propio y necesita aire por fuera. */}
+      <div className="mt-10 w-full bg-[#111114] px-6 py-5 flex flex-col gap-3 text-xs text-slate-500 md:flex-row md:items-center md:justify-between lg:px-40">
         <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
         <div className="flex gap-5">
           <a className="hover:text-primary transition-colors" href="#">{t('footer.privacyPolicy', 'Privacy Policy')}</a>
