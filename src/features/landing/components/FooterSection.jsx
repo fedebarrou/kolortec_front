@@ -101,7 +101,7 @@ function FooterSection() {
           <ul className="body-font text-slate-400 space-y-4 text-sm">
             {libraryLinks.map((label) => (
               <li key={`footer-library-${label}`}>
-                <Link className="hover:text-primary transition-colors" to="/soporte">{label}</Link>
+                <Link className="hover:text-primary transition-colors" to="/descargas">{label}</Link>
               </li>
             ))}
           </ul>

@@ -270,6 +270,9 @@ export const translations = {
     },
     support: {
       page: {
+        allTitle: 'All',
+        emptyAll: 'No files published yet. Ask support and we will send them over.',
+        loading: 'Loading files…',
         guidesCta: 'View guides',
         guidesTitle: 'Technical guides',
         contactSubtitle: 'Cannot find what you need? Our technical team replies fast and keeps spare parts in local stock.',
@@ -386,6 +389,7 @@ export const translations = {
       guides: {
         breadcrumbSupport: 'Support',
         breadcrumbGuides: 'Guides',
+        readCta: 'Read guide',
         breadcrumbHome: 'Home',
         cluster: 'Support Cluster',
         title: 'Technical guides',
@@ -820,6 +824,9 @@ export const translations = {
     },
     support: {
       page: {
+        allTitle: 'Todo',
+        emptyAll: 'Todavia no hay archivos publicados. Pedilos por soporte y te los mandamos.',
+        loading: 'Cargando archivos…',
         guidesCta: 'Ver guias',
         guidesTitle: 'Guias tecnicas',
         contactSubtitle: 'No encontras lo que buscas? Nuestro equipo tecnico responde rapido y mantiene repuestos en stock local.',
@@ -936,6 +943,7 @@ export const translations = {
       guides: {
         breadcrumbSupport: 'Soporte',
         breadcrumbGuides: 'Guías',
+        readCta: 'Leer guía',
         breadcrumbHome: 'Inicio',
         cluster: 'Cluster Soporte',
         title: 'Guías técnicas',

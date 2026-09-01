@@ -33,7 +33,13 @@ function App() {
         <Route path="/lineas/:lineSlug" element={<LinePage />} />
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
-        <Route path="/soporte" element={<SupportPage />} />
+        {/* La pagina dejo de ser "soporte" a secas: es el catalogo de manuales y
+            librerias, y /descargas dice eso. /soporte redirige en vez de romper
+            los links que ya existan afuera (y los que sigue habiendo en guias). */}
+        <Route path="/descargas" element={<SupportPage />} />
+        <Route path="/soporte" element={<Navigate to="/descargas" replace />} />
+        {/* Las guias NO se mudan: sus URLs estan indexadas y son contenido, no
+            descargas. Siguen colgando de /soporte/guias. */}
         <Route path="/soporte/guias" element={<GuidesIndexPage />} />
         <Route path="/soporte/guias/:slug" element={<GuideDetailPage />} />
         <Route path="/garantias" element={<GarantiasPage />} />

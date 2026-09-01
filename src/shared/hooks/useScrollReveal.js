@@ -7,6 +7,12 @@ import { useEffect } from 'react'
  * cuando entran al viewport (estilos en index.css). Se monta una sola vez
  * (LandingChrome). Re-escanea el DOM ante contenido que aparece async (fetch),
  * y desobserva cada elemento al revelarlo.
+ *
+ * ⚠ OJO con elementos MUY altos: el umbral es 0.12, o sea que se revela cuando
+ * el 12% del elemento entra en pantalla. Si el elemento mide más de ~8 viewports
+ * —una grilla de cien tarjetas, por ejemplo— ese 12% no entra nunca y se queda
+ * invisible PARA SIEMPRE. En esos casos no hay que envolver el contenedor: se
+ * revela por bloques, o directamente no se anima.
  */
 export function useScrollReveal(selector = '.kt-reveal, .kt-section-reveal') {
   useEffect(() => {

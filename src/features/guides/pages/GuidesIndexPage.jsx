@@ -27,7 +27,7 @@ function GuidesIndexPage() {
       />
 
       <nav className="mb-5 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]" aria-label="Breadcrumb">
-        <Link to="/soporte" className="transition hover:text-primary">{t('pages.guides.breadcrumbSupport', 'Soporte')}</Link>
+        <Link to="/descargas" className="transition hover:text-primary">{t('pages.guides.breadcrumbSupport', 'Soporte')}</Link>
         <span aria-hidden="true">/</span>
         <span className="text-white">{t('pages.guides.breadcrumbGuides', 'Guías')}</span>
       </nav>
@@ -54,17 +54,62 @@ function GuidesIndexPage() {
           </p>
         </div>
       ) : (
-        <ul className="grid gap-4 list-none m-0 p-0 md:grid-cols-2 kt-reveal">
+        // Con FOTO. Antes eran rectángulos de texto sobre gris: una biblioteca de
+        // guías donde todo se ve igual no invita a entrar a ninguna, y la portada
+        // (media[] del post en tiendita) ya estaba cargada y sin usar. Sin portada
+        // queda el isotipo sobre negro, no un hueco.
+        <ul className="grid gap-5 list-none m-0 p-0 sm:grid-cols-2 xl:grid-cols-3 kt-reveal">
           {guides.map((g) => (
             <li key={g.slug} className="kt-reveal-item">
               <Link
                 to={`/soporte/guias/${g.slug}`}
-                className="block rounded-[12px] border border-[#2a2a2a] bg-[#0f0f10] p-5 transition hover:-translate-y-0.5 hover:border-primary/55"
+                className="group flex h-full flex-col overflow-hidden rounded-[12px] border border-[#2a2a2a] bg-[#0f0f10] transition hover:-translate-y-1 hover:border-primary/55"
               >
-                <h2 className="title-font m-0 mb-2 text-[1.15rem] leading-[1.25] text-white">
-                  {g.title}
-                </h2>
-                <p className="m-0 text-[0.92rem] leading-[1.55] text-[#aeb5bf]">{g.excerpt}</p>
+                <span className="relative block aspect-[16/9] w-full overflow-hidden bg-deep-black">
+                  {g.image ? (
+                    <img
+                      src={g.image}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+                    />
+                  ) : (
+                    // Sin portada cargada en el admin: panel de marca en vez de un
+                    // rectángulo negro vacío. Isotipo grande y tenue sobre un
+                    // degradado, para que la card se lea igual de terminada que
+                    // las que sí tienen foto.
+                    <span
+                      className="flex h-full w-full items-center justify-center"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(ellipse 70% 90% at 50% 0%, rgba(244,223,51,0.10), transparent 70%), linear-gradient(160deg, #141414 0%, #0a0a0a 100%)',
+                      }}
+                    >
+                      <img src="/favicon.svg" alt="" aria-hidden="true" className="h-16 w-16 opacity-25" />
+                    </span>
+                  )}
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0f0f10] to-transparent"
+                  />
+                </span>
+
+                <span className="flex flex-1 flex-col gap-2 p-5">
+                  <h2 className="title-font m-0 text-[1.15rem] leading-[1.25] text-white transition-colors group-hover:text-primary">
+                    {g.title}
+                  </h2>
+                  {g.excerpt ? (
+                    <p className="m-0 text-[0.92rem] leading-[1.55] text-[#aeb5bf]">{g.excerpt}</p>
+                  ) : null}
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-primary">
+                    {t('pages.guides.readCta', 'Leer guía')}
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4] transition-transform group-hover:translate-x-1">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </span>
+                </span>
               </Link>
             </li>
           ))}

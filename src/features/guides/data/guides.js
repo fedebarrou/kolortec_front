@@ -45,7 +45,7 @@ export const guides = [
     ],
     cta: {
       label: 'Abrir caso con soporte técnico',
-      href: '/soporte',
+      href: '/contacto',
     },
   },
   {
@@ -81,7 +81,7 @@ export const guides = [
     ],
     cta: {
       label: 'Pedir asesoramiento DMX',
-      href: '/soporte',
+      href: '/contacto',
     },
   },
   {
@@ -122,7 +122,7 @@ export const guides = [
     ],
     cta: {
       label: 'Descargar perfiles GDTF',
-      href: '/soporte',
+      href: '/contacto',
     },
   },
   {
@@ -199,7 +199,7 @@ export const guides = [
     ],
     cta: {
       label: 'Servicio técnico de consolas',
-      href: '/soporte',
+      href: '/contacto',
     },
   },
   {
@@ -235,7 +235,7 @@ export const guides = [
     ],
     cta: {
       label: 'Solicitar diagnóstico Kolortec',
-      href: '/soporte',
+      href: '/contacto',
     },
   },
   {
@@ -276,7 +276,7 @@ export const guides = [
     ],
     cta: {
       label: 'Cotizar reparación',
-      href: '/soporte',
+      href: '/contacto',
     },
   },
   {
@@ -312,7 +312,7 @@ export const guides = [
     ],
     cta: {
       label: 'Consultar disponibilidad de repuestos',
-      href: '/soporte',
+      href: '/contacto',
     },
   },
 ]

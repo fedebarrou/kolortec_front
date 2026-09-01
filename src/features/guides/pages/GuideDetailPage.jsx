@@ -131,7 +131,7 @@ function GuideDetailPage() {
           {t('pages.guides.helpCta', '¿Necesitás ayuda directa? Nuestro equipo de soporte responde con repuestos en stock local y diagnóstico en 48-72h.')}
         </p>
         <Link
-          to={guide.cta?.href || '/soporte'}
+          to={guide.cta?.href || '/contacto'}
           className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-primary px-6 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5"
         >
           {guide.cta?.label || t('pages.guides.helpButton', 'Contactar soporte')}

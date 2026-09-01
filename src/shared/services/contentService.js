@@ -392,8 +392,9 @@ function mapBlogToGuides(raw) {
       publishedAt: post.published_at || '',
       sections,
       cta: {
+        // A CONTACTO, no a /descargas: el boton dice "contactar", no "descargar".
         label: 'Contactar soporte técnico',
-        href: '/soporte',
+        href: '/contacto',
       },
     }
   })
@@ -851,6 +852,79 @@ export async function getGuideBySlug(slug) {
   const raw = await fetchWithFallback(`/public/blog?slug=${encodeURIComponent(slug)}`, null)
   const mapped = mapBlogToGuides(raw)
   return mapped?.[0] ?? null
+}
+
+// ---------------------------------------------------------------------------
+// Descargas (manuales y librerías de toda la línea)
+// ---------------------------------------------------------------------------
+
+/**
+ * Clasifica un documento en las DOS familias que la marca ofrece al público:
+ *
+ *  - `manual`   → lo que se LEE: manuales, fichas técnicas, guías rápidas. PDFs.
+ *  - `libreria` → lo que se CARGA en un equipo o en una consola: cartas DMX,
+ *                 perfiles GDTF, fotometría IES, firmware, CAD.
+ *
+ * Se mira primero el `tipo` que puso el tenant en el admin (en kolortec hoy son
+ * `pdf` y `controlador`) y después la extensión y el nombre, porque `tipo` es un
+ * campo libre y otra cuenta puede llenarlo distinto. Ante la duda cae en manual:
+ * es lo que más se busca y lo que menos molesta si está mal clasificado.
+ */
+const EXT_LIBRERIA = ['csv', 'gdtf', 'ies', 'ldt', 'zip', 'exe', 'dmg', 'dwg', 'step', 'stp', 'bin', 'hex']
+const RE_LIBRERIA = /dmx|gdtf|fotometr|photometr|firmware|librer|library|perfil|profile|cad|driver|controlador/i
+
+function clasificarDoc(doc) {
+  const tipo = String(doc?.tipo || '').toLowerCase()
+  if (tipo === 'controlador' || RE_LIBRERIA.test(tipo)) return 'libreria'
+  const ext = String(doc?.extension || '').toLowerCase()
+  if (EXT_LIBRERIA.includes(ext)) return 'libreria'
+  if (RE_LIBRERIA.test(String(doc?.title || ''))) return 'libreria'
+  return 'manual'
+}
+
+/**
+ * getDownloads()
+ * Todos los documentos descargables de la cuenta, aplanados desde los productos
+ * (`productos.docs`) y con el producto al que pertenecen adentro de cada fila.
+ *
+ * La página de descargas antes listaba 16 archivos HARDCODEADOS —nombres de
+ * productos que no existen y botones que no bajaban nada—, mientras la API ya
+ * emitía los documentos reales de cada equipo. Esto es la misma fuente que usa
+ * la ficha de producto: un documento cargado en el admin aparece en los dos lados.
+ *
+ * Shape: [{ id, label, product, productSlug, category, family, ext, size, url }]
+ */
+export async function getDownloads() {
+  const raw = await fetchWithFallback('/public/productos', null)
+  if (!Array.isArray(raw)) return []
+
+  const out = []
+  raw.forEach((p) => {
+    const docs = Array.isArray(p.docs) ? p.docs : []
+    docs.forEach((d) => {
+      if (!d || !d.url) return
+      out.push({
+        id: `${p.id}-${d.id || d.url}`,
+        label: d.title || 'Documento',
+        product: p.nombre || '',
+        productSlug: p.slug || String(p.id),
+        category: p.categoria || '',
+        family: clasificarDoc(d),
+        ext: String(d.extension || d.tipo || '').toUpperCase(),
+        size: formatBytes(d.size),
+        url: d.url,
+      })
+    })
+  })
+
+  // Por producto y, dentro de cada uno, manuales antes que librerías: es el orden
+  // en el que alguien busca ("el manual del BEAM 5R, y de paso su carta DMX").
+  return out.sort((a, b) => {
+    const porProducto = a.product.localeCompare(b.product, 'es')
+    if (porProducto !== 0) return porProducto
+    if (a.family !== b.family) return a.family === 'manual' ? -1 : 1
+    return a.label.localeCompare(b.label, 'es')
+  })
 }
 
 /**

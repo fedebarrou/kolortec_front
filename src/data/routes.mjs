@@ -17,7 +17,7 @@ export function listStaticRoutes() {
     { path: '/', priority: 1.0, changefreq: 'weekly' },
     { path: '/products', priority: 0.9, changefreq: 'weekly' },
     { path: '/servicios', priority: 0.7, changefreq: 'monthly' },
-    { path: '/soporte', priority: 0.9, changefreq: 'weekly' },
+    { path: '/descargas', priority: 0.9, changefreq: 'weekly' },
     { path: '/soporte/guias', priority: 0.8, changefreq: 'weekly' },
     { path: '/garantias', priority: 0.7, changefreq: 'monthly' },
     { path: '/contacto', priority: 0.6, changefreq: 'monthly' },

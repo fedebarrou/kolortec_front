@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useFullBleed } from '../../../shared/hooks/useFullBleed'
+import { irASeccion } from '../../../shared/utils/irASeccion'
 
 // Accesos de la sección de soporte (data estática en landingData) → key i18n por icono (ES/EN).
 const ACCESS_KEY_BY_ICON = {
@@ -138,11 +139,12 @@ function ShopSection({ shop, ready = true }) {
           to={cta.href}
           className={className}
           onClick={(event) => {
-            const node = document.getElementById(targetId)
-            if (node) {
-              event.preventDefault()
-              node.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
+            // Mismo camino que el SOPORTE del navbar: si el scrolltelling
+            // todavía tiene tomado el scroll, hay que liberarlo antes de saltar
+            // o el recorrido se queda adentro de la historia.
+            if (!document.getElementById(targetId)) return
+            event.preventDefault()
+            irASeccion(targetId)
           }}
         >
           {inner}

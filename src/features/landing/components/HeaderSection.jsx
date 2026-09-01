@@ -5,6 +5,7 @@ import { defaultLandingContent } from '../data/landingData'
 import { getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import { irASeccion } from '../../../shared/utils/irASeccion'
 
 const normalizeText = (value) =>
   value
@@ -187,9 +188,7 @@ function HeaderSection() {
 
   useEffect(() => {
     if (hash !== '#shop') return
-    const target = document.getElementById('shop')
-    if (!target) return
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    irASeccion('shop')
   }, [hash, pathname])
 
   const handleSupportNav = (event) => {
@@ -199,10 +198,7 @@ function HeaderSection() {
     setActiveSuggestionIndex(-1)
 
     if (pathname === '/') {
-      const target = document.getElementById('shop')
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
+      irASeccion('shop')
       return
     }
 

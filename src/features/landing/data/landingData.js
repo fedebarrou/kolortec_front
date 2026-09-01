@@ -47,7 +47,7 @@ export const defaultLandingContent = {
         subtitle:
           'Trusted by touring productions, broadcasters, and architectural integrators across LATAM. Built to perform night after night.',
         primaryCta: 'Soporte',
-        primaryCtaHref: '/soporte',
+        primaryCtaHref: '/descargas',
         secondaryCta: 'Contactate con soporte',
         secondaryCtaHref: '#support',
         imageUrl:
@@ -174,7 +174,7 @@ export const defaultLandingContent = {
     ctas: [
       {
         label: 'Manuales y librerías',
-        href: '/soporte',
+        href: '/descargas',
         variant: 'primary',
         icon: 'download',
       },
@@ -218,7 +218,7 @@ export const defaultLandingContent = {
         excerpt: 'Fuente, fusible y línea de datos',
         image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=80',
         sections: [],
-        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+        cta: { label: 'Contactar soporte técnico', href: '/contacto' },
       },
       {
         slug: 'mantenimiento-preventivo-cabezas',
@@ -227,7 +227,7 @@ export const defaultLandingContent = {
         image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80',
         video: '/assets/shop-section-video.mp4',
         sections: [],
-        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+        cta: { label: 'Contactar soporte técnico', href: '/contacto' },
       },
       {
         slug: 'configurar-dmx-5-minutos',
@@ -236,7 +236,7 @@ export const defaultLandingContent = {
         image: 'https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=1200&q=80',
         video: '/assets/shop-section-video.mp4',
         sections: [],
-        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+        cta: { label: 'Contactar soporte técnico', href: '/contacto' },
       },
       {
         slug: 'limpieza-opticas-lentes',
@@ -244,7 +244,7 @@ export const defaultLandingContent = {
         excerpt: 'Sin rayar, recuperando brillo real',
         image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1200&q=80',
         sections: [],
-        cta: { label: 'Contactar soporte técnico', href: '/soporte' },
+        cta: { label: 'Contactar soporte técnico', href: '/contacto' },
       },
     ],
   },

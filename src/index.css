@@ -538,8 +538,12 @@ html {
     aspect-ratio: 4 / 5;
   }
 
+  /* Ancho de la card en los carruseles (destacados, relacionados, accesorios).
+     Subido: a 300px de tope, en un monitor ancho entraban ocho cards y cada
+     equipo se veía como una estampilla. Ahora la foto del producto tiene lugar
+     para leerse, que es lo único que hace clickeable una tira de destacados. */
   .kt-marquee-item-product {
-    width: clamp(220px, 22vw, 300px);
+    width: clamp(260px, 27vw, 420px);
   }
 
   /* Carrusel de CARDS (destacados / relacionados / accesorios).

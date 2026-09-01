@@ -123,10 +123,14 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
         />
 
         {/* Marcas de la esquina superior derecha: primero "Destacado" (la bandera de
-            la casa), después las etiquetas del tenant. Apiladas, cuadradas y del
-            mismo alto — una sola columna, no dos sistemas. */}
+            la casa), después las etiquetas del tenant. Cuadradas y del mismo alto
+            — una sola familia, no dos sistemas.
+            En FILA: entran una al lado de la otra y sólo bajan a un segundo
+            renglón cuando no queda ancho. Apiladas siempre en columna comían
+            media foto en cuanto había dos o tres. `justify-end` para que el
+            renglón incompleto quede pegado al borde derecho, no al izquierdo. */}
         {item.badge || tags.length > 0 ? (
-          <div className="absolute right-0 top-0 z-[2] flex flex-col items-end gap-px">
+          <div className="absolute right-0 top-0 z-[2] flex max-w-[85%] flex-wrap justify-end gap-px">
             {item.badge ? (
               <span className="bg-primary px-2 py-1 text-[11px] font-black uppercase tracking-[0.06em] text-[#111]">
                 {item.badge}
