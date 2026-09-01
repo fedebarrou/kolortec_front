@@ -880,8 +880,8 @@ html {
 
   .kt-detail-summary {
     position: relative;
-    display: grid;
-    align-content: start;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
@@ -1706,54 +1706,36 @@ html {
     width: 100%;
   }
 
-  /* Miniaturas apoyadas en el borde inferior de la foto principal.
-     z-index 7: por ENCIMA de la lupa (.kt-zoom-lens, z:6). La lupa mide 240px y
-     al pasar el mouse cerca del borde inferior tapaba las miniaturas; entre una
-     magnificación de la foto y el control para cambiarla, manda el control. El
-     degradado propio es lo que las hace legibles sobre cualquier foto. */
-  .kt-detail-preview-overlay {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 7;
-    padding: 34px 14px 12px;
-    background: linear-gradient(
-      to top,
-      rgba(5, 5, 5, 0.94) 10%,
-      rgba(5, 5, 5, 0.72) 52%,
-      rgba(5, 5, 5, 0) 100%
-    );
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+  /* Miniaturas al pie de la COLUMNA DERECHA (la ficha de datos), no sobre la
+     foto: ahí tapaban el remate justo de la imagen que están para cambiar.
+     `margin-top: auto` las empuja al fondo de la columna, así cierran el bloque
+     en vez de quedar pegadas a las innovaciones. */
+  .kt-detail-preview-rail {
+    margin-top: auto;
+    padding-top: clamp(14px, 1.6vw, 22px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  /* Sin barra de scroll acá: encima de la foto, una barra amarilla de 7px pesa
-     más que las miniaturas. El arrastre y el snap siguen funcionando igual.
-     Columnas de ancho FIJO (no 1/5 del contenedor): son miniaturas, y con dos o
-     tres imágenes un quinto del ancho las volvía láminas gigantes. */
-  .kt-detail-preview-overlay .kt-detail-preview-strip {
+  .kt-detail-preview-rail .kt-detail-preview-strip {
     padding-bottom: 0;
     scrollbar-width: none;
-    grid-auto-columns: clamp(68px, 7.5vw, 100px);
+    grid-auto-columns: clamp(58px, 6vw, 84px);
     justify-content: start;
   }
 
-  .kt-detail-preview-overlay .kt-detail-preview-strip::-webkit-scrollbar {
+  .kt-detail-preview-rail .kt-detail-preview-strip::-webkit-scrollbar {
     height: 0;
     display: none;
   }
 
-  .kt-detail-preview-overlay .kt-detail-preview-btn {
-    height: clamp(56px, 6.2vw, 82px);
+  .kt-detail-preview-rail .kt-detail-preview-btn {
+    height: clamp(48px, 5vw, 70px);
   }
 
-  /* `.kt-detail-image img` fija min-height:500px / max-height:720px: se escribió
-     para LA foto principal, cuando era la única imagen del contenedor. Ahora las
-     miniaturas viven adentro y heredaban ese alto — salían de 500px, más altas
-     que la mitad de la foto. Se resetea acá en vez de reescribir la regla del
-     hero, que sigue siendo correcta para lo suyo. */
-  .kt-detail-preview-overlay .kt-detail-preview-btn img {
+  /* `.kt-detail-image img` fija min-height:500px / max-height:720px para LA foto
+     principal. Las miniaturas ya no viven ahí adentro, pero el reset queda por si
+     alguna regla de ancho las alcanza. */
+  .kt-detail-preview-rail .kt-detail-preview-btn img {
     min-height: 0;
     max-height: none;
     height: 100%;
@@ -1762,34 +1744,6 @@ html {
     border: 0;
     border-radius: 0;
     object-fit: cover;
-  }
-
-  .kt-detail-preview-strip {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: calc((100% - 48px) / 5);
-    gap: 12px;
-    overflow-x: auto;
-    padding-bottom: 6px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary) #0a0a0a;
-  }
-
-  .kt-detail-preview-strip::-webkit-scrollbar {
-    height: 7px;
-    background: #0a0a0a;
-  }
-
-  .kt-detail-preview-strip::-webkit-scrollbar-track {
-    background: #0a0a0a;
-    border-radius: 999px;
-  }
-
-  .kt-detail-preview-strip::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 999px;
-    border: 1px solid #0a0a0a;
   }
 
   .kt-detail-preview-btn {
@@ -1905,9 +1859,16 @@ html {
    hacía era anunciar la sección antes de tiempo. La sección amarilla no lleva
    bordes, ni líneas, ni halos: entra con su cortina y listo. */
 
-  /* Tinta: NEGRA sobre el amarillo y BLANCA sobre el negro. Blanco sobre
-     amarillo es ilegible, y era lo que había. El cambio va con el mismo delay y
-     la misma duración que el fundido para que sea un solo movimiento. */
+  /* LA SECCIÓN SE QUEDA AMARILLA. Antes fundía a negro al terminar la intro y
+     TODO tenía que darse vuelta con ella: la tinta pasaba de negra a blanca, los
+     acentos de negro a amarillo, el círculo del ícono se invertía... siete
+     animaciones sincronizadas a los mismos 3200ms + 4500ms, y cualquiera que se
+     corriera partía el cambio al medio.
+     Ahora el amarillo se queda, así que no hay nada que dar vuelta: la tinta es
+     negra y punto. Además es lo que hace legible el nuevo cierre — la amarilla
+     queda clavada, y sobre ella suben Sumate (en negro) y Contactanos (sobre la
+     foto del show). Tres fondos distintos, y el contraste entre ellos es lo que
+     hace ver que una tapa a la otra. */
   .kt-shop-ink {
     color: #0b0b0b;
   }
@@ -1916,92 +1877,18 @@ html {
     color: rgba(11, 11, 11, 0.72);
   }
 
-  .kt-shop-section.is-playing .kt-shop-ink {
-    animation: kt-shop-ink-flip 4500ms 3200ms ease-in-out forwards;
-  }
-
-  .kt-shop-section.is-playing .kt-shop-ink--soft {
-    animation: kt-shop-ink-flip-soft 4500ms 3200ms ease-in-out forwards;
-  }
-
-  .kt-shop-section.is-done .kt-shop-ink {
-    color: #ffffff;
-  }
-
-/* Lo mismo que .kt-shop-ink, para todo lo que NO es texto. Mientras la seccion
-   es amarilla los separadores y la flecha van en negro; se dan vuelta junto con
-   el fundido. Los tres numeros (3200ms de espera + 4500ms de fundido = 7700ms)
-   son los MISMOS de .kt-shop-ink y del setTimeout de ShopSection: si tocas uno,
-   tocalos todos o el cambio de color se corta de golpe. */
 /* NO hay separadores en la sección amarilla. Estuvieron primero como líneas
    fijas y después como efecto (entraban con la cortina y se apagaban con el
    fundido); las dos veces se leían como bordes de un bloque que no tiene
    bordes. La lista de accesos se separa con aire y nada más. */
 
-/* Los acentos amarillos de la marca: sobre el amarillo eran INVISIBLES (amarillo
-   sobre amarillo). Van oscuros mientras dura, y recuperan el amarillo en negro. */
+/* Los acentos de la marca van OSCUROS: sobre el amarillo, el amarillo es
+   invisible. */
 .kt-shop-accent { background-color: #0b0b0b; }
-.kt-shop-section.is-playing .kt-shop-accent { animation: kt-shop-accent-flip 4500ms 3200ms ease-in-out forwards; }
-.kt-shop-section.is-done .kt-shop-accent { background-color: #f4df33; }
-@keyframes kt-shop-accent-flip { to { background-color: #f4df33; } }
-
 .kt-shop-accent-text { color: #0b0b0b; }
-.kt-shop-section.is-playing .kt-shop-accent-text { animation: kt-shop-accent-text-flip 4500ms 3200ms ease-in-out forwards; }
-.kt-shop-section.is-done .kt-shop-accent-text { color: #f4df33; }
-@keyframes kt-shop-accent-text-flip { to { color: #f4df33; } }
 
-/* El circulo del icono es un par INVERTIDO: fondo oscuro + icono amarillo
-   mientras la seccion es amarilla, y al reves cuando queda negra. Si solo se
-   diera vuelta el fondo, el icono (que era #0b0b0b fijo) desapareceria. */
+/* El círculo del ícono es el par invertido: fondo oscuro + ícono amarillo. */
 .kt-shop-chip { background-color: #0b0b0b; color: #f4df33; }
-.kt-shop-section.is-playing .kt-shop-chip { animation: kt-shop-chip-flip 4500ms 3200ms ease-in-out forwards; }
-.kt-shop-section.is-done .kt-shop-chip { background-color: #f4df33; color: #0b0b0b; }
-@keyframes kt-shop-chip-flip { to { background-color: #f4df33; color: #0b0b0b; } }
-
-  .kt-shop-section.is-done .kt-shop-ink--soft {
-    color: rgba(255, 255, 255, 0.75);
-  }
-
-  @keyframes kt-shop-ink-flip {
-    to {
-      color: #ffffff;
-    }
-  }
-
-  @keyframes kt-shop-ink-flip-soft {
-    to {
-      color: rgba(255, 255, 255, 0.75);
-    }
-  }
-
-  /* Fundido amarillo → negro al cierre de la intro (versión invertida del "kt2-white" del
-     mockup 2c). Debajo del video del borde derecho y del contenido. */
-  .kt-shop-dark {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background: #0b0b0b;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* Más tiempo en amarillo (3200ms) y fundido mucho más lento (4500ms).
-     ⚠ Estos dos números y el setTimeout de playing→done en ShopSection.jsx se
-     mueven JUNTOS: si `done` llega antes de que termine la animación, el opacity:1
-     de is-done corta el fundido de golpe. */
-  .kt-shop-section.is-playing .kt-shop-dark {
-    animation: kt-shop-darken 4500ms 3200ms ease-in-out forwards;
-  }
-
-  .kt-shop-section.is-done .kt-shop-dark {
-    opacity: 1;
-  }
-
-  @keyframes kt-shop-darken {
-    to {
-      opacity: 1;
-    }
-  }
 
   /* Video al borde derecho con máscara ghost (se funde hacia el fondo por la izquierda,
      como la imagen del mockup 2c). En mobile pasa a fondo full-bleed atenuado. */
@@ -2700,14 +2587,8 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
   animation: kt-nav-line 0.95s ease-out forwards;
 }
 
-/* Sumate trae su propio fondo negro a todo el ancho (bg-[#050505] en el markup):
-   sobre la foto la taparía entera. Se vuelve transparente — el resto de su
-   maqueta no se toca, sigue a todo el ancho como siempre.
-
-   Va FUERA de @layer a propósito: las utilidades de Tailwind viven en la capa
-   `utilities`, que es la última, y le ganan a cualquier regla de `components` por
-   más específica que sea (las capas mandan antes que la especificidad). Sin capa,
-   esto gana. */
-.kt-closing-backdrop .kt-join-section {
-  background: transparent;
-}
+/* Sumate CONSERVA su fondo negro a todo el ancho. Probamos dejarlo transparente
+   —para que la foto se viera también detrás suyo— y así el efecto se pierde: la
+   foto arranca en la nada y nunca se lee como una capa distinta.
+   Con Sumate en negro el recorrido queda: amarillo (clavado) → negro → foto. Los
+   tres bloques se distinguen, y ahí sí se ve que el fondo cambió. */

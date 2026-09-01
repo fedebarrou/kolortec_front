@@ -187,8 +187,9 @@ function ShopSection({ shop, ready = true }) {
         minHeight: 'calc(100dvh / var(--kt-canvas-scale, 1))',
       }}
     >
-      {/* Fundido amarillo → negro al terminar la intro (equivalente invertido del kt2-white del mockup) */}
-      <div className="kt-shop-dark" aria-hidden="true" />
+      {/* Ya no hay fundido a negro: la sección se queda AMARILLA. El contraste del
+          cierre lo dan las secciones que suben encima (Sumate en negro,
+          Contactanos sobre la foto), no un cambio de color acá adentro. */}
 
       {/* Video al borde derecho, mezclado con el fondo por máscara ghost (en mobile pasa a
           fondo full-bleed atenuado). El asset se va a reemplazar; el comportamiento queda. */}

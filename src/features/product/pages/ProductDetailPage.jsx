@@ -457,17 +457,62 @@ function ProductDetailPage() {
                   <img src={galleryImages[activeImageIndex] || product.heroImage} alt={product.name} />
                 </button>
                 <span ref={lensRef} className="kt-zoom-lens" aria-hidden="true" />
-                {/* Las miniaturas del resto de la galería viven DENTRO del contenedor
-                    de la imagen, apoyadas en su borde inferior sobre un degradado.
-                    Antes eran una tira aparte, a todo el ancho debajo del hero
-                    (lg:col-span-2), y quedaban lejos de la foto que cambian.
-                    Frenan el mousemove y apagan la lupa: si no, al apuntar una
-                    miniatura la lupa seguía magnificando la foto de atrás. */}
+              </figure>
+
+              <div className="kt-detail-summary">
+                <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]">{product.name}</h1>
+                {translatedShortDescription ? <p className="kt-detail-intro">{translatedShortDescription}</p> : null}
+                {showPrices ? (
+                  <div className="mt-5 flex items-baseline gap-2">
+                    <strong className="title-font text-[clamp(1.8rem,3vw,2.6rem)] leading-none text-primary">
+                      {formatPrice(product.price, product.moneda)}
+                    </strong>
+                  </div>
+                ) : null}
+                {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
+                    Si no hay innovaciones cargadas, no se muestra nada acá. */}
+                {product.innovations.length > 0 ? (
+                  <div className="mt-8 grid gap-4 border-t border-[#2a2a2a] pt-6">
+                    {product.innovations.slice(0, 4).map((inn) => (
+                      <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
+                        {/* CUADRADO (con esquinas suaves) y no círculo: estos íconos
+                            los sube el tenant desde el admin y son logos o marcas
+                            de forma libre —muchas veces un logotipo horizontal o
+                            un pictograma rectangular—. Un círculo les recorta las
+                            esquinas y parte cualquier cosa que no sea una marca
+                            redonda centrada. Además va `object-contain` y no
+                            `object-cover`: cover RECORTABA el ícono para llenar el
+                            cuadro, o sea que la marca del fabricante se veía a
+                            medias. Con contain entra entera y el marco la sostiene. */}
+                        {inn.image ? (
+                          <img
+                            src={inn.image}
+                            alt=""
+                            loading="lazy"
+                            className="h-14 w-14 shrink-0 rounded-[10px] border border-[#2a2a2a] bg-[#0d0d0e] object-contain p-2"
+                          />
+                        ) : (
+                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                        )}
+                        <div className="grid gap-0.5">
+                          <span className="text-[0.95rem] font-bold leading-tight text-[#f0f2f5]">{inn.title}</span>
+                          {inn.description ? (
+                            <span className="text-[0.85rem] leading-[1.5] text-[#aeb4bf]">{inn.description}</span>
+                          ) : null}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+
+                {/* Las miniaturas van al PIE DE LA COLUMNA DERECHA, debajo del
+                    nombre, el precio y las innovaciones. Estuvieron apoyadas sobre
+                    el borde inferior de la foto, y ahí le comían el remate justo a
+                    la imagen que están para cambiar. Acá cierran la ficha de datos
+                    y dejan la foto entera. */}
                 {previewImages.length > 0 ? (
                   <div
-                    className="kt-detail-preview-overlay kt-reveal-item"
-                    onMouseEnter={handleHeroMouseLeave}
-                    onMouseMove={(event) => event.stopPropagation()}
+                    className="kt-detail-preview-rail kt-reveal-item"
                   >
                     <div ref={previewStripRef} className="kt-detail-preview-strip" onScroll={onPreviewScroll}>
                       {previewImages.map((img, index) => (
@@ -497,39 +542,6 @@ function ProductDetailPage() {
                         ))}
                       </div>
                     ) : null}
-                  </div>
-                ) : null}
-              </figure>
-
-              <div className="kt-detail-summary">
-                <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]">{product.name}</h1>
-                {translatedShortDescription ? <p className="kt-detail-intro">{translatedShortDescription}</p> : null}
-                {showPrices ? (
-                  <div className="mt-5 flex items-baseline gap-2">
-                    <strong className="title-font text-[clamp(1.8rem,3vw,2.6rem)] leading-none text-primary">
-                      {formatPrice(product.price, product.moneda)}
-                    </strong>
-                  </div>
-                ) : null}
-                {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
-                    Si no hay innovaciones cargadas, no se muestra nada acá. */}
-                {product.innovations.length > 0 ? (
-                  <div className="mt-8 grid gap-4 border-t border-[#2a2a2a] pt-6">
-                    {product.innovations.slice(0, 4).map((inn) => (
-                      <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
-                        {inn.image ? (
-                          <img src={inn.image} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
-                        ) : (
-                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                        )}
-                        <div className="grid gap-0.5">
-                          <span className="text-[0.95rem] font-bold leading-tight text-[#f0f2f5]">{inn.title}</span>
-                          {inn.description ? (
-                            <span className="text-[0.85rem] leading-[1.5] text-[#aeb4bf]">{inn.description}</span>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))}
                   </div>
                 ) : null}
               </div>
