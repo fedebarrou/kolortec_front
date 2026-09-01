@@ -1382,38 +1382,64 @@ html {
     pointer-events: none;
   }
 
-  /* Foto de cierre, antes del footer. */
-  .kt-closing-photo {
+  /* FONDO del cierre: la foto del show detrás de Contactanos, hasta el pie.
+     El bloque es el contenedor de posicionamiento; el fondo se sale a sangre por
+     su cuenta (useFullBleed) porque el contenido tiene que seguir alineado con el
+     resto de la home, que vive dentro del lienzo de 1920. */
+  .kt-closing-backdrop {
     position: relative;
-    display: block;
-    height: clamp(340px, 62vh, 720px);
-    overflow: hidden;
-    background: #050505;
+    isolation: isolate;
   }
 
-  /* Más alta que la sección: ese sobrante es el recorrido del parallax. Sin él,
-     al desplazarla se vería el borde y quedaría una franja negra. */
-  .kt-closing-photo img {
+  .kt-closing-backdrop-bg {
     position: absolute;
-    inset: -14% 0;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: #050505;
+    pointer-events: none;
+  }
+
+  /* Más alta que el bloque: ese sobrante es el recorrido del parallax. Sin él,
+     al desplazarla se vería el borde y quedaría una franja negra. */
+  .kt-closing-backdrop-bg img {
+    position: absolute;
+    inset: -12% 0;
     width: 100%;
-    height: 128%;
+    height: 124%;
     object-fit: cover;
     display: block;
     will-change: transform;
   }
 
-  .kt-closing-photo-fade {
+  /* Sobre una foto de show con haces blancos, el texto blanco desaparece. Arranca
+     en negro pleno para que la costura de arriba sea un fundido y no un borde, se
+     abre en el medio (ahí se ve la foto) y muere en el negro del footer. */
+  .kt-closing-backdrop-scrim {
     position: absolute;
     inset: 0;
-    pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      rgba(5, 5, 5, 0.55) 0%,
-      rgba(5, 5, 5, 0.12) 32%,
-      rgba(5, 5, 5, 0.55) 78%,
-      #050505 100%
-    );
+    background:
+      linear-gradient(
+        to bottom,
+        #050505 0%,
+        rgba(5, 5, 5, 0.82) 14%,
+        rgba(5, 5, 5, 0.62) 42%,
+        rgba(5, 5, 5, 0.78) 82%,
+        #050505 100%
+      ),
+      linear-gradient(to right, rgba(5, 5, 5, 0.72) 0%, rgba(5, 5, 5, 0.18) 55%, rgba(5, 5, 5, 0.5) 100%);
+  }
+
+  .kt-closing-backdrop-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* El ghost lateral de Contactanos es un recorte de la MISMA foto de show: sobre
+     el fondo se duplicaba la imagen contra sí misma. Con fondo, sobra. */
+  .kt-closing-backdrop.has-photo .kt-support-ghost {
+    display: none;
   }
 
   /* Slides, no fichitas. Con 320px de tope entraban cinco por pantalla y tanto

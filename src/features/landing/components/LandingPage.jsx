@@ -3,7 +3,7 @@ import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
 import InstagramSection from './InstagramSection'
 import ScrolltellingSection from './ScrolltellingSection'
-import ClosingPhoto from './ClosingPhoto'
+import ClosingBackdrop from './ClosingBackdrop'
 import StackOver from './StackOver'
 import JoinTeaserSection from './JoinTeaserSection'
 import ShopSection from './ShopSection'
@@ -102,22 +102,19 @@ function LandingPage() {
         <SectionErrorBoundary name="Join">
           <JoinTeaserSection join={content.join} />
         </SectionErrorBoundary>
-        {/* Contactanos cierra la página: Sumate ya trae su border-b, así que no hace
-            falta Divider en la costura. */}
-        <SectionErrorBoundary name="Support">
-          <SupportSection support={content.support} loading={loading} />
-        </SectionErrorBoundary>
-        {/* Foto a sangre antes del pie: el cierre venía siendo texto sobre negro
-            hasta el footer. Va el SHOW —el estadio con los haces, frame f150 de la
-            historia— y no la galería de la cuenta: esa son fotos de producto (un
-            clamp, un bidón de líquido de humo) y de cierre no dicen nada. La
-            galería queda de respaldo por si algún día cargan fotos de eventos. */}
-        <SectionErrorBoundary name="ClosingPhoto">
-          <ClosingPhoto
-            images={[FOTO_CIERRE, ...(content.gallery?.images ?? [])]}
-            alt=""
-          />
-        </SectionErrorBoundary>
+        {/* Contactanos cierra la página SOBRE la foto del show: el paisaje queda
+            atrás y se mueve más lento que el scroll. No es una franja de foto
+            entre secciones —eso se leía como una imagen suelta— sino el fondo del
+            cierre, desde acá hasta el pie.
+            Va el SHOW (el estadio con los haces, frame f150 de la historia) y no
+            la galería de la cuenta: esa son fotos de producto —un clamp, un bidón
+            de líquido de humo— y de fondo no dicen nada. La galería queda de
+            respaldo por si algún día cargan fotos de eventos. */}
+        <ClosingBackdrop images={[FOTO_CIERRE, ...(content.gallery?.images ?? [])]}>
+          <SectionErrorBoundary name="Support">
+            <SupportSection support={content.support} loading={loading} />
+          </SectionErrorBoundary>
+        </ClosingBackdrop>
       </StackOver>
     </>
   )
