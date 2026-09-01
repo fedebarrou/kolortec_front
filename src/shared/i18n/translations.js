@@ -305,7 +305,7 @@ export const translations = {
       emailPlaceholder: 'Email address',
       privacyPolicy: 'Privacy Policy',
       termsOfService: 'Terms of Service',
-      copyright: '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.',
+      copyright: '© {year} KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.',
       galleryLabel: 'Footer gallery',
     },
     pageTitle: {
@@ -745,7 +745,7 @@ export const translations = {
       downloads: {
         description:
           'Encontra y descarga toda la documentacion tecnica y comercial relacionada con este producto.',
-        softwareUpdates: 'Librerias',
+        softwareUpdates: 'Librerías',
         manuals: 'Manuales',
         downloadCta: 'Descargar',
         externalMaterial: 'Material de referencia',
@@ -836,7 +836,7 @@ export const translations = {
           'Encontra manuales tecnicos, actualizaciones de firmware, fotometria y material de referencia de toda la linea Kolortec.',
         manualsTitle: 'Manuales',
         manualsCta: 'Ver manuales',
-        firmwareTitle: 'Librerias',
+        firmwareTitle: 'Librerías',
         firmwareCta: 'Ver descargas',
         contactTitle: 'Necesitas ayuda?',
         contactCta: 'Contactar soporte tecnico',
@@ -846,20 +846,20 @@ export const translations = {
     },
     footer: {
       about:
-        'Lideres globales en soluciones de iluminacion industrial de alto rendimiento. Potencia y performance para entornos exigentes.',
+        'Líderes globales en soluciones de iluminación industrial de alto rendimiento. Potencia y performance para entornos exigentes.',
       productsTitle: 'Productos',
       productsLinks: ['Floods Serie X', 'Spots de Precision', 'Washes Arquitecturales', 'Equipos Portatiles'],
       companyTitle: 'Empresa',
       companyLinks: ['Nuestra Historia', 'Proyectos', 'Contacto'],
       libraryTitle: 'Soporte',
-      libraryLinks: ['Manuales', 'Librerias'],
+      libraryLinks: ['Manuales', 'Librerías'],
       listsTitle: 'Listas',
       listsLinks: ['Lista 146', 'Lista 145', 'Lista 144'],
       updatesTitle: 'Seguinos',
       emailPlaceholder: 'Correo electronico',
-      privacyPolicy: 'Politica de Privacidad',
-      termsOfService: 'Terminos de Servicio',
-      copyright: '© 2010 KOLORTEC LIGHTING SYSTEMS. TODOS LOS DERECHOS RESERVADOS.',
+      privacyPolicy: 'Política de Privacidad',
+      termsOfService: 'Términos de Servicio',
+      copyright: '© {year} KOLORTEC LIGHTING SYSTEMS. TODOS LOS DERECHOS RESERVADOS.',
       galleryLabel: 'Galeria del footer',
     },
     pageTitle: {
@@ -1070,7 +1070,7 @@ export const translations = {
       body: 'Necesitamos confirmar tu cuenta para acceder a esta descarga.',
       continueGoogle: 'Continuar con Google',
       continueOutlook: 'Continuar con Outlook',
-      terms: 'Al continuar aceptas nuestros Terminos y Politica de Privacidad.',
+      terms: 'Al continuar aceptás nuestros Términos y Política de Privacidad.',
     },
     warrantyBadge: {
       label: 'Garantia',

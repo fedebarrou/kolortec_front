@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useAutoTranslatedDict } from '../../../shared/services/useAutoTranslatedDict'
+import { getCategoryNames, peekCategoryNames, humanizeCategorySlug } from '../../../data/categories.js'
 
 const slugifyProductName = (value) =>
   value
@@ -41,6 +42,30 @@ function textoSobre(color) {
 }
 
 /**
+ * Nombre de la categoría a partir del slug que trae el producto.
+ *
+ * La card sólo recibe `item.category`, que es el SLUG (`cabezal-movil`), y lo
+ * estaba imprimiendo crudo: en la card se leía "CABEZAL-MOVIL". El mapa
+ * slug → nombre se pide UNA vez para toda la página (la promesa está memorizada
+ * en data/categories.js) y queda en cache sincrónico, así que sólo la primera
+ * card de la primera visita ve el fallback. Hasta entonces se muestra el slug
+ * humanizado ("Cabezal movil"), nunca el guión.
+ */
+function useCategoryName(slug) {
+  const [mapa, setMapa] = useState(peekCategoryNames)
+
+  useEffect(() => {
+    if (mapa || !slug) return undefined
+    let vivo = true
+    getCategoryNames().then((m) => { if (vivo && m) setMapa(m) })
+    return () => { vivo = false }
+  }, [mapa, slug])
+
+  if (!slug) return ''
+  return mapa?.get(slug) || humanizeCategorySlug(slug)
+}
+
+/**
  * ProductCard — la ficha de producto de TODA la web (destacados, catálogo, línea,
  * relacionados).
  *
@@ -57,9 +82,14 @@ function textoSobre(color) {
  * marca estampada sobre la foto— y tenerlas en dos lenguajes distintos (píldoras
  * redondas abajo, un rectángulo arriba) hacía ver dos sistemas donde hay uno.
  *
- * El CTA es un <Link> REAL por encima del overlay (z-20): en desktop el overlay
- * invisible cubre toda la card, pero en mobile está apagado (`hidden md:block`),
- * así que sin esto el botón no llevaría a ningún lado en el teléfono.
+ * TODA la card es UN link, en celular también. Antes el overlay que la cubre era
+ * `hidden md:block`: en el teléfono no existía, y el único camino al detalle
+ * quedaba siendo el textito "Ver producto", de 97×16px contra un mínimo táctil de
+ * 40 y con el FAB de WhatsApp encima. Ahora el overlay está siempre y "Ver
+ * producto" es DECORATIVO (`aria-hidden` + `pointer-events-none`): el toque lo
+ * recibe el overlay igual, y el lector de pantalla anuncia un solo link con el
+ * nombre del producto en vez de dos links al mismo lado, uno de ellos llamado
+ * "Ver producto" a secas.
  *
  * `focusable=false` para las COPIAS de un carrusel infinito: siguen clickeables
  * con el mouse (son la mitad de lo que se ve girando) pero salen del orden de
@@ -72,9 +102,10 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
   // El nombre y la categoría vienen de la DB de tiendita, siempre en castellano —
   // el i18n estático no los alcanza. Se traducen al vuelo y se muestra el original
   // hasta que llega la traducción.
-  const dict = useAutoTranslatedDict(useMemo(() => [item.name, item.category], [item.name, item.category]))
+  const categoryName = useCategoryName(item.category)
+  const dict = useAutoTranslatedDict(useMemo(() => [item.name, categoryName], [item.name, categoryName]))
   const name = dict.get(item.name) || item.name
-  const category = dict.get(item.category) || item.category
+  const category = dict.get(categoryName) || categoryName
   const tags = useMemo(() => normalizeTags(item.tags), [item.tags])
   const showImage = !!item.image && !imgFailed
   // Linkea SIEMPRE al producto real (por su id/slug de la API). El detalle se carga data-driven.
@@ -95,7 +126,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
       {showDetailLink ? (
         <Link
           to={resolvedDetailHref}
-          className="absolute inset-0 z-10 hidden md:block"
+          className="absolute inset-0 z-10 block"
           aria-label={`Ver detalle de ${item.name}`}
           tabIndex={focusable ? undefined : -1}
         />
@@ -105,7 +136,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
         {showImage ? (
           <img
             src={item.image}
-            alt={`${item.name}${item.category ? ` — ${item.category}` : ''} | Kolortec iluminación profesional`}
+            alt={`${item.name}${categoryName ? ` — ${categoryName}` : ''} | Kolortec iluminación profesional`}
             loading="lazy"
             onError={() => setImgFailed(true)}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06] group-focus-within:scale-[1.06]"
@@ -158,28 +189,43 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
               lo que es, sin competirle al nombre. */}
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
+              {/* El punto va en FLUJO INLINE, no como item de un inline-flex: como
+                  flex-item quedaba a la derecha de TODO el bloque de texto y
+                  alineado a la primera línea base, así que con un nombre de dos
+                  renglones el punto se despegaba (27px a la derecha del final del
+                  primer renglón y una línea más arriba). En flujo normal sigue al
+                  último carácter y envuelve con él. */}
+              <h3 className="title-font m-0 text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
                 {name}
                 <span className="text-primary">.</span>
               </h3>
 
               {/* Categoría: acompaña al CTA en el hover. En reposo, abajo va SÓLO
-                  el nombre — es lo que identifica el equipo de un vistazo. */}
+                  el nombre — es lo que identifica el equipo de un vistazo.
+                  `hidden md:block`: en celular la card mide ~165px de ancho (dos
+                  por fila) y no hay hover, así que categoría y CTA se muestran
+                  siempre y se chocaban con el nombre. Abajo de 768 queda foto +
+                  etiquetas + nombre, que es exactamente el estado de reposo del
+                  desktop. */}
               {category ? (
-                <p className="kt-product-card-more m-0 mt-1 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                <p className="kt-product-card-more m-0 mt-1 hidden text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] md:block">
                   {category}
                 </p>
               ) : null}
             </div>
 
+            {/* Afordancia visual, no link: el link es el overlay que cubre la card
+                entera (ver el comentario de arriba). `pointer-events-none` para
+                que el toque lo reciba el overlay y no un elemento de 16px de alto.
+                `hidden md:inline` por lo mismo que la categoría: en celular no
+                aporta (toda la card ya es el link) y le comía el renglón al nombre. */}
             {showDetailLink ? (
-              <Link
-                to={resolvedDetailHref}
-                className="kt-product-card-cta relative z-20 shrink-0 whitespace-nowrap text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-primary underline decoration-primary/60 decoration-[1.5px] underline-offset-[5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition hover:decoration-primary"
-                tabIndex={focusable ? undefined : -1}
+              <span
+                aria-hidden="true"
+                className="kt-product-card-cta pointer-events-none hidden shrink-0 whitespace-nowrap text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-primary underline decoration-primary/60 decoration-[1.5px] underline-offset-[5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition-all duration-300 group-hover:decoration-primary group-focus-within:decoration-primary md:inline"
               >
                 {ctaLabel}
-              </Link>
+              </span>
             ) : null}
           </div>
         </div>

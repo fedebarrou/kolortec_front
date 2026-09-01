@@ -2,6 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { trackEvent } from '../../../shared/services/tracking'
 import { getProductBlogs, getProductDetail, getSiteConfig } from '../../../shared/services/contentService'
+import {
+  abrirArchivo,
+  familiaDoc,
+  getSesionCacheada,
+  guardarIntento,
+  propsDeDescarga,
+  requiereLogin,
+  leerIntento,
+  olvidarIntento,
+} from '../../../shared/services/downloadService'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
@@ -22,6 +32,65 @@ function formatPrice(value, moneda) {
   return `${moneda || 'USD'} ${n.toLocaleString('es-AR')}`
 }
 
+/**
+ * Una lista de documentos descargables (manuales o librerías).
+ *
+ * Dos cosas que antes no estaban:
+ *  - El botón lleva AL ARCHIVO. Antes abría el diálogo de login y ahí moría el
+ *    viaje: `item.url` no se usaba en ninguna parte de la ficha. Lo que se
+ *    puede bajar sin identificarse va en un <a> real (copiable, abrible en
+ *    pestaña nueva, visible para un crawler); lo que pide sesión sigue siendo
+ *    un <button>, ahora con candado en vez de flecha, para que se vea ANTES de
+ *    clickear que va a pedir algo.
+ *  - Estado vacío. El panel de librerías quedaba en 2px de alto: un rectángulo
+ *    invisible que no decía nada.
+ */
+function ListaDescargas({ items, downloadCta, onGated, vacio }) {
+  if (!items || items.length === 0) {
+    return (
+      <div className="border border-dashed border-[#2a2a2a] px-5 py-8 text-center">
+        <p className="m-0 text-[0.9rem] leading-[1.5] text-[#aeb2ba]">{vacio}</p>
+      </div>
+    )
+  }
+
+  const claseCta = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]'
+
+  return (
+    <div className="border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
+      {items.map((item) => {
+        const conLogin = requiereLogin(item)
+        const icono = (
+          <span className="material-symbols-outlined text-[15px] leading-none" aria-hidden="true">
+            {conLogin ? 'lock' : 'download'}
+          </span>
+        )
+        return (
+          <article key={item.url || item.label} className="kt-reveal-item flex items-center justify-between gap-4 py-3.5">
+            <div className="grid gap-1">
+              <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
+              <strong className="text-[0.82rem] font-semibold text-[#aeb2ba]">
+                {[item.size, item.type].filter(Boolean).join(' · ') || '—'}
+              </strong>
+            </div>
+            {conLogin ? (
+              <button type="button" onClick={() => onGated(item)} className={claseCta}>
+                {icono}
+                {downloadCta}
+              </button>
+            ) : (
+              <a {...propsDeDescarga(item)} className={claseCta}>
+                {icono}
+                {downloadCta}
+              </a>
+            )}
+          </article>
+        )
+      })}
+    </div>
+  )
+}
+
 function ProductDetailPage() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
@@ -38,12 +107,17 @@ function ProductDetailPage() {
   const [loading, setLoading] = useState(true)
   const [showPrices, setShowPrices] = useState(true)
   const [showReviews, setShowReviews] = useState(true)
+  // Contador de reintentos: el adapter no distingue "no existe" de "no contesta"
+  // (fetchWithFallback se traga el error y devuelve null en los dos casos), así
+  // que la pantalla vacía ofrece REINTENTAR en vez de afirmar que el producto
+  // no existe. Cambiar el contador vuelve a disparar el efecto.
+  const [reintento, setReintento] = useState(0)
   useEffect(() => {
     let mounted = true
     setLoading(true)
     getProductDetail(slug).then((p) => { if (mounted) { setProduct(p); setLoading(false) } })
     return () => { mounted = false }
-  }, [slug])
+  }, [slug, reintento])
   useEffect(() => {
     let mounted = true
     getSiteConfig().then((c) => {
@@ -79,6 +153,11 @@ function ProductDetailPage() {
   const detailBodyRef = useRef(null)
   const heroImageRef = useRef(null)
   const lensRef = useRef(null)
+  // Sección a la que estamos yendo por un click de tab (el spy se calla hasta
+  // que el scroll suave termina). Se limpia solo, ver goToSection.
+  const destinoTabRef = useRef(null)
+  const destinoTimerRef = useRef(null)
+  useEffect(() => () => { if (destinoTimerRef.current) clearTimeout(destinoTimerRef.current) }, [])
 
   // Lupa cuadrada: magnifica solo la zona de la imagen bajo el cursor.
   const LENS_SIZE = 240
@@ -129,6 +208,27 @@ function ProductDetailPage() {
     node.__ktInfiniteCleanup = () => node.removeEventListener('scroll', onScroll)
   }
   const [selectedVariantId] = useState(product?.variants?.[0]?.id ?? '')
+
+  // La galería se calcula ACÁ ARRIBA, antes que `tabs`: el tab "Imágenes" sólo
+  // tiene sentido si existe la tira de miniaturas, y para saberlo hay que tener
+  // la galería armada. Antes el tab dependía de `product.gallery.length > 0`
+  // (una sola foto ya lo mostraba) y apuntaba a un ancla que ni existía.
+  const selectedVariant = useMemo(
+    () => product?.variants?.find((variant) => variant.id === selectedVariantId) ?? product?.variants?.[0],
+    [product, selectedVariantId],
+  )
+
+  const galleryImages = useMemo(() => {
+    const baseGallery = (product?.gallery ?? []).filter(Boolean)
+    const primaryCandidate = selectedVariant?.image || product?.heroImage
+
+    if (primaryCandidate && !baseGallery.includes(primaryCandidate)) {
+      return [primaryCandidate, ...baseGallery]
+    }
+
+    return baseGallery.length > 0 ? baseGallery : [primaryCandidate].filter(Boolean)
+  }, [product, selectedVariant])
+
   const [activeTab, setActiveTab] = useState('about')
   const [isVideoOpen, setIsVideoOpen] = useState(true)
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
@@ -136,27 +236,66 @@ function ProductDetailPage() {
   const [isAccessoriesOpen, setIsAccessoriesOpen] = useState(true)
   const [activeDownloadPanel, setActiveDownloadPanel] = useState('manuals')
   const [galleryLightboxIndex, setGalleryLightboxIndex] = useState(-1)
-  const [previewActivePage, setPreviewActivePage] = useState(0)
   const [downloadIntent, setDownloadIntent] = useState(null)
+  // Archivo pedido antes de mandar al usuario a loguearse (ver downloadService).
+  const [descargaPendiente, setDescargaPendiente] = useState(null)
+  // Alto REAL del navbar del sitio: es el `top` de la barra sticky de móvil.
+  // Medido y no hardcodeado porque el navbar cambia de alto con el idioma y el
+  // ancho, y una barra 4px corrida se lee como un error de maquetado.
+  const [navTop, setNavTop] = useState(68)
   const [translatedShortDescription, setTranslatedShortDescription] = useState(product?.shortDescription ?? '')
   const tabs = useMemo(() => {
     const list = [{ id: 'about', label: t('productDetail.tabs.about', 'About') }]
-    if ((product?.gallery?.length ?? 0) > 0) list.push({ id: 'gallery', label: t('productDetail.tabs.gallery', 'Fotos') })
+    // > 1 y no > 0: con una sola foto no hay tira de miniaturas, o sea que
+    // #gallery no existe en el DOM y el tab llevaba a la nada.
+    if (galleryImages.length > 1) list.push({ id: 'gallery', label: t('productDetail.tabs.gallery', 'Fotos') })
     if ((product?.videos?.length ?? 0) > 0) list.push({ id: 'video', label: t('productDetail.tabs.video', 'Video') })
     if ((product?.downloads?.length ?? 0) > 0) list.push({ id: 'downloads', label: t('productDetail.tabs.downloads', 'Descargas') })
     if ((product?.accessories?.length ?? 0) > 0) list.push({ id: 'accessories', label: t('productDetail.tabs.accessories', 'Accesorios') })
     if ((product?.technicalSpecs?.length ?? 0) > 0) list.push({ id: 'technical-specs', label: t('productDetail.tabs.technicalSpecs', 'Especificaciones') })
     return list
-  }, [t, product])
+  }, [t, product, galleryImages.length])
 
+  // Se MIDE la altura real de las dos barras en vez de hardcodear 74/88 + 40/44.
+  // Los números fijos ya no coincidían con nada: en 1440 el lienzo tiene
+  // zoom 0.75, así que la barra de tabs que en CSS dice 52px mide 40 en
+  // pantalla, y en móvil la barra de la ficha directamente no existía. Un
+  // offset equivocado es justamente lo que dejaba al spy peleando por décimas.
   const getStickyOffset = () => {
-    const mainHeader = window.innerWidth <= 640 ? 74 : 88
-    const detailHeader = window.innerWidth <= 640 ? 40 : 44
-    return mainHeader + detailHeader + 8
+    // SUMA de todos los matches, no el primero: `[data-kt-detail-nav]` lo llevan
+    // la barra de escritorio y la de móvil, y en el DOM la de escritorio va
+    // primera. Con querySelector, en el celu medíamos la barra OCULTA (0px) y la
+    // sección quedaba metida debajo de la que sí se ve.
+    const alto = (sel) => Array.from(document.querySelectorAll(sel))
+      .reduce((acc, el) => acc + el.getBoundingClientRect().height, 0)
+    return alto('.site-header') + alto('[data-kt-detail-nav]') + 8
   }
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [slug])
+
+  useEffect(() => {
+    const medir = () => {
+      const h = document.querySelector('.site-header')?.getBoundingClientRect().height
+      if (h) setNavTop(Math.round(h))
+    }
+    medir()
+    window.addEventListener('resize', medir)
+    return () => window.removeEventListener('resize', medir)
+  }, [])
+
+  // Vuelta del login: si quedó un archivo pedido para ESTA ficha y ahora hay
+  // sesión, se lo ofrecemos en un aviso arriba de Descargas. No se dispara solo
+  // porque una bajada sin gesto del usuario la bloquea el navegador.
+  useEffect(() => {
+    const intento = leerIntento(`/producto/${slug || ''}`)
+    if (!intento) return undefined
+    let vivo = true
+    getSesionCacheada().then((sesion) => {
+      if (vivo && sesion) setDescargaPendiente(intento)
+    })
+    return () => { vivo = false }
   }, [slug])
 
   // Track product_view — fire-and-forget, never blocks render.
@@ -202,12 +341,23 @@ function ProductDetailPage() {
 
   useEffect(() => {
     const onScroll = () => {
-      const offset = getStickyOffset()
-      let current = 'about'
+      // Mientras corre un scroll pedido por un click de tab, el tab lo manda el
+      // click y no el spy: durante la animación suave el spy iba marcando todas
+      // las secciones intermedias y terminaba peleando con el destino.
+      if (destinoTabRef.current) return
 
+      const offset = getStickyOffset()
+      let current = tabs[0]?.id ?? 'about'
+
+      // TOLERANCIA, y no `<= 0` pelado. El lienzo con zoom deja el layout en
+      // coordenadas fraccionarias (medido: top 140.25 contra offset 140), así
+      // que al aterrizar justo sobre una sección la resta daba +0.25 y ganaba
+      // la ANTERIOR: clickeabas "Descargas" y se encendía "Video". 3px cubre el
+      // redondeo del scroll y sigue siendo mucho menos que cualquier sección.
+      const TOLERANCIA = 3
       tabs.forEach((tab) => {
         const section = document.getElementById(tab.id)
-        if (section && section.getBoundingClientRect().top - offset <= 0) {
+        if (section && section.getBoundingClientRect().top - offset <= TOLERANCIA) {
           current = tab.id
         }
       })
@@ -266,17 +416,17 @@ function ProductDetailPage() {
     // devuelve un [] nuevo en cada render y colgaría el efecto en loop.
   }, [product, productBlogs.length])
 
-  const selectedVariant = useMemo(
-    () => product?.variants?.find((variant) => variant.id === selectedVariantId) ?? product?.variants?.[0],
-    [product, selectedVariantId],
-  )
-
+  // El filtro viejo era /software|firmware/i SOBRE EL LABEL, y los documentos
+  // que carga el tenant se llaman "Ficha técnica…" y "Carta DMX…": no matcheaba
+  // NUNCA. El panel de Librerías medía 2px de alto en todos los productos.
+  // familiaDoc() clasifica por extensión primero (csv/gdtf/ies/zip… = librería)
+  // y usa el mismo criterio que la página /descargas.
   const softwareDownloads = useMemo(
-    () => (product?.downloads ?? []).filter((item) => /software|firmware/i.test(item.label || '')),
+    () => (product?.downloads ?? []).filter((item) => familiaDoc(item) === 'libreria'),
     [product],
   )
   const manualDownloads = useMemo(
-    () => (product?.downloads ?? []).filter((item) => !/software|firmware/i.test(item.label || '')),
+    () => (product?.downloads ?? []).filter((item) => familiaDoc(item) !== 'libreria'),
     [product],
   )
 
@@ -297,50 +447,56 @@ function ProductDetailPage() {
     return [...half, ...half]
   }, [product?.accessories])
 
-  const galleryImages = useMemo(() => {
-    const baseGallery = (product?.gallery ?? []).filter(Boolean)
-    const primaryCandidate = selectedVariant?.image || product?.heroImage
-
-    if (primaryCandidate && !baseGallery.includes(primaryCandidate)) {
-      return [primaryCandidate, ...baseGallery]
-    }
-
-    return baseGallery.length > 0 ? baseGallery : [primaryCandidate].filter(Boolean)
-  }, [product, selectedVariant])
-
-  const previewImages = useMemo(() => galleryImages.slice(1), [galleryImages])
-
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const previewStripRef = useRef(null)
 
   useEffect(() => {
     setActiveImageIndex(0)
-    setPreviewActivePage(0)
     setCurrentVideoIndex(0)
   }, [slug, galleryImages.length])
 
-  const scrollToPage = (ref, pageIndex) => {
-    const viewport = ref.current
-    if (!viewport) return
-    viewport.scrollTo({
-      left: viewport.clientWidth * pageIndex,
+  // Centra la miniatura en la tira sin mover el scroll de la PÁGINA
+  // (scrollIntoView movía las dos cosas).
+  const centrarMiniatura = (index) => {
+    const strip = previewStripRef.current
+    const btn = strip?.children?.[index]
+    if (!strip || !btn) return
+    strip.scrollTo({
+      left: btn.offsetLeft - (strip.clientWidth - btn.offsetWidth) / 2,
       behavior: 'smooth',
     })
   }
 
-  const onPreviewScroll = () => {
-    const viewport = previewStripRef.current
-    if (!viewport) return
-    const current = Math.round(viewport.scrollLeft / Math.max(viewport.clientWidth, 1))
-    setPreviewActivePage(Math.max(0, Math.min(current, previewImages.length - 1)))
+  const elegirImagen = (index) => {
+    setActiveImageIndex(index)
+    centrarMiniatura(index)
   }
 
   const goToSection = (id) => {
     const node = document.getElementById(id)
-    if (node) {
-      const top = node.getBoundingClientRect().top + window.scrollY - getStickyOffset()
-      window.scrollTo({ top, behavior: 'smooth' })
-    }
+    if (!node) return
+    const top = node.getBoundingClientRect().top + window.scrollY - getStickyOffset()
+    // El spy queda mudo hasta que el scroll suave frena. Sin esto el propio
+    // viaje encendía y apagaba cada tab intermedio.
+    destinoTabRef.current = id
+    window.scrollTo({ top, behavior: 'smooth' })
+    if (destinoTimerRef.current) clearTimeout(destinoTimerRef.current)
+    destinoTimerRef.current = setTimeout(() => { destinoTabRef.current = null }, 900)
+  }
+
+  // Sólo para los archivos con gate (firmware, instaladores, librerías de
+  // carga): si ya hay sesión se baja derecho —el diálogo se le mostraba hasta a
+  // quien ya estaba logueado, porque nadie miraba nunca la sesión—, y si no,
+  // se ANOTA qué archivo era antes de mandarlo al login.
+  const pedirDescarga = (item) => {
+    getSesionCacheada().then((sesion) => {
+      if (sesion) {
+        abrirArchivo(item)
+        return
+      }
+      guardarIntento(item, `/producto/${slug || ''}`)
+      setDownloadIntent(item)
+    })
   }
 
   if (loading) {
@@ -352,6 +508,10 @@ function ProductDetailPage() {
   }
 
   if (!product) {
+    // No afirmamos "no existe": el adapter devuelve null tanto cuando el
+    // producto no está publicado como cuando la API no contestó, y decirle a
+    // alguien que su producto no existe porque se le cayó el wifi es mentirle.
+    // Se nombran las dos causas posibles y se ofrece la acción de cada una.
     return (
       <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
         <Seo
@@ -361,11 +521,28 @@ function ProductDetailPage() {
           noindex
         />
         <div>
-          <h1 className="title-font m-0 mb-2 text-[clamp(3.8rem,10vw,7rem)] leading-[1.02]">
-            {t('productDetail.notFoundTitle', 'Producto no encontrado')}
+          <h1 className="title-font m-0 mb-2 text-[clamp(3.2rem,8vw,5.6rem)] leading-[1.02]">
+            {t('productDetail.unavailableTitle', 'No pudimos mostrar este producto')}
           </h1>
-          <p className="mb-3 text-[#a0a0a0]">{t('productDetail.notFoundSubtitle', 'Este detalle aun no esta publicado.')}</p>
-          <Link className="font-bold text-primary" to="/products">{t('productDetail.backToShop', 'Volver a tienda')}</Link>
+          <p className="mb-6 max-w-[62ch] text-[#a0a0a0]">
+            {t('productDetail.unavailableSubtitle', 'Puede que ya no esté publicado, o que la conexión se haya cortado justo ahora. Probá de nuevo; si sigue igual, mirá el catálogo completo.')}
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setReintento((n) => n + 1)}
+              className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#0b0b0b] transition hover:-translate-y-0.5"
+            >
+              <span className="material-symbols-outlined text-[17px] leading-none" aria-hidden="true">refresh</span>
+              {t('productDetail.retry', 'Reintentar')}
+            </button>
+            <Link
+              className="inline-flex items-center rounded-[8px] border-2 border-white px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
+              to="/products"
+            >
+              {t('productDetail.backToShop', 'Volver a tienda')}
+            </Link>
+          </div>
         </div>
       </section>
     )
@@ -401,7 +578,9 @@ function ProductDetailPage() {
         jsonLd={[productLd, breadcrumbLd]}
       />
       <main className="kt-detail-main">
-        <header className="kt-detail-fixed-header">
+        {/* `data-kt-detail-nav` lo miran getStickyOffset() y el spy: es "la barra
+            de secciones que está visible ahora", sea esta o la de móvil. */}
+        <header className="kt-detail-fixed-header" data-kt-detail-nav>
           <nav className="kt-detail-tabs" aria-label={t('a11y.sections', 'Secciones del producto')}>
             <div className="kt-detail-tabs-name">
               <button type="button" className="kt-detail-back" onClick={volver} aria-label={t('a11y.back', 'Volver')} title={t('a11y.back', 'Volver')}>
@@ -438,13 +617,59 @@ function ProductDetailPage() {
           </nav>
         </header>
 
+        {/* Barra de secciones para CELULAR.
+            La barra de escritorio la apaga `index.css` con
+            `@media (max-width:640px){ .kt-detail-fixed-header{display:none} }`,
+            que no es de este archivo. Resultado: en 390px una ficha de ~7100px
+            de alto no tenía ni tabs ni "Volver" — ninguna forma de saltar a
+            Descargas ni de salir al catálogo salvo scrollear todo y usar el
+            botón del navegador.
+            Va `sticky` bajo el header del sitio (que es sticky top-0) y se
+            apaga a partir de 641px con `min-[641px]:hidden`, o sea justo donde
+            la otra barra vuelve a aparecer: nunca hay dos, nunca hay ninguna. */}
+        <nav
+          data-kt-detail-nav
+          aria-label={t('a11y.sections', 'Secciones del producto')}
+          style={{ top: `${navTop}px` }}
+          className="sticky z-30 flex items-center gap-2 border-b border-white/10 bg-[#1a1a1ae0] px-4 backdrop-blur-[8px] min-[641px]:hidden"
+        >
+          <button
+            type="button"
+            onClick={volver}
+            aria-label={t('a11y.back', 'Volver')}
+            title={t('a11y.back', 'Volver')}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/20 text-white/75 transition active:scale-95"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[15px] w-[15px] fill-none stroke-current [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.2]">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </button>
+          <div className="flex min-w-0 flex-1 items-center gap-3.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {tabs.map((tab) => (
+              <button
+                key={`m-${tab.id}`}
+                type="button"
+                aria-current={activeTab === tab.id ? 'true' : undefined}
+                onClick={() => {
+                  setActiveTab(tab.id)
+                  goToSection(tab.id)
+                }}
+                className={`h-11 shrink-0 whitespace-nowrap border-b-2 text-[11px] font-bold uppercase tracking-[0.1em] transition ${
+                  activeTab === tab.id ? 'border-primary text-[#f4f7fb]' : 'border-transparent text-[#c6ccd7]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </nav>
+
         <div ref={detailBodyRef} className="kt-detail-body">
           <div className="kt-container">
             <section className="kt-detail-hero kt-detail-anim" id="about">
               <figure
                 ref={heroImageRef}
                 className="kt-detail-image kt-detail-hero-zoom"
-                id="gallery"
                 onMouseMove={handleHeroMouseMove}
                 onMouseLeave={handleHeroMouseLeave}
               >
@@ -473,7 +698,11 @@ function ProductDetailPage() {
                     Si no hay innovaciones cargadas, no se muestra nada acá. */}
                 {product.innovations.length > 0 ? (
                   <div className="mt-8 grid gap-4 border-t border-[#2a2a2a] pt-6">
-                    {product.innovations.slice(0, 4).map((inn) => (
+                    {/* Sin `.slice(0, 4)`: recortaba desde la quinta innovación
+                        sin avisar ni dar forma de ver el resto. Hoy el máximo
+                        cargado son 4, así que el corte no se veía —pero cuando
+                        el tenant cargue la quinta, desaparecía en silencio. */}
+                    {product.innovations.map((inn) => (
                       <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
                         {/* CUADRADO (con esquinas suaves) y no círculo: estos íconos
                             los sube el tenant desde el admin y son logos o marcas
@@ -510,38 +739,51 @@ function ProductDetailPage() {
                     el borde inferior de la foto, y ahí le comían el remate justo a
                     la imagen que están para cambiar. Acá cierran la ficha de datos
                     y dejan la foto entera. */}
-                {previewImages.length > 0 ? (
-                  <div
-                    className="kt-detail-preview-rail kt-reveal-item"
-                  >
-                    <div ref={previewStripRef} className="kt-detail-preview-strip" onScroll={onPreviewScroll}>
-                      {previewImages.map((img, index) => (
+                {/* La tira lleva TODAS las imágenes, la portada incluida. Antes
+                    era `galleryImages.slice(1)`: 6 fotos y 5 miniaturas, y una
+                    vez que cambiabas de foto no había forma de volver a la
+                    portada salvo abriendo el lightbox.
+                    Acá vive también el ancla #gallery: el tab "Imágenes"
+                    apuntaba a la MISMA coordenada que "Acerca de" (el id estaba
+                    en la <figure>, anidada dentro de #about), así que los dos
+                    tabs llevaban al mismo lugar y "Acerca de" no se podía
+                    marcar nunca. */}
+                {galleryImages.length > 1 ? (
+                  <div id="gallery" className="kt-detail-preview-rail kt-reveal-item">
+                    <div ref={previewStripRef} className="kt-detail-preview-strip">
+                      {galleryImages.map((img, index) => (
                         <button
                           key={`${img}-${index}`}
                           type="button"
-                          className={`kt-detail-preview-btn ${activeImageIndex === index + 1 ? 'is-active' : ''}`}
-                          onClick={() => setActiveImageIndex(index + 1)}
-                          aria-label={`Ver imagen ${index + 2} de ${product.name}`}
-                          aria-current={activeImageIndex === index + 1 ? 'true' : undefined}
+                          className={`kt-detail-preview-btn ${activeImageIndex === index ? 'is-active' : ''}`}
+                          onClick={() => elegirImagen(index)}
+                          aria-label={`Ver imagen ${index + 1} de ${product.name}`}
+                          aria-current={activeImageIndex === index ? 'true' : undefined}
                         >
-                          <img src={img} alt={`${product.name} vista ${index + 2}`} loading="lazy" />
+                          <img src={img} alt={`${product.name} vista ${index + 1}`} loading="lazy" />
                         </button>
                       ))}
                     </div>
-                    {previewImages.length > 1 ? (
-                      <div className="mt-2.5 flex justify-center gap-2 md:hidden" aria-label={t('a11y.gallery', 'Paginación de la galería')}>
-                        {previewImages.map((_, index) => (
-                          <button
-                            key={`gallery-dot-${index}`}
-                            type="button"
-                            className={`h-2.5 w-2.5 rounded-full transition ${index === previewActivePage ? 'bg-primary' : 'bg-white/35'}`}
-                            onClick={() => scrollToPage(previewStripRef, index)}
-                            aria-label={`Ir a imagen ${index + 2}`}
-                            aria-current={index === previewActivePage ? 'true' : undefined}
-                          />
-                        ))}
-                      </div>
-                    ) : null}
+                    {/* Un punto = UNA IMAGEN, no una página de scroll. Antes eran
+                        5 puntos para ~2,4 páginas reales: tocar el último
+                        encendía el 2º y no cambiaba la foto grande, porque el
+                        mismo control mezclaba índice de imagen con posición de
+                        scroll. Ahora el punto hace lo único que se espera:
+                        cambiar la foto (y traer su miniatura a la vista). */}
+                    {/* Clave NUEVA a propósito: `a11y.gallery` dice "Paginación de
+                        la galería" y esto ya no pagina, elige imagen. */}
+                    <div className="mt-2.5 flex flex-wrap justify-center gap-2 md:hidden" role="group" aria-label={t('a11y.galleryImages', 'Imágenes del producto')}>
+                      {galleryImages.map((_, index) => (
+                        <button
+                          key={`gallery-dot-${index}`}
+                          type="button"
+                          className={`h-2.5 w-2.5 rounded-full transition ${index === activeImageIndex ? 'bg-primary' : 'bg-white/35'}`}
+                          onClick={() => elegirImagen(index)}
+                          aria-label={`Ver imagen ${index + 1}`}
+                          aria-current={index === activeImageIndex ? 'true' : undefined}
+                        />
+                      ))}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -668,6 +910,33 @@ function ProductDetailPage() {
                     {t('productDetail.downloads.description', 'Find and download all technical and marketing documents related to this product.')}
                   </p>
 
+                  {descargaPendiente ? (
+                    <div className="mt-6 flex flex-col items-start gap-3 rounded-[10px] border border-[rgba(244,223,51,0.45)] bg-[rgba(244,223,51,0.07)] p-4 md:flex-row md:items-center md:justify-between md:gap-4">
+                      <p className="m-0 text-[0.92rem] leading-[1.45] text-[#e9ebef]">
+                        {t('productDetail.downloads.pending', 'Listo, ya podés descargar')}{' '}
+                        <strong className="font-bold text-white">{descargaPendiente.label}</strong>.
+                      </p>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <a
+                          {...propsDeDescarga(descargaPendiente)}
+                          onClick={() => { olvidarIntento(); setDescargaPendiente(null) }}
+                          className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-4 py-2.5 text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-[#0b0b0b] transition hover:-translate-y-0.5"
+                        >
+                          <span className="material-symbols-outlined text-[16px] leading-none" aria-hidden="true">download</span>
+                          {t('productDetail.downloads.downloadCta', 'Descargar')}
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => { olvidarIntento(); setDescargaPendiente(null) }}
+                          aria-label={t('loginDialog.close', 'Cerrar')}
+                          className="grid h-9 w-9 place-items-center rounded-full text-[#aeb2ba] transition hover:bg-white/10 hover:text-white"
+                        >
+                          <span className="material-symbols-outlined text-[18px] leading-none">close</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="kt-detail-downloads-cards mt-8">
                     <button
                       type="button"
@@ -704,47 +973,14 @@ function ProductDetailPage() {
                   </div>
 
                   <div className="kt-detail-downloads-panel">
-                    {activeDownloadPanel === 'software' ? (
-                      <div className="border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
-                        {softwareDownloads.map((item) => (
-                          <article key={item.label} className="kt-reveal-item flex items-center justify-between gap-4 py-3.5">
-                            <div className="grid gap-1">
-                              <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
-                              <strong className="text-[0.82rem] font-semibold text-[#aeb2ba]">
-                                {item.size} - {item.type}
-                              </strong>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setDownloadIntent(item.label)}
-                              className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]"
-                            >
-                              {t('productDetail.downloads.downloadCta', 'Descargar')}
-                            </button>
-                          </article>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
-                        {manualDownloads.map((item) => (
-                          <article key={item.label} className="kt-reveal-item flex items-center justify-between gap-4 py-3.5">
-                            <div className="grid gap-1">
-                              <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
-                              <strong className="text-[0.82rem] font-semibold text-[#aeb2ba]">
-                                {item.size} - {item.type}
-                              </strong>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setDownloadIntent(item.label)}
-                              className="rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]"
-                            >
-                              {t('productDetail.downloads.downloadCta', 'Descargar')}
-                            </button>
-                          </article>
-                        ))}
-                      </div>
-                    )}
+                    <ListaDescargas
+                      items={activeDownloadPanel === 'software' ? softwareDownloads : manualDownloads}
+                      downloadCta={t('productDetail.downloads.downloadCta', 'Descargar')}
+                      onGated={pedirDescarga}
+                      vacio={activeDownloadPanel === 'software'
+                        ? t('productDetail.downloads.emptyLibraries', 'Este equipo todavía no tiene librerías ni firmware publicados. Pedilos por soporte y te los mandamos.')
+                        : t('productDetail.downloads.emptyManuals', 'Este equipo todavía no tiene manuales publicados. Pedilos por soporte y te los mandamos.')}
+                    />
                   </div>
 
                 </div>
@@ -798,7 +1034,12 @@ function ProductDetailPage() {
                           item={{
                             name: item.name,
                             category: item.category || t('productDetail.tabs.accessories', 'Accesorios'),
-                            image: product.gallery[index % product.gallery.length],
+                            // Con la galería vacía, `index % 0` es NaN y
+                            // `gallery[NaN]` es undefined: la tarjeta quedaba sin
+                            // imagen y sin explicación. El accesorio trae la suya
+                            // cuando la tiene; si no, cae en la foto del producto.
+                            image: item.image
+                              || (product.gallery.length > 0 ? product.gallery[index % product.gallery.length] : product.heroImage),
                           }}
                           detailHref={`/producto/${product.slug || slug}`}
                         />
@@ -906,7 +1147,7 @@ function ProductDetailPage() {
       <LoginRequiredDialog
         isOpen={Boolean(downloadIntent)}
         onClose={() => setDownloadIntent(null)}
-        fileName={downloadIntent}
+        fileName={downloadIntent?.label}
       />
     </section>
   )

@@ -1,9 +1,22 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
+/**
+ * CategoryCard — la card de una categoría en /products.
+ *
+ * La imagen puede faltar (la API manda `image_url: null` para las categorías sin
+ * foto cargada) o romperse. Antes se caía a `og-default.jpg`, una URL que
+ * devuelve el index.html del SPA: el navegador no la decodifica y pinta el ALT
+ * en blanco sobre negro, con guiones y todo. El placeholder es el mismo que ya
+ * usa ProductCard —fondo negro + isotipo— para que "sin foto" se vea igual en
+ * todo el catálogo.
+ */
 function CategoryCard({ category, count }) {
   const { lang } = useLanguage()
+  const [imgFailed, setImgFailed] = useState(false)
   const displayName = lang === 'en' ? category.nameEn || category.name : category.name
+  const showImage = !!category.image && !imgFailed
 
   return (
     <Link
@@ -11,12 +24,19 @@ function CategoryCard({ category, count }) {
       className="group relative block aspect-square overflow-hidden border border-[#1f1f22] bg-[#0a0a0a] transition-colors duration-300 hover:border-primary/55 focus-visible:border-primary/55 focus-visible:outline-none"
       aria-label={`Ver categoria ${displayName}`}
     >
-      <img
-        src={category.image}
-        alt={`Categoría ${displayName} - Iluminación profesional Kolortec`}
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover opacity-40 grayscale-[35%] transition-all duration-500 ease-out group-hover:scale-[1.05] group-hover:opacity-100 group-hover:grayscale-0 group-focus-visible:opacity-100 group-focus-visible:grayscale-0"
-      />
+      {showImage ? (
+        <img
+          src={category.image}
+          alt={`Categoría ${displayName} - Iluminación profesional Kolortec`}
+          loading="lazy"
+          onError={() => setImgFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover opacity-40 grayscale-[35%] transition-all duration-500 ease-out group-hover:scale-[1.05] group-hover:opacity-100 group-hover:grayscale-0 group-focus-visible:opacity-100 group-focus-visible:grayscale-0"
+        />
+      ) : (
+        <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center bg-deep-black">
+          <img src="/favicon.svg" alt="" className="h-12 w-12 opacity-30" />
+        </span>
+      )}
 
       <span
         aria-hidden="true"

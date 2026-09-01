@@ -5,10 +5,12 @@ import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { useAuth } from '../../../shared/auth/AuthContext'
 import { getFooterData, getCategorias } from '../../../shared/services/contentService'
 
 function FooterSection() {
   const { t } = useLanguage()
+  const { user } = useAuth()
   // Data-driven: partners (marcas) + galería salen de la cuenta en tiendita. Vacío → se ocultan
   // (antes usaba defaultLandingContent.footer → mostraba partners/imágenes hardcodeados siempre).
   // La TIRA DE MARCAS ya NO vive acá: se mudó a la home, justo debajo de "Querés
@@ -35,10 +37,30 @@ function FooterSection() {
     getCategorias().then((c) => { if (mounted && Array.isArray(c)) setCategorias(c) })
     return () => { mounted = false }
   }, [])
+  // `to` sale del slug de la categoría: las seis iban TODAS a /products, tirando
+  // el dato a la basura. /products/:categorySlug existe y anda.
   const productItems = categorias.length > 0
-    ? categorias.slice(0, 6).map((c) => ({ key: c.slug, label: String(c.nombre || '').toLowerCase() }))
-    : [{ key: 'all', label: t('a11y.allProducts', 'Ver productos') }]
+    ? categorias.slice(0, 6).map((c) => ({
+        key: c.slug,
+        label: String(c.nombre || '').toLowerCase(),
+        to: c.slug ? `/products/${c.slug}` : '/products',
+      }))
+    : [{ key: 'all', label: t('a11y.allProducts', 'Ver productos'), to: '/products' }]
   const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
+  // /garantias no estaba enlazada desde ningún lado (página huérfana) y es
+  // exactamente lo que esta columna promete: material de soporte.
+  const supportItems = [
+    ...libraryLinks.map((label) => ({ key: `lib-${label}`, label, to: '/descargas' })),
+    { key: 'garantias', label: t('pageTitle.warranty', 'Guía de Mantenimiento'), to: '/garantias' },
+  ]
+  // El copyright decía "© 2010" fijo desde siempre. Ahora el año es un marcador
+  // en la traducción ({year}, en los dos idiomas) y se sustituye acá: el string
+  // traducido sigue siendo dueño de TODO el texto —incluido dónde va el año— en
+  // vez de que el componente le meta mano con una expresión regular, que era el
+  // parche anterior y se rompía apenas cambiara el formato.
+  const copyright = String(
+    t('footer.copyright', '© {year} KOLORTEC LIGHTING SYSTEMS. TODOS LOS DERECHOS RESERVADOS.'),
+  ).replace('{year}', String(new Date().getFullYear()))
 
   const renderTitle = (label) => (
     <h4 className="title-font mb-4 text-base md:text-lg font-black text-white">
@@ -89,7 +111,7 @@ function FooterSection() {
           <ul className="body-font text-slate-400 space-y-4 text-sm">
             {productItems.map((it) => (
               <li key={`footer-cat-${it.key}`}>
-                <Link className="capitalize hover:text-primary transition-colors" to="/products">{it.label}</Link>
+                <Link className="capitalize hover:text-primary transition-colors" to={it.to}>{it.label}</Link>
               </li>
             ))}
           </ul>
@@ -98,9 +120,9 @@ function FooterSection() {
         <div>
           {renderTitle(t('footer.libraryTitle', 'Soporte'))}
           <ul className="body-font text-slate-400 space-y-4 text-sm">
-            {libraryLinks.map((label) => (
-              <li key={`footer-library-${label}`}>
-                <Link className="hover:text-primary transition-colors" to="/descargas">{label}</Link>
+            {supportItems.map((it) => (
+              <li key={`footer-support-${it.key}`}>
+                <Link className="hover:text-primary transition-colors" to={it.to}>{it.label}</Link>
               </li>
             ))}
           </ul>
@@ -134,10 +156,25 @@ function FooterSection() {
           bloque de links sin necesidad de otra línea divisoria. `mt-10` y no
           `mt-6` porque ahora tiene fondo propio y necesita aire por fuera. */}
       <div className="mt-10 w-full bg-[#111114] px-6 py-5 flex flex-col gap-3 text-xs text-slate-500 md:flex-row md:items-center md:justify-between lg:px-40">
-        <p>{t('footer.copyright', '© 2010 KOLORTEC LIGHTING SYSTEMS. ALL RIGHTS RESERVED.')}</p>
+        <p>{copyright}</p>
+        {/* ⚠ ACÁ IBAN "Política de Privacidad" y "Términos de Servicio", los dos
+            con href="#": no llevaban a ningún lado porque NO EXISTEN las páginas
+            /privacidad ni /terminos, y no se pueden inventar textos legales.
+            Un link muerto miente peor que un link ausente, así que se sacan.
+            Cuando el cliente entregue los textos vuelven acá, con ruta real —
+            y son obligatorios: el login te hace aceptarlos.
+            Mientras tanto la fila queda con el acceso a la cuenta, que era la
+            otra página que no se alcanzaba desde ningún enlace del sitio (sólo
+            desde el diálogo del ícono de persona, invisible para un crawler). */}
         <div className="flex gap-5">
-          <a className="hover:text-primary transition-colors" href="#">{t('footer.privacyPolicy', 'Privacy Policy')}</a>
-          <a className="hover:text-primary transition-colors" href="#">{t('footer.termsOfService', 'Terms of Service')}</a>
+          {user ? null : (
+            <Link className="hover:text-primary transition-colors" to="/login">
+              {t('header.loginAria', 'Iniciar sesión')}
+            </Link>
+          )}
+          <Link className="hover:text-primary transition-colors" to="/contacto">
+            {t('pageTitle.contact', 'Contacto')}
+          </Link>
         </div>
       </div>
 

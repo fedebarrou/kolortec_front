@@ -4,6 +4,42 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { maintenanceContact } from '../data/maintenanceGuides'
 
 /**
+ * Genero del articulo a partir de la TERMINACION del sustantivo nucleo (la
+ * primera palabra del nombre), no de una lista de excepciones: en castellano el
+ * articulo lo manda el nucleo, no el resto del nombre. "Barra LED" -> una barra
+ * LED; "Cabezal Beam" -> un cabezal Beam. Sirve para cualquier equipo que se
+ * cargue despues, sin tocar codigo.
+ *
+ * La tilde no molesta: las terminaciones femeninas del castellano no la llevan
+ * al final salvo "-cion/-sion", que se contemplan con y sin ella ("maquina" y
+ * "máquina" terminan las dos en "a").
+ *
+ * Limite conocido: los cultismos griegos en -ma ("problema", "sistema") caerian
+ * en femenino. No hay ninguno en el catalogo de equipos, y una excepcion por
+ * "-ma" romperia "plataforma" y "forma", que si son femeninas.
+ */
+const NUCLEO_FEMENINO = /(a|ci[oó]n|si[oó]n|dad|tad|tud|umbre|ie|z)$/
+
+// Partido una sola vez: se usa para meter un <wbr> antes del @ (ver el boton de
+// mail mas abajo).
+const [emailLocal, emailDominio] = String(maintenanceContact.email || '').split('@')
+
+function articuloPara(name) {
+  const nucleo = String(name || '').trim().split(/\s+/)[0] || ''
+  return NUCLEO_FEMENINO.test(nucleo.toLowerCase()) ? 'una' : 'un'
+}
+
+/**
+ * Baja SOLO la inicial: el nucleo es un sustantivo comun ("cabezal") pero lo que
+ * sigue suele ser la designacion del modelo ("Beam", "LED") y no se escribe en
+ * minuscula. `.toLowerCase()` sobre el nombre entero rompia eso.
+ */
+function conInicialMinuscula(name) {
+  const s = String(name || '').trim()
+  return s ? s[0].toLowerCase() + s.slice(1) : s
+}
+
+/**
  * Modal de guia de mantenimiento. Renderiza una guia completa (intro, secciones
  * con vinetas, cierre y contacto de soporte). Se usa tanto en la pagina
  * /garantias como en el carrusel de la seccion Soporte del landing.
@@ -32,12 +68,18 @@ function MaintenanceDetailModal({ guide, origin, onClose }) {
 
   const transformOrigin = origin ? `${origin.x}px ${origin.y}px` : '50% 50%'
   const isOpen = phase === 'open'
+  // "Como limpiar un barra led" era el titulo real que se leia: el articulo
+  // estaba fijo en masculino y `.toLowerCase()` se comia el modelo. Y le faltaba
+  // la tilde de "Cómo" (la misma guia en /soporte/guias/barra-led si la tiene).
+  const tituloGuia = `Cómo limpiar ${articuloPara(guide.name)} ${conInicialMinuscula(guide.name)}`
+  const cerrarLabel = t('warranty.modal.closeAria', 'Cerrar detalle')
 
   return createPortal(
+    <>
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Mantenimiento de ${guide.name}`}
+      aria-label={tituloGuia}
       onClick={onClose}
       className="fixed inset-0 z-[2000] flex items-start justify-center overflow-y-auto p-4 sm:p-8"
       style={{
@@ -59,11 +101,15 @@ function MaintenanceDetailModal({ guide, origin, onClose }) {
             'transform 460ms cubic-bezier(0.22, 0.7, 0.25, 1), opacity 380ms cubic-bezier(0.22, 0.7, 0.25, 1)',
         }}
       >
+        {/* En md+ la X vive pegada a la esquina del panel. En celular el panel
+            pasa a scrollear entero dentro del overlay (ver abajo) y esta X se
+            iria 2.000px hacia arriba: ahi manda la X fija que se renderiza
+            fuera del overlay, al final del portal. */}
         <button
           type="button"
           onClick={onClose}
-          aria-label={t('warranty.modal.closeAria', 'Cerrar detalle')}
-          className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-[#0b0b0b]/85 text-white backdrop-blur-sm transition hover:border-primary hover:text-primary"
+          aria-label={cerrarLabel}
+          className="absolute right-3 top-3 z-10 hidden h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-[#0b0b0b]/85 text-white backdrop-blur-sm transition hover:border-primary hover:text-primary md:inline-flex"
         >
           <span className="material-symbols-outlined text-[20px] leading-none">close</span>
         </button>
@@ -97,8 +143,14 @@ function MaintenanceDetailModal({ guide, origin, onClose }) {
             </div>
           </div>
 
-          {/* Contenido de la guia */}
-          <div className="flex max-h-[85vh] flex-col gap-5 overflow-y-auto bg-gradient-to-b from-[#0b0b0b] to-[#050505] px-6 py-8 md:px-8 md:py-10">
+          {/* Contenido de la guia.
+              El alto tope + scroll propio SOLO desde md. En celular esto y el
+              overlay (que tambien tiene overflow-y-auto) eran DOS scrollers
+              anidados: el dedo movia el de afuera, el panel no bajaba y el CTA
+              de contacto quedaba fuera de alcance. Ahora en celular scrollea uno
+              solo —el overlay— y el panel crece lo que haga falta; en escritorio
+              se mantiene el panel scrolleando al lado de la foto fija. */}
+          <div className="flex min-w-0 flex-col gap-5 bg-gradient-to-b from-[#0b0b0b] to-[#050505] px-6 py-8 md:max-h-[85vh] md:overflow-y-auto md:px-8 md:py-10">
             <div className="flex items-center gap-2">
               <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
               <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
@@ -106,7 +158,7 @@ function MaintenanceDetailModal({ guide, origin, onClose }) {
               </span>
             </div>
             <h2 className="title-font m-0 text-[clamp(1.7rem,3.4vw,2.7rem)] leading-[1.04] text-white">
-              {`Como limpiar un ${guide.name.toLowerCase()}`}<span className="text-primary">.</span>
+              {tituloGuia}<span className="text-primary">.</span>
             </h2>
             <p className="m-0 text-[0.95rem] leading-[1.6] text-[#c4cad4]">{guide.intro}</p>
 
@@ -156,19 +208,43 @@ function MaintenanceDetailModal({ guide, origin, onClose }) {
                   <span className="material-symbols-outlined text-[18px] leading-none" aria-hidden="true">chat</span>
                   {maintenanceContact.phone}
                 </a>
+                {/* El mail es un token sin espacios y con tracking: en celular
+                    su min-content (~380px) no entra en la columna y empujaba el
+                    panel entero fuera de pantalla. `max-w-full` lo contiene, el
+                    <wbr> antes del @ le da un corte con sentido
+                    (KOLORTEC.SOPORTE / @GMAIL.COM) y `overflow-wrap:anywhere`
+                    queda de red por si aparece un dominio larguisimo. */}
                 <a
                   href={maintenanceContact.emailHref}
-                  className="inline-flex items-center gap-2 rounded-[10px] border-2 border-primary bg-transparent px-5 py-3 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] text-primary transition hover:-translate-y-0.5 hover:bg-primary hover:text-[#0b0b0b]"
+                  className="inline-flex max-w-full items-center gap-2 rounded-[10px] border-2 border-primary bg-transparent px-5 py-3 text-[0.78rem] font-extrabold uppercase tracking-[0.12em] text-primary transition [overflow-wrap:anywhere] hover:-translate-y-0.5 hover:bg-primary hover:text-[#0b0b0b]"
                 >
-                  <span className="material-symbols-outlined text-[18px] leading-none" aria-hidden="true">mail</span>
-                  {maintenanceContact.email}
+                  <span className="material-symbols-outlined shrink-0 text-[18px] leading-none" aria-hidden="true">mail</span>
+                  <span className="min-w-0">
+                    {emailLocal}
+                    {emailDominio ? <><wbr />{`@${emailDominio}`}</> : null}
+                  </span>
                 </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>,
+    </div>
+
+    {/* X fija de celular. Va FUERA del overlay a proposito: el overlay tiene
+        `backdrop-filter`, y un ancestro con filtro se vuelve el bloque
+        contenedor de sus descendientes `fixed` — adentro, esta X scrollearia
+        junto con el contenido y volveria a irse de pantalla. */}
+    <button
+      type="button"
+      onClick={onClose}
+      aria-label={cerrarLabel}
+      className="fixed right-4 top-4 z-[2001] inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-[#0b0b0b]/85 text-white backdrop-blur-sm md:hidden"
+      style={{ opacity: isOpen ? 1 : 0, transition: 'opacity 320ms ease-out' }}
+    >
+      <span className="material-symbols-outlined text-[22px] leading-none">close</span>
+    </button>
+    </>,
     document.body,
   )
 }

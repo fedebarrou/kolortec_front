@@ -2,6 +2,15 @@ import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { getDownloads } from '../../../shared/services/contentService'
+import {
+  abrirArchivo,
+  getSesionCacheada,
+  guardarIntento,
+  propsDeDescarga,
+  requiereLogin,
+  leerIntento,
+  olvidarIntento,
+} from '../../../shared/services/downloadService'
 import Seo from '../../../shared/seo/Seo'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 
@@ -46,6 +55,26 @@ const FAMILIAS = {
 
 function DownloadCard({ item, downloadCta, onDownload }) {
   const familia = FAMILIAS[item.family] || FAMILIAS.manual
+  // El archivo abierto va en un <a> DE VERDAD y no en un <button>: así se puede
+  // copiar el link, abrirlo en otra pestaña con el botón del medio y lo ve un
+  // crawler. El <button> queda sólo para lo que sí pide identificarse.
+  const conLogin = requiereLogin(item)
+  const claseBoton = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#383838] px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition'
+  const pintar = (e) => {
+    e.currentTarget.style.backgroundColor = familia.color
+    e.currentTarget.style.borderColor = familia.color
+    e.currentTarget.style.color = familia.texto
+  }
+  const despintar = (e) => {
+    e.currentTarget.style.backgroundColor = 'transparent'
+    e.currentTarget.style.borderColor = '#383838'
+    e.currentTarget.style.color = '#f2f2f2'
+  }
+  const icono = (
+    <span className="material-symbols-outlined text-[15px] leading-none" aria-hidden="true">
+      {conLogin ? 'lock' : 'download'}
+    </span>
+  )
   return (
     <article
       className="group flex flex-col gap-3 rounded-[12px] border bg-[#0d0d0e] p-5 transition hover:-translate-y-1"
@@ -83,27 +112,30 @@ function DownloadCard({ item, downloadCta, onDownload }) {
 
       <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#232323] pt-3">
         <span className="text-[0.74rem] text-[#8b909a]">{item.size || '—'}</span>
-        <button
-          type="button"
-          onClick={() => onDownload(item.label)}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#383838] px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition"
-          style={{ borderColor: '#383838' }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = familia.color
-            e.currentTarget.style.borderColor = familia.color
-            e.currentTarget.style.color = familia.texto
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.borderColor = '#383838'
-            e.currentTarget.style.color = '#f2f2f2'
-          }}
-        >
-          <span className="material-symbols-outlined text-[15px] leading-none" aria-hidden="true">
-            download
-          </span>
-          {downloadCta}
-        </button>
+        {conLogin ? (
+          <button
+            type="button"
+            onClick={() => onDownload(item)}
+            className={claseBoton}
+            style={{ borderColor: '#383838' }}
+            onMouseEnter={pintar}
+            onMouseLeave={despintar}
+          >
+            {icono}
+            {downloadCta}
+          </button>
+        ) : (
+          <a
+            {...propsDeDescarga(item)}
+            className={claseBoton}
+            style={{ borderColor: '#383838' }}
+            onMouseEnter={pintar}
+            onMouseLeave={despintar}
+          >
+            {icono}
+            {downloadCta}
+          </a>
+        )}
       </div>
     </article>
   )
@@ -115,10 +147,39 @@ function SupportPage() {
   const [familia, setFamilia] = useState('todas')
   const [items, setItems] = useState(null) // null = cargando
   const [downloadIntent, setDownloadIntent] = useState(null)
+  // Archivo que quedó pendiente ANTES de mandar al usuario al login. Al volver
+  // ya logueado le ofrecemos el archivo que pidió, en vez de dejarlo en una
+  // página que no le da lo que fue a buscar.
+  const [pendiente, setPendiente] = useState(null)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [])
+
+  useEffect(() => {
+    const intento = leerIntento('/descargas')
+    if (!intento) return undefined
+    let vivo = true
+    // Sólo se ofrece si de verdad hay sesión: si el usuario canceló el login,
+    // la intención se descarta en silencio y el gate sigue en pie.
+    getSesionCacheada().then((sesion) => {
+      if (vivo && sesion) setPendiente(intento)
+    })
+    return () => { vivo = false }
+  }, [])
+
+  // El click en "Descargar" de un archivo con gate: se recuerda QUÉ archivo era
+  // y recién ahí se abre el diálogo. Si ya hay sesión, ni diálogo: se baja.
+  const pedirDescarga = (item) => {
+    getSesionCacheada().then((sesion) => {
+      if (sesion) {
+        abrirArchivo(item)
+        return
+      }
+      guardarIntento(item, '/descargas')
+      setDownloadIntent(item)
+    })
+  }
 
   useEffect(() => {
     let cancelado = false
@@ -238,10 +299,43 @@ function SupportPage() {
         </div>
       </header>
 
-      {/* Guias tecnicas - callout sobrio */}
+      {/* Aviso de descarga pendiente: el archivo que el usuario pidió ANTES de
+          que lo mandáramos a loguearse. Sin esto, volver del OAuth era volver a
+          una página que no le daba lo que fue a buscar. */}
+      {pendiente ? (
+        <div className="mb-6 flex flex-col items-start gap-3 rounded-[12px] border border-[rgba(244,223,51,0.45)] bg-[rgba(244,223,51,0.07)] p-4 md:flex-row md:items-center md:justify-between md:gap-4">
+          <p className="m-0 text-[0.92rem] leading-[1.45] text-[#e9ebef]">
+            {t('support.page.pendingDownload', 'Listo, ya podés descargar')}{' '}
+            <strong className="font-bold text-white">{pendiente.label}</strong>.
+          </p>
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              {...propsDeDescarga(pendiente)}
+              onClick={() => { olvidarIntento(); setPendiente(null) }}
+              className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-4 py-2.5 text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-[#0b0b0b] transition hover:-translate-y-0.5"
+            >
+              <span className="material-symbols-outlined text-[16px] leading-none" aria-hidden="true">download</span>
+              {downloadCta}
+            </a>
+            <button
+              type="button"
+              onClick={() => { olvidarIntento(); setPendiente(null) }}
+              aria-label={t('loginDialog.close', 'Cerrar')}
+              className="grid h-9 w-9 place-items-center rounded-full text-[#aeb2ba] transition hover:bg-white/10 hover:text-white"
+            >
+              <span className="material-symbols-outlined text-[18px] leading-none">close</span>
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Guias tecnicas - callout sobrio.
+          `flex-col` hasta md: en 390px el patrón "fila + justify-between" dejaba
+          el <p> en 124px de ancho y 8 renglones. Es el mismo remedio que ya usa
+          el <aside> de ayuda al pie de esta página. */}
       <Link
         to="/soporte/guias"
-        className="kt-reveal group mb-10 flex items-center justify-between gap-4 rounded-[12px] border border-[#242424] bg-[#0f0f10] p-5 transition hover:border-[rgba(244,223,51,0.5)]"
+        className="kt-reveal group mb-10 flex flex-col items-start justify-between gap-4 rounded-[12px] border border-[#242424] bg-[#0f0f10] p-5 transition hover:border-[rgba(244,223,51,0.5)] md:flex-row md:items-center"
       >
         <div className="flex items-center gap-4">
           <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[rgba(244,223,51,0.4)] text-primary" aria-hidden="true">
@@ -274,7 +368,7 @@ function SupportPage() {
         // aporta nada igual.
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtrados.map((item) => (
-            <DownloadCard key={item.id} item={item} downloadCta={downloadCta} onDownload={setDownloadIntent} />
+            <DownloadCard key={item.id} item={item} downloadCta={downloadCta} onDownload={pedirDescarga} />
           ))}
         </div>
       ) : (
@@ -309,7 +403,7 @@ function SupportPage() {
       <LoginRequiredDialog
         isOpen={Boolean(downloadIntent)}
         onClose={() => setDownloadIntent(null)}
-        fileName={downloadIntent}
+        fileName={downloadIntent?.label}
       />
     </section>
   )

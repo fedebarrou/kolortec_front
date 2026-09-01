@@ -1,9 +1,111 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLanguage } from '../i18n/LanguageProvider'
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DATO DEL CLIENTE — PENDIENTE
+   Este número es de RELLENO: nadie nos pasó el real. Está centralizado acá para
+   que cambiarlo sea UNA línea (los dos botones, Ventas y Soporte, lo usan).
+   `E164` va sin '+' ni separadores porque así lo exige wa.me; `VISIBLE` es lo
+   único que ve el usuario, y tiene que quedar en sincronía con el otro.
+   OJO: el mismo placeholder está duplicado en archivos que NO son de este
+   componente (HeaderSection.jsx, SocialLinks.jsx, ProductDetailPage.jsx y
+   landingData.js). Unificarlos es tarea de coordinación — ver informe.
+   ────────────────────────────────────────────────────────────────────────── */
+const WHATSAPP_NUMERO_E164 = '5491155555555'
+const WHATSAPP_NUMERO_VISIBLE = '+54 9 11 5555-5555'
+
+const linkWhatsapp = (mensaje) => `https://wa.me/${WHATSAPP_NUMERO_E164}?text=${encodeURIComponent(mensaje)}`
+
+/* Geometría del flotante en píxeles FÍSICOS (vive fuera de `.kt-zoom-canvas`,
+   así que no lo afecta el zoom del lienzo). De acá sale la zona segura que el
+   resto del sitio tiene que respetar; si algún día el botón cambia de tamaño,
+   se toca sólo esto y el CSS global se reacomoda solo. */
+const FAB_LADO_PX = 64 // h-16 w-16
+const FAB_MARGEN_PX = 16 // right-4 / bottom-4
+const FAB_RESPIRO_PX = 16 // aire mínimo entre el botón y el contenido de al lado
+const FAB_ZONA_SEGURA_PX = FAB_MARGEN_PX + FAB_LADO_PX + FAB_RESPIRO_PX // 96px
+
+/* Cualquier diálogo modal del sitio. Detectamos por CONTRATO de accesibilidad
+   (`aria-modal="true"` / `<dialog open>`) y no por una lista de componentes:
+   así también quedan cubiertos los modales que todavía no existen. Hoy matchea
+   LoginRequiredDialog (z-100), ImageLightbox (z-1800), MaintenanceDetailModal
+   (z-2000) y el modal de login del header (z-3000). El panel del propio FAB
+   declara `aria-modal="false"`, así que no se auto-oculta. */
+const SELECTOR_MODAL = '[aria-modal="true"], dialog[open]'
+
+/* El FAB estaba en z-1400 y el LoginRequiredDialog en z-100: el botón quedaba
+   ENCIMA del modal y, al clickearlo, abría WhatsApp sobre un diálogo todavía
+   abierto. Ocultarlo mientras hay un modal es la defensa que funciona para
+   cualquier z-index; bajarlo por debajo del modal más bajo del sitio (100) es
+   la segunda, la que cubre el frame en que el observer todavía no corrió. */
+function useHayModalAbierto(alAbrirseUnModal) {
+  const [hayModal, setHayModal] = useState(false)
+
+  useEffect(() => {
+    let frame = 0
+    let ultimo = false
+    const medir = () => {
+      frame = 0
+      const hay = Boolean(document.querySelector(SELECTOR_MODAL))
+      if (hay === ultimo) return
+      ultimo = hay
+      setHayModal(hay)
+      // Sólo en el flanco de subida: si se abre un modal con el panel de
+      // WhatsApp desplegado, el panel se va con el botón. Si no, al cerrar el
+      // modal el panel reaparecería colgado y sin contexto.
+      if (hay) alAbrirseUnModal()
+    }
+    // El observer se dispara muchísimo mientras corre el scrollytelling; lo
+    // colapsamos a una sola medición por frame para no pagarlo en cada mutación.
+    const agendar = () => {
+      if (frame) return
+      frame = requestAnimationFrame(medir)
+    }
+
+    medir()
+    const observer = new MutationObserver(agendar)
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-modal', 'open'],
+    })
+
+    return () => {
+      observer.disconnect()
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [alAbrirseUnModal])
+
+  return hayModal
+}
 
 function WhatsAppFab() {
   const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
+  // `setIsOpen` es estable entre renders, así que el observer se suscribe una vez.
+  const cerrarPanel = useCallback(() => setIsOpen(false), [])
+  const hayModalAbierto = useHayModalAbierto(cerrarPanel)
+
+  /* Publicamos la zona segura como variables CSS para que las secciones que
+     terminan debajo del flotante reserven el lugar en vez de quedar tapadas.
+     `--kt-fab-safe-canvas` es la misma medida dividida por el zoom del lienzo:
+     adentro de `.kt-zoom-canvas` un `96px` se dibuja como 72px reales a 1440,
+     y la reserva quedaría corta. Las custom properties se resuelven en el punto
+     de uso, así que el calc() sigue al scale sin necesidad de otro listener. */
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('--kt-fab-size', `${FAB_LADO_PX}px`)
+    root.style.setProperty('--kt-fab-gap', `${FAB_MARGEN_PX}px`)
+    root.style.setProperty('--kt-fab-safe', `${FAB_ZONA_SEGURA_PX}px`)
+    root.style.setProperty('--kt-fab-safe-canvas', 'calc(var(--kt-fab-safe) / var(--kt-canvas-scale, 1))')
+    return () => {
+      root.style.removeProperty('--kt-fab-size')
+      root.style.removeProperty('--kt-fab-gap')
+      root.style.removeProperty('--kt-fab-safe')
+      root.style.removeProperty('--kt-fab-safe-canvas')
+    }
+  }, [])
 
   useEffect(() => {
     if (!isOpen) return undefined
@@ -16,11 +118,16 @@ function WhatsAppFab() {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [isOpen])
 
+  // Nada de render mientras hay un modal: no hay botón que clickear por error.
+  // El componente sigue montado, así que las variables CSS no se despublican.
+  if (hayModalAbierto) return null
+
   return (
     <>
       <button
         type="button"
-        className="fixed right-4 bottom-4 z-[1400] inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_14px_30px_rgba(0,0,0,0.34)] transition hover:-translate-y-0.5 hover:scale-[1.02]"
+        data-kt-fab="whatsapp"
+        className="fixed right-4 bottom-4 z-[90] inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_14px_30px_rgba(0,0,0,0.34)] transition hover:-translate-y-0.5 hover:scale-[1.02]"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label={t('whatsappFab.openAria', 'Abrir chat de WhatsApp')}
         title={t('whatsappFab.dialogTitle', 'WhatsApp')}
@@ -35,11 +142,11 @@ function WhatsAppFab() {
           <button
             type="button"
             aria-label={t('whatsappFab.closeAria', 'Cerrar panel de WhatsApp')}
-            className="fixed inset-0 z-[1550] cursor-default bg-transparent"
+            className="fixed inset-0 z-[91] cursor-default bg-transparent"
             onClick={() => setIsOpen(false)}
           />
           <div
-            className="fixed right-4 bottom-[108px] z-[1600] w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[rgba(244,223,51,0.38)] bg-[#0f0f10] shadow-[0_18px_40px_rgba(0,0,0,0.42)]"
+            className="fixed right-4 bottom-[108px] z-[92] w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[rgba(244,223,51,0.38)] bg-[#0f0f10] shadow-[0_18px_40px_rgba(0,0,0,0.42)]"
             role="dialog"
             aria-modal="false"
             aria-label={t('whatsappFab.dialogTitle', 'WhatsApp')}
@@ -58,25 +165,25 @@ function WhatsAppFab() {
             <div className="grid gap-2 p-3">
               <a
                 className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.14)] bg-[#17181b] px-3 py-3 text-left transition hover:border-[rgba(244,223,51,0.5)] hover:bg-[#1c1d21]"
-                href="https://wa.me/5491155555555?text=Hola%20equipo%20de%20ventas%2C%20quiero%20asesoramiento%20comercial."
+                href={linkWhatsapp('Hola equipo de ventas, quiero asesoramiento comercial.')}
                 target="_blank"
                 rel="noreferrer"
               >
                 <span className="grid">
                   <strong className="text-[0.78rem] font-black uppercase tracking-[0.1em] text-[#f5f6f8]">{t('whatsappFab.sales', 'Ventas')}</strong>
-                  <small className="text-[0.78rem] text-[#aeb5bf]">+54 9 11 5555-5555</small>
+                  <small className="text-[0.78rem] text-[#aeb5bf]">{WHATSAPP_NUMERO_VISIBLE}</small>
                 </span>
                 <span className="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">chat</span>
               </a>
               <a
                 className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.14)] bg-[#17181b] px-3 py-3 text-left transition hover:border-[rgba(244,223,51,0.5)] hover:bg-[#1c1d21]"
-                href="https://wa.me/5491155555555?text=Hola%20equipo%20de%20soporte%2C%20necesito%20ayuda%20tecnica."
+                href={linkWhatsapp('Hola equipo de soporte, necesito ayuda tecnica.')}
                 target="_blank"
                 rel="noreferrer"
               >
                 <span className="grid">
                   <strong className="text-[0.78rem] font-black uppercase tracking-[0.1em] text-[#f5f6f8]">{t('whatsappFab.support', 'Soporte')}</strong>
-                  <small className="text-[0.78rem] text-[#aeb5bf]">+54 9 11 5555-5555</small>
+                  <small className="text-[0.78rem] text-[#aeb5bf]">{WHATSAPP_NUMERO_VISIBLE}</small>
                 </span>
                 <span className="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">build_circle</span>
               </a>

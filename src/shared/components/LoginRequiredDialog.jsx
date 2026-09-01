@@ -45,19 +45,31 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
 
   const handleProvider = (provider) => {
     if (provider === 'google') {
-      window.location.href = getGoogleAuthUrl()
+      // Vuelve a la MISMA página, no a la home: este diálogo casi siempre se abre
+      // desde un "Descargar", y volver al inicio deja a la persona sin su archivo
+      // y sin pista de qué pasó. Con la intención guardada aparte, al aterrizar
+      // acá el aviso de descarga se dispara solo.
+      window.location.href = getGoogleAuthUrl(window.location.pathname + window.location.search)
       return
     }
     // Outlook OAuth not yet configured in tiendita — close dialog
     onClose()
   }
 
+  /* z-1900: este diálogo bloquea una descarga, así que tiene que ganarle a TODO
+     lo que flota en el sitio — el nudge de login (1450), el toast de
+     "Sincronizando" (1500) y el lightbox de la ficha de producto (1800), que se
+     renderiza en la MISMA página que este diálogo. Estaba en z-100: hasta el
+     botón flotante de WhatsApp (que estaba en 1400) le pasaba por encima, y
+     clickearlo abría el panel de WhatsApp sobre el modal todavía abierto.
+     `aria-modal="true"` no es sólo accesibilidad: es el contrato por el que el
+     flotante se entera de que hay un modal y se esconde. No sacarlo. */
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="login-required-title"
-      className="fixed inset-0 z-[100] grid place-items-center px-4 py-6"
+      className="fixed inset-0 z-[1900] grid place-items-center px-4 py-6"
     >
       <button
         type="button"

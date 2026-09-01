@@ -2607,3 +2607,53 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
    Con Sumate en negro el recorrido queda: amarillo (clavado) → negro → foto. Los
    tres bloques se distinguen, y ahí sí se ve que el fondo cambió. */
 
+
+/* ── Zona segura del flotante de WhatsApp ────────────────────────────────────
+   WhatsAppFab publica --kt-fab-safe (96px fisicos = 16 de margen + 64 de alto +
+   16 de respiro) y --kt-fab-safe-canvas, que es la misma medida dividida por
+   --kt-canvas-scale: adentro del lienzo con zoom, 96px se dibujan como 72 reales
+   a 1440 y la reserva quedaria corta. Como las custom properties se resuelven en
+   el punto de uso, ese calc() sigue al scale sin ningun listener.
+
+   Con max() la reserva es un PISO: donde el diseno ya separa mas —escritorio, que
+   usa right:160px— no se toca nada. Y si el FAB se desmonta, las variables dejan
+   de publicarse y el fallback 0px devuelve todo a como estaba.
+
+   VA FUERA DE @layer a proposito: hero-anim.css tampoco esta en capas y se carga
+   DESPUES (lo importa ScrolltellingSection), asi que una regla en cualquier @layer
+   perderia por orden de capas sin importar la especificidad. El prefijo
+   .kt-zoom-canvas ademas le gana por especificidad a las reglas (0,1,0) de
+   hero-anim.css.
+
+   ALCANCE, sin exagerarlo: esto resuelve lo que esta ANCLADO al viewport o al pie
+   de la pagina. Lo que scrollea —el badge de la seccion amarilla, el CTA de las
+   tarjetas— pasa por debajo del flotante en alguna posicion intermedia y ninguna
+   reserva de esquina lo salva; eso se decide sobre el FAB mismo (achicarlo,
+   esconderlo al bajar, o moverlo). */
+.kt-zoom-canvas .scrolly-progress {
+  right: max(24px, var(--kt-fab-safe-canvas, 0px));
+}
+
+@container hc-stage (min-width: 1024px) {
+  .kt-zoom-canvas .scrolly-progress {
+    right: max(64px, var(--kt-fab-safe-canvas, 0px));
+  }
+}
+
+@container hc-stage (min-width: 1280px) {
+  .kt-zoom-canvas .scrolly-progress {
+    right: max(160px, var(--kt-fab-safe-canvas, 0px));
+  }
+}
+
+/* Utilidades opt-in para las secciones que terminan debajo del flotante. En
+   @layer utilities para ganarle al gutter de Tailwind, que vive ahi. */
+@layer utilities {
+  .kt-fab-safe-bottom {
+    padding-bottom: var(--kt-fab-safe-canvas, 0px);
+  }
+
+  .kt-fab-safe-right {
+    padding-right: var(--kt-fab-safe-canvas, 0px);
+  }
+}

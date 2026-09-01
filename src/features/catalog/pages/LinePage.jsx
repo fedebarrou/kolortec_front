@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
+import CatalogEmptyState from '../components/CatalogEmptyState'
 import { getShopProducts, getLines, slugifyLinea } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
+import { getCategories } from '../../../data/categories.js'
+
+// Misma densidad que el resto del catálogo.
+const GRID = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4'
 
 /**
  * LinePage — todos los productos de UNA línea, en su propia URL.
@@ -18,6 +23,18 @@ import Seo from '../../../shared/seo/Seo'
  * de portada ni descripción — no existen — y el slug se deriva del nombre con
  * `slugifyLinea`, que es la única fuente para las dos puntas: si esta página
  * slugificara distinto de quien arma el link, el acceso apuntaría a la nada.
+ *
+ * HOY LOS 57 PRODUCTOS TIENEN `linea` VACÍA, así que `getLines()` devuelve [] y
+ * cualquier /linea/x caía en "no encontrada" — incluida "Golden Line", que en
+ * esta cuenta existe pero cargada como CATEGORÍA (`/products/golden-line`).
+ *
+ * Decisión: antes de dar 404, buscar una CATEGORÍA con el mismo slug y redirigir
+ * con `replace`. Es lo único que no inventa datos: no se deriva una taxonomía
+ * paralela desde otro campo (sería fabricar líneas que nadie cargó) ni se deja el
+ * link del hero apuntando a la nada. La página sigue viva para el día en que el
+ * admin cargue `linea` de verdad; mientras tanto /linea/golden-line lleva a los 5
+ * productos reales. /linea nunca estuvo en el sitemap, así que no hay nada que
+ * sacar de ahí.
  */
 function LinePage() {
   const { lineSlug } = useParams()
@@ -25,11 +42,16 @@ function LinePage() {
   const [products, setProducts] = useState([])
   // lines: undefined = cargando, [] = no hay ninguna línea cargada en el catálogo.
   const [lines, setLines] = useState(undefined)
+  // categorySlugs: undefined = cargando (hace falta ANTES de decir "no existe").
+  const [categorySlugs, setCategorySlugs] = useState(undefined)
 
   useEffect(() => {
     let mounted = true
     getShopProducts().then((r) => { if (mounted) setProducts(Array.isArray(r) ? r : []) })
     getLines().then((l) => { if (mounted) setLines(Array.isArray(l) ? l : []) })
+    getCategories().then((list) => {
+      if (mounted) setCategorySlugs(new Set((Array.isArray(list) ? list : []).map((c) => c.slug)))
+    })
     return () => { mounted = false }
   }, [])
 
@@ -48,8 +70,12 @@ function LinePage() {
   )
 
   // Cargando: seccion vacia para no parpadear "no encontrada" antes de tener datos.
-  if (lines === undefined) {
+  if (lines === undefined || categorySlugs === undefined) {
     return <section className="min-h-screen bg-[#050505]" aria-busy="true" />
+  }
+
+  if (!line && lineSlug && categorySlugs.has(lineSlug)) {
+    return <Navigate to={`/products/${lineSlug}`} replace />
   }
 
   if (!line) {
@@ -93,7 +119,7 @@ function LinePage() {
             {t('pages.line.eyebrow', 'Línea')}
           </span>
         </div>
-        <h1 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.02] kt-reveal">
+        <h1 className="title-font m-0 text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.02] kt-reveal">
           {line.name}
           <span className="text-primary">.</span>
         </h1>
@@ -107,22 +133,24 @@ function LinePage() {
         </div>
 
         {lineProducts.length === 0 ? (
-          <div className="rounded-[10px] border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-10 text-center kt-reveal">
-            <h3 className="title-font m-0 text-[1.4rem] text-white">
-              {t('catalog.emptyTitle', 'Proximamente')}
-              <span className="text-primary">.</span>
-            </h3>
-            <p className="mx-auto mt-2 max-w-[48ch] text-[0.9rem] text-[#aeb5bf]">
-              {t('pages.line.emptyBody', 'Todavía no hay productos asignados a esta línea.')}
-            </p>
-            <Link to="/products" className="mt-4 inline-block font-bold text-primary hover:underline">
-              {t('pages.line.back', 'Volver a productos')}
-            </Link>
-          </div>
+          <CatalogEmptyState
+            className="kt-reveal"
+            title={t('catalog.emptyTitle', 'Proximamente')}
+            body={t('pages.line.emptyBody', 'Todavía no hay productos asignados a esta línea.')}
+            action={
+              <Link to="/products" className="font-bold text-primary hover:underline">
+                {t('pages.line.back', 'Volver a productos')}
+              </Link>
+            }
+          />
         ) : (
-          <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4 kt-reveal">
-            {lineProducts.map((item) => (
-              <ProductCard key={item.slug || item.id || item.name} item={item} className="opacity-100" />
+          <div className={`${GRID} kt-reveal`}>
+            {lineProducts.map((item, index) => (
+              <ProductCard
+                key={item.id ?? item.slug ?? `${item.name}-${index}`}
+                item={item}
+                className="opacity-100"
+              />
             ))}
           </div>
         )}
@@ -138,7 +166,9 @@ function LinePage() {
                 <Link
                   key={l.slug}
                   to={`/linea/${l.slug}`}
-                  className="rounded-full border border-[#303743] bg-transparent px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-[#c8ced8] transition hover:border-[rgba(244,223,51,0.48)] hover:text-white"
+                  /* Mismo chip que "Otras categorías": rectangular y con altura
+                     táctil. Eran dos lenguajes distintos para la misma cosa. */
+                  className="inline-flex min-h-[40px] items-center bg-[#1b212b] px-3 text-[11px] font-black uppercase tracking-[0.06em] text-[#c8ced8] transition hover:bg-primary hover:text-[#111]"
                 >
                   {l.name}
                 </Link>

@@ -109,6 +109,26 @@ function mapBadges(p) {
     .slice(0, 3)
 }
 
+/**
+ * ¿Este item de `media` es una FOTO?
+ *
+ * La API emite `kind` ('image' | 'video') para cada item y `tipo` es el valor crudo
+ * de la DB ('imagen' | 'video'), que se mira sólo de respaldo. Existe porque el
+ * adapter venía tomando `media[0]` a ciegas: desde que la cuenta tiene videos
+ * cargados, el primer media de un producto SIN fotos es un .mp4 y terminaba de
+ * `src` de un <img> (naturalWidth 0, ícono de imagen rota) y hasta de `ogImage`.
+ */
+function esImagen(m) {
+  if (!m || !m.url) return false
+  if (m.kind) return m.kind === 'image'
+  return String(m.tipo || 'imagen').toLowerCase() !== 'video'
+}
+
+/** URLs de las FOTOS del producto, en el orden que manda la API (principal primero). */
+function imagenesDe(p) {
+  return (Array.isArray(p?.media) ? p.media : []).filter(esImagen).map((m) => m.url)
+}
+
 function mapProducto(p) {
   return {
     id: p.id,
@@ -116,7 +136,9 @@ function mapProducto(p) {
     description: p.descripcion,
     longDescription: p.descripcion,
     tags: mapBadges(p),
-    image: p.img_url || (p.media && p.media[0]?.url) || '',
+    // Sólo fotos: un producto sin fotos devuelve '' y la tarjeta muestra su
+    // placeholder, en vez de intentar pintar el .mp4 como imagen.
+    image: p.img_url || imagenesDe(p)[0] || '',
     category: p.categoria,
     // line: la LINEA de producto (campo libre en el admin). Se mapeaba a nada, asi
     // que /linea/:slug no tenia con que filtrar y content.lines quedaba huerfano.
@@ -148,10 +170,11 @@ function formatBytes(size) {
  * tiene (videos, accesorios, family, tagline) quedan vacíos → la página oculta esas secciones.
  */
 function mapProductoDetail(p) {
-  const heroImage = p.img_url || (Array.isArray(p.media) && p.media[0]?.url) || ''
-  const gallery = (Array.isArray(p.media) ? p.media : [])
-    .filter((m) => (m.kind === 'image' || m.tipo === 'imagen' || !m.kind) && m.url)
-    .map((m) => m.url)
+  // heroImage sale SIEMPRE de las fotos (ver esImagen). Si el producto no tiene
+  // ninguna, queda '' a propósito: es el único valor con el que la ficha puede
+  // saber que no hay foto y dibujar un placeholder en vez de un <img> roto.
+  const gallery = imagenesDe(p)
+  const heroImage = p.img_url || gallery[0] || ''
   return {
     slug: String(p.id),
     id: p.id,
@@ -168,9 +191,20 @@ function mapProductoDetail(p) {
     technicalSpecs: (Array.isArray(p.specs) ? p.specs : [])
       .filter((s) => s && (s.nombre || s.valor))
       .map((s) => [s.nombre || '', s.valor || '']),
+    // `family` ('manual' | 'libreria') sale del MISMO clasificador que /descargas
+    // (clasificarDoc, más abajo — es una function declaration, así que está hoisted).
+    // La ficha venía separando los dos paneles con un /software|firmware/i sobre el
+    // label, que no matchea ningún documento real de la cuenta: el panel "Librerías"
+    // quedaba siempre vacío aunque el doc estuviera tipificado como 'controlador'.
     downloads: (Array.isArray(p.docs) ? p.docs : [])
       .filter((d) => d && d.url)
-      .map((d) => ({ label: d.title || 'Documento', size: formatBytes(d.size), type: String(d.extension || d.tipo || '').toUpperCase(), url: d.url })),
+      .map((d) => ({
+        label: d.title || 'Documento',
+        size: formatBytes(d.size),
+        type: String(d.extension || d.tipo || '').toUpperCase(),
+        url: d.url,
+        family: clasificarDoc(d),
+      })),
     // Material externo: links de referencia cargados en el admin (productos.material_externo).
     // La API los venía emitiendo y tiendita-store ya los mostraba, pero este adapter no los
     // leía, así que en kolortec no se veían nunca por más que estuvieran cargados.
@@ -179,9 +213,15 @@ function mapProductoDetail(p) {
       .map((l) => ({ label: l.label || l.url, url: l.url })),
     variants: (Array.isArray(p.variantes) ? p.variantes : [])
       .map((v) => ({ id: v.id, sku: v.sku, price: v.precio, image: heroImage })),
+    // La API no guarda un poster del video, así que `thumbnail` es la foto del
+    // producto: sirve de tapa provisoria, pero es un retrato y la ficha la recorta
+    // a 16:9. `null` cuando no hay foto — antes caía en `heroImage`, que en un
+    // producto sin fotos era la URL del .mp4 metida en un <img>.
+    // La tapa REAL la tiene que dar el propio archivo (<video preload="metadata">):
+    // eso vive en el componente, no acá.
     videos: (Array.isArray(p.media) ? p.media : [])
       .filter((m) => m && m.kind === 'video' && m.url)
-      .map((m, i) => ({ title: `${p.nombre} · Video ${i + 1}`, url: m.url, thumbnail: heroImage })),
+      .map((m, i) => ({ title: `${p.nombre} · Video ${i + 1}`, url: m.url, thumbnail: heroImage || null })),
     innovations: (Array.isArray(p.innovaciones) ? p.innovaciones : [])
       .filter((i) => i && (i.nombre || i.descripcion))
       .map((i) => ({
@@ -214,6 +254,43 @@ function mapProductosToSection(raw) {
   return {
     ...defaultLandingContent.products,
     items,
+  }
+}
+
+/**
+ * /public/servicios → services section
+ *
+ * NO EXISTÍA: /servicios era la única página del sitio que se dibujaba con
+ * `defaultLandingContent.services` —tres fotos de Unsplash y los títulos
+ * LIGHTING / QUALITY / SUPPORT—, así que no se podía editar desde el admin ni
+ * cambiaba con ES/EN. El endpoint del back estaba desde siempre; lo que faltaba
+ * era este mapeo.
+ *
+ * La API manda { id, nombre, descripcion, duracion_min, precio, img_url, imagenes[] }.
+ * Se emite el texto en `subtitle` Y en `description` a propósito: la data mock usa
+ * `subtitle` y la ServicesPage lee `description`, así que hoy la página imprime un
+ * párrafo vacío. Mandando los dos, el arreglo de la página no depende de este archivo.
+ */
+function mapServicios(raw) {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    // Data-driven, igual que el resto del adapter: sin servicios cargados NO se
+    // caen los tres mock (eran "servicios inventados"). En vidriera sí, es la demo.
+    return DEMO_MODE
+      ? defaultLandingContent.services
+      : { ...defaultLandingContent.services, items: [] }
+  }
+  return {
+    ...defaultLandingContent.services,
+    items: raw
+      .filter((s) => s && s.nombre)
+      .map((s) => ({
+        id: s.id,
+        title: s.nombre,
+        subtitle: s.descripcion || '',
+        description: s.descripcion || '',
+        image: s.img_url || s.imagenes?.find((i) => i?.url)?.url || '',
+        precio: s.precio ?? null,
+      })),
   }
 }
 
@@ -737,6 +814,18 @@ export async function getCategorias() {
 }
 
 /**
+ * getServicios()
+ * Los servicios de la cuenta para /servicios. Shape: { title, items[] } — el mismo
+ * que `defaultLandingContent.services`, así que la página cambia una línea
+ * (`defaultLandingContent.services` → lo que devuelve esto) y nada más.
+ * Sin servicios cargados devuelve items: [] (la página muestra su empty state).
+ */
+export async function getServicios() {
+  const raw = await fetchWithFallback('/public/servicios', null)
+  return mapServicios(raw)
+}
+
+/**
  * getProductDetail(slug)
  * No dedicated single-product endpoint yet — searches within /public/productos.
  * Falls back to null if not found (caller should handle 404 state).
@@ -1018,12 +1107,30 @@ export async function getDownloadInfo(id) {
 // ---------------------------------------------------------------------------
 
 /**
- * Builds the Google OAuth redirect URL.
- * Usage: window.location.href = getGoogleAuthUrl()
+ * Arma la URL de OAuth con Google.
+ *
+ * `redirect` es a DÓNDE vuelve la persona después de identificarse. Antes estaba
+ * clavado en '/': quien hacía click en "Descargar" iba a Google y volvía a la
+ * home, sin su archivo y sin nada que le explicara por qué. La intención se
+ * guarda aparte (downloadService), pero recién se cobra cuando vuelve sola a esa
+ * página; devolviéndola al lugar donde estaba, se cobra de una.
+ *
+ * Sólo se acepta un PATH del propio sitio. Una URL absoluta acá sería un open
+ * redirect: bastaría con mandar a alguien a
+ * `…/auth/google?redirect=https://sitio-falso` para que termine ahí después de
+ * loguearse, con la confianza de venir de una pantalla de Google. Se descarta
+ * todo lo que no arranque con una sola barra ('//host' es protocol-relative y
+ * también apunta afuera).
+ *
+ * El backend TIENE que validar lo mismo: esto es defensa del lado del cliente y
+ * no impide que alguien arme la URL a mano.
+ *
+ * Uso: window.location.href = getGoogleAuthUrl(window.location.pathname)
  */
-export function getGoogleAuthUrl() {
+export function getGoogleAuthUrl(redirect = '/') {
   const front = encodeURIComponent(window.location.origin)
-  return `${AUTH_BASE_URL}/public/auth/google?front=${front}&redirect=/`
+  const destino = typeof redirect === 'string' && /^\/(?!\/)/.test(redirect) ? redirect : '/'
+  return `${AUTH_BASE_URL}/public/auth/google?front=${front}&redirect=${encodeURIComponent(destino)}`
 }
 
 /**
