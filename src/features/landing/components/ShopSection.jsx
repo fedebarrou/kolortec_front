@@ -104,7 +104,10 @@ function ShopSection({ shop, ready = true }) {
     const isInternal = cta.href.startsWith('/') && !targetId
 
     const className =
-      'group/access flex items-center justify-between gap-4 border-b kt-shop-rule py-4 text-left transition last:border-b-0 hover:pl-1'
+      // SIN líneas divisorias: el aire entre accesos alcanza para separarlos. La
+      // sección amarilla no tiene bordes de ningún tipo — ni entre items, ni
+      // arriba, ni abajo.
+      'group/access flex items-center justify-between gap-4 py-4 text-left transition hover:pl-1'
     const inner = (
       <>
         <span className="flex items-center gap-3">
@@ -230,7 +233,7 @@ function ShopSection({ shop, ready = true }) {
           </p>
 
           {ctas.length > 0 ? (
-            <nav className="mt-2 border-t kt-shop-rule" aria-label={sectionEyebrow}>
+            <nav className="mt-2" aria-label={sectionEyebrow}>
               {ctas.map(renderAccess)}
             </nav>
           ) : null}

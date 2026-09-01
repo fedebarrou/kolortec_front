@@ -1413,22 +1413,23 @@ html {
     will-change: transform;
   }
 
-  /* Sobre una foto de show con haces blancos, el texto blanco desaparece. Arranca
-     en negro pleno para que la costura de arriba sea un fundido y no un borde, se
-     abre en el medio (ahí se ve la foto) y muere en el negro del footer. */
+  /* La foto se ve A FULL. El primer intento la tapaba con un velo negro para que
+     el texto se leyera encima, y así no hay foto: hay una mancha oscura. La
+     legibilidad la resuelve la TARJETA de abajo, igual que Cloudbeds. Acá sólo
+     quedan los fundidos de las dos puntas, para que la costura con la sección de
+     arriba y con el footer no sea un corte duro. */
   .kt-closing-backdrop-scrim {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(
-        to bottom,
-        #050505 0%,
-        rgba(5, 5, 5, 0.82) 14%,
-        rgba(5, 5, 5, 0.62) 42%,
-        rgba(5, 5, 5, 0.78) 82%,
-        #050505 100%
-      ),
-      linear-gradient(to right, rgba(5, 5, 5, 0.72) 0%, rgba(5, 5, 5, 0.18) 55%, rgba(5, 5, 5, 0.5) 100%);
+    background: linear-gradient(
+      to bottom,
+      #050505 0%,
+      rgba(5, 5, 5, 0.45) 9%,
+      rgba(5, 5, 5, 0) 22%,
+      rgba(5, 5, 5, 0) 74%,
+      rgba(5, 5, 5, 0.55) 92%,
+      #050505 100%
+    );
   }
 
   .kt-closing-backdrop-content {
@@ -1436,10 +1437,34 @@ html {
     z-index: 1;
   }
 
+  /* TARJETA sólida sobre la foto: es lo que hace legible el texto sin apagar la
+     imagen. Va a la izquierda y ocupa poco más de un tercio, así la foto —que es
+     el motivo por el que está la sección— se sigue viendo. */
+  .kt-closing-backdrop.has-photo .kt-closing-backdrop-content {
+    display: flex;
+    padding-block: clamp(56px, 8vw, 120px);
+  }
+
+  .kt-closing-backdrop.has-photo .kt-support-section {
+    width: min(560px, 100%);
+    margin-left: clamp(1.5rem, 10vw, 10rem);
+    padding: clamp(28px, 3vw, 44px);
+    background: #0b0b0b;
+    border-radius: 10px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+
   /* El ghost lateral de Contactanos es un recorte de la MISMA foto de show: sobre
      el fondo se duplicaba la imagen contra sí misma. Con fondo, sobra. */
   .kt-closing-backdrop.has-photo .kt-support-ghost {
     display: none;
+  }
+
+  @media (max-width: 960px) {
+    .kt-closing-backdrop.has-photo .kt-support-section {
+      width: auto;
+      margin-inline: 1.5rem;
+    }
   }
 
   /* Slides, no fichitas. Con 320px de tope entraban cinco por pantalla y tanto
@@ -1950,21 +1975,10 @@ html {
    el fundido. Los tres numeros (3200ms de espera + 4500ms de fundido = 7700ms)
    son los MISMOS de .kt-shop-ink y del setTimeout de ShopSection: si tocas uno,
    tocalos todos o el cambio de color se corta de golpe. */
-/* Los separadores son parte del EFECTO, no de la maqueta: no existen antes de que
-   aparezca el amarillo y se van con él. Antes estaban puestos desde el primer
-   frame (se veian las rayas sobre la seccion todavia quieta) y se quedaban para
-   siempre como rayas blancas sobre el negro final. Ahora entran con la cortina y
-   se apagan con el fundido: mientras dura el amarillo ordenan la lista, después
-   el espaciado solo alcanza. */
-.kt-shop-rule { border-color: transparent; }
-.kt-shop-section.is-playing .kt-shop-rule { animation: kt-shop-rule-flip 7700ms ease-in-out forwards; }
-.kt-shop-section.is-done .kt-shop-rule { border-color: transparent; }
-@keyframes kt-shop-rule-flip {
-  0%   { border-color: transparent; }
-  12%  { border-color: rgba(11, 11, 11, 0.22); }
-  42%  { border-color: rgba(11, 11, 11, 0.22); }
-  100% { border-color: transparent; }
-}
+/* NO hay separadores en la sección amarilla. Estuvieron primero como líneas
+   fijas y después como efecto (entraban con la cortina y se apagaban con el
+   fundido); las dos veces se leían como bordes de un bloque que no tiene
+   bordes. La lista de accesos se separa con aire y nada más. */
 
 /* Los acentos amarillos de la marca: sobre el amarillo eran INVISIBLES (amarillo
    sobre amarillo). Van oscuros mientras dura, y recuperan el amarillo en negro. */
