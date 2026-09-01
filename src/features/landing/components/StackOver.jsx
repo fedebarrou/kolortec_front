@@ -4,24 +4,23 @@ import { useFullBleed } from '../../../shared/hooks/useFullBleed'
 /**
  * StackOver — el bloque que SUBE por encima de la sección clavada (.kt-stack-pin).
  *
- * Para que el apilado se lea, lo que sube tiene que TAPAR: si deja ver la sección
- * de abajo por los costados, no parece que una cubra a la otra, parece un error.
- * Y acá pasaba exactamente eso: la amarilla es full-bleed (rompe el lienzo de
- * 1920 para tocar los bordes de la pantalla) y Sumate/Contactanos viven dentro
- * del lienzo, así que en un monitor 2K quedaba una franja de amarillo asomando a
- * cada lado.
+ * Va A SANGRE, igual que la amarilla que tapa. Dos motivos:
  *
- * La solución NO es ensanchar el contenido —se desalinearía con el resto de la
- * home, que respeta el lienzo— sino ponerle un FONDO a sangre por detrás. El
- * contenido sigue donde tiene que estar; lo que se estira es el telón.
+ *  1. Para que TAPE. Si deja ver la sección de abajo por los costados no parece
+ *     que una cubra a la otra, parece un error.
+ *  2. Para que los textos ALINEEN. Antes sólo el fondo rompía el lienzo y el
+ *     contenido se quedaba adentro de los 1920: en un monitor 2K el título de la
+ *     amarilla arrancaba a 160px del borde de la pantalla y el de Sumate a 480px,
+ *     porque su gutter contaba desde el borde del lienzo y no desde el de la
+ *     pantalla. Se veían dos anchos distintos. Ahora las dos secciones miden lo
+ *     mismo y su `lg:px-40` cuenta desde el mismo lugar.
  */
 function StackOver({ children }) {
-  const fondoRef = useRef(null)
-  useFullBleed(fondoRef)
+  const ref = useRef(null)
+  useFullBleed(ref)
 
   return (
-    <div className="kt-stack-over">
-      <div ref={fondoRef} className="kt-stack-over-bg" aria-hidden="true" />
+    <div ref={ref} className="kt-stack-over">
       {children}
     </div>
   )

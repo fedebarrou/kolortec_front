@@ -480,7 +480,7 @@ html {
     align-items: center;
     justify-content: center;
     gap: 0.9rem;
-    height: 72px;
+    height: 96px;
     padding: 0 2.4rem;
     font-family: 'FuturaExtraBlackCondensed', 'Arial Narrow', Impact, sans-serif;
     font-size: 1.35rem;
@@ -502,8 +502,8 @@ html {
   }
 
   .kt-clientlogo-mark {
-    width: 36px;
-    height: 36px;
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
     fill: currentColor;
   }
@@ -513,8 +513,8 @@ html {
      la marca. .kt-clientlogo-mark queda como fallback de la data demo (shapes). */
   .kt-clientlogo-img {
     width: auto;
-    height: 34px;
-    max-width: 128px;
+    height: 52px;
+    max-width: 190px;
     object-fit: contain;
     flex-shrink: 0;
     filter: grayscale(1) brightness(1.7);
@@ -1364,22 +1364,14 @@ html {
     z-index: 0;
   }
 
-  /* Lo que sube va por encima y con fondo propio. */
+  /* Lo que sube va por encima, a sangre y con fondo propio: es lo que TAPA a la
+     sección clavada, y además hace que sus textos aliñen con los de ella (mismo
+     ancho, mismo gutter). El ancho real se lo pone useFullBleed desde
+     StackOver.jsx; acá sólo el color y el orden de apilado. */
   .kt-stack-over {
     position: relative;
     z-index: 1;
-  }
-
-  /* Telón a sangre por detrás del contenido: es lo que TAPA a la sección clavada.
-     Va absoluto y con z-index negativo para no interferir con nada de adentro; el
-     ancho real se lo pone useFullBleed desde StackOver.jsx. */
-  .kt-stack-over-bg {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: -1;
     background: #050505;
-    pointer-events: none;
   }
 
   /* FONDO FIJO del cierre: la foto del show detrás de Sumate y Contactanos.
@@ -1968,13 +1960,18 @@ html {
     }
   }
 
+  /* El video crece con la pantalla. Con `min(680px, 52vw)` el tope de 680px lo
+     dejaba clavado: en un 2K ocupaba una cuarta parte del ancho y la sección era
+     casi todo amarillo vacío, mientras que el texto sigue viviendo en la mitad
+     izquierda y no necesita más lugar del que ya tiene. Ahora el tope sube con el
+     viewport y en pantallas grandes el video se lleva el protagonismo. */
   .kt-shop-video-edge {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     z-index: 1;
-    width: min(680px, 52vw);
+    width: clamp(320px, 54vw, 1280px);
     pointer-events: none;
   }
 
@@ -2422,29 +2419,15 @@ html {
       animation: none;
     }
 
-    .kt-marquee {
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      scroll-snap-type: x proximity;
-      mask-image: none;
-      -webkit-mask-image: none;
-      touch-action: pan-x;
-      scrollbar-width: none;
-    }
-
-    .kt-marquee::-webkit-scrollbar {
-      display: none;
-    }
-
+    /* En mobile los carruseles GIRAN SOLOS, igual que en desktop. Antes acá el
+       marquee se convertía en una tira con scroll manual (`overflow-x: auto` +
+       `animation: none`): en un teléfono eso se ve como una fila quieta y cortada
+       —nadie adivina que hay que arrastrarla— y la home perdía todo el
+       movimiento. Se deja el track animado y el contenedor recortado, que es lo
+       que hace que se lea como un carrusel. */
     .kt-marquee-track {
-      animation: none;
       gap: 0.6rem;
       padding-inline: 0.25rem;
-    }
-
-    .kt-marquee-track > * {
-      scroll-snap-align: start;
     }
   }
 

@@ -92,7 +92,13 @@ function HeroSection({ hero }) {
     // del documento, así que flota por encima. Restarle su alto sólo dejaba al
     // hero más corto que la pantalla (783px en un viewport de 863). Dividido por
     // la escala del canvas (.kt-zoom-canvas usa zoom).
-    const containerHeight = heroSizeMode(config.settings) === 'full'
+    // En MÓVIL el hero va a pantalla completa SIEMPRE, aunque el diseño esté en
+    // modo Encabezado. Ese modo fija un alto en píxeles (280/320) pensado para
+    // una banda arriba de una página ancha; en un teléfono eso es una franja de
+    // dos dedos con una foto recortada adentro, y lo primero que se ve del sitio
+    // queda pareciendo un banner publicitario. A pantalla completa la foto se
+    // lee, que es para lo que está.
+    const containerHeight = heroSizeMode(config.settings) === 'full' || bp === 'mobile'
       ? 'calc(100dvh / var(--kt-canvas-scale, 1))'
       : undefined
     return (
@@ -111,7 +117,7 @@ function HeroSection({ hero }) {
 
   return (
     <section
-      className="relative min-h-[calc((100dvh-72px)/var(--kt-canvas-scale,1))] md:min-h-[calc((100dvh-80px)/var(--kt-canvas-scale,1))] overflow-hidden kt-section-reveal"
+      className="relative min-h-[calc(100dvh/var(--kt-canvas-scale,1))] overflow-hidden kt-section-reveal"
       style={{ '--reveal-delay': '10ms' }}
       onMouseEnter={() => { isPausedRef.current = true }}
       onMouseLeave={() => { isPausedRef.current = false }}

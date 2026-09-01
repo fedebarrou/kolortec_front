@@ -348,6 +348,49 @@ function HeaderSection() {
     setActiveSuggestionIndex((prev) => (prev >= 0 && prev < suggestions.length ? prev : 0))
   }, [searchTerm, suggestions.length])
 
+  // El logo y el selector de idioma se dibujan en DOS lugares distintos según el
+  // ancho —en mobile el idioma va a la izquierda y el logo al centro; en desktop
+  // el logo va a la izquierda y el idioma a la derecha— así que se definen una
+  // sola vez acá y se colocan con `hidden`/`md:hidden` en cada celda.
+  const logoLink = (
+    <Link
+      to="/"
+      aria-label={t('a11y.home', 'Ir al inicio')}
+      className="flex items-center gap-2 text-primary transition hover:opacity-80"
+      onClick={() => {
+        setIsMobileOpen(false)
+        setIsSearchFocused(false)
+        setActiveSuggestionIndex(-1)
+        if (pathname === '/') {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+      }}
+    >
+      <img alt={t('a11y.logo', 'Logo de Kolortec')} className="h-8 md:h-9 w-auto object-contain" src="/assets/Grupo-Kolortec-1024x150.jpeg" />
+    </Link>
+  )
+
+  const langSwitch = (
+    <div className="inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5">
+      <button
+        type="button"
+        className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
+        onClick={() => setLang('es')}
+        aria-label={t('a11y.toSpanish', 'Cambiar a español')}
+      >
+        ES
+      </button>
+      <button
+        type="button"
+        className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'en' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
+        onClick={() => setLang('en')}
+        aria-label={t('a11y.toEnglish', 'Cambiar a inglés')}
+      >
+        EN
+      </button>
+    </div>
+  )
+
   const isPredictOpen = isSearchFocused && searchTerm.trim().length > 0
   const navClass = !animateEntrance
     ? ''
@@ -419,24 +462,16 @@ function HeaderSection() {
        de clase que en tiendita-store para que el CSS sea el mismo. */
     <header className={`site-header sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-[6px] supports-[backdrop-filter]:bg-[#050505]/84 shadow-[0_8px_24px_rgba(0,0,0,0.28)] px-6 lg:px-10 xl:px-20 2xl:px-40 py-4 ${navClass}`}>
       <span aria-hidden="true" className="kt-nav-line pointer-events-none absolute left-0 top-0 h-[2px] w-full bg-primary" />
-      <div className="w-full flex items-center justify-between gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4">
-        <div className="flex items-center md:justify-self-start">
-          <Link
-            to="/"
-            aria-label={t('a11y.home', 'Ir al inicio')}
-            className="flex items-center gap-2 text-primary transition hover:opacity-80"
-            onClick={() => {
-              setIsMobileOpen(false)
-              setIsSearchFocused(false)
-              setActiveSuggestionIndex(-1)
-              if (pathname === '/') {
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-              }
-            }}
-          >
-            <img alt={t('a11y.logo', 'Logo de Kolortec')} className="h-5 md:h-6 w-auto object-contain" src="/assets/Grupo-Kolortec-1024x150.jpeg" />
-          </Link>
+      {/* Tres celdas SIEMPRE (no sólo en desktop). En mobile: idioma | logo |
+          acciones, con el logo centrado de verdad — con `justify-between` quedaba
+          pegado al borde izquierdo. En desktop: logo | nav | acciones. */}
+      <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-4">
+        <div className="flex items-center justify-self-start">
+          <span className="md:hidden">{langSwitch}</span>
+          <span className="hidden md:flex">{logoLink}</span>
         </div>
+
+        <div className="justify-self-center md:hidden">{logoLink}</div>
 
         <nav className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-7 md:justify-self-center md:px-3">
           {navItems.map((item) => (
@@ -462,27 +497,13 @@ function HeaderSection() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 md:gap-3 md:justify-self-end">
-          <div className="inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5">
-            <button
-              type="button"
-              className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
-              onClick={() => setLang('es')}
-              aria-label={t('a11y.toSpanish', 'Cambiar a español')}
-            >
-              ES
-            </button>
-            <button
-              type="button"
-              className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'en' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
-              onClick={() => setLang('en')}
-              aria-label={t('a11y.toEnglish', 'Cambiar a inglés')}
-            >
-              EN
-            </button>
-          </div>
+        <div className="flex items-center gap-2 justify-self-end md:gap-3">
+          <span className="hidden md:inline-flex">{langSwitch}</span>
 
-          <div className="inline-flex items-center gap-1 lg:gap-1.5">
+          {/* WhatsApp / Instagram / Facebook: SÓLO en desktop. En un teléfono
+              entraban tres botones de 36px que no se llegan a leer y le comían el
+              lugar al logo; ahí viven dentro del menú, con su nombre al lado. */}
+          <div className="hidden md:inline-flex items-center gap-1 lg:gap-1.5">
             {socialLinks.map((item) => (
               <a
                 key={item.key}
@@ -612,24 +633,8 @@ function HeaderSection() {
           className="pointer-events-none absolute right-2 top-1/2 h-28 w-28 -translate-y-1/2 opacity-[0.1]"
         />
 
-        <div className="relative z-10 mb-2 inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5 md:hidden">
-          <button
-            type="button"
-            className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
-            onClick={() => setLang('es')}
-            aria-label={t('a11y.toSpanish', 'Cambiar a español')}
-          >
-            ES
-          </button>
-          <button
-            type="button"
-            className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'en' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
-            onClick={() => setLang('en')}
-            aria-label={t('a11y.toEnglish', 'Cambiar a inglés')}
-          >
-            EN
-          </button>
-        </div>
+        {/* El selector de idioma ya no se repite acá: vive en la barra, a la
+            izquierda del logo, donde se ve sin abrir el menú. */}
 
         {navItems.map((item) => (
           item.hash ? (
@@ -648,6 +653,23 @@ function HeaderSection() {
           )
         ))}
 
+        {/* Las redes, que salieron de la barra: acá entran con su nombre al lado
+            en vez de tres íconos de 36px que no se llegan a leer. */}
+        <div className="relative z-10 mt-1 grid gap-0.5 border-t border-white/10 pt-2">
+          {socialLinks.map((item) => (
+            <a
+              key={`menu-${item.key}`}
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setIsMobileOpen(false)}
+              className="flex items-center gap-2.5 rounded-lg px-[0.55rem] py-[0.6rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] transition hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
+            >
+              {item.icon}
+              {item.label}
+            </a>
+          ))}
+        </div>
       </div>
 
       {loginDialog}

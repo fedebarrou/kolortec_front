@@ -75,7 +75,11 @@ export function useFullBleed(ref, enabled = true) {
     // API, las fuentes), así que se re-mide en una ventana corta. `medir()` es
     // idempotente: si ya está bien no toca nada.
     const frame = requestAnimationFrame(medir)
-    const repescas = [400, 1200, 2500, 5000].map((ms) => window.setTimeout(medir, ms))
+    // La cola llega hasta los 12s porque en la home el documento sigue creciendo
+    // bastante después del primer paint (los reveals de cada sección, las
+    // imágenes diferidas) y cada cambio de alto puede hacer aparecer o
+    // desaparecer la barra de scroll, que es lo que corre la medición.
+    const repescas = [400, 1200, 2500, 5000, 9000, 12000].map((ms) => window.setTimeout(medir, ms))
 
     return () => {
       cancelAnimationFrame(frame)
