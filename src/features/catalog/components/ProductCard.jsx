@@ -152,34 +152,36 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
         ) : null}
 
         <div className="absolute inset-x-0 bottom-0 p-4">
-          {/* Nombre y CTA en el MISMO renglón: el botón amarillo debajo empujaba
-              el nombre hacia arriba al aparecer y movía toda la card. Como link
-              subrayado al lado del nombre no ocupa lugar propio, y se lee como lo
-              que es —un enlace— en vez de competirle al nombre. */}
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
-              {name}
-              <span className="text-primary">.</span>
-            </h3>
+          {/* Nombre a la izquierda, "Ver producto" abajo a la DERECHA. El CTA no
+              ocupa renglón propio —como botón debajo empujaba el nombre al
+              aparecer y movía toda la card— y como enlace subrayado se lee como
+              lo que es, sin competirle al nombre. */}
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="title-font m-0 inline-flex items-baseline gap-[0.04em] text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
+                {name}
+                <span className="text-primary">.</span>
+              </h3>
+
+              {/* Categoría: acompaña al CTA en el hover. En reposo, abajo va SÓLO
+                  el nombre — es lo que identifica el equipo de un vistazo. */}
+              {category ? (
+                <p className="kt-product-card-more m-0 mt-1 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  {category}
+                </p>
+              ) : null}
+            </div>
 
             {showDetailLink ? (
               <Link
                 to={resolvedDetailHref}
-                className="kt-product-card-cta relative z-20 text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-primary underline decoration-primary/60 decoration-[1.5px] underline-offset-[5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition hover:decoration-primary"
+                className="kt-product-card-cta relative z-20 shrink-0 whitespace-nowrap text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-primary underline decoration-primary/60 decoration-[1.5px] underline-offset-[5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition hover:decoration-primary"
                 tabIndex={focusable ? undefined : -1}
               >
                 {ctaLabel}
               </Link>
             ) : null}
           </div>
-
-          {/* Categoría: acompaña al CTA en el hover. En reposo, abajo va SÓLO el
-              nombre — es lo que identifica el equipo de un vistazo en la grilla. */}
-          {category ? (
-            <p className="kt-product-card-more m-0 mt-1 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              {category}
-            </p>
-          ) : null}
         </div>
       </div>
     </article>

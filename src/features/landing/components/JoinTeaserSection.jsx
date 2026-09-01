@@ -23,7 +23,7 @@ function JoinTeaserSection({ join }) {
 
   return (
     <section
-      className="kt-section-reveal relative isolate overflow-hidden border-t border-b border-[#1a1a1a] bg-[#050505] px-6 py-[clamp(64px,9vw,112px)] lg:px-40"
+      className="kt-section-reveal relative isolate overflow-hidden bg-[#050505] px-6 py-[clamp(64px,9vw,112px)] lg:px-40"
       style={{ '--reveal-delay': '120ms' }}
     >
       {/* SIN el resplandor amarillo que había acá (dos radiales de rgba(244,223,51)
@@ -31,10 +31,10 @@ function JoinTeaserSection({ join }) {
           sección se leía como una banda color barro justo después de la amarilla.
           El acento amarillo lo ponen la rayita del eyebrow, el punto del título y
           el botón — sobre negro pleno pegan mucho más. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1px] bg-gradient-to-r from-transparent via-[rgba(244,223,51,0.4)] to-transparent"
-      />
+      {/* Sin borde ni rayita arriba: esta sección SUBE por encima de la amarilla,
+          así que cualquier línea en su tope se lee como el borde inferior del
+          bloque amarillo — que no tiene bordes. El corte lo hace el propio
+          movimiento de una tapando a la otra. */}
 
       <div className="relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-center md:gap-14">
         <div className="kt-landing-reveal-item flex flex-col gap-3">

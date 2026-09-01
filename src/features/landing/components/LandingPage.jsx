@@ -17,6 +17,11 @@ import { useHideBootScreen } from '../../../shared/hooks/useHideBootScreen'
 // en realidad es WebP — no cambiar el nombre sin re-exportarlo.
 const KOLORTEC_LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
+// Foto de cierre: el frame del estadio lleno con los haces cruzados, el mismo
+// material del scrolltelling. Para cambiarla, cambiá esta ruta (o cargá fotos de
+// evento en la galería de la cuenta, que van de respaldo).
+const FOTO_CIERRE = '/assets/scrolly-frames/f150.jpg'
+
 /**
  * Landing DATA-DRIVEN: refleja EXACTO lo cargado en tiendita para la cuenta. Cada sección mantiene
  * su ESTRUCTURA (título/leyenda) y oculta solo sus listas de datos vacías (degradado fino):
@@ -73,9 +78,11 @@ function LandingPage() {
           <SectionErrorBoundary name="Featured">
             <FeaturedSection products={content.products} />
           </SectionErrorBoundary>
-          <Divider />
         </>
       ) : null}
+      {/* SIN hairline antes de la amarilla: la sección entra con su propia
+          cortina y arranca a sangre. Una raya justo arriba le dibujaba un borde
+          superior a un bloque que no tiene bordes. */}
       {/* APILADO: la amarilla se queda clavada al tope y Sumate sube por encima,
           en vez de empujarla. Es el momento inmersivo de la home — la sección ya
           ocupa la pantalla entera, así que el recurso cae natural ahí y no hace
@@ -101,9 +108,15 @@ function LandingPage() {
           <SupportSection support={content.support} loading={loading} />
         </SectionErrorBoundary>
         {/* Foto a sangre antes del pie: el cierre venía siendo texto sobre negro
-            hasta el footer. Sale de la galería de la cuenta; sin galería, no va. */}
+            hasta el footer. Va el SHOW —el estadio con los haces, frame f150 de la
+            historia— y no la galería de la cuenta: esa son fotos de producto (un
+            clamp, un bidón de líquido de humo) y de cierre no dicen nada. La
+            galería queda de respaldo por si algún día cargan fotos de eventos. */}
         <SectionErrorBoundary name="ClosingPhoto">
-          <ClosingPhoto images={content.gallery?.images} alt="" />
+          <ClosingPhoto
+            images={[FOTO_CIERRE, ...(content.gallery?.images ?? [])]}
+            alt=""
+          />
         </SectionErrorBoundary>
       </StackOver>
     </>
