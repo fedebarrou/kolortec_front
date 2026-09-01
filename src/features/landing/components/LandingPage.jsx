@@ -99,18 +99,17 @@ function LandingPage() {
           arriba del amarillo, compitiendo entre sí por la misma decisión.
           `kt-stack-over` + su fondo opaco es lo que la deja tapar a la amarilla. */}
       <StackOver>
-        <SectionErrorBoundary name="Join">
-          <JoinTeaserSection join={content.join} />
-        </SectionErrorBoundary>
-        {/* Contactanos cierra la página SOBRE la foto del show: el paisaje queda
-            atrás y se mueve más lento que el scroll. No es una franja de foto
-            entre secciones —eso se leía como una imagen suelta— sino el fondo del
-            cierre, desde acá hasta el pie.
+        {/* TODO el cierre —Sumate y Contactanos— pasa por encima de la foto del
+            show, que se queda FIJA mientras se scrollea. La foto arranca ya
+            debajo de "Querés formar parte", no recién en Contactanos.
             Va el SHOW (el estadio con los haces, frame f150 de la historia) y no
             la galería de la cuenta: esa son fotos de producto —un clamp, un bidón
             de líquido de humo— y de fondo no dicen nada. La galería queda de
             respaldo por si algún día cargan fotos de eventos. */}
         <ClosingBackdrop images={[FOTO_CIERRE, ...(content.gallery?.images ?? [])]}>
+          <SectionErrorBoundary name="Join">
+            <JoinTeaserSection join={content.join} />
+          </SectionErrorBoundary>
           <SectionErrorBoundary name="Support">
             <SupportSection support={content.support} loading={loading} />
           </SectionErrorBoundary>

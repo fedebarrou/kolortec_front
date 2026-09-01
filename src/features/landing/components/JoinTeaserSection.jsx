@@ -23,7 +23,7 @@ function JoinTeaserSection({ join }) {
 
   return (
     <section
-      className="kt-section-reveal relative isolate overflow-hidden bg-[#050505] px-6 py-[clamp(64px,9vw,112px)] lg:px-40"
+      className="kt-join-section kt-section-reveal relative isolate overflow-hidden bg-[#050505] px-6 py-[clamp(64px,9vw,112px)] lg:px-40"
       style={{ '--reveal-delay': '120ms' }}
     >
       {/* SIN el resplandor amarillo que había acá (dos radiales de rgba(244,223,51)
@@ -36,7 +36,7 @@ function JoinTeaserSection({ join }) {
           bloque amarillo — que no tiene bordes. El corte lo hace el propio
           movimiento de una tapando a la otra. */}
 
-      <div className="relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-center md:gap-14">
+      <div className="kt-join-grid relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-center md:gap-14">
         <div className="kt-landing-reveal-item flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
@@ -48,7 +48,7 @@ function JoinTeaserSection({ join }) {
           <p className="m-0 max-w-[60ch] text-[1rem] leading-[1.55] text-[#b7bbc4]">{subtitle}</p>
         </div>
 
-        <div className="kt-landing-reveal-item flex md:justify-end">
+        <div className="kt-join-cta kt-landing-reveal-item flex md:justify-end">
           <Link
             to={href}
             className="group inline-flex items-center gap-3 rounded-[10px] bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0b0b0b] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(244,223,51,0.25)]"
