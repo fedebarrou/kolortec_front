@@ -247,6 +247,12 @@ function JoinPage() {
               })}
             </div>
           </div>
+                    {/* Los `maxLength` espejan lo que valida el back (nombre 160,
+              telefono 40, email 191, mensaje 2000). Sin ellos, un distribuidor
+              que pegaba una presentación larga perdía la postulación con un
+              error ininteligible. 79 y no 80 en nombre y apellido porque los dos
+              viajan concatenados con un espacio contra ese tope de 160:
+              79 + 1 + 79 = 159, entra siempre. */}
           <div className="grid gap-5 md:grid-cols-2">
             <div>
               <label htmlFor="sumate-nombre" className={labelClass}>{labels.nombre}</label>
@@ -254,6 +260,7 @@ function JoinPage() {
                 id="sumate-nombre"
                 type="text"
                 required
+                maxLength={79}
                 value={form.nombre}
                 onChange={handleChange('nombre')}
                 className={inputClass}
@@ -266,6 +273,7 @@ function JoinPage() {
                 id="sumate-apellido"
                 type="text"
                 required
+                maxLength={79}
                 value={form.apellido}
                 onChange={handleChange('apellido')}
                 className={inputClass}
@@ -278,6 +286,7 @@ function JoinPage() {
                 id="sumate-telefono"
                 type="tel"
                 required
+                maxLength={40}
                 value={form.telefono}
                 onChange={handleChange('telefono')}
                 className={inputClass}
@@ -290,6 +299,7 @@ function JoinPage() {
                 id="sumate-email"
                 type="email"
                 required
+                maxLength={191}
                 value={form.email}
                 onChange={handleChange('email')}
                 className={inputClass}
@@ -303,6 +313,7 @@ function JoinPage() {
             <textarea
               id="sumate-mensaje"
               rows={5}
+              maxLength={2000}
               value={form.mensaje}
               onChange={handleChange('mensaje')}
               className={`${inputClass} resize-none`}

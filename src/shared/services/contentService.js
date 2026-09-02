@@ -42,7 +42,19 @@ const AUTH_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '')
 // ---------------------------------------------------------------------------
 
 function buildHeaders() {
-  const headers = { 'Content-Type': 'application/json' }
+  /* `Accept: application/json` NO es decorativo. Laravel decide con
+     `$request->expectsJson()` si un error vuelve como JSON o como página web.
+     Sin este header, un rechazo de validación no volvía como 422 con el motivo:
+     volvía como **302** a una página HTML. `fetch` seguía el redirect, el
+     `response.json()` explotaba, y la persona veía un error de JavaScript en vez
+     de "el mensaje es demasiado largo".
+     Era alcanzable sin hacer nada raro: el <textarea> de /sumate no tiene
+     `maxlength` y el back corta en 2000 caracteres, así que un distribuidor que
+     pega una presentación larga caía justo ahí y perdía la postulación. */
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  }
   const host = resolveAccountHost()
   if (host) {
     headers['X-Account-Host'] = host
