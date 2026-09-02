@@ -135,7 +135,7 @@ const secciones = (r) => [
     titulo: '7. Cuánto tiempo los conservamos',
     bloques: [
       'Conservamos los datos mientras dure la finalidad para la que fueron recolectados, y después durante el plazo en que puedan ser necesarios para atender un reclamo o cumplir una obligación legal. Cumplido eso, los eliminamos o los anonimizamos.',
-      'Los registros de actividad descriptos en el punto 2 se conservan mientras el sitio esté en operación, porque su utilidad es comparar períodos. Si pedís su supresión, se eliminan los que estén vinculados a tu cuenta.',
+      'Los registros de actividad descriptos en el punto 2 tienen un plazo propio: los que no están vinculados a una cuenta se eliminan a los 90 días, y los vinculados a tu cuenta, a los 12 meses. El borrado es automático. Si pedís la supresión de tus datos antes de ese plazo, se eliminan los que estén vinculados a tu cuenta.',
       'Si pedís la supresión de tus datos, los eliminamos salvo que una norma nos obligue a conservarlos, en cuyo caso te lo informamos.',
     ],
   },
