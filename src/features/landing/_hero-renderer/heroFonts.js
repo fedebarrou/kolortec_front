@@ -14,6 +14,12 @@ const SKIP = new Set([
   // propio (fonts.css del admin / globals.css de la store), NO es Google Font
   // — pedirla a fonts.googleapis devuelve 400 (fuente inexistente ahí).
   "futura extra black condensed",
+  // ⚠ DIVERGENCIA DELIBERADA con las otras dos copias: acá NO va sincronizada.
+  // En kolortec Manrope se sirve por @font-face propio (/fonts/manrope-latin.woff2), así que
+  // pedirla a Google es un round-trip al pedo — y encima falla: el eje real de Manrope es
+  // 200..800, el rango 300..900 de abajo devuelve 400 y el reintento cae al peso 400 pelado.
+  // En tiendita-store y en el admin Manrope SÍ se pide a Google: allá esta línea no va.
+  "manrope",
 ]);
 
 // Fuentes propias (Mi web › Apariencia): id "cf" + 8 hex, NO son Google Fonts

@@ -45,27 +45,95 @@ function revealRoot() {
     /* noop */
   }
 }
+// Distintivo de vista previa. Era una cinta amarilla a todo el ancho pegada arriba, y en un
+// sitio cuyo hero ocupa la pantalla entera eso es lo primero que se ve: le comía el arranque
+// al diseño. Ahora es una pastilla chica abajo a la izquierda (el flotante de WhatsApp vive a
+// la derecha) que se puede cerrar.
+//
+// Los estilos van EN LÍNEA a propósito: este cartel tiene que aparecer aunque el CSS del sitio
+// no haya cargado — que es exactamente el escenario que nos hizo perder una tarde.
 function PreviewRibbon() {
+  // `sessionStorage` y no `localStorage`: cerrarla la calla mientras mirás, pero en la próxima
+  // visita vuelve. Que la web está despublicada no es algo que convenga olvidarse para siempre.
+  const [cerrada, setCerrada] = useState(() => {
+    try {
+      return window.sessionStorage.getItem('kt:preview-pill') === 'off'
+    } catch {
+      return false
+    }
+  })
+
+  if (cerrada) return null
+
+  const cerrar = () => {
+    setCerrada(true)
+    try {
+      window.sessionStorage.setItem('kt:preview-pill', 'off')
+    } catch {
+      /* modo privado: se cierra igual, nada más que no se recuerda */
+    }
+  }
+
   return (
     <div
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
+        // `max()` con el safe-area: en un iPhone la barra de gestos se come los 14px.
+        bottom: 'max(14px, env(safe-area-inset-bottom))',
+        left: 'max(14px, env(safe-area-inset-left))',
         zIndex: 2147483647,
-        background: '#f4df33',
-        color: '#111',
-        textAlign: 'center',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        maxWidth: 'calc(100vw - 28px)',
+        background: 'rgba(14,14,16,.82)',
+        WebkitBackdropFilter: 'blur(10px)',
+        backdropFilter: 'blur(10px)',
+        color: '#f2f2f2',
+        border: '1px solid rgba(244,223,51,.45)',
+        borderRadius: 999,
         fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif',
-        fontSize: 12.5,
-        fontWeight: 700,
-        letterSpacing: '.02em',
-        padding: '5px 10px',
-        boxShadow: '0 1px 6px rgba(0,0,0,.35)',
+        fontSize: 12,
+        fontWeight: 600,
+        letterSpacing: '.01em',
+        padding: '7px 8px 7px 12px',
+        boxShadow: '0 6px 20px rgba(0,0,0,.4)',
       }}
     >
-      Vista previa — esta web no está publicada (nadie más la ve)
+      <span
+        aria-hidden="true"
+        style={{
+          width: 7,
+          height: 7,
+          flex: 'none',
+          borderRadius: '50%',
+          background: '#f4df33',
+        }}
+      />
+      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        Vista previa — sin publicar
+      </span>
+      <button
+        type="button"
+        onClick={cerrar}
+        aria-label="Ocultar el aviso de vista previa"
+        style={{
+          flex: 'none',
+          width: 20,
+          height: 20,
+          display: 'grid',
+          placeItems: 'center',
+          borderRadius: '50%',
+          border: 0,
+          background: 'rgba(255,255,255,.1)',
+          color: 'inherit',
+          fontSize: 13,
+          lineHeight: 1,
+          cursor: 'pointer',
+        }}
+      >
+        ×
+      </button>
     </div>
   )
 }

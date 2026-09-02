@@ -225,6 +225,25 @@
 @container hc-stage (min-width: 1024px) { .hc-kt-block { padding: 0 64px; } }
 @container hc-stage (min-width: 1280px) { .hc-kt-block { padding: 0 160px 0 96px; } }
 
+/* ── MOVIL: el texto no se pisa con el hint "Scrolleá" ──────────────────────
+   Medido en 390x844: el bloque de texto tenia `padding-bottom: 64px`, o sea que
+   terminaba en 780. El hint vive en `bottom: 28px` y mide 42px de alto, asi que
+   arranca en 774: se solapaban 6px, y la ultima linea de la bajada quedaba
+   cruzada por la palabra SCROLLEA.
+   El hint se queda con los 70px de abajo (28 de separacion + 42 de alto); le
+   sumamos 18 de respiro = 88. Asi el contenido termina en 756 y quedan 18px
+   limpios entre una cosa y la otra.
+
+   Scopeado con `:has()` A PROPOSITO: el mismo `.hc-kt-block` lo usan las placas
+   del CARRUSEL, que no tienen hint — ahi subir el texto 24px seria mover algo
+   que nadie pidio. Solo aplica en la seccion que efectivamente muestra el hint.
+   Y va dentro de un container query `max-width` para no ganarle por
+   especificidad a las reglas de tablet/escritorio de arriba, que resetean el
+   padding y donde este choque no existe (ahi el bloque va centrado, no abajo). */
+@container hc-stage (max-width: 767px) {
+  :where(section):has(.scrolly-hint) .hc-kt-block { padding-bottom: 88px; }
+}
+
 /* ── Rebote del chevron del hint "Scrolleá" ─────────────────────────────────
    Faltaba SOLO en kolortec: SnapChrome aplica `animation: scrolly-bounce ...`
    al chevron, pero el keyframe no existía en ninguna hoja de este sitio, así

@@ -354,8 +354,24 @@ html {
      si vuelve para arriba, se deshace.
 
      Se mueve sólo `transform`: width/height/top harían reflow en cada cuadro.
-     El techo es 1.06 y no más: pasado eso deja de leerse como que el hero se te
-     viene encima y empieza a leerse como zoom barato.
+
+     AJUSTE (verificado en browser, scroll real): con techo 1.06 el efecto era
+     imperceptible — Y NO por el mismo motivo que la vez pasada (0.995 leído
+     como márgenes). Acá la causa es geométrica: la sección NO queda fija en
+     pantalla, sale con el scroll normal. --kt-hero-out llega a 1 recién cuando
+     el hero YA TERMINÓ de irse (su borde inferior tocó el borde superior de
+     la ventana) — momento en el que no queda ni un píxel del hero visible
+     para mostrar el 1.06. Confirmado con captura: en out=1 la pantalla ya
+     muestra Destacados, el hero no está. Onda: media un progreso que, para
+     cuando se nota, ya no hay nada que mirar.
+     Dos cambios para que se perciba mientras todavía hay hero en pantalla:
+     1) Techo subido a 1.5 — a esa escala, aun la porción recortada que sigue
+        en pantalla se lee como "viene encima", no como jitter de subpíxel.
+     2) La curva ya no es lineal 0→1: con `min(1, out / 0.5)` la escala llega
+        a su techo a mitad de la salida (out=0.5), cuando todavía la mitad
+        del hero está en pantalla — no al final, cuando ya no hay nada. Pasado
+        ese punto se mantiene al techo (no vuelve a bajar) hasta que el hero
+        termina de salir del todo.
 
      El recorte es SÓLO horizontal a propósito. Escalar hace crecer la caja
      pintada más allá de la de layout, y esa caja cuenta para el área desplazable
@@ -374,7 +390,7 @@ html {
     /* Desde el centro: crece hacia los cuatro lados por igual, que es lo que da
        la sensación de acercarse. Anclado arriba parecería que se estira. */
     transform-origin: 50% 50%;
-    transform: scale(calc(1 + 0.06 * var(--kt-hero-out, 0)));
+    transform: scale(calc(1 + 0.5 * min(1, var(--kt-hero-out, 0) / 0.5)));
     will-change: transform;
   }
 
