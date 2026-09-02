@@ -14,7 +14,23 @@ import { writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { listStaticRoutes, listProductRoutes, listCategoryRoutes, listGuideRoutes } from '../src/data/routes.mjs'
+import { listStaticRoutes, listGuideRoutes } from '../src/data/routes.mjs'
+
+/* Las categorias y los productos YA NO salen de src/data/ (los mocks). Salian de ahi
+   y el resultado era un sitemap de mentira: de 8 categorias listadas 7 no existian
+   (`cabezales-moviles`, `wash-flood`, `beam-spot`…) y los 2 productos eran demo
+   (`kt-x1000-flood`), mientras que las 11 categorias reales y los 56 productos reales
+   NO figuraban. O sea que a Google le daba una lista de URLs rotas y le escondia el
+   catalogo entero. Medido contra produccion el 2026-09-02.
+   Ahora se piden a la API publica, que es la misma fuente que consume el sitio. */
+const API = process.env.VITE_API_BASE_URL || 'https://api.soytiendita.store/api'
+
+async function pedir(ruta, host) {
+  const res = await fetch(`${API}/public/${ruta}`, { headers: { 'X-Account-Host': host, Accept: 'application/json' } })
+  if (!res.ok) throw new Error(`${ruta}: HTTP ${res.status}`)
+  const d = await res.json()
+  return Array.isArray(d) ? d : (d.data || d[ruta] || [])
+}
 
 // kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
 // Override con SITE_URL si cambia el primario.
@@ -46,13 +62,21 @@ async function buildSitemap() {
     }),
   )
 
-  const categoryEntries = listCategoryRoutes().map((slug) =>
-    urlEntry({ path: `/products/${slug}`, lastmod: today, changefreq: 'weekly', priority: 0.7 }),
-  )
+  // El tenant sale del propio SITE: es el dominio con el que la API resuelve la cuenta.
+  const host = SITE.replace(/^https?:\/\//, '').replace(/\/$/, '')
+  const [categorias, productos] = await Promise.all([pedir('categorias', host), pedir('productos', host)])
 
-  const productEntries = listProductRoutes().map((slug) =>
-    urlEntry({ path: `/producto/${slug}`, lastmod: today, changefreq: 'monthly', priority: 0.6 }),
-  )
+  const categoryEntries = categorias
+    .filter((c) => c?.slug)
+    .map((c) => urlEntry({ path: `/products/${c.slug}`, lastmod: today, changefreq: 'weekly', priority: 0.7 }))
+
+  // El detalle de producto se resuelve por ID: la API no emite `slug` para productos
+  // y el sitio enlaza `/producto/<id>` (verificado en produccion).
+  const productEntries = productos
+    .filter((p) => p?.id)
+    .map((p) => urlEntry({ path: `/producto/${p.id}`, lastmod: today, changefreq: 'monthly', priority: 0.6 }))
+
+  console.log(`[sitemap] catalogo real: ${categoryEntries.length} categorias, ${productEntries.length} productos`)
 
   const guideEntries = listGuideRoutes().map((slug) =>
     urlEntry({ path: `/soporte/guias/${slug}`, lastmod: today, changefreq: 'monthly', priority: 0.6 }),

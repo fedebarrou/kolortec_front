@@ -67,31 +67,37 @@
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/products/cabezales-moviles</loc>
+    <loc>https://kolortec.com.ar/products/accesorios</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/products/wash-flood</loc>
+    <loc>https://kolortec.com.ar/products/barras-de-led</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/products/beam-spot</loc>
+    <loc>https://kolortec.com.ar/products/cabezal-movil</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/products/barras-led</loc>
+    <loc>https://kolortec.com.ar/products/cobertores</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/products/arquitectural</loc>
+    <loc>https://kolortec.com.ar/products/controladores</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/products/golden-line</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -103,25 +109,367 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/products/estrobos-blinders</loc>
+    <loc>https://kolortec.com.ar/products/liquido-de-humo</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/products/control-accesorios</loc>
+    <loc>https://kolortec.com.ar/products/maquinas-de-humo</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/producto/kt-x1000-flood</loc>
+    <loc>https://kolortec.com.ar/products/minibrut</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/products/parled</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/products/strobo-blinder</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-1083-7225-9ff8-d65d0bd74d1e</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://kolortec.com.ar/producto/kt-demo-hyperbeam</loc>
+    <loc>https://kolortec.com.ar/producto/019fa470-3a6f-7284-9a27-ff078bd3f342</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-a8fa-715e-940c-ef01de0c068a</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-c60e-7289-9eac-94429c37afa8</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-d365-7369-ae80-756a1fefd2f7</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-6cc9-709d-9ff3-41a2b3ee4fb2</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-f7bc-7302-ab98-ce7fd4e4e935</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-8dc2-713c-a936-f258be5ac83c</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-ad6e-70b6-b172-458fe08df9ed</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-b34f-7270-b21d-161380bd74f1</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-b918-717a-b1d8-1aaa7597374b</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-d76e-7035-a008-34b9915805fe</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-f51c-730f-98d4-ab3a71b4b31b</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-6d4d-7086-92d6-3e310551be46</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-19d7-727e-8d5b-a7000842f2b0</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-2ce2-71e1-b79d-8fe7beb4c249</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-46ea-705d-a888-1dceaaec279e</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-f72a-72cb-824e-06cc39ed0199</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa471-184a-727a-8689-ff0fac6cc8f8</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa471-3d8d-7260-be24-e1fabc2c6cd2</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-215a-7175-af75-cd2a3a4bac58</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-416d-7379-95e7-2f1069a7b603</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-4edf-7377-9aa6-3082650d2e08</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-4f92-7114-95b0-804024d00d33</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-8a06-738c-b962-73335434ac2e</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-555c-72d7-bd95-8a1fa8a2e6ac</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-6603-704f-8c7b-4203dbbfcf5c</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-1c90-7340-a11c-e831b8805967</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-5a8e-7353-be44-5dff4ae2d59b</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-8204-7083-a1dd-3db4b6233000</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-98ee-70d6-b47a-17518d764963</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-b0ae-707b-9d41-aa00935adbc7</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-0351-72f2-ae5c-b0783f2520dd</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-def1-73b7-8d66-23e95b482271</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-f538-72ff-9aa9-a4fb38ad9250</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-fff5-70d7-8e18-1d69b86652b5</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-155c-7102-b468-cae97edaa33b</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-228d-7315-92ee-9c190ac87e0d</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-33ff-7115-8666-e217fba8bd49</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-a486-7374-b5b9-a43fb88ef277</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-2beb-7102-8e4a-85a4bc189d8d</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-6760-71cc-b042-4f27f5083629</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-49cb-71ae-abd9-2f52692d8c9e</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-5a62-71ce-a224-557651b026e5</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa471-621d-7075-a17c-4243ab3a2889</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa471-6dec-70bd-827f-26c6a94aba99</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa471-7a1d-735a-8e88-84afe46b2195</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa471-7a28-739f-8369-b0ead281bf2d</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-c88f-72f3-8288-4f9b5c7ceea1</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-b00f-723f-8473-099b857faf65</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa470-79e0-7112-9688-189e22b68ef1</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-842f-731b-948d-dfd49984ad26</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-615e-7000-8096-159d326f8f55</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46e-eae2-737e-9fcd-09b6047a3daa</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46f-c665-7098-a8ac-a8ba99a8ba38</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/producto/019fa46d-95c9-7205-93ed-fd90d1b22e86</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
