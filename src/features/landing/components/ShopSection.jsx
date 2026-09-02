@@ -97,7 +97,10 @@ function ShopSection({ shop, ready = true }) {
   const phaseClass =
     introPhase === 'playing' ? 'is-playing' : introPhase === 'done' ? 'is-done' : 'is-priming'
 
-  const renderAccess = (cta) => {
+  // `orden` es la posición del acceso dentro de la entrada escalonada del bloque
+  // de texto: los tres primeros lugares se los llevan volanta, título y bajada,
+  // así que los accesos arrancan en el 3.
+  const renderAccess = (cta, orden) => {
     const isExternal = /^https?:\/\//.test(cta.href)
     const hashMatch = cta.href.match(/^\/?#([\w-]+)$/) || cta.href.match(/^\/#([\w-]+)$/)
     const targetId = hashMatch ? hashMatch[1] : null
@@ -108,7 +111,8 @@ function ShopSection({ shop, ready = true }) {
       // el último sin línea, así la lista no termina en un borde suelto. Lo que
       // no lleva la sección es borde propio —ni arriba ni abajo— ni línea sobre
       // el <nav> que los envuelve; eso le dibujaba un marco al bloque.
-      'group/access flex items-center justify-between gap-4 border-b border-[rgba(11,11,11,0.22)] py-4 text-left transition last:border-b-0 hover:pl-1'
+      'kt-shop-in group/access flex items-center justify-between gap-4 border-b border-[rgba(11,11,11,0.22)] py-4 text-left transition last:border-b-0 hover:pl-1'
+    const orderStyle = { '--kt-in': 3 + orden }
     const inner = (
       <>
         <span className="flex items-center gap-3">
@@ -142,6 +146,7 @@ function ShopSection({ shop, ready = true }) {
           key={cta.label}
           to={cta.href}
           className={className}
+          style={orderStyle}
           onClick={(event) => {
             // Mismo camino que el SOPORTE del navbar: si el scrolltelling
             // todavía tiene tomado el scroll, hay que liberarlo antes de saltar
@@ -157,7 +162,7 @@ function ShopSection({ shop, ready = true }) {
     }
     if (isInternal) {
       return (
-        <Link key={cta.label} to={cta.href} className={className}>
+        <Link key={cta.label} to={cta.href} className={className} style={orderStyle}>
           {inner}
         </Link>
       )
@@ -167,6 +172,7 @@ function ShopSection({ shop, ready = true }) {
         key={cta.label}
         href={cta.href}
         className={className}
+        style={orderStyle}
         target={isExternal ? '_blank' : undefined}
         rel={isExternal ? 'noreferrer' : undefined}
       >
@@ -217,26 +223,38 @@ function ShopSection({ shop, ready = true }) {
       ) : null}
 
       <div className="kt-shop-content relative z-10 w-full px-6 lg:pl-[calc(10rem+var(--kt-bleed-inset,0px))] lg:pr-[min(620px,46vw)]">
-        <div className="kt-shop-from-left flex max-w-[660px] flex-col gap-5">
-          <div className="flex items-center gap-2">
+        {/* El contenido ya no entra como UN bloque desde el costado: cada
+            elemento aparece por su cuenta, de abajo hacia arriba y escalonado
+            (.kt-shop-in). El orden lo declara `--kt-in` y no el DOM porque los
+            accesos viven dentro del <nav> — no son hermanos de la volanta ni del
+            título, así que ningún :nth-child los podría contar en la misma
+            serie. */}
+        <div className="flex max-w-[660px] flex-col gap-5">
+          <div className="kt-shop-in flex items-center gap-2" style={{ '--kt-in': 0 }}>
             <span aria-hidden="true" className="block h-[2px] w-8 kt-shop-accent" />
             <span className="kt-shop-ink text-[0.75rem] font-black uppercase tracking-[0.22em]">
               {sectionEyebrow}
             </span>
           </div>
 
-          <h2 className="kt-shop-ink title-font m-0 whitespace-pre-line text-left text-[clamp(2.4rem,7vw,5.4rem)] leading-[0.88]">
+          <h2
+            className="kt-shop-in kt-shop-ink title-font m-0 whitespace-pre-line text-left text-[clamp(2.4rem,7vw,5.4rem)] leading-[0.88]"
+            style={{ '--kt-in': 1 }}
+          >
             {sectionTitle}
             <span className="kt-shop-accent-text">.</span>
           </h2>
 
-          <p className="kt-shop-ink kt-shop-ink--soft max-w-[52ch] text-[1.05rem] leading-[1.55]">
+          <p
+            className="kt-shop-in kt-shop-ink kt-shop-ink--soft max-w-[52ch] text-[1.05rem] leading-[1.55]"
+            style={{ '--kt-in': 2 }}
+          >
             {sectionSubtitle}
           </p>
 
           {ctas.length > 0 ? (
             <nav className="mt-2" aria-label={sectionEyebrow}>
-              {ctas.map(renderAccess)}
+              {ctas.map((cta, i) => renderAccess(cta, i))}
             </nav>
           ) : null}
         </div>

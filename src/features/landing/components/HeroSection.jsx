@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import { useHeroExitZoom } from '../../../shared/hooks/useHeroExitZoom'
 import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
 import { CarouselRenderer } from '../_hero-renderer/CarouselRenderer'
 import { heroSizeMode } from '../_hero-renderer/scroll-contract'
@@ -62,6 +63,15 @@ function HeroSection({ hero }) {
   // Va acá arriba por la regla de hooks del comentario de más arriba.
   const labConfigTranslated = useHeroTranslation(hero?.labConfig)
 
+  // Escalado del hero al salir de pantalla (ver useHeroExitZoom). El ref se
+  // engancha sólo en el camino lab —que es el que renderiza kolortec— pero el
+  // hook se declara acá arriba por la regla de hooks del comentario de más
+  // arriba: no puede quedar después del return condicional. `isLab` es la
+  // bandera que rearma el efecto cuando el hero por fin se monta: en el primer
+  // render todavía no llegó el contenido y el ref está vacío.
+  const heroRef = useRef(null)
+  useHeroExitZoom(heroRef, isLab)
+
   useEffect(() => {
     if (isLab || slides.length <= 1) return undefined
 
@@ -103,10 +113,18 @@ function HeroSection({ hero }) {
       : undefined
     return (
       <section
-        className="kt-section-reveal"
+        ref={heroRef}
+        className="kt-hero-exit-zoom kt-section-reveal"
         style={{ '--reveal-delay': '10ms' }}
       >
-        <CarouselRenderer config={config} breakpoint={bp} containerHeight={containerHeight} bleed />
+        {/* El que escala es esta capa, no la <section>: escalar la sección hace
+            crecer su caja pintada más allá de la de layout y eso SÍ cuenta para
+            el área desplazable del documento — o sea barra horizontal. Con el
+            escalado un nivel adentro, el `overflow-x: clip` de la sección lo
+            recorta antes de que llegue a la página. */}
+        <div className="kt-hero-exit-stage">
+          <CarouselRenderer config={config} breakpoint={bp} containerHeight={containerHeight} bleed />
+        </div>
       </section>
     )
   }

@@ -338,6 +338,38 @@ html {
     animation: beam-scan 12s ease-in-out infinite;
   }
 
+  /* ── El hero se agranda al pasar hacia Destacados ───────────────────────────
+     Pedido del dueño: que al pasarlo "se haga grande y venga a pantalla mientras
+     avanzamos a productos destacados". No es un @keyframes de duración fija: la
+     escala está atada al PROGRESO DEL SCROLL (--kt-hero-out, 0→1, la publica
+     useHeroExitZoom). El ritmo lo maneja la mano del usuario — si frena, frena;
+     si vuelve para arriba, se deshace.
+
+     Se mueve sólo `transform`: width/height/top harían reflow en cada cuadro.
+     El techo es 1.06 y no más: pasado eso deja de leerse como que el hero se te
+     viene encima y empieza a leerse como zoom barato.
+
+     El recorte es SÓLO horizontal a propósito. Escalar hace crecer la caja
+     pintada más allá de la de layout, y esa caja cuenta para el área desplazable
+     del documento: sin recorte aparece barra horizontal en cuanto arranca el
+     efecto. `overflow-x: clip` junto a `overflow-y: visible` es la única
+     combinación que recorta un solo eje sin convertir a la sección en contenedor
+     de scroll (con `hidden`, el eje visible pasa a `auto`). El eje vertical
+     tiene que quedar libre: lo que el hero gana por abajo cae en el aire del
+     Divider que lo separa de Destacados, y ese desborde no crea barra porque
+     abajo ya hay página. */
+  .kt-hero-exit-zoom {
+    overflow-x: clip;
+  }
+
+  .kt-hero-exit-stage {
+    /* Desde el centro: crece hacia los cuatro lados por igual, que es lo que da
+       la sensación de acercarse. Anclado arriba parecería que se estira. */
+    transform-origin: 50% 50%;
+    transform: scale(calc(1 + 0.06 * var(--kt-hero-out, 0)));
+    will-change: transform;
+  }
+
   .kt-landing-reveal-item {
     opacity: 0;
     transform: translateY(9px);
@@ -1946,6 +1978,44 @@ html {
     overflow: hidden;
   }
 
+  /* ── Contactanos: panel de vidrio ───────────────────────────────────────────
+     LA IDEA: desenfocar lo justo para que el texto no dependa de la foto, PERO
+     dejando pasar las luces del recital. Sigue siendo la misma imagen de fondo,
+     no una caja opaca encima — por eso el negro va en .55 y no en .9: a .9 el
+     panel se convierte en un rectángulo muerto y la sección pierde el show.
+
+     Sin el panel, el texto se leía de casualidad: el frame elegido está oscuro
+     JUSTO en ese sector. Cambiás la foto de fondo y desaparece. El panel le pone
+     piso de contraste propio.
+
+     El borde izquierdo amarillo repite el `border-l` de los títulos de sección
+     del sitio (Destacados, el propio h2 de acá), pero en 3px: es el ancla visual
+     del bloque, no un detalle de tipografía. */
+  .kt-support-panel {
+    max-width: 640px;
+    /* En 390px un padding de 44/48 con `px-6` de la sección deja el texto en un
+       canal de ~250px. El clamp lo baja a ~24/25 en el teléfono y recién a los
+       ~740px de ancho llega al valor aprobado del mockup. El `max-width` de 640
+       nunca pelea con eso: abajo de 640 el panel simplemente ocupa el ancho
+       disponible, respetando el margen del sitio que pone la sección. */
+    padding: clamp(24px, 6vw, 44px) clamp(20px, 6.5vw, 48px);
+    background: rgba(8, 8, 10, 0.55);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    border-left: 3px solid var(--primary, #f4df33);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Respaldo donde no hay backdrop-filter (Firefox con la flag apagada, WebViews
+     viejos): sin él el panel queda casi transparente y volvemos al problema
+     original —texto sobre foto cruda—, que es justamente lo que no puede pasar.
+     Se paga con perder las luces, que es el mal menor. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .kt-support-panel {
+      background: rgba(8, 8, 10, 0.88);
+    }
+  }
+
 
   /* Contactanos SIN separadores. Se probaron tres formas —linea entera, linea
      difuminada a la derecha y sombra en degrade— y las tres leen como un
@@ -2200,123 +2270,58 @@ html {
     }
   }
 
-  .kt-shop-section.is-priming .kt-shop-from-left,
-  .kt-shop-section.is-playing .kt-shop-from-left {
+  /* ── Amarilla: entrada de a uno ─────────────────────────────────────────────
+     Antes el contenido entraba en DOS bloques enteros que se deslizaban desde
+     los costados y la secuencia recién cerraba a los 1,84s. Con scroll normal
+     eso pasa detrás tuyo: la sección ya te quedó atrás cuando termina de armarse
+     y nunca ves aparecer nada — ves un bloque que ya estaba.
+
+     Ahora aparece elemento por elemento, desde abajo y escalonado, que es lo que
+     hace que se lea como algo que ENTRA. Es el mismo esqueleto de
+     .kt-landing-reveal-item (opacidad + translateY corto + la misma curva); lo
+     único que no se pudo reusar es el DISPARADOR, porque acá el momento de
+     entrada no lo decide el observer de scroll sino la máquina de fases de la
+     cortina (is-priming → is-playing → is-done), y el escalonado no lo puede
+     contar un :nth-child porque los cinco elementos no son hermanos. */
+  .kt-shop-section.is-priming .kt-shop-in,
+  .kt-shop-section.is-playing .kt-shop-in {
     opacity: 0;
-    transform: translateX(-48px);
+    transform: translateY(14px);
   }
 
+  /* 1240ms es el mismo punto donde arrancaba el texto antes: el fondo ya está
+     fundiendo y el barrido del logo terminó, así que nada compite con la
+     lectura. De ahí en más, 45ms entre elemento y elemento. */
+  .kt-shop-section.is-playing .kt-shop-in {
+    animation: kt-shop-in 320ms cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
+    animation-delay: calc(1240ms + var(--kt-in, 0) * 45ms);
+  }
+
+  @keyframes kt-shop-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* El video del borde sigue entrando como un bloque: es una pieza sola, no una
+     lista, y el desplazamiento lateral es el que lo hace leer como que se asoma
+     desde afuera del cuadro. En reposo su translateX(48px) queda recortado por
+     el overflow:hidden de la sección — es el reposo de la animación, no un bug. */
   .kt-shop-section.is-priming .kt-shop-from-right,
   .kt-shop-section.is-playing .kt-shop-from-right {
     opacity: 0;
     transform: translateX(48px);
   }
 
-  /* El texto blanco entra cuando el fondo ya está fundiendo a negro (darken arranca a 1050ms). */
-  .kt-shop-section.is-playing .kt-shop-from-left {
-    animation: kt-shop-from-left 460ms 1240ms cubic-bezier(0.2, 0.65, 0.25, 1) forwards;
-  }
-
   .kt-shop-section.is-playing .kt-shop-from-right {
     animation: kt-shop-from-right 520ms 1320ms cubic-bezier(0.2, 0.65, 0.25, 1) forwards;
-  }
-
-  @keyframes kt-shop-from-left {
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
   }
 
   @keyframes kt-shop-from-right {
     to {
       opacity: 1;
       transform: translateX(0);
-    }
-  }
-
-  .kt-pillars-section {
-    overflow: hidden;
-  }
-
-  .kt-pillars-section .kt-landing-reveal-item {
-    opacity: 0;
-    transform: translateY(-100%);
-    transition: none;
-    will-change: transform, opacity;
-  }
-
-  .kt-pillars-section.is-visible .kt-pillar-title.kt-landing-reveal-item {
-    animation: kt-pillar-title-drop 480ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 80ms both;
-  }
-
-  .kt-pillars-section.is-visible .kt-pillar-card.kt-landing-reveal-item:nth-of-type(1) {
-    animation: kt-pillar-drop 620ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 600ms both;
-  }
-
-  .kt-pillars-section.is-visible .kt-pillar-card.kt-landing-reveal-item:nth-of-type(2) {
-    animation: kt-pillar-drop 620ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1100ms both;
-  }
-
-  .kt-pillars-section.is-visible .kt-pillar-card.kt-landing-reveal-item:nth-of-type(3) {
-    animation: kt-pillar-drop 620ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1600ms both;
-  }
-
-  @keyframes kt-pillar-title-drop {
-    0% {
-      opacity: 0;
-      transform: translateY(-100%);
-    }
-    14% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes kt-pillar-drop {
-    0% {
-      opacity: 0;
-      transform: translateY(-100%);
-      filter: brightness(1);
-    }
-    10% {
-      opacity: 1;
-    }
-    /* First landing */
-    58% {
-      opacity: 1;
-      transform: translateY(0);
-      filter: brightness(1) drop-shadow(0 0 0 rgba(244, 223, 51, 0));
-    }
-    /* First impact - subtle glow flash */
-    63% {
-      transform: translateY(0);
-      filter:
-        brightness(1.15)
-        drop-shadow(0 0 22px rgba(244, 223, 51, 0.4))
-        drop-shadow(0 6px 0 rgba(244, 223, 51, 0.3));
-    }
-    /* First bounce up */
-    74% {
-      transform: translateY(-16px);
-      filter: brightness(1) drop-shadow(0 0 0 rgba(244, 223, 51, 0));
-    }
-    /* Second landing - softer glow */
-    84% {
-      transform: translateY(0);
-      filter:
-        brightness(1.08)
-        drop-shadow(0 0 12px rgba(244, 223, 51, 0.28))
-        drop-shadow(0 3px 0 rgba(244, 223, 51, 0.18));
-    }
-    /* Settle */
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-      filter: none;
     }
   }
 
@@ -2336,14 +2341,6 @@ html {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .kt-pillars-section .kt-landing-reveal-item,
-    .kt-pillars-section.is-visible .kt-pillar-title.kt-landing-reveal-item,
-    .kt-pillars-section.is-visible .kt-pillar-card.kt-landing-reveal-item {
-      animation: none !important;
-      opacity: 1;
-      transform: none;
-    }
-
     .kt-partner-slide {
       animation: none !important;
     }
@@ -2521,6 +2518,14 @@ html {
       transform: none;
     }
 
+    /* useHeroExitZoom ya no engancha el listener acá, así que la variable se
+       queda en 0; esto es el cinturón por si alguien cambia la preferencia con
+       la página abierta (el hook se resuelve una sola vez, al montar). */
+    .kt-hero-exit-stage {
+      transform: none;
+      will-change: auto;
+    }
+
     .kt-shop-curtain,
     .kt-shop-logo-sweep,
     .kt-shop-flash {
@@ -2534,7 +2539,7 @@ html {
     }
 
     .kt-shop-section .kt-shop-content,
-    .kt-shop-section .kt-shop-from-left,
+    .kt-shop-section .kt-shop-in,
     .kt-shop-section .kt-shop-from-right {
       opacity: 1;
       transform: none;

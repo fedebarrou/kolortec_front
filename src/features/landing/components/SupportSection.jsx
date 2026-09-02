@@ -20,7 +20,12 @@ function SupportSection({ support, loading = false }) {
           <img src={imagen} alt="" loading="lazy" decoding="async" />
         </div>
       ) : null}
-      <div className="grid gap-8">
+      {/* El texto va adentro de un panel de vidrio (.kt-support-panel) y no
+          suelto sobre la foto: suelto se leía sólo porque JUSTO en ese frame el
+          recital está oscuro, y el día que el cliente cambie la imagen de fondo
+          el bloque entero se vuelve ilegible. El contenedor le da su propio piso
+          de contraste sin tapar la foto. */}
+      <div className="kt-support-panel grid gap-8">
         <div className="grid gap-5">
           <div className="kt-landing-reveal-item border-l border-[rgba(244,223,51,0.5)] pl-4">
             <h2 className="title-font mb-2 text-left text-[clamp(1.6rem,4.1vw,3.1rem)] leading-[1.02]">
