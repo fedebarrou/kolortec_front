@@ -309,7 +309,15 @@ html {
 
   .kt-section-reveal {
     opacity: 0;
-    transform: translateY(14px) scale(0.995);
+    /* SIN `scale`. Lo tenia (0.995) y en una seccion que ocupa TODO el ancho ese
+       medio por ciento no se lee como profundidad: se lee como MARGENES. A 1440
+       son 4px de un lado y 3 del otro, y mientras la seccion no entra al viewport
+       quedan ahi, visibles — sobre todo en la vista previa del panel, donde se ven
+       varias secciones a la vez sin scrollear y todas aparecen encogidas.
+       El `translateY` solo ya da la sensacion de que la seccion llega. Los
+       elementos de adentro (.kt-landing-reveal-item) tampoco escalan: son 9px de
+       translate y nada mas. Este es el mismo criterio. */
+    transform: translateY(14px);
     transition:
       opacity 340ms cubic-bezier(0.2, 0.9, 0.2, 1) var(--reveal-delay, 0ms),
       transform 460ms cubic-bezier(0.2, 0.9, 0.2, 1) var(--reveal-delay, 0ms);
@@ -317,7 +325,7 @@ html {
 
   .kt-section-reveal.is-visible {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 
   .kt-hero-content-enter {
