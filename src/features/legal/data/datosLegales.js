@@ -20,13 +20,25 @@
  */
 
 export const DATOS_LEGALES = {
-  /** Razón social exacta, como figura en AFIP. Ej: 'Kolortec S.R.L.' */
+  /**
+   * Quién es el responsable, TAL CUAL figura en AFIP.
+   *
+   * Si hay sociedad, va la razón social: 'Kolortec S.R.L.'.
+   * Si es persona humana (monotributo o responsable inscripto sin sociedad),
+   * NO hay razón social: va el nombre y apellido completo del titular, que es
+   * lo que identifica al responsable en ese caso. No dejarlo vacío por no
+   * tener sociedad — el dato que importa es a quién se le reclama.
+   */
   razonSocial: null,
 
-  /** CUIT con guiones. Ej: '30-71234567-8' */
+  /** CUIT o CUIT/CUIL del titular, con guiones. Ej: '30-71234567-8' */
   cuit: null,
 
-  /** Domicilio. Ej: 'Av. Siempreviva 742, CABA, Argentina' */
+  /**
+   * Domicilio. El mismo que se declare ante la AAIP para ejercer derechos
+   * (ver `docs/AAIP-REGISTRO-BASES.md`): si no coinciden, la política de
+   * privacidad y la inscripción dicen cosas distintas.
+   */
   domicilio: null,
 
   /**
