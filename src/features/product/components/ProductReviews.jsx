@@ -85,7 +85,7 @@ function ReviewItem({ review, pending = false, pendingLabel }) {
       <div className="flex flex-wrap items-center gap-2.5">
         <Stars value={review.rating} size="sm" />
         {pending ? (
-          <span className="border border-[rgba(244,223,51,0.45)] px-2 py-[2px] text-[0.6rem] font-bold uppercase tracking-[0.1em] text-primary">
+          <span className="border border-[rgba(244,223,51,0.45)] px-2 py-[2px] text-[0.75rem] font-bold uppercase tracking-[0.1em] text-primary">
             {pendingLabel}
           </span>
         ) : null}
@@ -95,7 +95,7 @@ function ReviewItem({ review, pending = false, pendingLabel }) {
       ) : null}
       <div className="mt-auto flex flex-wrap items-baseline gap-2 border-t border-[#232323] pt-3">
         <strong className="text-[0.9rem] text-[#f2f2f2]">{review.nombre || 'Anónimo'}</strong>
-        {review.fecha ? <span className="text-[0.72rem] text-[#8b919b]">{review.fecha}</span> : null}
+        {review.fecha ? <span className="text-[0.75rem] text-[#8b919b]">{review.fecha}</span> : null}
       </div>
     </article>
   )
@@ -193,14 +193,14 @@ function ProductReviews({ productId }) {
           ) : (
             <form onSubmit={handleSubmit} className="grid gap-4 border border-[#2a2a2a] p-5">
               <div className="grid gap-2">
-                <span className="text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-[#9aa0aa]">
+                <span className="text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-[#9aa0aa]">
                   {t('productDetail.reviews.ratingLabel', 'Tu puntuación')}
                 </span>
                 <RatingInput value={rating} onChange={setRating} disabled={sending} />
               </div>
 
               <label className="grid gap-2">
-                <span className="text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-[#9aa0aa]">
+                <span className="text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-[#9aa0aa]">
                   {t('productDetail.reviews.commentLabel', 'Tu comentario')}
                 </span>
                 <textarea
@@ -217,13 +217,13 @@ function ProductReviews({ productId }) {
               {error ? <p className="m-0 text-[0.82rem] text-[#ff8f8f]">{error}</p> : null}
 
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <span className="text-[0.72rem] text-[#8b919b]">
+                <span className="text-[0.75rem] text-[#8b919b]">
                   {t('productDetail.reviews.moderationNote', 'Se publica después de ser aprobado.')}
                 </span>
                 <button
                   type="submit"
                   disabled={sending}
-                  className="rounded-[8px] bg-primary px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5 disabled:opacity-60"
+                  className="rounded-[8px] bg-primary px-5 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#090909] transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {sending ? t('productDetail.reviews.sending', 'Enviando…') : t('productDetail.reviews.submit', 'Publicar comentario')}
                 </button>
@@ -237,7 +237,7 @@ function ProductReviews({ productId }) {
             </p>
             <Link
               to="/login"
-              className="rounded-[8px] border-2 border-white px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
+              className="rounded-[8px] border-2 border-white px-5 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
             >
               {t('productDetail.reviews.loginCta', 'Iniciar sesión')}
             </Link>

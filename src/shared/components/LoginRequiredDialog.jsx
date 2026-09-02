@@ -122,7 +122,7 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
           </button>
         </div>
 
-        <p className="mt-5 text-center text-[0.72rem] leading-[1.4] text-[#7a7e87]">
+        <p className="mt-5 text-center text-[0.75rem] leading-[1.4] text-[#7a7e87]">
           {t('loginDialog.terms', 'Al continuar aceptas nuestros Terminos y Politica de Privacidad.')}
         </p>
       </div>

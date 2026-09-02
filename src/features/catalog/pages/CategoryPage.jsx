@@ -159,7 +159,7 @@ function CategoryPage() {
           className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[rgba(5,5,5,0.92)] via-[rgba(5,5,5,0.55)] to-transparent"
         />
         <div className="relative z-[1] flex h-full flex-col justify-end px-6 pb-8 lg:px-40 kt-reveal">
-          <nav className="mb-3 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be] drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
+          <nav className="mb-3 flex items-center gap-2 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be] drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
             <Link to="/products" className="transition hover:text-primary">{t('catalog.breadcrumbProducts', 'Productos')}</Link>
             <span aria-hidden="true">/</span>
             <span className="text-white">{displayName}</span>
@@ -198,7 +198,7 @@ function CategoryPage() {
                   <button
                     key={tag.id}
                     type="button"
-                    className={`inline-flex min-h-[40px] items-center rounded-full border px-4 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] transition ${isActive ? 'border-[rgba(244,223,51,0.72)] bg-[rgba(244,223,51,0.13)] text-white' : 'border-[#303743] bg-transparent text-[#c8ced8] hover:border-[rgba(244,223,51,0.48)]'}`}
+                    className={`inline-flex min-h-[40px] items-center rounded-full border px-4 text-[0.75rem] font-extrabold uppercase tracking-[0.08em] transition ${isActive ? 'border-[rgba(244,223,51,0.72)] bg-[rgba(244,223,51,0.13)] text-white' : 'border-[#303743] bg-transparent text-[#c8ced8] hover:border-[rgba(244,223,51,0.48)]'}`}
                     aria-pressed={isActive}
                     onClick={() => setSelectedTag(tag.id)}
                   >
@@ -270,14 +270,14 @@ function CategoryPage() {
                 key={c.slug}
                 to={`/products/${c.slug}`}
                 /* Mismo lenguaje que las etiquetas de la card (ProductCard):
-                   rectangulares, 11px, font-black, mayúsculas y tracking .06 —
+                   rectangulares, 12px, font-black, mayúsculas y tracking .06 —
                    la píldora con borde no se parecía a nada más del sitio.
                    En reposo usa el fondo de una etiqueta común y al pasar por
                    encima pasa al amarillo del badge destacado, que es el otro
                    estado que ya existe en la card.
                    `min-h-[40px]`: la forma rectangular se queda, pero medían
                    24.5px de alto y son un destino táctil. */
-                className="inline-flex min-h-[40px] items-center bg-[#1b212b] px-3 text-[11px] font-black uppercase tracking-[0.06em] text-[#c8ced8] transition hover:bg-primary hover:text-[#111]"
+                className="inline-flex min-h-[40px] items-center bg-[#1b212b] px-3 text-[12px] font-black uppercase tracking-[0.06em] text-[#c8ced8] transition hover:bg-primary hover:text-[#111]"
               >
                 {lang === 'en' ? c.nameEn || c.name : c.name}
               </Link>

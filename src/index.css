@@ -227,10 +227,28 @@ html {
       overflow-x: clip;
     }
 
+    /* SE FUE EL ZOOM (sep-2026).
+       Era `width: 1920px; zoom: var(--kt-canvas-scale)`: un lienzo de ancho fijo
+       encogido para entrar en la pantalla. El efecto secundario es que TODO se
+       achicaba con él, así que en las dos resoluciones de escritorio más comunes
+       el cuerpo del texto se pintaba a 11,6px (1366) y 12,2px (1440), y en 1024
+       a 8,7px — tamaño de letra chica de contrato.
+
+       Y no tenía arreglo por dentro: un ancho fijo con zoom uniforme NO PUEDE
+       respetar un mínimo legible en todo el rango, porque para tener 12px en
+       1024 harían falta 22,5px de CSS que en 1920 se verían enormes.
+
+       Se midió antes de sacarlo, apagando el zoom en vivo sobre 8 rutas × 3
+       anchos: CERO desborde horizontal introducido en las 24 combinaciones. Lo
+       único que se sale es el marquee, que desborda a propósito. Lo que cambia
+       es el alto (+33% en 1440, +88% en 1024): es el contenido a su tamaño real.
+
+       El nombre de la clase se conserva porque es el gancho que usan
+       useFullBleed y el renderer del hero para saber dónde termina el contenedor. */
     .kt-zoom-canvas {
-      width: 1920px;
+      width: 100%;
+      max-width: 1920px;
       margin-inline: auto;
-      zoom: var(--kt-canvas-scale, 1);
     }
   }
 
@@ -2026,7 +2044,10 @@ html {
     border-radius: 9999px;
     background: rgba(0, 0, 0, 0.55);
     padding: 6px 14px;
-    font-size: 10px;
+    /* 12px es el piso de lectura del sitio (sep-2026, al sacar el lienzo que
+       encogia todo). Estaba en 10 y se veia 10: la etiqueta del video la lee
+       alguien parado frente a la pantalla, no con lupa. */
+    font-size: 0.75rem;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.14em;

@@ -44,7 +44,7 @@ function CategoryCard({ category, count }) {
       />
 
       {typeof count === 'number' && count > 0 ? (
-        <span className="absolute right-3 top-3 z-10 text-[10px] font-extrabold tracking-[0.18em] text-white/65">
+        <span className="absolute right-3 top-3 z-10 text-[12px] font-extrabold tracking-[0.18em] text-white/65">
           {String(count).padStart(2, '0')}
         </span>
       ) : null}
@@ -61,7 +61,7 @@ function CategoryCard({ category, count }) {
         className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-0 bg-primary transition-all duration-500 group-hover:w-full group-focus-visible:w-full"
       />
 
-      <span className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 text-[9px] font-extrabold uppercase tracking-[0.22em] text-primary opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+      <span className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 text-[12px] font-extrabold uppercase tracking-[0.22em] text-primary opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
         Ver →
       </span>
     </Link>

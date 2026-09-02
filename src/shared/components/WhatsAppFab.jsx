@@ -1,20 +1,108 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '../i18n/LanguageProvider'
+import { getContactChannels } from '../services/contentService'
+import { WHATSAPP_NUMBER, WHATSAPP_VISIBLE } from './SocialLinks'
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   DATO DEL CLIENTE — PENDIENTE
-   Este número es de RELLENO: nadie nos pasó el real. Está centralizado acá para
-   que cambiarlo sea UNA línea (los dos botones, Ventas y Soporte, lo usan).
-   `E164` va sin '+' ni separadores porque así lo exige wa.me; `VISIBLE` es lo
-   único que ve el usuario, y tiene que quedar en sincronía con el otro.
-   OJO: el mismo placeholder está duplicado en archivos que NO son de este
-   componente (HeaderSection.jsx, SocialLinks.jsx, ProductDetailPage.jsx y
-   landingData.js). Unificarlos es tarea de coordinación — ver informe.
+   RESPALDO, no la fuente.
+   La fuente del número es la CUENTA: /public/web-config emite
+   whatsapp.{ventas,soporte,contacto} como { phone, status }, y los leemos con
+   `getContactChannels()`. El respaldo es la casa central de Kolortec y se usa
+   cuando la API no contesta, cuando la cuenta todavía no cargó el canal, o
+   cuando el número no está habilitado.
+   Se importa de SocialLinks, que es la fuente única de los contactos públicos:
+   antes esta constante estaba duplicada acá y el sitio llegó a tener DOS
+   números distintos (la fila social y el "Consulta" de la ficha apuntaban a un
+   relleno inexistente). Un solo lugar para cambiarlo.
+   Lo único que sale de la API es el NÚMERO: el flotante se muestra SIEMPRE. En
+   particular NO se gatea con `sections.whatsapp`, que hoy viene en false porque
+   se deriva de "¿hay algún teléfono cargado?" — atarle la visibilidad borraría
+   el botón de kolortec ahora mismo y en producción.
    ────────────────────────────────────────────────────────────────────────── */
-const WHATSAPP_NUMERO_E164 = '5491155555555'
-const WHATSAPP_NUMERO_VISIBLE = '+54 9 11 5555-5555'
+const WHATSAPP_RESPALDO_E164 = WHATSAPP_NUMBER
+const WHATSAPP_RESPALDO_VISIBLE = WHATSAPP_VISIBLE
 
-const linkWhatsapp = (mensaje) => `https://wa.me/${WHATSAPP_NUMERO_E164}?text=${encodeURIComponent(mensaje)}`
+/* Los dos botones del panel y de dónde sale el número de cada uno, EN ORDEN.
+   Primero el canal propio; si el tenant no lo cargó, el WhatsApp genérico de
+   contacto; si tampoco, el otro canal — un único número verificado tiene que
+   encender los dos botones, no dejar uno muerto; y recién ahí la casa central.
+
+   Que esto se use no es la excepción: hoy los tres canales de kolortec vienen
+   con `phone: null` / `status: "none"`, porque el back manda el número SÓLO
+   cuando la conexión está `verified` (whatsappMap → waDigits). Hasta que el
+   dueño verifique un WhatsApp desde el admin, el camino normal es el respaldo.
+   No es un bug: no lo "arregles" sacando el fallback. */
+const CANALES = [
+  { id: 'ventas', orden: ['ventas', 'contacto', 'soporte'] },
+  { id: 'soporte', orden: ['soporte', 'contacto', 'ventas'] },
+]
+
+/**
+ * Dígitos E164 → texto legible. Con el número de la casa devolvemos la constante
+ * tal cual (es la única forma de garantizar que lo que se lee sea exactamente lo
+ * que aprobó el dueño); para cualquier otro número argentino armamos el formato
+ * de siempre, y si no matchea, el E164 con '+' adelante antes que un string roto.
+ */
+function aVisible(digitos) {
+  if (!digitos) return WHATSAPP_RESPALDO_VISIBLE
+  if (digitos === WHATSAPP_RESPALDO_E164) return WHATSAPP_RESPALDO_VISIBLE
+  const ar = digitos.match(/^54(9)?(\d{2,4})(\d{4})(\d{4})$/)
+  if (ar) return `+54${ar[1] ? ' 9' : ''} ${ar[2]} ${ar[3]}-${ar[4]}`
+  return `+${digitos}`
+}
+
+const linkWhatsapp = (numero, mensaje) => `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`
+
+/**
+ * Resuelve el número de cada canal contra la API, con la casa central de red.
+ *
+ * Va por `getContactChannels()` y no con un fetch propio: los GET públicos
+ * están cacheados por path dentro del adapter, y ése lee el MISMO
+ * /public/web-config que PublishGate ya pide en toda página. O sea: pega en la
+ * promesa cacheada y no cuesta una request, ni en la home ni fuera de ella.
+ * (Antes tiraba de `getLandingContent()`, que en páginas que no son la home
+ * agregaba tres requests sin cachear — productos, hero-config y guías — sólo
+ * para leer un teléfono.)
+ *
+ * Se dispara en `idle` para no competir con la carga de la página: hasta que
+ * conteste, el panel ya muestra el número de la casa, no un botón muerto.
+ */
+function useCanalesWhatsapp() {
+  const [remotos, setRemotos] = useState(null)
+
+  useEffect(() => {
+    let vivo = true
+    const pedir = () => {
+      getContactChannels()
+        .then((canales) => {
+          if (vivo) setRemotos(canales)
+        })
+        .catch(() => {
+          /* El adapter ya hace fallback por endpoint; si igual falla, nos
+             quedamos con el respaldo y el botón sigue sirviendo. */
+        })
+    }
+    const idle = window.requestIdleCallback
+    // El techo de 2s no es decorativo: mientras no conteste, el panel muestra el
+    // número de la casa, y si alguien abre el flotante en ese hueco se lleva la
+    // casa central en vez del canal del tenant. Sirve, pero no es lo pedido.
+    const id = idle ? idle(pedir, { timeout: 2000 }) : window.setTimeout(pedir, 600)
+    return () => {
+      vivo = false
+      if (idle && window.cancelIdleCallback) window.cancelIdleCallback(id)
+      else window.clearTimeout(id)
+    }
+  }, [])
+
+  return useMemo(() => {
+    const resuelto = {}
+    for (const { id, orden } of CANALES) {
+      const numero = orden.map((k) => remotos?.[k]).find(Boolean) || WHATSAPP_RESPALDO_E164
+      resuelto[id] = { numero, visible: aVisible(numero) }
+    }
+    return resuelto
+  }, [remotos])
+}
 
 /* Geometría del flotante en píxeles FÍSICOS (vive fuera de `.kt-zoom-canvas`,
    así que no lo afecta el zoom del lienzo). De acá sale la zona segura que el
@@ -86,6 +174,7 @@ function WhatsAppFab() {
   // `setIsOpen` es estable entre renders, así que el observer se suscribe una vez.
   const cerrarPanel = useCallback(() => setIsOpen(false), [])
   const hayModalAbierto = useHayModalAbierto(cerrarPanel)
+  const canales = useCanalesWhatsapp()
 
   /* Publicamos la zona segura como variables CSS para que las secciones que
      terminan debajo del flotante reserven el lugar en vez de quedar tapadas.
@@ -165,25 +254,25 @@ function WhatsAppFab() {
             <div className="grid gap-2 p-3">
               <a
                 className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.14)] bg-[#17181b] px-3 py-3 text-left transition hover:border-[rgba(244,223,51,0.5)] hover:bg-[#1c1d21]"
-                href={linkWhatsapp('Hola equipo de ventas, quiero asesoramiento comercial.')}
+                href={linkWhatsapp(canales.ventas.numero, 'Hola equipo de ventas, quiero asesoramiento comercial.')}
                 target="_blank"
                 rel="noreferrer"
               >
                 <span className="grid">
                   <strong className="text-[0.78rem] font-black uppercase tracking-[0.1em] text-[#f5f6f8]">{t('whatsappFab.sales', 'Ventas')}</strong>
-                  <small className="text-[0.78rem] text-[#aeb5bf]">{WHATSAPP_NUMERO_VISIBLE}</small>
+                  <small className="text-[0.78rem] text-[#aeb5bf]">{canales.ventas.visible}</small>
                 </span>
                 <span className="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">chat</span>
               </a>
               <a
                 className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.14)] bg-[#17181b] px-3 py-3 text-left transition hover:border-[rgba(244,223,51,0.5)] hover:bg-[#1c1d21]"
-                href={linkWhatsapp('Hola equipo de soporte, necesito ayuda tecnica.')}
+                href={linkWhatsapp(canales.soporte.numero, 'Hola equipo de soporte, necesito ayuda tecnica.')}
                 target="_blank"
                 rel="noreferrer"
               >
                 <span className="grid">
                   <strong className="text-[0.78rem] font-black uppercase tracking-[0.1em] text-[#f5f6f8]">{t('whatsappFab.support', 'Soporte')}</strong>
-                  <small className="text-[0.78rem] text-[#aeb5bf]">{WHATSAPP_NUMERO_VISIBLE}</small>
+                  <small className="text-[0.78rem] text-[#aeb5bf]">{canales.soporte.visible}</small>
                 </span>
                 <span className="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">build_circle</span>
               </a>

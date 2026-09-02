@@ -71,7 +71,7 @@ function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Ima
           <div className="absolute inset-x-4 bottom-2 top-[44px] md:inset-x-6 md:top-[48px]">
             <img src={currentImage} alt={`${label} ${activeIndex + 1}`} className="h-full w-full object-contain" />
           </div>
-          <figcaption className="pointer-events-none absolute bottom-2 rounded-full bg-black/55 px-2.5 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-[#d7dbe2]">
+          <figcaption className="pointer-events-none absolute bottom-2 rounded-full bg-black/55 px-2.5 py-1 text-[0.75rem] font-bold uppercase tracking-[0.08em] text-[#d7dbe2]">
             {activeIndex + 1} / {safeImages.length}
           </figcaption>
         </figure>

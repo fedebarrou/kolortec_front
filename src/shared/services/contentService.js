@@ -860,10 +860,21 @@ export async function getProductDetail(slug) {
  * faltan se asumen en TRUE — la misma regla que aplica el back cuando la cuenta
  * todavía no los configuró.
  */
-export async function getSiteConfig() {
-  // Vista previa: un token en la URL (?preview=<token>) se persiste en sessionStorage para que
-  // sobreviva la navegación del SPA; se lo mandamos al backend, que devuelve preview_authorized
-  // si matchea el token secreto de la cuenta. Con eso el PublishGate saltea el "en construcción".
+/**
+ * Path de /public/web-config, con el token de vista previa si lo hay.
+ *
+ * Vive aparte porque el path ES la clave de `_publicFetchCache`: todo el que
+ * quiera un dato del web-config tiene que armarlo IGUAL para pegar en la misma
+ * promesa. Si un llamador arma el path a mano y se olvida el token, no sólo
+ * paga una request de más: pide una config distinta (sin autorizar) y puede
+ * llevarse el sitio despublicado.
+ *
+ * Vista previa: un token en la URL (?preview=<token>) se persiste en
+ * sessionStorage para que sobreviva la navegación del SPA; se lo mandamos al
+ * backend, que devuelve preview_authorized si matchea el token secreto de la
+ * cuenta. Con eso el PublishGate saltea el "en construcción".
+ */
+function webConfigPath() {
   let previewToken = ''
   try {
     if (typeof window !== 'undefined') {
@@ -879,10 +890,40 @@ export async function getSiteConfig() {
     /* sessionStorage bloqueado (modo privado): sin preview persistente */
   }
 
-  const path = previewToken
+  return previewToken
     ? `/public/web-config?preview_token=${encodeURIComponent(previewToken)}`
     : '/public/web-config'
-  const cfg = await fetchWithFallback(path, null)
+}
+
+/**
+ * Canales de WhatsApp de la cuenta, en dígitos E164: { ventas, soporte, contacto }.
+ *
+ * Lee el mapa CRUDO de /public/web-config en vez de reconocer contactos por su
+ * `label` dentro de `support.contacts`: el label es texto de presentación (y
+ * traducible), así que atar el canal a él es atarlo a una decisión de copy.
+ *
+ * El gate de habilitación lo hace el backend, no nosotros: en `whatsappMap()`
+ * el `phone` sale en null salvo que la conexión esté `verified`. Un canal con
+ * número es un canal habilitado; los demás no llegan.
+ *
+ * Sale por el MISMO path que getSiteConfig(), que PublishGate ya pide en toda
+ * página: pega en la promesa cacheada y no cuesta una sola request extra.
+ */
+export async function getContactChannels() {
+  const cfg = await fetchWithFallback(webConfigPath(), null)
+  const crudo = cfg?.whatsapp
+  if (!crudo || typeof crudo !== 'object') return {}
+
+  const canales = {}
+  for (const canal of ['ventas', 'soporte', 'contacto']) {
+    const digitos = String(crudo[canal]?.phone ?? '').replace(/\D+/g, '')
+    if (digitos.length >= 6) canales[canal] = digitos
+  }
+  return canales
+}
+
+export async function getSiteConfig() {
+  const cfg = await fetchWithFallback(webConfigPath(), null)
   return {
     showPrices: cfg ? cfg.show_prices !== false : true,
     // Comentarios de producto: el tenant los puede apagar desde el admin.

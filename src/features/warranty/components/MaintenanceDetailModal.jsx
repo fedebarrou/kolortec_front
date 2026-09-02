@@ -137,7 +137,7 @@ function MaintenanceDetailModal({ guide, origin, onClose }) {
               <span className="material-symbols-outlined text-[26px] leading-none text-primary" aria-hidden="true">
                 cleaning_services
               </span>
-              <span className="mt-1 text-[0.55rem] font-black uppercase tracking-[0.22em] text-primary">
+              <span className="mt-1 text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">
                 {t('warranty.modal.badge', 'Limpieza')}
               </span>
             </div>
@@ -153,7 +153,7 @@ function MaintenanceDetailModal({ guide, origin, onClose }) {
           <div className="flex min-w-0 flex-col gap-5 bg-gradient-to-b from-[#0b0b0b] to-[#050505] px-6 py-8 md:max-h-[85vh] md:overflow-y-auto md:px-8 md:py-10">
             <div className="flex items-center gap-2">
               <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-              <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
+              <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">
                 {guide.category}
               </span>
             </div>

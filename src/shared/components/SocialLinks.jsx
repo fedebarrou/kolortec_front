@@ -4,17 +4,26 @@
  * ⚠ DOS DE ESTOS VALORES NO ESTÁN CONFIRMADOS POR EL CLIENTE — no los inventes
  * de nuevo ni los pises "a ojo", cambialos acá y se actualiza todo el sitio:
  *
- *  - WHATSAPP_NUMBER: `5491155555555` es un número DE RELLENO (55-5555). En
- *    `src/features/warranty/data/maintenanceGuides.js` aparece otro,
- *    `5491168985633`, que sí parece real. Falta que el cliente diga cuál va.
  *  - FACEBOOK_URL: `facebook.com/kolortec` es una empresa POLACA de esmaltado
  *    en polvo, no este Kolortec. Falta la URL real (o sacar la red).
  *
- * Todavía quedan copias sueltas de estos valores en archivos de otros dueños
- * (WhatsAppFab, ProductDetailPage, landingData, jsonLd): la idea es que todos
- * terminen importando de acá.
+ * WHATSAPP_NUMBER es el RESPALDO, no la fuente. La fuente real es la CUENTA:
+ * /public/web-config emite whatsapp.{ventas,soporte,contacto} y el flotante los
+ * resuelve con `getContactChannels()`. Este número se usa donde no hay (o
+ * todavía no llegó) el del tenant: la fila social, el "Consulta" de la ficha y
+ * el flotante mientras la API no contesta. Un botón de WhatsApp que no lleva a
+ * ningún lado es peor que uno que cae en la casa central.
+ *
+ * Hasta sep-2026 acá vivía `5491155555555`, un relleno (55-5555): la fila
+ * social y el "Consulta" de la ficha linkeaban a un número inexistente EN
+ * PRODUCCIÓN. En `maintenanceGuides.js` hay otro más, `5491168985633`, que
+ * quedó sin confirmar; si el cliente dice que ése es el bueno, se cambia acá.
+ *
+ * `E164` va sin '+' ni separadores porque así lo exige wa.me; `VISIBLE` es lo
+ * único que se lee en pantalla y tiene que quedar en sincronía con el otro.
  */
-const WHATSAPP_NUMBER = '5491155555555'
+const WHATSAPP_NUMBER = '5491124062526'
+const WHATSAPP_VISIBLE = '+54 9 11 2406-2526'
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`
 const INSTAGRAM_URL = 'https://instagram.com/kolortec'
 const FACEBOOK_URL = 'https://facebook.com/kolortec'
@@ -71,4 +80,4 @@ function SocialLinks({
 }
 
 export default SocialLinks
-export { SOCIAL_LINKS, WHATSAPP_NUMBER, WHATSAPP_URL, INSTAGRAM_URL, FACEBOOK_URL }
+export { SOCIAL_LINKS, WHATSAPP_NUMBER, WHATSAPP_VISIBLE, WHATSAPP_URL, INSTAGRAM_URL, FACEBOOK_URL }

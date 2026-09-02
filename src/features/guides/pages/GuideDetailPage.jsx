@@ -177,7 +177,7 @@ function GuideDetailPage() {
         jsonLd={[articleLd, breadcrumbLd]}
       />
 
-      <nav className="mb-5 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]" aria-label="Breadcrumb">
+      <nav className="mb-5 flex items-center gap-2 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]" aria-label="Breadcrumb">
         <Link to="/descargas" className="transition hover:text-primary">{t('pages.guides.breadcrumbSupport', 'Soporte')}</Link>
         <span aria-hidden="true">/</span>
         <Link to="/soporte/guias" className="transition hover:text-primary">{t('pages.guides.breadcrumbGuides', 'Guías')}</Link>
@@ -186,7 +186,7 @@ function GuideDetailPage() {
       <header className="mb-8 grid max-w-[80ch] gap-4 kt-reveal">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
+          <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">
             {t('pages.guides.badge', 'Guía técnica')}
           </span>
         </div>

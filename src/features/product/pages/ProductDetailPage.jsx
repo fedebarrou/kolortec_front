@@ -13,6 +13,7 @@ import {
   olvidarIntento,
 } from '../../../shared/services/downloadService'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
+import { WHATSAPP_URL } from '../../../shared/components/SocialLinks'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
 import ProductBlogs from '../components/ProductBlogs'
@@ -54,7 +55,7 @@ function ListaDescargas({ items, downloadCta, onGated, vacio }) {
     )
   }
 
-  const claseCta = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#383838] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]'
+  const claseCta = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#383838] px-3 py-2 text-[12px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition hover:border-primary hover:bg-primary hover:text-[#090909]'
 
   return (
     <div className="border-y border-[#2a2a2a] divide-y divide-[#2a2a2a]">
@@ -67,7 +68,10 @@ function ListaDescargas({ items, downloadCta, onGated, vacio }) {
         )
         return (
           <article key={item.url || item.label} className="kt-reveal-item flex items-center justify-between gap-4 py-3.5">
-            <div className="grid gap-1">
+            {/* `min-w-0`: el nombre del archivo es lo único elástico del renglón
+                (el botón es shrink-0). Sin esto un nombre largo empuja al CTA
+                fuera de la caja en vez de partirse, y eso se nota en 390. */}
+            <div className="grid min-w-0 gap-1">
               <span className="text-[0.95rem] font-bold text-[#f2f2f2]">{item.label}</span>
               <strong className="text-[0.82rem] font-semibold text-[#aeb2ba]">
                 {[item.size, item.type].filter(Boolean).join(' · ') || '—'}
@@ -531,13 +535,13 @@ function ProductDetailPage() {
             <button
               type="button"
               onClick={() => setReintento((n) => n + 1)}
-              className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#0b0b0b] transition hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-5 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#0b0b0b] transition hover:-translate-y-0.5"
             >
               <span className="material-symbols-outlined text-[17px] leading-none" aria-hidden="true">refresh</span>
               {t('productDetail.retry', 'Reintentar')}
             </button>
             <Link
-              className="inline-flex items-center rounded-[8px] border-2 border-white px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
+              className="inline-flex items-center rounded-[8px] border-2 border-white px-5 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
               to="/products"
             >
               {t('productDetail.backToShop', 'Volver a tienda')}
@@ -590,12 +594,22 @@ function ProductDetailPage() {
               </button>
               <strong className="title-font text-[13px] md:text-[14px] leading-none tracking-[0.14em]">{product.name}</strong>
             </div>
-            <div className="kt-detail-tabs-links">
+            {/* Dos ajustes para que subir los rótulos de 11 a 12px no cueste ancho:
+                - `gap` de 22 a 14px hasta xl, que devuelve los ~40px que suma la
+                  tipografía. De 1280 para arriba sobra lugar y vuelve el respiro.
+                - `safe center`: la tira es `justify-content:center` con
+                  `overflow-x:auto` y la barra de scroll escondida. Centrado +
+                  desbordado = el excedente se reparte a los DOS lados y el de la
+                  izquierda queda fuera del alcance del scroll (scrollLeft no puede
+                  ser negativo): en 1024 el primer rótulo estaba recortado y no
+                  había forma de traerlo. Con `safe` centra sólo mientras entra y
+                  se pega al inicio cuando no. */}
+            <div className="kt-detail-tabs-links gap-[14px] xl:gap-[22px] [justify-content:safe_center]">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
-                  className={activeTab === tab.id ? 'is-active' : ''}
+                  className={`text-[12px] ${activeTab === tab.id ? 'is-active' : ''}`}
                   aria-current={activeTab === tab.id ? 'true' : undefined}
                   onClick={() => {
                     setActiveTab(tab.id)
@@ -607,8 +621,12 @@ function ProductDetailPage() {
               ))}
             </div>
             <a
-              className="hidden lg:inline-flex self-stretch h-full items-center bg-primary text-black font-extrabold uppercase tracking-[0.08em] text-[10px] px-3 border border-primary rounded-none m-0 hover:brightness-105 transition"
-              href={`https://wa.me/5491155555555?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}`)}`}
+              className="hidden lg:inline-flex self-stretch h-full items-center bg-primary text-black font-extrabold uppercase tracking-[0.08em] text-[12px] px-3 border border-primary rounded-none m-0 hover:brightness-105 transition"
+              /* El número sale de SocialLinks, la fuente única de contactos.
+                 Estaba escrito acá a mano y era el relleno 55-5555: este botón
+                 —el CTA de consulta de cada producto— linkeaba a un WhatsApp
+                 inexistente en producción. */
+              href={`${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}`)}`}
               target="_blank"
               rel="noreferrer"
             >
@@ -654,7 +672,7 @@ function ProductDetailPage() {
                   setActiveTab(tab.id)
                   goToSection(tab.id)
                 }}
-                className={`h-11 shrink-0 whitespace-nowrap border-b-2 text-[11px] font-bold uppercase tracking-[0.1em] transition ${
+                className={`h-11 shrink-0 whitespace-nowrap border-b-2 text-[12px] font-bold uppercase tracking-[0.1em] transition ${
                   activeTab === tab.id ? 'border-primary text-[#f4f7fb]' : 'border-transparent text-[#c6ccd7]'
                 }`}
               >
@@ -868,7 +886,7 @@ function ProductDetailPage() {
                                 <path d="M9 6l6 6-6 6" />
                               </svg>
                             </button>
-                            <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm">
+                            <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm">
                               {safeIndex + 1} / {videos.length}
                             </div>
                           </>
@@ -920,7 +938,7 @@ function ProductDetailPage() {
                         <a
                           {...propsDeDescarga(descargaPendiente)}
                           onClick={() => { olvidarIntento(); setDescargaPendiente(null) }}
-                          className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-4 py-2.5 text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-[#0b0b0b] transition hover:-translate-y-0.5"
+                          className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-4 py-2.5 text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-[#0b0b0b] transition hover:-translate-y-0.5"
                         >
                           <span className="material-symbols-outlined text-[16px] leading-none" aria-hidden="true">download</span>
                           {t('productDetail.downloads.downloadCta', 'Descargar')}

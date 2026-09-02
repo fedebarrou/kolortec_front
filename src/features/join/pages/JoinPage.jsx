@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { enviarConsultaPublica } from '../../../shared/services/contentService'
@@ -21,6 +21,22 @@ const TIPOS = [
   { id: 'web-distribuidor', clave: 'join.tipos.distribuidor', fallback: 'Distribuidor' },
   { id: 'web-rental', clave: 'join.tipos.rental', fallback: 'Rental' },
 ]
+
+/**
+ * Un dominio es UNA sola palabra para el motor de línea. En la caja de partners
+ * —tres columnas dentro de un aside de 360px— a 12px no entra entero, y sin
+ * puntos de corte declarados el navegador lo parte por la mitad de una sílaba
+ * ("ANDESLIGHTIN / G.CL"). Los <wbr> le dan los cortes que un dominio sí tiene:
+ * los puntos. No cambia el texto ni cómo se copia; sólo dónde puede envolver.
+ */
+function dominioConCortes(dominio) {
+  const partes = String(dominio || '').split('.')
+  return partes.map((parte, i) => (
+    i === partes.length - 1
+      ? parte
+      : <Fragment key={`${parte}-${i}`}>{parte}.<wbr /></Fragment>
+  ))
+}
 
 const PARTNERS = [
   {
@@ -153,7 +169,7 @@ function JoinPage() {
 
   const inputClass =
     'w-full rounded-[10px] border border-[#2a2a2a] bg-[#0f0f10] px-4 py-3 text-[0.95rem] text-[#f2f2f2] placeholder:text-[#7a7e87] outline-none transition focus:border-primary'
-  const labelClass = 'mb-1.5 block text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#cfd4dc]'
+  const labelClass = 'mb-1.5 block text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-[#cfd4dc]'
 
   return (
     <section className="flex min-h-screen flex-col bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
@@ -165,7 +181,7 @@ function JoinPage() {
       <div className="kt-reveal mb-8 grid max-w-[760px] gap-3">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
+          <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
         </div>
         <h1 className="title-font m-0 inline-flex items-baseline gap-[0.08em] text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
           {title}
@@ -174,7 +190,14 @@ function JoinPage() {
         <p className="m-0 max-w-[68ch] text-[#b7bbc4] leading-[1.55]">{subtitle}</p>
       </div>
 
-      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,760px)_minmax(360px,1fr)] lg:gap-14">
+      {/* La columna doble arranca en xl y no en lg. A 1024 el aside se lleva
+          360 de los 704 utiles y al formulario le quedaban 288: las dos
+          pestanas de arriba quedaban de 107px y "Distribuidor" se salia del
+          pill (el texto es casi negro, asi que afuera del amarillo no se lee),
+          y los campos en md:grid-cols-2 caian a 138px cada uno. Entre 1024 y
+          1279 el formulario se queda con el ancho completo y los partners se
+          ven en la tira de abajo, que ya existia para mobile. */}
+      <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,760px)_minmax(360px,1fr)] xl:gap-14">
       {submitted ? (
         <article className="kt-reveal max-w-[640px] rounded-[12px] border border-[rgba(244,223,51,0.4)] bg-[#0f0f10] p-8">
           <div className="mb-4 flex items-center gap-3">
@@ -307,7 +330,7 @@ function JoinPage() {
         </form>
       )}
 
-        <aside className="hidden lg:block lg:sticky lg:top-24">
+        <aside className="hidden xl:block xl:sticky xl:top-24">
           <div
             className="rounded-[6px] border border-white/15 bg-[#0a0a0a] p-6"
             onMouseEnter={() => setPartnerPaused(true)}
@@ -330,7 +353,7 @@ function JoinPage() {
                   type="button"
                   onClick={() => setPartnerIndex(targetIdx)}
                   aria-label={`${visitSiteLabel}: ${p.name}`}
-                  className="group flex min-w-0 flex-col items-center px-2 text-center text-white/35 transition-colors hover:text-white/75"
+                  className="group flex min-w-0 flex-col items-center text-center text-white/35 transition-colors hover:text-white/75"
                 >
                   <span
                     aria-hidden="true"
@@ -340,17 +363,24 @@ function JoinPage() {
                       {p.mark}
                     </svg>
                   </span>
-                  <span className="title-font text-[0.7rem] font-black uppercase leading-[1.1] tracking-[0.14em] break-words">
+                  <span className="title-font text-[0.75rem] font-black uppercase leading-[1.1] tracking-[0.14em] break-words">
                     {p.name}
                   </span>
-                  <span className="mt-1.5 max-w-full truncate font-mono text-[0.55rem] uppercase tracking-[0.16em] text-[#5e636c] group-hover:text-[#828893] transition-colors">
-                    {p.domain}
+                  {/* El dominio ya NO se recorta. A 12px (el piso) ninguno de
+                      los dominios largos entraba en una columna de 74px y el
+                      `truncate` los dejaba en "SONORAP…": justo el dato que
+                      identifica al partner. Ahora envuelve como ya envuelve el
+                      nombre de al lado (`break-words`), y el tracking baja de
+                      0.16em a 0.02em — a 12px esa separación sola sumaba 1,9px
+                      por caracter, casi 40px en un dominio largo. */}
+                  <span className="mt-1.5 max-w-full font-mono text-[0.75rem] uppercase leading-[1.3] tracking-normal text-[#5e636c] [overflow-wrap:anywhere] group-hover:text-[#828893] transition-colors">
+                    {dominioConCortes(p.domain)}
                   </span>
                 </button>
               )
 
               return (
-                <div className="grid grid-cols-[1fr_auto_1.25fr_auto_1fr] items-start gap-1">
+                <div className="grid grid-cols-[1fr_auto_1.25fr_auto_1fr] items-start gap-0.5">
                   {renderSibling(prevP, prevIdx)}
 
                   <span aria-hidden="true" className="self-stretch w-px bg-white/10" />
@@ -361,7 +391,7 @@ function JoinPage() {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={`${visitSiteLabel}: ${activeP.name} (${activeP.region})`}
-                    className="kt-partner-slide group flex min-w-0 flex-col items-center px-2 text-center"
+                    className="kt-partner-slide group flex min-w-0 flex-col items-center text-center"
                   >
                     <span
                       aria-hidden="true"
@@ -380,10 +410,10 @@ function JoinPage() {
                       {activeP.name}
                     </span>
                     <span
-                      className="mt-1.5 max-w-full truncate font-mono text-[0.62rem] uppercase tracking-[0.16em]"
+                      className="mt-1.5 max-w-full font-mono text-[0.75rem] uppercase leading-[1.3] tracking-normal [overflow-wrap:anywhere]"
                       style={{ color: activeP.accent }}
                     >
-                      {activeP.domain}
+                      {dominioConCortes(activeP.domain)}
                     </span>
                   </a>
 
@@ -412,7 +442,7 @@ function JoinPage() {
         </aside>
       </div>
 
-      <div className="kt-reveal mt-auto -mx-6 pt-16 lg:hidden">
+      <div className="kt-reveal mt-auto -mx-6 pt-16 xl:hidden">
         <div
           className="kt-marquee border-y border-[rgba(244,223,51,0.18)] bg-[#070707]"
           style={{ '--kt-marquee-duration': '50s' }}
@@ -448,7 +478,7 @@ function JoinPage() {
                     <span className="title-font text-[1.05rem] uppercase leading-[1] tracking-[0.08em] text-white">
                       {p.name}
                     </span>
-                    <span className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[#7a818c]">
+                    <span className="font-mono text-[0.75rem] uppercase tracking-[0.18em] text-[#7a818c]">
                       {p.domain}
                     </span>
                   </span>

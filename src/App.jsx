@@ -42,7 +42,7 @@ function NotFoundPage() {
       />
       <div className="flex items-center gap-2">
         <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-        <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">404</span>
+        <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">404</span>
       </div>
       <h1 className="title-font m-0 mt-4 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02] text-white">
         {t('pages.notFound.title', 'Esta página no existe')}

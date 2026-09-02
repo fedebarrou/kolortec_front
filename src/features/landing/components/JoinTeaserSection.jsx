@@ -40,7 +40,7 @@ function JoinTeaserSection({ join }) {
         <div className="kt-landing-reveal-item flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-            <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
+            <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
           </div>
           <h2 className="title-font m-0 max-w-[18ch] text-left text-[clamp(1.25rem,4.4vw,3.4rem)] leading-[1.04] sm:max-w-none">
             {title}<span className="text-primary">.</span>

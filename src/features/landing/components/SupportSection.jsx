@@ -59,7 +59,7 @@ function SupportSection({ support, loading = false }) {
                     >
                       {item.href.startsWith('mailto') ? 'mail' : 'chat'}
                     </span>
-                    <strong className="text-[0.68rem] uppercase tracking-[0.12em] text-[#8d949f]">
+                    <strong className="text-[0.75rem] uppercase tracking-[0.12em] text-[#8d949f]">
                       {item.label}
                     </strong>
                     <span className="text-[1.15rem] leading-tight text-[#f2f4f8]">{item.value}</span>

@@ -36,14 +36,14 @@ function FilterDropdown({ axis, selected, onToggle, onClear }) {
   return (
     <div ref={ref} className="relative">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <label className="text-[0.7rem] font-extrabold uppercase tracking-[0.16em] text-[#cfd4dc]">
+        <label className="text-[0.75rem] font-extrabold uppercase tracking-[0.16em] text-[#cfd4dc]">
           {label}
         </label>
         {selected.length > 0 ? (
           <button
             type="button"
             onClick={onClear}
-            className="inline-flex items-center gap-1 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-[0.75rem] font-bold uppercase tracking-[0.12em] text-primary hover:underline"
           >
             <span className="material-symbols-outlined text-[12px] leading-none" aria-hidden="true">close</span>
             {t('catalog.filterClear', 'Limpiar')}
@@ -103,8 +103,12 @@ function FilterDropdown({ axis, selected, onToggle, onClear }) {
                     isSelected ? 'border-primary bg-primary' : 'border-[#3a3d42]'
                   }`}
                 >
+                  {/* El tilde es un glifo de fuente, así que una barrida de
+                      font-size lo cuenta como texto: sube a 12px como el resto.
+                      La caja queda en 14px — el check de Material Symbols no
+                      llena el em, así que a 12px sigue teniendo aire adentro. */}
                   {isSelected ? (
-                    <span className="material-symbols-outlined text-[10px] leading-none text-[#0b0b0b]">check</span>
+                    <span className="material-symbols-outlined text-[12px] leading-none text-[#0b0b0b]">check</span>
                   ) : null}
                 </span>
                 {optLabel}
@@ -153,7 +157,7 @@ function CatalogFilterBar({ activeFilters, onChange }) {
       </div>
 
       {totalActive > 0 ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-[0.72rem] text-[#a8acb5]">
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-[0.75rem] text-[#a8acb5]">
           <span>
             {totalActive}{' '}
             {totalActive === 1
@@ -163,7 +167,7 @@ function CatalogFilterBar({ activeFilters, onChange }) {
           <button
             type="button"
             onClick={clearAll}
-            className="inline-flex items-center gap-1 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-primary hover:underline"
           >
             <span className="material-symbols-outlined text-[14px] leading-none" aria-hidden="true">close</span>
             {t('catalog.filterClearAll', 'Limpiar todos')}

@@ -108,14 +108,14 @@ function LinePage() {
       />
 
       <div className="px-6 pt-[clamp(56px,8vw,96px)] lg:px-40">
-        <nav className="mb-3 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]">
+        <nav className="mb-3 flex items-center gap-2 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]">
           <Link to="/products" className="transition hover:text-primary">{t('catalog.breadcrumbProducts', 'Productos')}</Link>
           <span aria-hidden="true">/</span>
           <span className="text-white">{line.name}</span>
         </nav>
         <div className="mb-1 flex items-center gap-2 kt-reveal">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
+          <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">
             {t('pages.line.eyebrow', 'Línea')}
           </span>
         </div>
@@ -168,7 +168,7 @@ function LinePage() {
                   to={`/linea/${l.slug}`}
                   /* Mismo chip que "Otras categorías": rectangular y con altura
                      táctil. Eran dos lenguajes distintos para la misma cosa. */
-                  className="inline-flex min-h-[40px] items-center bg-[#1b212b] px-3 text-[11px] font-black uppercase tracking-[0.06em] text-[#c8ced8] transition hover:bg-primary hover:text-[#111]"
+                  className="inline-flex min-h-[40px] items-center bg-[#1b212b] px-3 text-[12px] font-black uppercase tracking-[0.06em] text-[#c8ced8] transition hover:bg-primary hover:text-[#111]"
                 >
                   {l.name}
                 </Link>

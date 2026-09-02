@@ -220,7 +220,7 @@ function ShopSection({ shop, ready = true }) {
         <div className="kt-shop-from-left flex max-w-[660px] flex-col gap-5">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="block h-[2px] w-8 kt-shop-accent" />
-            <span className="kt-shop-ink text-[0.7rem] font-black uppercase tracking-[0.22em]">
+            <span className="kt-shop-ink text-[0.75rem] font-black uppercase tracking-[0.22em]">
               {sectionEyebrow}
             </span>
           </div>

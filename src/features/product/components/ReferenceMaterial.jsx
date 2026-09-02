@@ -134,12 +134,15 @@ function ReferenceMaterial({ items }) {
             >
               <Miniatura info={info} />
               <span className="flex items-center gap-2 px-4 pt-4">
-                <span className="kt-rail-kind">{info.kind || pageLabel}</span>
+                {/* `.kt-rail-kind` trae 0.6rem (9,6px) desde index.css, que no se
+                    toca desde acá. La utilidad de Tailwind vive en @layer
+                    utilities y esa capa gana sin necesidad de !important. */}
+                <span className="kt-rail-kind text-[0.75rem]">{info.kind || pageLabel}</span>
               </span>
               <strong className="title-font px-4 pt-1 text-[1.1rem] leading-[1.12] text-[#f5f5f5]">
                 {item.label}
               </strong>
-              <span className="m-4 mt-0 flex items-center justify-between gap-3 border-t border-[#2a2a2a] pt-3 text-[0.72rem] text-[#9aa0aa]">
+              <span className="m-4 mt-0 flex items-center justify-between gap-3 border-t border-[#2a2a2a] pt-3 text-[0.75rem] text-[#9aa0aa]">
                 <span className="truncate">{info.host}</span>
                 <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#383838]" aria-hidden="true">
                   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.9]">

@@ -54,7 +54,7 @@ function ProductBlogs({ posts }) {
             ) : (
               <span />
             )}
-            <span className="m-4 mt-0 inline-flex items-center gap-1.5 border-t border-[#2a2a2a] pt-3 text-[0.66rem] font-extrabold uppercase tracking-[0.12em] text-primary">
+            <span className="m-4 mt-0 inline-flex items-center gap-1.5 border-t border-[#2a2a2a] pt-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-primary">
               {t('productDetail.blogs.cta', 'Leer nota')}
               <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
                 <path d="M5 12h14M13 6l6 6-6 6" />

@@ -420,11 +420,17 @@ function HeaderSection() {
     </Link>
   )
 
+  // El texto pasa de 10px a 12px (piso tipografico) y el padding baja de px-2 a
+  // px-1.5 EN EL MISMO MOVIMIENTO, a proposito: en mobile este selector vive en
+  // una columna 1fr que le pelea el ancho al logo, asi que crecer aca lo achica
+  // a el. Con 6px por lado la pastilla mide 29px en vez de 30,5 —practicamente
+  // la misma huella— pero con la letra legible. Si algun dia le devolves px-2,
+  // medi el logo en 390: hoy ya se dibuja al 79% de lo que pide su diseno.
   const langSwitch = (
     <div className="inline-flex items-center rounded-md border border-white/15 bg-white/5 p-0.5">
       <button
         type="button"
-        className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
+        className={`h-7 px-1.5 text-[12px] font-black uppercase tracking-[0.08em] transition ${lang === 'es' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
         onClick={() => setLang('es')}
         aria-label={t('a11y.toSpanish', 'Cambiar a español')}
       >
@@ -432,7 +438,7 @@ function HeaderSection() {
       </button>
       <button
         type="button"
-        className={`h-7 px-2 text-[10px] font-black uppercase tracking-[0.08em] transition ${lang === 'en' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
+        className={`h-7 px-1.5 text-[12px] font-black uppercase tracking-[0.08em] transition ${lang === 'en' ? 'bg-primary text-[#050505]' : 'text-[#d9dde5] hover:text-white'}`}
         onClick={() => setLang('en')}
         aria-label={t('a11y.toEnglish', 'Cambiar a inglés')}
       >
@@ -494,7 +500,7 @@ function HeaderSection() {
               </button>
               <button
                 type="button"
-                className="text-center text-[0.73rem] font-semibold uppercase tracking-[0.1em] text-[#9ea6b3] transition hover:text-white"
+                className="text-center text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-[#9ea6b3] transition hover:text-white"
                 onClick={() => setIsLoginDialogOpen(false)}
               >
                 {t('header.loginCancel', 'Cancelar')}
@@ -523,11 +529,16 @@ function HeaderSection() {
 
         <div className="justify-self-center md:hidden">{logoLink}</div>
 
-        <nav className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 md:justify-self-center md:px-3">
+        {/* El relleno propio del <nav> arranca en xl y no en md: entre 768 y 1279
+            eran 24px que se sumaban al `md:gap-4` de la grilla y salian del
+            bolsillo del logo, que en 768 se dibujaba al 63% de su tamano de
+            diseno. Devolverlos paga de sobra los ~10px que crecieron los links
+            al subir de 11,5 a 12px (768: 63% -> 70%; 1024: 88% -> 95%). */}
+        <nav className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 md:justify-self-center xl:px-3">
           {navItems.map((item) => (
             <Link
               key={item.to}
-              className="text-center text-slate-100 hover:text-primary text-[0.72rem] xl:text-sm font-bold uppercase tracking-wide whitespace-nowrap"
+              className="text-center text-slate-100 hover:text-primary text-[0.75rem] xl:text-sm font-bold uppercase tracking-wide whitespace-nowrap"
               to={item.to}
               onClick={item.to === '/products' ? handleCatalogNav : undefined}
             >
@@ -608,18 +619,18 @@ function HeaderSection() {
                           {/* El nombre es lo que buscás: va MÁS GRANDE que la
                               descripción. Estaba al revés. */}
                           <strong className="truncate text-[13px] font-bold uppercase leading-[1.2] tracking-[0.04em]">{item.name}</strong>
-                          <small className="line-clamp-1 text-[11px] leading-[1.3] text-[#a9b1bd]">{item.description}</small>
+                          <small className="line-clamp-1 text-[12px] leading-[1.3] text-[#a9b1bd]">{item.description}</small>
                         </span>
-                        {item.badge ? <em className="rounded-full bg-primary px-2 py-[3px] text-[0.58rem] font-black uppercase tracking-[0.09em] not-italic text-[#0b0b0b]">{item.badge}</em> : null}
+                        {item.badge ? <em className="rounded-full bg-primary px-2 py-[3px] text-[0.75rem] font-black uppercase tracking-[0.09em] not-italic text-[#0b0b0b]">{item.badge}</em> : null}
                       </button>
                     ))
                   ) : (
-                    <p className="m-0 px-[10px] py-[11px] text-[0.68rem] leading-[1.35] text-[#b6bec9]">{t('header.searchEmpty', 'Sin coincidencias directas. Probá en productos completos.')}</p>
+                    <p className="m-0 px-[10px] py-[11px] text-[0.75rem] leading-[1.35] text-[#b6bec9]">{t('header.searchEmpty', 'Sin coincidencias directas. Probá en productos completos.')}</p>
                   )}
                 </div>
                 <button
                   type="button"
-                  className="w-full border-0 bg-[rgba(244,223,51,0.14)] px-[10px] py-2 text-[0.63rem] font-extrabold uppercase tracking-[0.1em] text-[#f7f7f8] transition hover:bg-[rgba(244,223,51,0.24)]"
+                  className="w-full border-0 bg-[rgba(244,223,51,0.14)] px-[10px] py-2 text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-[#f7f7f8] transition hover:bg-[rgba(244,223,51,0.24)]"
                   onClick={() => buscarTexto(searchTerm.trim())}
                 >
                   {t('header.searchAll', 'Ver todos en Productos')}
@@ -716,7 +727,7 @@ function HeaderSection() {
           <button
             type="submit"
             aria-label={t('header.searchAria', 'Buscar producto')}
-            className="inline-flex h-7 items-center rounded-md bg-primary px-2.5 text-[0.6rem] font-black uppercase tracking-[0.1em] text-[#0b0b0b]"
+            className="inline-flex h-7 items-center rounded-md bg-primary px-2.5 text-[0.75rem] font-black uppercase tracking-[0.1em] text-[#0b0b0b]"
           >
             {t('header.searchGo', 'Buscar')}
           </button>
@@ -727,7 +738,7 @@ function HeaderSection() {
             key={item.to}
             to={item.to}
             onClick={item.to === '/products' ? handleCatalogNav : () => setIsMobileOpen(false)}
-            className="relative z-10 block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
+            className="relative z-10 block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
           >
             {item.label}
           </Link>
@@ -743,7 +754,7 @@ function HeaderSection() {
               target="_blank"
               rel="noreferrer"
               onClick={() => setIsMobileOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-[0.55rem] py-[0.6rem] text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] transition hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
+              className="flex items-center gap-2.5 rounded-lg px-[0.55rem] py-[0.6rem] text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] transition hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
             >
               {socialIcon(item)}
               {item.label}

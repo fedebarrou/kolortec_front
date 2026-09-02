@@ -32,23 +32,12 @@
           if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
         } catch (e) {}
 
-        // --- 2. El zoom del canvas, ANTES de pintar ---------------------------------
-        // Misma formula que CanvasScaler (main.jsx). Antes solo corria en un useEffect,
-        // asi que el primer paint usaba zoom:1 y el efecto lo bajaba a ~0.71: el
-        // documento entero se encogia ~30% de un frame al otro. Alla queda solo el resize.
-        try {
-          var w = window.innerWidth;
-          // Misma formula que CanvasScaler (main.jsx). SIN TOPE: con Math.min(1, ...)
-          // el lienzo se quedaba en 1920 arriba de ese ancho y aparecian bandas
-          // negras a los costados. Si se cambia aca, cambiar alla.
-          var ktScale = String(w >= 1024 ? w / 1920 : 1);
-          d.style.setProperty('--kt-canvas-scale', ktScale);
-          // Alias generico que lee el renderer del hero (scroll-contract.js), que es
-          // compartido con el admin y el store y no puede conocer una var "kt-".
-          // Va aca ademas de en CanvasScaler: si solo estuviera en el efecto, el
-          // primer paint del scrolltelling calcularia el alto con escala 1.
-          d.style.setProperty('--hero-viewport-scale', ktScale);
-        } catch (e) {}
+        // --- 2. (se fue el zoom del lienzo) -----------------------------------------
+        // Aca se calculaba --kt-canvas-scale antes del primer paint, porque el lienzo
+        // se encogia con `zoom` y hacerlo recien en un useEffect encogia el documento
+        // ~30% de un frame al otro. El zoom se saco en sep-2026: la escala es 1 siempre
+        // y todos los que la leen la piden con respaldo 1, asi que no hay nada que
+        // publicar. Ver el comentario de .kt-zoom-canvas en index.css.
 
         // --- 3. Pantalla de carga ---------------------------------------------------
         // Tapa los reacomodos de altura que quedan. Vive aca y no en React a proposito:

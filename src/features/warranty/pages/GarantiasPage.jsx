@@ -43,12 +43,12 @@ function MaintenanceCard({ guide, onOpen, originRef }) {
           <span className="material-symbols-outlined text-[22px] leading-none text-primary" aria-hidden="true">
             cleaning_services
           </span>
-          <span className="mt-1 text-[0.5rem] font-black uppercase tracking-[0.2em] text-primary">
+          <span className="mt-1 text-[0.75rem] font-black uppercase tracking-[0.2em] text-primary">
             {t('warranty.modal.badge', 'Limpieza')}
           </span>
         </div>
 
-        <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-primary/95 px-3 py-1 text-[0.62rem] font-black uppercase tracking-[0.14em] text-[#0b0b0b] opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-primary/95 px-3 py-1 text-[0.75rem] font-black uppercase tracking-[0.14em] text-[#0b0b0b] opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
           {t('warranty.card.guide', 'Ver guia')}
           <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3 w-3 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
             <path d="M5 12h14M13 6l6 6-6 6" />
@@ -59,7 +59,7 @@ function MaintenanceCard({ guide, onOpen, originRef }) {
       <div className="flex flex-col gap-2 border-t-2 border-primary bg-gradient-to-b from-[rgba(11,11,11,0.97)] to-[#050505] px-5 py-5">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-6 bg-primary" />
-          <span className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-primary">
+          <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">
             {guide.category}
           </span>
         </div>
@@ -125,7 +125,7 @@ function GarantiasPage() {
       <div className="mb-10 flex flex-col gap-4 kt-reveal">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
+          <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
         </div>
         <h1 className="title-font m-0 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
           {title}<span className="text-primary">.</span>
@@ -178,13 +178,13 @@ function GarantiasPage() {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/descargas"
-            className="inline-flex items-center gap-2 rounded-[8px] border-2 border-white px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
+            className="inline-flex items-center gap-2 rounded-[8px] border-2 border-white px-5 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
           >
             {t('support.page.firmwareCta', 'Ver descargas')}
           </Link>
           <Link
             to="/soporte/guias"
-            className="inline-flex items-center gap-1.5 px-2 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-primary transition hover:opacity-80"
+            className="inline-flex items-center gap-1.5 px-2 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-primary transition hover:opacity-80"
           >
             {t('support.page.guidesCta', 'Ver guías')}
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">

@@ -53,7 +53,7 @@ function LoginPage() {
           {t('pages.login.google', 'Entrar o registrarte con Google')}
         </button>
 
-        <p className="text-[0.72rem] leading-[1.5] text-[#7a7e87] text-center">
+        <p className="text-[0.75rem] leading-[1.5] text-[#7a7e87] text-center">
           {t('pages.login.legal', 'Al continuar aceptas nuestros Terminos y Politica de Privacidad.')}
         </p>
       </div>

@@ -23,7 +23,7 @@ export const defaultLandingContent = {
           "Industrial-grade illumination for high-stakes environments. When failure is not an option, the world's leading engineers choose Kolortec.",
         primaryCta: 'View Products',
         secondaryCta: 'Follow on Instagram',
-        imageUrl: '/assets/hero-bg-BvHCzeSh.jpg',
+        imageUrl: '/assets/hero-bg-kolortec-rain.jpeg',
         videoUrl: null,
         textPosition: 'left',
       },
@@ -225,7 +225,7 @@ export const defaultLandingContent = {
         title: 'Mantenimiento preventivo de cabezas móviles',
         excerpt: 'Limpieza, lubricación y calibración',
         image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80',
-        video: '/assets/shop-section-video.mp4',
+        video: '/assets/shop-section-bg.mp4',
         sections: [],
         cta: { label: 'Contactar soporte técnico', href: '/contacto' },
       },
@@ -234,7 +234,7 @@ export const defaultLandingContent = {
         title: 'Configurar DMX en 5 minutos',
         excerpt: 'Direccionamiento y terminación',
         image: 'https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=1200&q=80',
-        video: '/assets/shop-section-video.mp4',
+        video: '/assets/shop-section-bg.mp4',
         sections: [],
         cta: { label: 'Contactar soporte técnico', href: '/contacto' },
       },
@@ -256,21 +256,21 @@ export const defaultLandingContent = {
         subtitle: 'Equipos de iluminacion profesional para escenario, broadcast y arquitectura.',
         image:
           'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=80',
-        video: '/assets/shop-section-video.mp4',
+        video: '/assets/shop-section-bg.mp4',
       },
       {
         title: 'QUALITY',
         subtitle: 'Componentes seleccionados y testeados para resistir uso intensivo.',
         image:
           'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80',
-        video: '/assets/shop-section-video.mp4',
+        video: '/assets/shop-section-bg.mp4',
       },
       {
         title: 'SUPPORT',
         subtitle: 'Soporte tecnico local, repuestos originales y garantia de fabrica.',
         image:
           'https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=1200&q=80',
-        video: '/assets/shop-section-video.mp4',
+        video: '/assets/shop-section-bg.mp4',
       },
     ],
   },
@@ -283,12 +283,12 @@ export const defaultLandingContent = {
       {
         label: 'WhatsApp Ventas',
         value: '+54 9 11 5555-5555',
-        href: 'https://wa.me/5491155555555?text=Hola%20Kolortec%2C%20quiero%20info%20de%20ventas.',
+        href: 'https://wa.me/5491124062526?text=Hola%20Kolortec%2C%20quiero%20info%20de%20ventas.',
       },
       {
         label: 'WhatsApp Soporte',
         value: '+54 9 11 6666-6666',
-        href: 'https://wa.me/5491166666666?text=Hola%20Kolortec%2C%20necesito%20soporte%20tecnico.',
+        href: 'https://wa.me/5491124062526?text=Hola%20Kolortec%2C%20necesito%20soporte%20tecnico.',
       },
       {
         label: 'Email Ventas',

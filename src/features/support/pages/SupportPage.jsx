@@ -59,7 +59,7 @@ function DownloadCard({ item, downloadCta, onDownload }) {
   // copiar el link, abrirlo en otra pestaña con el botón del medio y lo ve un
   // crawler. El <button> queda sólo para lo que sí pide identificarse.
   const conLogin = requiereLogin(item)
-  const claseBoton = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#383838] px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition'
+  const claseBoton = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#383838] px-3.5 py-2 text-[12px] font-bold uppercase tracking-[0.08em] text-[#f2f2f2] transition'
   const pintar = (e) => {
     e.currentTarget.style.backgroundColor = familia.color
     e.currentTarget.style.borderColor = familia.color
@@ -93,7 +93,7 @@ function DownloadCard({ item, downloadCta, onDownload }) {
           </svg>
         </span>
         <span
-          className="rounded-[4px] px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em]"
+          className="rounded-[4px] px-2 py-1 text-[12px] font-black uppercase tracking-[0.1em]"
           style={{ backgroundColor: familia.tint, color: familia.color }}
         >
           {item.ext}
@@ -103,7 +103,7 @@ function DownloadCard({ item, downloadCta, onDownload }) {
       <div className="grid gap-1">
         <Link
           to={`/producto/${item.productSlug}`}
-          className="text-[0.66rem] font-extrabold uppercase tracking-[0.14em] text-[#8b909a] transition hover:text-primary"
+          className="text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-[#8b909a] transition hover:text-primary"
         >
           {item.product}
         </Link>
@@ -111,7 +111,7 @@ function DownloadCard({ item, downloadCta, onDownload }) {
       </div>
 
       <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#232323] pt-3">
-        <span className="text-[0.74rem] text-[#8b909a]">{item.size || '—'}</span>
+        <span className="text-[0.75rem] text-[#8b909a]">{item.size || '—'}</span>
         {conLogin ? (
           <button
             type="button"
@@ -248,7 +248,7 @@ function SupportPage() {
 
       {/* Hero */}
       <header className="kt-reveal mx-auto mb-10 flex max-w-[760px] flex-col items-center gap-4 text-center">
-        <span className="inline-flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.24em] text-primary">
+        <span className="inline-flex items-center gap-2 text-[0.75rem] font-black uppercase tracking-[0.24em] text-primary">
           <span aria-hidden="true" className="block h-[2px] w-7 bg-primary" />
           {eyebrow}
         </span>
@@ -283,7 +283,7 @@ function SupportPage() {
                 type="button"
                 onClick={() => setFamilia(f.id)}
                 aria-pressed={activo}
-                className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.1em] transition"
+                className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[0.75rem] font-extrabold uppercase tracking-[0.1em] transition"
                 style={{
                   borderColor: activo ? f.color : '#2a2a2a',
                   color: activo ? '#0b0b0b' : '#c8ccd4',
@@ -312,7 +312,7 @@ function SupportPage() {
             <a
               {...propsDeDescarga(pendiente)}
               onClick={() => { olvidarIntento(); setPendiente(null) }}
-              className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-4 py-2.5 text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-[#0b0b0b] transition hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-[8px] bg-primary px-4 py-2.5 text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-[#0b0b0b] transition hover:-translate-y-0.5"
             >
               <span className="material-symbols-outlined text-[16px] leading-none" aria-hidden="true">download</span>
               {downloadCta}
@@ -376,7 +376,7 @@ function SupportPage() {
           <p className="m-0 text-[0.95rem] text-[#aeb5bf]">{lista.length === 0 ? emptyAll : emptyResults}</p>
           <Link
             to="/contacto"
-            className="mt-5 inline-flex items-center gap-2 rounded-[8px] border-2 border-white px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
+            className="mt-5 inline-flex items-center gap-2 rounded-[8px] border-2 border-white px-5 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
           >
             {contactCta}
           </Link>
@@ -391,7 +391,7 @@ function SupportPage() {
         </div>
         <Link
           to="/contacto"
-          className="inline-flex shrink-0 items-center gap-2 rounded-[8px] bg-primary px-5 py-3.5 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#0b0b0b] transition hover:-translate-y-0.5"
+          className="inline-flex shrink-0 items-center gap-2 rounded-[8px] bg-primary px-5 py-3.5 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#0b0b0b] transition hover:-translate-y-0.5"
         >
           {contactCta}
           <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">

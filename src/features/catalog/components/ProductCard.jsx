@@ -159,18 +159,22 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
             En FILA: entran una al lado de la otra y sólo bajan a un segundo
             renglón cuando no queda ancho. Apiladas siempre en columna comían
             media foto en cuanto había dos o tres. `justify-end` para que el
-            renglón incompleto quede pegado al borde derecho, no al izquierdo. */}
+            renglón incompleto quede pegado al borde derecho, no al izquierdo.
+            El tope de ancho es 92% y no 85% porque con las etiquetas a 12px el par
+            READY TO WORK + RENTAL mide 194px: en la grilla de 3 columnas (1024) la
+            foto da 224px y el 85% dejaba 190 — seis píxeles de menos mandaban la
+            segunda etiqueta a un renglón propio y le comían el doble de foto. */}
         {item.badge || tags.length > 0 ? (
-          <div className="absolute right-2 top-2 z-[2] flex max-w-[85%] flex-wrap justify-end gap-1.5">
+          <div className="absolute right-2 top-2 z-[2] flex max-w-[92%] flex-wrap justify-end gap-1.5">
             {item.badge ? (
-              <span className="bg-primary px-2 py-1 text-[11px] font-black uppercase tracking-[0.06em] text-[#111]">
+              <span className="bg-primary px-2 py-1 text-[12px] font-black uppercase tracking-[0.06em] text-[#111]">
                 {item.badge}
               </span>
             ) : null}
             {tags.map((tag) => (
               <span
                 key={tag.label}
-                className="px-2 py-1 text-[11px] font-black uppercase tracking-[0.06em]"
+                className="px-2 py-1 text-[12px] font-black uppercase tracking-[0.06em]"
                 style={{
                   backgroundColor: tag.color || 'rgba(10,10,10,0.82)',
                   color: tag.color ? textoSobre(tag.color) : '#f5f5f5',
@@ -206,9 +210,14 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
                   por fila) y no hay hover, así que categoría y CTA se muestran
                   siempre y se chocaban con el nombre. Abajo de 768 queda foto +
                   etiquetas + nombre, que es exactamente el estado de reposo del
-                  desktop. */}
+                  desktop.
+                  El tracking baja de .16 a .12 al subir de 9,9px a 12px: la
+                  columna que le queda al lado del CTA en la grilla de 4 (1440)
+                  es de 117px y "CABEZAL MOVIL" a .16 medía 118 — se partía en dos
+                  renglones por un píxel. Con .12 mide 112 y sigue entrando en uno,
+                  sin dejar de leerse como la línea de apoyo espaciada que es. */}
               {category ? (
-                <p className="kt-product-card-more m-0 mt-1 hidden text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] md:block">
+                <p className="kt-product-card-more m-0 mt-1 hidden text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] md:block">
                   {category}
                 </p>
               ) : null}
@@ -222,7 +231,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
             {showDetailLink ? (
               <span
                 aria-hidden="true"
-                className="kt-product-card-cta pointer-events-none hidden shrink-0 whitespace-nowrap text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-primary underline decoration-primary/60 decoration-[1.5px] underline-offset-[5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition-all duration-300 group-hover:decoration-primary group-focus-within:decoration-primary md:inline"
+                className="kt-product-card-cta pointer-events-none hidden shrink-0 whitespace-nowrap text-[0.75rem] font-extrabold uppercase tracking-[0.1em] text-primary underline decoration-primary/60 decoration-[1.5px] underline-offset-[5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition-all duration-300 group-hover:decoration-primary group-focus-within:decoration-primary md:inline"
               >
                 {ctaLabel}
               </span>

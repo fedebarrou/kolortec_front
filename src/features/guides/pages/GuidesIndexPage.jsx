@@ -36,7 +36,7 @@ function GuidesIndexPage() {
         path="/soporte/guias"
       />
 
-      <nav className="mb-5 flex items-center gap-2 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]" aria-label="Breadcrumb">
+      <nav className="mb-5 flex items-center gap-2 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#aab2be]" aria-label="Breadcrumb">
         <Link to="/descargas" className="transition hover:text-primary">{t('pages.guides.breadcrumbSupport', 'Soporte')}</Link>
         <span aria-hidden="true">/</span>
         <span className="text-white">{t('pages.guides.breadcrumbGuides', 'Guías')}</span>
@@ -45,7 +45,7 @@ function GuidesIndexPage() {
       <header className="mb-10 grid max-w-[80ch] gap-3 kt-reveal">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-[2px] w-8 bg-primary" />
-          <span className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-primary">
+          <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">
             {t('pages.guides.cluster', 'Cluster Soporte')}
           </span>
         </div>
@@ -73,13 +73,13 @@ function GuidesIndexPage() {
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <Link
               to="/contacto"
-              className="inline-flex items-center gap-2 rounded-[8px] border-2 border-white px-5 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
+              className="inline-flex items-center gap-2 rounded-[8px] border-2 border-white px-5 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#090909]"
             >
               {t('support.page.contactCta', 'Contactar soporte técnico')}
             </Link>
             <Link
               to="/descargas"
-              className="inline-flex items-center gap-1.5 px-2 py-3 text-[0.72rem] font-extrabold uppercase tracking-[0.12em] text-primary transition hover:opacity-80"
+              className="inline-flex items-center gap-1.5 px-2 py-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-primary transition hover:opacity-80"
             >
               {t('support.page.firmwareCta', 'Ver descargas')}
               <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4]">
@@ -149,7 +149,7 @@ function GuidesIndexPage() {
                   {g.excerpt ? (
                     <p className="m-0 text-[0.92rem] leading-[1.55] text-[#aeb5bf]">{g.excerpt}</p>
                   ) : null}
-                  <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-primary">
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-primary">
                     {t('pages.guides.readCta', 'Leer guía')}
                     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.4] transition-transform group-hover:translate-x-1">
                       <path d="M5 12h14M13 6l6 6-6 6" />
