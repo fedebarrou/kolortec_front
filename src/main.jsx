@@ -25,7 +25,17 @@ function CanvasScaler() {
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth
-      const scale = w >= 1024 ? Math.min(1, w / 1920) : 1
+      // Sin tope. Antes era `Math.min(1, w / 1920)`, así que arriba de 1920 la
+      // escala se clavaba en 1: el lienzo se quedaba en 1920px y se centraba,
+      // dejando bandas negras a los costados — 320px de cada lado en un monitor
+      // de 2560. Ahora el lienzo llena la pantalla también cuando sobra ancho.
+      //
+      // Debajo de 1920 NO cambia nada: el mínimo seguía siendo el mismo valor.
+      // (El texto chico queda igual de chico entre 1024 y 1600; eso es el
+      // problema de fondo del lienzo y se resuelve aparte, no acá.)
+      //
+      // Debajo de 1024 sigue en 1: ahí no hay lienzo, manda el responsive real.
+      const scale = w >= 1024 ? w / 1920 : 1
       document.documentElement.style.setProperty('--kt-canvas-scale', String(scale))
       // --hero-viewport-scale: el MISMO valor, con el nombre que espera el
       // renderer del hero (scroll-contract.js). El renderer es compartido con

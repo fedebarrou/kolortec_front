@@ -38,7 +38,10 @@
         // documento entero se encogia ~30% de un frame al otro. Alla queda solo el resize.
         try {
           var w = window.innerWidth;
-          var ktScale = String(w >= 1024 ? Math.min(1, w / 1920) : 1);
+          // Misma formula que CanvasScaler (main.jsx). SIN TOPE: con Math.min(1, ...)
+          // el lienzo se quedaba en 1920 arriba de ese ancho y aparecian bandas
+          // negras a los costados. Si se cambia aca, cambiar alla.
+          var ktScale = String(w >= 1024 ? w / 1920 : 1);
           d.style.setProperty('--kt-canvas-scale', ktScale);
           // Alias generico que lee el renderer del hero (scroll-contract.js), que es
           // compartido con el admin y el store y no puede conocer una var "kt-".
