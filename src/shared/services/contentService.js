@@ -216,6 +216,11 @@ function mapProductoDetail(p) {
         type: String(d.extension || d.tipo || '').toUpperCase(),
         url: d.url,
         family: clasificarDoc(d),
+        // Quién pide sesión lo decide el BACK, que es el único que sabe en qué
+        // disco quedó el archivo. Si este campo no se propaga, `requiereLogin()`
+        // cae al respaldo por extensión y la UI puede ofrecer "Descargar" en algo
+        // que después va a pedir sesión igual.
+        requiere_login: d.requiere_login,
       })),
     // Material externo: links de referencia cargados en el admin (productos.material_externo).
     // La API los venía emitiendo y tiendita-store ya los mostraba, pero este adapter no los
@@ -1078,6 +1083,7 @@ export async function getDownloads() {
         ext: String(d.extension || d.tipo || '').toUpperCase(),
         size: formatBytes(d.size),
         url: d.url,
+        requiere_login: d.requiere_login, // ver el comentario en mapProductoDetail
       })
     })
   })

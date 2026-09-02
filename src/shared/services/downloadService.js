@@ -58,7 +58,28 @@ function extDe(doc) {
   return String(bruto).toLowerCase().replace(/^\./, '').trim()
 }
 
+/**
+ * ¿Este documento pide sesión?
+ *
+ * QUIÉN MANDA ACÁ CAMBIÓ. La lista de arriba era la única política que existía,
+ * y por eso no era una política: el archivo vivía en una URL pública del storage
+ * y respondía 200 con o sin sesión, así que el muro lo dibujaba el navegador y
+ * lo salteaba cualquiera que leyera el JSON del catálogo.
+ *
+ * Ahora la decisión la toma el backend (`App\Support\DocAccess`) y viaja en cada
+ * documento como `requiere_login`. Lo protegido ya ni siquiera tiene URL de
+ * storage: su `url` apunta a `/api/public/docs/{id}`, que exige la cookie de
+ * cliente. O sea que este flag no ES la puerta —la puerta está en el servidor—:
+ * lo único que hace es que el sitio ofrezca el diálogo de login ANTES de mandar
+ * a alguien contra un 401.
+ *
+ * La lista queda como RESPALDO para los documentos que no traen el flag: un
+ * payload viejo cacheado, o un adapter que todavía no lo propague al mapear.
+ */
 export function requiereLogin(doc) {
+  const flag = doc?.requiere_login ?? doc?.requiereLogin ?? doc?.requires_login
+  if (typeof flag === 'boolean') return flag
+
   return EXT_CON_LOGIN.includes(extDe(doc))
 }
 
@@ -107,10 +128,12 @@ function nombreSugerido(doc) {
  * —con href, `download` y target— para que el archivo sea copiable, abrible en
  * pestaña nueva y visible para un crawler.
  *
- * NOTA: los documentos viven en otro origen (api.…/storage/…), así que el
- * atributo `download` lo ignora el navegador y el archivo se ABRE en vez de
- * guardarse. Para forzar "Guardar como" hace falta `Content-Disposition:
- * attachment` en el storage del backend (queda pedido en el informe).
+ * NOTA: los documentos viven en otro origen (api.…), así que el atributo
+ * `download` lo ignora el navegador. Los PROTEGIDOS ya no sufren eso: salen por
+ * `/api/public/docs/{id}`, que los sirve Laravel con `Content-Disposition:
+ * attachment` y se guardan solos. Los ABIERTOS siguen viniendo del storage
+ * crudo (que no manda ese header) y se ABREN en una pestaña — para una ficha
+ * .pdf o una carta .csv eso es más bien lo que la gente espera.
  */
 export function abrirArchivo(doc) {
   if (!doc?.url || typeof document === 'undefined') return false
