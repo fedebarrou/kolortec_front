@@ -132,14 +132,16 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
   return <video ref={ref} src={url} poster={poster} muted playsInline preload="auto" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
 }
 
-// Recorte de los frames EN MOVIL. Los 180 archivos verticales traen mucho piso vacio
-// abajo: el producto queda chico y "de lejos", y en las primeras escenas se le ve la
-// BASE, que esta mal. 0.62 corta justo debajo de la etiqueta KOLORTEC del cabezal —
-// medido sobre f000 (540x960), donde la etiqueta cae a ~591px. Recortamos el ALTO del
-// buffer y dejamos que el `object-fit: cover` de abajo agrande lo que queda: el mismo
-// archivo entra mas cerca, sin reprocesar las 180 imagenes.
-// Revisado en f000 / f060 / f120 / f179: en los cuatro el tercio inferior es piso.
-const RECORTE_MOVIL = 0.62;
+// ⚠ ACA HUBO UN RECORTE DE 0.62 EN MOVIL y se saco a proposito (sep-2026).
+// Cerraba el encuadre —los frames traen ~38% de piso vacio abajo y se veia la base del
+// producto— pero lo hacia AMPLIANDO el archivo, y ahi estaba el problema: los frames
+// moviles son de 540x960 y un telefono de 390pt con dpr3 pide 1170x2532. Sin recorte ya
+// se amplian x1.76; con el recorte pasaban a x2.84 (y a x4.26 en dpr3). O sea que el
+// encuadre se pagaba con nitidez, y la decision fue priorizar que la imagen se vea como
+// se subio.
+// EL ARREGLO DE VERDAD es re-exportar la secuencia YA ENCUADRADA y en mas resolucion,
+// asi el encuadre viene en el pixel y no hay nada que ampliar. Si eso llega, esto no
+// vuelve: se borra la necesidad.
 
 function ScrubFrames({ bg, progress, reverse, breakpoint }) {
   const canvasRef = useRef(null);
@@ -157,20 +159,9 @@ function ScrubFrames({ bg, progress, reverse, breakpoint }) {
     if (!canvas || !images.length) return;
     const p = reverse ? 1 - progress : progress;
     const image = images[Math.max(0, Math.min(images.length - 1, Math.round(p * (images.length - 1))))];
-    const paint = () => {
-      if (!image.naturalWidth) return;
-      const alto = breakpoint === "mobile"
-        ? Math.round(image.naturalHeight * RECORTE_MOVIL)
-        : image.naturalHeight;
-      canvas.width = image.naturalWidth;
-      canvas.height = alto;
-      // drawImage con rectangulo FUENTE: copiamos solo la franja de arriba.
-      canvas.getContext("2d")?.drawImage(image, 0, 0, image.naturalWidth, alto, 0, 0, image.naturalWidth, alto);
-    };
+    const paint = () => { if (!image.naturalWidth) return; canvas.width = image.naturalWidth; canvas.height = image.naturalHeight; canvas.getContext("2d")?.drawImage(image, 0, 0); };
     if (image.complete) paint(); else image.addEventListener("load", paint, { once: true });
-    // `breakpoint` va en las dependencias: al rotar el telefono cambia el recorte y hay
-    // que REPINTAR, si no el canvas se queda con el buffer del tamanio anterior.
-  }, [progress, reverse, urls.length, breakpoint]);
+  }, [progress, reverse, urls.length]);
   return <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
 }
 
