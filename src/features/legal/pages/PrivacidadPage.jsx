@@ -57,11 +57,11 @@ const secciones = (r) => [
           },
           {
             termino: 'Uso del sitio',
-            texto: 'Registramos qué páginas y productos se ven y qué se busca, asociado a un identificador aleatorio que se genera en tu navegador y se guarda en el almacenamiento local. Ese identificador no contiene tu nombre ni tu correo, y no lo cruzamos con datos de terceros.',
+            texto: 'Registramos qué páginas y qué productos se ven. De cada una de esas visitas guardamos, en el mismo registro: un identificador aleatorio que se genera en tu navegador, tu dirección IP, el navegador que usás y la página desde la que llegaste. Si tenés la sesión iniciada, ese registro queda además vinculado a tu cuenta, y por lo tanto a tu nombre y tu correo.',
           },
           {
             termino: 'Datos técnicos',
-            texto: 'Como cualquier sitio web, nuestros servidores registran la dirección IP, el tipo de navegador y la fecha y hora de cada visita. Se usan para operar el servicio y detectar abusos.',
+            texto: 'Nuestros servidores registran además la dirección IP, el tipo de navegador y la fecha y hora de cada solicitud, como cualquier sitio web. Se usan para operar el servicio y detectar abusos.',
           },
         ],
       },
@@ -124,7 +124,7 @@ const secciones = (r) => [
         tipo: 'lista',
         items: [
           'Una cookie de sesión, necesaria para mantenerte identificado mientras estás con la sesión iniciada. Sin ella no se puede descargar material.',
-          'Un identificador aleatorio guardado en el almacenamiento local del navegador, que sirve para contar visitas sin identificarte.',
+          'Un identificador aleatorio guardado en el almacenamiento local del navegador, que permite agrupar las visitas de un mismo navegador. Por sí solo no contiene tu nombre ni tu correo, pero se guarda junto a tu dirección IP y, si tenés la sesión iniciada, junto a tu cuenta.',
         ],
       },
       'Podés borrar ambos en cualquier momento desde la configuración de tu navegador. Si los borrás, vas a tener que iniciar sesión de nuevo para descargar material; el resto del sitio funciona igual.',
@@ -135,6 +135,7 @@ const secciones = (r) => [
     titulo: '7. Cuánto tiempo los conservamos',
     bloques: [
       'Conservamos los datos mientras dure la finalidad para la que fueron recolectados, y después durante el plazo en que puedan ser necesarios para atender un reclamo o cumplir una obligación legal. Cumplido eso, los eliminamos o los anonimizamos.',
+      'Los registros de actividad descriptos en el punto 2 se conservan mientras el sitio esté en operación, porque su utilidad es comparar períodos. Si pedís su supresión, se eliminan los que estén vinculados a tu cuenta.',
       'Si pedís la supresión de tus datos, los eliminamos salvo que una norma nos obligue a conservarlos, en cuyo caso te lo informamos.',
     ],
   },
