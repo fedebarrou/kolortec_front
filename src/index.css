@@ -692,8 +692,13 @@ html {
     margin: 0;
     padding: 0;
     background: rgba(26, 26, 26, 0.88);
-    backdrop-filter: blur(8px);
+    /* El PREFIJADO va PRIMERO y el estandar ULTIMO. No es estetica: el
+       minificador del build colapsa las dos declaraciones y se queda con la
+       ULTIMA. Con el orden al reves quedaba solo `-webkit-backdrop-filter`, que
+       en Chrome NO activa nada por si sola (medido: computa `none`), asi que el
+       desenfoque desaparecia en produccion y funcionaba en dev. */
     -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
   }
 
@@ -2000,8 +2005,11 @@ html {
        disponible, respetando el margen del sitio que pone la sección. */
     padding: clamp(24px, 6vw, 44px) clamp(20px, 6.5vw, 48px);
     background: rgba(8, 8, 10, 0.55);
-    backdrop-filter: blur(14px) saturate(120%);
+    /* Prefijado primero, estandar ultimo: ver el comentario de la regla de arriba.
+       Al reves, el build deja solo el `-webkit-` y el panel queda SIN desenfoque
+       sobre la foto del recital, que es justo lo que este panel viene a resolver. */
     -webkit-backdrop-filter: blur(14px) saturate(120%);
+    backdrop-filter: blur(14px) saturate(120%);
     border-left: 3px solid var(--primary, #f4df33);
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
   }
