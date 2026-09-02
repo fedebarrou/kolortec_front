@@ -55,6 +55,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://kolortec.com.ar/privacidad</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://kolortec.com.ar/terminos</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://kolortec.com.ar/products/cabezales-moviles</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>

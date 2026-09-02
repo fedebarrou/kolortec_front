@@ -157,16 +157,13 @@ function FooterSection() {
           `mt-6` porque ahora tiene fondo propio y necesita aire por fuera. */}
       <div className="mt-10 w-full bg-[#111114] px-6 py-5 flex flex-col gap-3 text-xs text-slate-500 md:flex-row md:items-center md:justify-between lg:px-40">
         <p>{copyright}</p>
-        {/* ⚠ ACÁ IBAN "Política de Privacidad" y "Términos de Servicio", los dos
-            con href="#": no llevaban a ningún lado porque NO EXISTEN las páginas
-            /privacidad ni /terminos, y no se pueden inventar textos legales.
-            Un link muerto miente peor que un link ausente, así que se sacan.
-            Cuando el cliente entregue los textos vuelven acá, con ruta real —
-            y son obligatorios: el login te hace aceptarlos.
-            Mientras tanto la fila queda con el acceso a la cuenta, que era la
-            otra página que no se alcanzaba desde ningún enlace del sitio (sólo
-            desde el diálogo del ícono de persona, invisible para un crawler). */}
-        <div className="flex gap-5">
+        {/* Los dos legales estuvieron un tiempo fuera de acá: existían como
+            `href="#"` y no llevaban a ningún lado, y un link muerto miente peor
+            que un link ausente. Ya tienen página propia (/privacidad y
+            /terminos), así que vuelven. El pie es el lugar donde se los busca,
+            y además es desde donde los indexa un crawler.
+            `flex-wrap`: son cuatro links y en 360px no entran en una línea. */}
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
           {user ? null : (
             <Link className="hover:text-primary transition-colors" to="/login">
               {t('header.loginAria', 'Iniciar sesión')}
@@ -174,6 +171,12 @@ function FooterSection() {
           )}
           <Link className="hover:text-primary transition-colors" to="/contacto">
             {t('pageTitle.contact', 'Contacto')}
+          </Link>
+          <Link className="hover:text-primary transition-colors" to="/privacidad">
+            {t('footer.privacy', 'Privacidad')}
+          </Link>
+          <Link className="hover:text-primary transition-colors" to="/terminos">
+            {t('footer.terms', 'Términos')}
           </Link>
         </div>
       </div>

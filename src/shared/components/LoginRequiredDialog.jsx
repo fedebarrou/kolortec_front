@@ -122,8 +122,30 @@ function LoginRequiredDialog({ isOpen, onClose, fileName }) {
           </button>
         </div>
 
+        {/* Los legales van ENLAZADOS, no como texto plano: esta línea le pide a
+            la persona que acepte dos documentos, y hasta que existieron las
+            páginas no había forma de leerlos. Abren en pestaña nueva a
+            propósito — este diálogo está en medio de una descarga, y navegar
+            fuera lo cierra y pierde el archivo que se estaba buscando. */}
         <p className="mt-5 text-center text-[0.75rem] leading-[1.4] text-[#7a7e87]">
-          {t('loginDialog.terms', 'Al continuar aceptas nuestros Terminos y Politica de Privacidad.')}
+          {t('loginDialog.termsPre', 'Al continuar aceptás nuestros')}{' '}
+          <a
+            href="/terminos"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[#aeb2ba] underline underline-offset-2 transition hover:text-white"
+          >
+            {t('loginDialog.termsLink', 'Términos y Condiciones')}
+          </a>{' '}
+          {t('loginDialog.termsAnd', 'y nuestra')}{' '}
+          <a
+            href="/privacidad"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[#aeb2ba] underline underline-offset-2 transition hover:text-white"
+          >
+            {t('loginDialog.privacyLink', 'Política de Privacidad')}
+          </a>.
         </p>
       </div>
     </div>

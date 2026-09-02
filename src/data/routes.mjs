@@ -23,6 +23,11 @@ export function listStaticRoutes() {
     { path: '/contacto', priority: 0.6, changefreq: 'monthly' },
     { path: '/distribuidores', priority: 0.7, changefreq: 'monthly' },
     { path: '/rentals', priority: 0.7, changefreq: 'monthly' },
+    /* Legales: prioridad baja porque no se buscan en un buscador, pero SÍ van
+       al sitemap. Un legal indexable es lo que permite demostrar qué decía el
+       sitio en una fecha dada, y los enlaza el pie de todas las páginas. */
+    { path: '/privacidad', priority: 0.3, changefreq: 'yearly' },
+    { path: '/terminos', priority: 0.3, changefreq: 'yearly' },
   ]
 }
 

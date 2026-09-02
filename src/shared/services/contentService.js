@@ -922,6 +922,29 @@ export async function getContactChannels() {
   return canales
 }
 
+/**
+ * Datos del responsable del sitio, para las páginas legales.
+ *
+ * Salen de la CUENTA (`empresa` de /public/web-config), no de una constante en
+ * el código: el nombre y el mail de contacto los cambia el dueño desde el admin
+ * y las páginas legales tienen que seguirlo. Si se hardcodean, el día que
+ * cambie el mail de contacto la política de privacidad queda mintiendo — y ahí
+ * el dato importa de verdad, porque es la vía para ejercer derechos.
+ *
+ * Lo que la API NO puede dar (razón social, CUIT, domicilio) vive en
+ * `features/legal/data/datosLegales.js`. Mismo path cacheado: no cuesta request.
+ */
+export async function getDatosResponsable() {
+  const cfg = await fetchWithFallback(webConfigPath(), null)
+  const empresa = cfg?.empresa
+  if (!empresa || typeof empresa !== 'object') return {}
+  return {
+    nombre: empresa.nombre || null,
+    email: empresa.email || null,
+    telefono: empresa.telefono || null,
+  }
+}
+
 export async function getSiteConfig() {
   const cfg = await fetchWithFallback(webConfigPath(), null)
   return {

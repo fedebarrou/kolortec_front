@@ -53,8 +53,17 @@ function LoginPage() {
           {t('pages.login.google', 'Entrar o registrarte con Google')}
         </button>
 
+        {/* Acá sí van con <Link>, no en pestaña nueva: es una página propia, no
+            hay un flujo a medio hacer que se pierda al navegar. */}
         <p className="text-[0.75rem] leading-[1.5] text-[#7a7e87] text-center">
-          {t('pages.login.legal', 'Al continuar aceptas nuestros Terminos y Politica de Privacidad.')}
+          {t('pages.login.legalPre', 'Al continuar aceptás nuestros')}{' '}
+          <Link to="/terminos" className="text-[#aeb2ba] underline underline-offset-2 transition hover:text-white">
+            {t('pages.login.termsLink', 'Términos y Condiciones')}
+          </Link>{' '}
+          {t('pages.login.legalAnd', 'y nuestra')}{' '}
+          <Link to="/privacidad" className="text-[#aeb2ba] underline underline-offset-2 transition hover:text-white">
+            {t('pages.login.privacyLink', 'Política de Privacidad')}
+          </Link>.
         </p>
       </div>
     </section>

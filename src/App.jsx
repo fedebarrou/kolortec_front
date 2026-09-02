@@ -19,6 +19,8 @@ const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
 const GuidesIndexPage = lazy(() => import('./features/guides/pages/GuidesIndexPage'))
 const GuideDetailPage = lazy(() => import('./features/guides/pages/GuideDetailPage'))
 const DownloadRedirect = lazy(() => import('./features/landing/components/DownloadRedirect'))
+const PrivacidadPage = lazy(() => import('./features/legal/pages/PrivacidadPage'))
+const TerminosPage = lazy(() => import('./features/legal/pages/TerminosPage'))
 
 /**
  * 404 — no existía. Cualquier URL mal tipeada caía en un <Routes> sin comodín:
@@ -100,6 +102,16 @@ function App() {
         <Route path="/soporte/guias" element={<GuidesIndexPage />} />
         <Route path="/soporte/guias/:slug" element={<GuideDetailPage />} />
         <Route path="/garantias" element={<GarantiasPage />} />
+        {/* Legales. Los alias en singular/plural y las grafías sin tilde
+            existen porque son URLs que la gente teclea a mano y que otros
+            sitios enlazan de memoria; caer en el 404 desde un pie de página
+            legal es peor que redirigir. */}
+        <Route path="/privacidad" element={<PrivacidadPage />} />
+        <Route path="/politica-de-privacidad" element={<Navigate to="/privacidad" replace />} />
+        <Route path="/terminos" element={<TerminosPage />} />
+        <Route path="/términos" element={<Navigate to="/terminos" replace />} />
+        <Route path="/terminos-y-condiciones" element={<Navigate to="/terminos" replace />} />
+        <Route path="/legales" element={<Navigate to="/terminos" replace />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/sumate" element={<JoinPage />} />
         {/* Las dos rutas viejas siguen funcionando: eran dos formularios casi
