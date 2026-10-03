@@ -3006,8 +3006,9 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
 
 /* ── Footer (opción C del mockup docs/mockups/2026-10-03-footer, sin la
    diagonal: pedido del cliente). Gris carbón un punto más claro que el negro
-   de la página, así el pie se despega sin línea divisoria. Galería en grilla,
-   logo vectorial, contacto a la vista y el sello de volver arriba. ── */
+   de la página, con un corte recto. La galería sigue siendo el carrusel de
+   siempre; logo vectorial y contacto a la vista. Sin sello de volver arriba
+   (el cliente lo descartó). ── */
 @layer components {
   .kt-footer {
     --kt-ft-bg: #151518;
