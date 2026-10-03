@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useFullBleed } from '../../../shared/hooks/useFullBleed'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useAuth } from '../../../shared/auth/AuthContext'
-import { getFooterData, getCategorias } from '../../../shared/services/contentService'
+import { getFooterData, getCategorias, getContactChannels, getDatosResponsable } from '../../../shared/services/contentService'
 
 function FooterSection() {
   const { t } = useLanguage()
@@ -22,14 +23,34 @@ function FooterSection() {
     getFooterData().then((d) => { if (mounted && d) setFooterData(d) })
     return () => { mounted = false }
   }, [])
-  const galleryImages = footerData.gallery
-  // Misma regla que la tira de marcas: el track se repite hasta llenar la pantalla
-  // (par de veces, por el -50% del keyframe). Con 3 o 4 fotos cargadas duplicar una
-  // sola vez dejaba media tira vacía girando.
+  // Fotos que fallaron al cargar: se sacan de la galería entera, no sólo la
+  // copia que falló. Con loading=lazy las otras copias del loop fallaban recién
+  // al entrar en pantalla y la tira pegaba un salto en el medio (joan REG-005).
+  const [rotas, setRotas] = useState(() => new Set())
+  const galleryImages = useMemo(
+    () => footerData.gallery.filter((src) => !rotas.has(src)),
+    [footerData.gallery, rotas],
+  )
+  // Carrusel que gira (pedido del cliente: la galería del pie se mantiene como
+  // estaba). El track se repite hasta llenar la pantalla (par de veces, por el
+  // -50% del keyframe): con 3 o 4 fotos duplicar una sola vez dejaba media
+  // tira vacía girando.
   const [marqueeRef, repeats] = useMarqueeFill(galleryImages.length, 14)
   const loopImages = useMemo(() => buildMarqueeLoop(galleryImages, repeats), [galleryImages, repeats])
   const galleryDuration = marqueeDuration(galleryImages.length, 8, 40)
   const [lightboxIndex, setLightboxIndex] = useState(-1)
+  // A sangre, como el resto de las secciones: en pantallas más anchas que el
+  // lienzo de 1920 el fondo gris quedaba como una caja con bandas negras.
+  const footerRef = useRef(null)
+  useFullBleed(footerRef)
+  const [canales, setCanales] = useState({})
+  const [responsable, setResponsable] = useState({})
+  useEffect(() => {
+    let mounted = true
+    getContactChannels().then((c) => { if (mounted && c) setCanales(c) })
+    getDatosResponsable().then((d) => { if (mounted && d) setResponsable(d) })
+    return () => { mounted = false }
+  }, [])
   // Columna "Productos" del footer = categorías reales de la cuenta (tiendita). Vacío → "Ver productos".
   const [categorias, setCategorias] = useState([])
   useEffect(() => {
@@ -63,55 +84,96 @@ function FooterSection() {
   ).replace('{year}', String(new Date().getFullYear()))
 
   const renderTitle = (label) => (
-    <h4 className="title-font mb-4 text-base md:text-lg font-black text-white">
+    <h4 className="kt-footer-title title-font">
       {label}
       <span className="text-primary">.</span>
     </h4>
   )
 
+  // Contacto visible en el pie (antes no había ni un dato): WhatsApp de la
+  // cuenta + email y teléfono de la empresa. Salen del mismo web-config que ya
+  // pide el sitio (no cuesta requests). Lo que no esté cargado no se muestra.
+  const waNumero = canales.contacto || canales.ventas || null
+  const contactos = [
+    waNumero ? { key: 'wa', label: 'WhatsApp', value: formatearTelefono(waNumero), href: `https://wa.me/${waNumero}` } : null,
+    // Sólo un email "limpio": uno cargado como a@b.com?bcc=… le agregaría copias
+    // ocultas al correo del visitante (sekh SEC-001).
+    emailValido(responsable.email) ? { key: 'mail', label: 'Email', value: responsable.email, href: `mailto:${responsable.email}` } : null,
+    responsable.telefono
+      ? { key: 'tel', label: t('footer.phone', 'Teléfono'), value: responsable.telefono, href: `tel:${String(responsable.telefono).replace(/\D/g, '')}` }
+      : null,
+  ].filter(Boolean)
+
   return (
-    <footer className="bg-deep-black border-t border-slate-800 py-10">
+    <footer ref={footerRef} className="kt-footer">
       {galleryImages.length > 0 ? (
-      <div className="mb-16 w-full px-6 lg:px-40 md:mb-20">
-        <div ref={marqueeRef} className="kt-marquee" style={{ '--kt-marquee-duration': galleryDuration }}>
-          <div className="kt-marquee-track">
-            {loopImages.map((src, index) => (
-              <button
-                key={`${src}-${index}`}
-                type="button"
-                className="kt-marquee-item kt-marquee-item-square m-0 cursor-pointer border-0 bg-transparent p-0"
-                onClick={() => setLightboxIndex(index % galleryImages.length)}
-                aria-label={`Abrir imagen ${index + 1} del footer`}
-              >
-                <img
-                  className="h-full w-full cursor-pointer object-cover"
-                  src={src}
-                  alt={t('a11y.footerAlt', 'Kolortec en acción')}
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => { const b = e.currentTarget.closest('button'); if (b) b.style.display = 'none' }}
-                />
-              </button>
-            ))}
+        <div className="kt-footer-gal">
+          <div ref={marqueeRef} className="kt-marquee" style={{ '--kt-marquee-duration': galleryDuration }}>
+            <div className="kt-marquee-track">
+              {loopImages.map((src, index) => (
+                <button
+                  key={`${src}-${index}`}
+                  type="button"
+                  className="kt-marquee-item kt-marquee-item-square m-0 cursor-pointer border-0 bg-transparent p-0"
+                  onClick={() => setLightboxIndex(index % galleryImages.length)}
+                  aria-label={`${t('footer.openImage', 'Abrir imagen')} ${(index % galleryImages.length) + 1}`}
+                >
+                  <img
+                    className="h-full w-full cursor-pointer object-cover"
+                    src={src}
+                    alt={t('a11y.footerAlt', 'Kolortec en acción')}
+                    loading="lazy"
+                    decoding="async"
+                    onError={() => setRotas((prev) => (prev.has(src) ? prev : new Set(prev).add(src)))}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
       ) : null}
 
-      <div className="w-full grid grid-cols-2 gap-10 px-6 md:grid-cols-4 md:gap-12 lg:px-40">
-        <div className="flex flex-col gap-4">
-          <img alt={t('a11y.logo', 'Logo de Kolortec')} className="h-28 w-28 object-contain shrink-0 md:h-32 md:w-32" src="/assets/footer-logo.jpeg" />
-          <p className="body-font max-w-[34ch] text-[0.78rem] leading-relaxed text-slate-500">
-            {t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}
-          </p>
+      <div className="kt-footer-cols">
+        <div className="kt-footer-brand">
+          {/* Logo vectorial (el JPEG tenía su propio fondo negro y se le veía
+              el recuadro contra el pie). */}
+          <div className="kt-footer-logo title-font" role="img" aria-label={t('a11y.logo', 'Logo de Kolortec')}>
+            KOLORTEC
+            <svg viewBox="-50 -50 100 100" aria-hidden="true">
+              <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" />
+              <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(60)" />
+              <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(120)" />
+            </svg>
+          </div>
+          <p>{t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}</p>
         </div>
+
+        {contactos.length > 0 ? (
+          <div className="kt-footer-contacto">
+            {renderTitle(t('footer.contactTitle', 'Contacto'))}
+            <ul>
+              {contactos.map((c) => (
+                <li key={c.key}>
+                  <strong>{c.label}</strong>
+                  <a
+                    href={c.href}
+                    target={c.href.startsWith('http') ? '_blank' : undefined}
+                    rel={c.href.startsWith('http') ? 'noreferrer' : undefined}
+                  >
+                    {c.value}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div>
           {renderTitle(t('footer.productsTitle', 'Productos'))}
-          <ul className="body-font text-slate-400 space-y-4 text-sm">
+          <ul>
             {productItems.map((it) => (
               <li key={`footer-cat-${it.key}`}>
-                <Link className="capitalize hover:text-primary transition-colors" to={it.to}>{it.label}</Link>
+                <Link className="capitalize" to={it.to}>{it.label}</Link>
               </li>
             ))}
           </ul>
@@ -119,10 +181,10 @@ function FooterSection() {
 
         <div>
           {renderTitle(t('footer.libraryTitle', 'Soporte'))}
-          <ul className="body-font text-slate-400 space-y-4 text-sm">
+          <ul>
             {supportItems.map((it) => (
               <li key={`footer-support-${it.key}`}>
-                <Link className="hover:text-primary transition-colors" to={it.to}>{it.label}</Link>
+                <Link to={it.to}>{it.label}</Link>
               </li>
             ))}
           </ul>
@@ -130,16 +192,11 @@ function FooterSection() {
 
         <div>
           {renderTitle(t('footer.updatesTitle', 'Follow Us'))}
-          <ul className="body-font text-slate-400 space-y-4 text-sm">
+          <ul>
             {SOCIAL_LINKS.map((social) => (
               <li key={`footer-social-${social.key}`}>
-                <a
-                  className="inline-flex items-center gap-2 hover:text-primary transition-colors"
-                  href={social.href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
+                <a className="kt-footer-social" href={social.href} target="_blank" rel="noreferrer">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d={social.path} />
                   </svg>
                   <span>{social.label}</span>
@@ -150,35 +207,18 @@ function FooterSection() {
         </div>
       </div>
 
-
-      {/* La barra legal va sobre su PROPIO fondo, un gris oscuro: es el pie del
-          pie, no una fila más del footer, y separarla por color la despega del
-          bloque de links sin necesidad de otra línea divisoria. `mt-10` y no
-          `mt-6` porque ahora tiene fondo propio y necesita aire por fuera. */}
-      <div className="mt-10 w-full bg-[#111114] px-6 py-5 flex flex-col gap-3 text-xs text-slate-500 md:flex-row md:items-center md:justify-between lg:px-40">
+      {/* Los dos legales estuvieron un tiempo fuera de acá: existían como
+          `href="#"` y no llevaban a ningún lado. Ya tienen página propia
+          (/privacidad y /terminos): el pie es donde se los busca y desde donde
+          los indexa un crawler. */}
+      <div className="kt-footer-legal">
         <p>{copyright}</p>
-        {/* Los dos legales estuvieron un tiempo fuera de acá: existían como
-            `href="#"` y no llevaban a ningún lado, y un link muerto miente peor
-            que un link ausente. Ya tienen página propia (/privacidad y
-            /terminos), así que vuelven. El pie es el lugar donde se los busca,
-            y además es desde donde los indexa un crawler.
-            `flex-wrap`: son cuatro links y en 360px no entran en una línea. */}
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
-          {user ? null : (
-            <Link className="hover:text-primary transition-colors" to="/login">
-              {t('header.loginAria', 'Iniciar sesión')}
-            </Link>
-          )}
-          <Link className="hover:text-primary transition-colors" to="/contacto">
-            {t('pageTitle.contact', 'Contacto')}
-          </Link>
-          <Link className="hover:text-primary transition-colors" to="/privacidad">
-            {t('footer.privacy', 'Privacidad')}
-          </Link>
-          <Link className="hover:text-primary transition-colors" to="/terminos">
-            {t('footer.terms', 'Términos')}
-          </Link>
-        </div>
+        <nav aria-label={t('footer.legalNav', 'Legales')}>
+          {user ? null : <Link to="/login">{t('header.loginAria', 'Iniciar sesión')}</Link>}
+          <Link to="/contacto">{t('pageTitle.contact', 'Contacto')}</Link>
+          <Link to="/privacidad">{t('footer.privacy', 'Privacidad')}</Link>
+          <Link to="/terminos">{t('footer.terms', 'Términos')}</Link>
+        </nav>
       </div>
 
       <ImageLightbox
@@ -190,6 +230,20 @@ function FooterSection() {
       />
     </footer>
   )
+}
+
+// Lista blanca, no lista negra: con `%` un email como a@b.com%3Fbcc%3Dx@y.com
+// volvía a meter parámetros al decodificarse el mailto (sekh SEC-001).
+function emailValido(email) {
+  return typeof email === 'string' && /^[A-Za-z0-9._+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(email)
+}
+
+// 5491124062526 → "+54 9 11 2406-2526". Si el número no tiene la forma
+// argentina esperada, se muestra tal cual con un + adelante.
+function formatearTelefono(digitos) {
+  const d = String(digitos).replace(/\D/g, '')
+  const m = d.match(/^54(9?)(11|\d{3,4})(\d{3,4})(\d{4})$/)
+  return m ? `+54 ${m[1] ? '9 ' : ''}${m[2]} ${m[3]}-${m[4]}` : `+${d}`
 }
 
 export default FooterSection

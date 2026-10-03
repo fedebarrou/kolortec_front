@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import SelloKolortec from '../../../shared/components/SelloKolortec'
 
 /**
  * KolortecSello — el círculo con la estrella que RUEDA por el borde en diagonal
@@ -17,7 +18,6 @@ import { useEffect, useId, useRef } from 'react'
  */
 function KolortecSello() {
   const ref = useRef(null)
-  const arco = useId().replace(/:/g, '')
 
   useEffect(() => {
     const el = ref.current
@@ -77,20 +77,7 @@ function KolortecSello() {
 
   return (
     <div ref={ref} className="kt-sello" aria-hidden="true">
-      <svg viewBox="0 0 100 100">
-        <defs>
-          <path id={arco} d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
-        </defs>
-        <circle cx="50" cy="50" r="49" style={{ fill: 'var(--bg, #050505)', stroke: 'var(--primary, #f4df33)' }} strokeWidth="2" />
-        <text fontFamily="FuturaExtraBlackCondensed, Impact, sans-serif" fontWeight="900" fontSize="10" letterSpacing="3.2" style={{ fill: 'var(--primary, #f4df33)' }}>
-          <textPath href={`#${arco}`}>KOLORTEC · READY TO WORK · </textPath>
-        </text>
-        <g style={{ fill: 'var(--primary, #f4df33)' }} transform="translate(50 50) scale(0.42)">
-          <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" />
-          <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(60)" />
-          <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(120)" />
-        </g>
-      </svg>
+      <SelloKolortec />
     </div>
   )
 }

@@ -3004,6 +3004,183 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
   }
 }
 
+/* ── Footer (opción C del mockup docs/mockups/2026-10-03-footer, sin la
+   diagonal: pedido del cliente). Gris carbón un punto más claro que el negro
+   de la página, así el pie se despega sin línea divisoria. Galería en grilla,
+   logo vectorial, contacto a la vista y el sello de volver arriba. ── */
+@layer components {
+  .kt-footer {
+    --kt-ft-bg: #151518;
+    --kt-ft-text: #c3c9d2;
+    --kt-ft-soft: #a9b0ba;
+    position: relative;
+    background: var(--kt-ft-bg);
+    padding-top: clamp(48px, 6vw, 72px);
+  }
+
+  /* La galería del pie es el carrusel de siempre (.kt-marquee); acá sólo se
+     le da el gutter del footer. */
+  .kt-footer-gal {
+    padding: 0 1.5rem;
+  }
+
+  .kt-footer-cols {
+    display: grid;
+    grid-template-columns: 1.3fr repeat(4, minmax(0, 1fr));
+    gap: 32px;
+    padding: clamp(40px, 5vw, 56px) 1.5rem clamp(28px, 4vw, 40px);
+  }
+
+  .kt-footer-cols > * {
+    min-width: 0;
+  }
+
+  .kt-footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 12px;
+    font-size: 1.8rem;
+    line-height: 1;
+    color: #fff;
+  }
+
+  .kt-footer-logo svg {
+    width: 0.9em;
+    height: 0.9em;
+    fill: var(--primary, #f4df33);
+  }
+
+  .kt-footer-brand p {
+    margin: 0;
+    max-width: 32ch;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--kt-ft-soft);
+  }
+
+  .kt-footer-title {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .kt-footer-cols ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.92rem;
+    color: var(--kt-ft-text);
+  }
+
+  .kt-footer-cols a {
+    transition: color 0.2s ease;
+  }
+
+  .kt-footer-cols a:hover,
+  .kt-footer-cols a:focus-visible {
+    color: var(--primary, #f4df33);
+  }
+
+  .kt-footer-contacto strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8d949f;
+  }
+
+  .kt-footer-contacto a {
+    overflow-wrap: anywhere;
+  }
+
+  .kt-footer-social {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .kt-footer-social svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  /* Texto legal más claro que antes: el gris anterior quedaba ~3,9:1 sobre el
+     fondo y el mínimo para texto de 12px es 4,5:1. */
+  .kt-footer-legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding: 18px 1.5rem;
+    border-top: 1px solid #222226;
+    font-size: 0.75rem;
+    color: #b4bac3;
+  }
+
+  .kt-footer-legal p {
+    margin: 0;
+  }
+
+  .kt-footer-legal nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+
+  .kt-footer-legal a:hover,
+  .kt-footer-legal a:focus-visible {
+    color: var(--primary, #f4df33);
+  }
+
+  /* Mismo gutter que el resto del sitio en escritorio (10rem + el bleed). */
+  @media (min-width: 1024px) {
+    .kt-footer-gal,
+    .kt-footer-cols,
+    .kt-footer-legal {
+      padding-left: calc(10rem + var(--kt-bleed-inset, 0px));
+      padding-right: calc(10rem + var(--kt-bleed-inset, 0px));
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .kt-footer-cols {
+      grid-template-columns: 1fr 1fr;
+      gap: 28px 18px;
+    }
+
+    .kt-footer-brand,
+    .kt-footer-contacto {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 640px) {
+
+    .kt-footer-legal {
+      flex-direction: column;
+      align-items: flex-start;
+      /* El último renglón no puede quedar debajo del WhatsApp flotante. */
+      padding-bottom: calc(18px + var(--kt-fab-safe, 0px));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-footer-cols a {
+      transition: none;
+    }
+  }
+}
+
 /* Utilidades opt-in para las secciones que terminan debajo del flotante. En
    @layer utilities para ganarle al gutter de Tailwind, que vive ahi. */
 @layer utilities {
