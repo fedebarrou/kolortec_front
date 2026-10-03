@@ -171,8 +171,8 @@ function HotspotViewer() {
     let despiece = 0
     let sentido = 1
     let quietoHasta = 0
-    const DURACION_DESPIECE = 3.2 // s de armado a desarmado
-    const PAUSA_PUNTA = 1400 // ms quieto armado / desarmado
+    const DURACION_DESPIECE = 6 // s de armado a desarmado (lento: pedido del cliente)
+    const PAUSA_PUNTA = 2200 // ms quieto armado / desarmado
     let tecladoDentro = false
 
 
@@ -192,7 +192,7 @@ function HotspotViewer() {
       const h = wrap.clientHeight || 1
       renderer.setSize(w, h, false)
       camera.aspect = w / h
-      zonaX = window.innerWidth >= 1024 ? 0.7 : 0.46
+      zonaX = window.innerWidth >= 1024 ? 0.64 : 0.46
       // three corre el frustum en `near · filmOffset / anchoDePelícula`; para
       // correr el cuadro una fracción s de su ancho hay que escalar por
       // 2·tan(fov/2)·aspect (con sólo el ancho de película salía al doble).
@@ -219,11 +219,11 @@ function HotspotViewer() {
       // La cámara mira un poco por ENCIMA del centro: el equipo baja en el cuadro
       // y deja libre la franja de arriba, donde se apoya el cartel global de
       // login (ra VIS-108).
-      general.target.copy(e.center).add(new THREE.Vector3(0, zonaX === 0.5 || window.innerWidth < 1024 ? 0 : e.radius * 0.14, 0))
+      general.target.copy(e.center).add(new THREE.Vector3(0, zonaX === 0.5 || window.innerWidth < 1024 ? 0 : e.radius * 0.06, 0))
       // En el celular el canvas es bajo: se acerca más para que el equipo
       // llene la franja (con 0.76 quedaban ~110px de amarillo vacío arriba; con
       // 0.62 se cortaba la base).
-      const factor = window.innerWidth < 1024 ? 0.68 : 0.76
+      const factor = window.innerWidth < 1024 ? 0.8 : 0.71
       general.pos.copy(general.target).addScaledVector(DIR_GENERAL, distanciaPara(e.radius) * factor)
       if (!activa) {
         goPos.copy(general.pos)
@@ -278,8 +278,9 @@ function HotspotViewer() {
         dir.normalize()
         // Separación moderada: el encuadre es FIJO y abarca el despiece completo,
         // así que cuanto más se separan las piezas, más chico se ve el equipo
-        // armado. Con esto el despiece ocupa ~1,5 veces el equipo.
-        const empuje = esfera.radius * (0.28 + 0.42 * Math.min(1, d.centroMundo.distanceTo(esfera.center) / esfera.radius))
+        // armado. Con esto el despiece ocupa ~1,4 veces el equipo (más
+        // compacto que antes: el cliente pidió el equipo más protagonista).
+        const empuje = esfera.radius * (0.22 + 0.34 * Math.min(1, d.centroMundo.distanceTo(esfera.center) / esfera.radius))
         d.offsetMundo = dir.multiplyScalar(empuje)
         const i = lista.indexOf(nombre)
         d.orden = (i < 0 ? lista.length : i) / Math.max(1, lista.length)

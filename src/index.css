@@ -2157,7 +2157,7 @@ html {
   /* ── Sección amarilla: la HOT SPOT CMY en 3D (HotspotViewer) ───────────────
      Sobre el amarillo de la sección (se probaron escenario negro, foco y
      degradé; el cliente eligió el amarillo, 2026-10-03).
-     El canvas es ANCHO (62vw) y pasa por detrás del texto: así el equipo se
+     El canvas es ANCHO (66vw) y pasa por detrás del texto: así el equipo se
      encuadra por el alto de la sección y sale grande. El modelo se corre a la
      derecha dentro del canvas (filmOffset en el visor). El texto queda encima
      (z-10) y sus links siguen recibiendo el puntero; el canvas, transparente. */
@@ -2169,7 +2169,7 @@ html {
     right: 0;
     bottom: 0;
     z-index: 1;
-    width: 62vw;
+    width: 66vw;
     overflow: hidden;
   }
 
@@ -2227,7 +2227,9 @@ html {
   .kt-hotspot-ficha {
     position: absolute;
     bottom: clamp(32px, 6vh, 64px);
-    left: 44%;
+    /* A la izquierda del equipo (que ahora ocupa el centro del canvas), debajo
+       de la columna de texto: ahí no pisa el modelo. */
+    left: 30%;
     max-width: min(360px, 52%);
     pointer-events: none;
   }
