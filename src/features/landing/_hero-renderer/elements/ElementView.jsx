@@ -11,12 +11,14 @@ import { IconView } from './IconView'
 import { RatingView } from './RatingView'
 import { LogoView } from './LogoView'
 
+// eslint-disable-next-line react-refresh/only-export-components -- helper puro que usa el renderer; el archivo se copia byte-idéntico a la store, no se parte. Sólo afecta al Fast Refresh en dev.
 export function effectiveProps(el, bp) {
   if (bp === 'mobile' && el.propsMobile) return { ...el.props, ...el.propsMobile }
   if (bp === 'tablet' && el.propsTablet) return { ...el.props, ...el.propsTablet }
   return el.props
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- idem effectiveProps: helper puro de geometría usado por CarouselRenderer/ScrollRenderer.
 export function boxAt(el, bp) {
   return bp === 'tablet' ? (el.pos.tablet ?? el.pos.desktop) : el.pos[bp]
 }

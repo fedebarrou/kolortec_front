@@ -145,10 +145,7 @@ function HeaderSection() {
   )
 
   useEffect(() => {
-    if (!animateEntrance) {
-      setNavEntered(false)
-      return undefined
-    }
+    if (!animateEntrance) return undefined
     let raf = 0
     let storySeen = false
     const check = () => {
@@ -186,6 +183,8 @@ function HeaderSection() {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
       if (raf) window.cancelAnimationFrame(raf)
+      // Al apagarse la entrada animada se rebobina (antes lo hacía la rama !animateEntrance).
+      setNavEntered(false)
     }
   }, [animateEntrance])
 
@@ -394,9 +393,10 @@ function HeaderSection() {
 
   // Al cambiar la lista sólo se ACOTA el índice; nunca se fuerza a 0. Preseleccionar
   // la primera sugerencia era lo que secuestraba el Enter (ver handleSearchSubmit).
-  useEffect(() => {
-    setActiveSuggestionIndex((prev) => (prev >= 0 && prev < suggestions.length ? prev : -1))
-  }, [searchTerm, suggestions.length])
+  // (Ajuste de estado en el render: mismo acotado que antes, sin pasar por un efecto.)
+  if (activeSuggestionIndex !== -1 && !(activeSuggestionIndex >= 0 && activeSuggestionIndex < suggestions.length)) {
+    setActiveSuggestionIndex(-1)
+  }
 
   // El logo y el selector de idioma se dibujan en DOS lugares distintos según el
   // ancho —en mobile el idioma va a la izquierda y el logo al centro; en desktop

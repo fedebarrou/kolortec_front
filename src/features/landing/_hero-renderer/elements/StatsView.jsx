@@ -32,11 +32,13 @@ function formatCount(raw, r) {
 
 export function StatsView({ p, reveal }) {
   const visible = (reveal ?? 1) > 0.02
-  const [prog, setProg] = useState(1)
+  // `anim` es el avance de la animación (lo escribe sólo el rAF y el cleanup que
+  // lo rebobina); el avance mostrado se DERIVA: sin countUp = 1, oculto = 0.
+  const [anim, setProg] = useState(1)
+  const prog = !p.countUp ? 1 : !visible ? 0 : anim
   const raf = useRef(0)
   useEffect(() => {
-    if (!p.countUp) { setProg(1); return }
-    if (!visible) { setProg(0); return }
+    if (!p.countUp || !visible) return undefined
     let t0 = 0
     const dur = 1100
     const tick = (ts) => {
@@ -46,7 +48,10 @@ export function StatsView({ p, reveal }) {
       if (t < 1) raf.current = requestAnimationFrame(tick)
     }
     raf.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf.current)
+    return () => {
+      cancelAnimationFrame(raf.current)
+      setProg(0)
+    }
   }, [visible, p.countUp])
   const shown = (v) => (p.countUp ? formatCount(v, prog) : v)
   // numSize/numLineHeight/numLetterSpacingEm/labelSize/labelLetterSpacingEm/

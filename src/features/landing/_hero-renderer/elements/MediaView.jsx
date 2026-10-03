@@ -10,6 +10,5 @@ export function MediaView({ p }) {
   if (p.kind === 'video') {
     return <video data-fit src={p.url} poster={p.poster} style={common} autoPlay={p.autoplay} loop={p.loop} muted={p.muted} playsInline />
   }
-  // eslint-disable-next-line @next/next/no-img-element
   return <img data-fit src={p.url} alt={p.alt} style={common} />
 }

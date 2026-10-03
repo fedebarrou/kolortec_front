@@ -19,7 +19,6 @@ class SectionErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // eslint-disable-next-line no-console
     console.error(`[landing] sección "${this.props.name || '?'}" falló y se aisló:`, error, info?.componentStack)
   }
 

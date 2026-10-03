@@ -87,9 +87,12 @@ function GuideDetailPage() {
   const { slug } = useParams()
   const { t } = useLanguage()
 
-  const [guide, setGuide] = useState(null)
+  // Guía cargada junto con el slug para el que se pidió: "cargando" se deriva de
+  // que no coincida con el slug actual (sin prender un flag desde el efecto).
+  const [loaded, setLoaded] = useState(null)
+  const loading = loaded === null || loaded.slug !== slug
+  const guide = loaded?.slug === slug ? loaded.guide : null
   const [related, setRelated] = useState([])
-  const [loading, setLoading] = useState(true)
 
   // React Router conserva el scroll al cambiar de ruta: entrando desde el indice
   // (scrollY 6264 medido en celular) la ficha abria en scrollY 987, con el <h1>
@@ -103,13 +106,9 @@ function GuideDetailPage() {
   useEffect(() => {
     if (!slug) return undefined
     let cancelled = false
-    setLoading(true)
 
     getGuideBySlug(slug).then((data) => {
-      if (!cancelled) {
-        setGuide(data || null)
-        setLoading(false)
-      }
+      if (!cancelled) setLoaded({ slug, guide: data || null })
     })
 
     getGuides().then((all) => {

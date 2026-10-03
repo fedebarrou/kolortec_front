@@ -22,18 +22,20 @@ function DownloadRedirect() {
   const { t } = useLanguage()
   const { id } = useParams()
   const navigate = useNavigate()
-  const [state, setState] = useState({ status: 'loading', data: null })
+  // El resultado lleva el id para el que se pidió: si no coincide con el id
+  // actual, el estado es "loading" (derivado, sin setState sincrónico en el efecto).
+  const [result, setResult] = useState({ id: null, status: 'loading', data: null })
+  const state = result.id === id ? result : { status: 'loading', data: null }
   const brand = defaultLandingContent.brand
 
   useEffect(() => {
     let alive = true
-    setState({ status: 'loading', data: null })
     getDownloadInfo(id).then((data) => {
       if (!alive) return
       if (!data) {
-        setState({ status: 'error', data: null })
+        setResult({ id, status: 'error', data: null })
       } else {
-        setState({ status: 'ready', data })
+        setResult({ id, status: 'ready', data })
       }
     })
     return () => {

@@ -150,6 +150,14 @@ export const translations = {
         'Browse our full lineup organized by product category. Tap any category to see its full list.',
     },
     catalog: {
+      noCategoriesTitle: 'Catalog coming soon',
+      noCategoriesBody: 'There are no published categories yet.',
+      searching: 'Searching…',
+      loadingProducts: 'Loading products…',
+      emptyTagBody: 'No product in this category has that tag.',
+      emptyFiltersProductsBody: 'No product matches the selected filters. Try removing one.',
+      categoriesUnavailableTitle: 'We couldn\'t load the catalog',
+      categoriesUnavailableBody: 'There was a problem loading the categories. Try reloading the page in a moment.',
       emptyFiltersBody: 'No categories match the selected filters. Try removing one.',
       emptyFiltersTitle: 'No matches',
       loadingCategories: 'Loading categories…',
@@ -174,6 +182,9 @@ export const translations = {
       cta: 'View product',
     },
     productDetail: {
+      unavailableTitle: 'We couldn\'t show this product',
+      unavailableSubtitle: 'It may no longer be published, or the connection dropped just now. Try again; if it keeps happening, browse the full catalog.',
+      retry: 'Try again',
       related: 'You may also like',
       inquiry: 'Inquiry',
       notFoundTitle: 'Product not found',
@@ -194,6 +205,9 @@ export const translations = {
         technicalSpecs: 'Technical Specification',
       },
       downloads: {
+        pending: 'Ready, you can download it now',
+        emptyManuals: 'This fixture doesn\'t have manuals published yet. Ask support and we\'ll send them.',
+        emptyLibraries: 'This fixture doesn\'t have libraries or firmware published yet. Ask support and we\'ll send them.',
         description:
           'Find and download all technical and marketing documents related to this product.',
         softwareUpdates: 'Libraries',
@@ -275,6 +289,7 @@ export const translations = {
     },
     support: {
       page: {
+        pendingDownload: 'Ready, you can download it now',
         allTitle: 'All',
         emptyAll: 'No files published yet. Ask support and we will send them over.',
         loading: 'Loading files…',
@@ -349,6 +364,10 @@ export const translations = {
       },
     },
     seo: {
+      notFoundDesc: 'The page you\'re looking for doesn\'t exist or moved. Go back home or browse the full Kolortec lighting catalog.',
+      notFound: 'Page not found · Kolortec',
+      categoryUnavailableDesc: 'We couldn\'t load the catalog right now. Try again in a few minutes.',
+      categoryUnavailable: 'Catalog unavailable · Kolortec',
       lineNotFoundDesc: 'This product line does not exist in the catalog. Go back to products to see the full lineup.',
       lineNotFound: 'Product line not found · Kolortec',
       lineDesc: 'Every product in the line, with tech sheets and access to each unit in detail.',
@@ -379,6 +398,10 @@ export const translations = {
       guideNotFoundDesc: 'This guide does not exist or its URL changed. Go back to the support index to see every technical guide.',
     },
     pages: {
+      notFound: {
+        title: 'This page doesn\'t exist',
+        body: 'The link you followed doesn\'t lead anywhere: the address changed or never existed. From here you can get back to what does.',
+      },
       line: {
         otherLines: 'Other lines',
         emptyBody: 'No products assigned to this line yet.',
@@ -391,6 +414,10 @@ export const translations = {
       syncing: 'Syncing…',
       maintenance: 'Site under construction',
       login: {
+        termsLink: 'Terms and Conditions',
+        privacyLink: 'Privacy Policy',
+        legalPre: 'By continuing you accept our',
+        legalAnd: 'and our',
         title: 'Sign in',
         subtitle: 'Sign in or create your account with Google to manage orders and quotes.',
         back: 'Back to home',
@@ -428,6 +455,8 @@ export const translations = {
         autoHint: 'Redirecting you automatically…',
       },
       category: {
+        unavailableTitle: 'We couldn\'t load the catalog',
+        unavailableBody: 'There was a problem loading the categories. Try reloading the page in a moment.',
         notFoundTitle: 'Category not found',
         notFoundBody: 'This category does not exist in the catalog.',
         back: 'Back to products',
@@ -438,6 +467,10 @@ export const translations = {
       },
     },
     a11y: {
+      openMenu: 'Open menu',
+      menu: 'Menu',
+      galleryImages: 'Product images',
+      closeMenu: 'Close menu',
       back: 'Back',
       home: 'Go to home',
       logo: 'Kolortec logo',
@@ -486,6 +519,7 @@ export const translations = {
       submit: 'Send',
     },
     header: {
+      searchGo: 'Search',
       nav: {
         home: 'Home',
         catalog: 'Products',
@@ -521,6 +555,10 @@ export const translations = {
       closeAria: 'Dismiss notice',
     },
     loginDialog: {
+      termsPre: 'By continuing you accept our',
+      termsLink: 'Terms and Conditions',
+      termsAnd: 'and our',
+      privacyLink: 'Privacy Policy',
       close: 'Close',
       title: 'Sign in to download',
       bodyWithFile: 'We need to confirm your account before downloading',
@@ -715,6 +753,14 @@ export const translations = {
         'Recorre nuestra linea completa organizada por tipo de producto. Tocá cualquier categoria para ver el listado.',
     },
     catalog: {
+      noCategoriesTitle: 'Catálogo en preparación',
+      noCategoriesBody: 'Todavía no hay categorías publicadas.',
+      searching: 'Buscando…',
+      loadingProducts: 'Cargando productos…',
+      emptyTagBody: 'Ningún producto de esta categoría tiene esa etiqueta.',
+      emptyFiltersProductsBody: 'Ningún producto cumple con los filtros seleccionados. Probá quitando alguno.',
+      categoriesUnavailableTitle: 'No pudimos cargar el catálogo',
+      categoriesUnavailableBody: 'Hubo un problema al traer las categorías. Probá recargar la página en un momento.',
       emptyFiltersBody: 'No hay categorias que cumplan con los filtros seleccionados. Probá quitando alguno.',
       emptyFiltersTitle: 'Sin coincidencias',
       loadingCategories: 'Cargando categorías…',
@@ -739,6 +785,9 @@ export const translations = {
       cta: 'Ver producto',
     },
     productDetail: {
+      unavailableTitle: 'No pudimos mostrar este producto',
+      unavailableSubtitle: 'Puede que ya no esté publicado, o que la conexión se haya cortado justo ahora. Probá de nuevo; si sigue igual, mirá el catálogo completo.',
+      retry: 'Reintentar',
       related: 'También te puede interesar',
       inquiry: 'Consulta',
       notFoundTitle: 'Producto no encontrado',
@@ -759,6 +808,9 @@ export const translations = {
         technicalSpecs: 'Especificacion Tecnica',
       },
       downloads: {
+        pending: 'Listo, ya podés descargar',
+        emptyManuals: 'Este equipo todavía no tiene manuales publicados. Pedilos por soporte y te los mandamos.',
+        emptyLibraries: 'Este equipo todavía no tiene librerías ni firmware publicados. Pedilos por soporte y te los mandamos.',
         description:
           'Encontra y descarga toda la documentacion tecnica y comercial relacionada con este producto.',
         softwareUpdates: 'Librerías',
@@ -840,6 +892,7 @@ export const translations = {
     },
     support: {
       page: {
+        pendingDownload: 'Listo, ya podés descargar',
         allTitle: 'Todo',
         emptyAll: 'Todavia no hay archivos publicados. Pedilos por soporte y te los mandamos.',
         loading: 'Cargando archivos…',
@@ -914,6 +967,10 @@ export const translations = {
       },
     },
     seo: {
+      notFoundDesc: 'La página que buscás no existe o cambió de dirección. Volvé al inicio o entrá al catálogo completo de iluminación Kolortec.',
+      notFound: 'Página no encontrada · Kolortec',
+      categoryUnavailableDesc: 'No pudimos cargar el catálogo en este momento. Volvé a intentar en unos minutos.',
+      categoryUnavailable: 'Catálogo no disponible · Kolortec',
       lineNotFoundDesc: 'Esta línea no existe en el catálogo. Volvé a productos para ver la línea completa.',
       lineNotFound: 'Línea no encontrada · Kolortec',
       lineDesc: 'Todos los productos de la línea, con ficha técnica y acceso al detalle de cada equipo.',
@@ -944,6 +1001,10 @@ export const translations = {
       guideNotFoundDesc: 'Esta guía no existe o se cambió de URL. Volvé al índice de soporte para ver todas las guías técnicas.',
     },
     pages: {
+      notFound: {
+        title: 'Esta página no existe',
+        body: 'El enlace que seguiste no lleva a ningún lado: la dirección cambió o nunca existió. Desde acá volvés a lo que sí está.',
+      },
       line: {
         otherLines: 'Otras líneas',
         emptyBody: 'Todavía no hay productos asignados a esta línea.',
@@ -956,6 +1017,10 @@ export const translations = {
       syncing: 'Sincronizando…',
       maintenance: 'Sitio en construcción',
       login: {
+        termsLink: 'Términos y Condiciones',
+        privacyLink: 'Política de Privacidad',
+        legalPre: 'Al continuar aceptás nuestros',
+        legalAnd: 'y nuestra',
         title: 'Iniciar sesión',
         subtitle: 'Entrá o creá tu cuenta con Google para gestionar pedidos y cotizaciones.',
         back: 'Volver al inicio',
@@ -993,6 +1058,8 @@ export const translations = {
         autoHint: 'Te estamos redirigiendo automáticamente…',
       },
       category: {
+        unavailableTitle: 'No pudimos cargar el catálogo',
+        unavailableBody: 'Hubo un problema al traer las categorías. Probá recargar la página en un momento.',
         notFoundTitle: 'Categoría no encontrada',
         notFoundBody: 'Esta categoría no existe en el catálogo.',
         back: 'Volver a productos',
@@ -1003,6 +1070,10 @@ export const translations = {
       },
     },
     a11y: {
+      openMenu: 'Abrir menú',
+      menu: 'Menú',
+      galleryImages: 'Imágenes del producto',
+      closeMenu: 'Cerrar menú',
       back: 'Volver',
       home: 'Ir al inicio',
       logo: 'Logo de Kolortec',
@@ -1051,6 +1122,7 @@ export const translations = {
       submit: 'Enviar',
     },
     header: {
+      searchGo: 'Buscar',
       nav: {
         home: 'Inicio',
         catalog: 'Productos',
@@ -1086,6 +1158,10 @@ export const translations = {
       closeAria: 'Cerrar aviso',
     },
     loginDialog: {
+      termsPre: 'Al continuar aceptás nuestros',
+      termsLink: 'Términos y Condiciones',
+      termsAnd: 'y nuestra',
+      privacyLink: 'Política de Privacidad',
       close: 'Cerrar',
       title: 'Inicia sesion para descargar',
       bodyWithFile: 'Necesitamos confirmar tu cuenta antes de descargar',

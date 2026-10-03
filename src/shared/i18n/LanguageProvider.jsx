@@ -49,6 +49,7 @@ export function LanguageProvider({ children }) {
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- el hook vive junto al Context que lee y lo importan ~40 archivos; moverlo rompería esos imports en cadena. Sólo afecta al Fast Refresh en dev.
 export function useLanguage() {
   return useContext(LanguageContext)
 }

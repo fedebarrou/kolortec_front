@@ -110,7 +110,6 @@ function LoginNudge() {
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const dismiss = () => {

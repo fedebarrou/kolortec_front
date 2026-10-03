@@ -5,7 +5,9 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // public/assets/3d/draco: decodificador Draco de three.js copiado tal cual
+  // (código de terceros minificado): no se lintea.
+  globalIgnores(['dist', 'public/assets/3d/draco']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

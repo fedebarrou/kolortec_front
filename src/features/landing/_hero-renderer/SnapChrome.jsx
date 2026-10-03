@@ -64,7 +64,6 @@ export function SnapChrome({
   count = 0,
   index = 0,
   position = 0,
-  started = false,
   breakpoint = "desktop",
   accent = "#fff",
   logoUrl = null,

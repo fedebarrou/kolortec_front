@@ -6,6 +6,5 @@ export function LogoView({ p }) {
       </div>
     )
   }
-  // eslint-disable-next-line @next/next/no-img-element
   return <img data-fit src={p.url} alt={p.alt} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
 }

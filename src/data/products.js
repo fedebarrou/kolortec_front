@@ -18,7 +18,7 @@ import { DEMO_MODE } from '../config.js'
 // kolortec.com redirige 301 a kolortec.com.ar (ver vercel.json).
 const SITE =
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SITE_URL) ||
-  (typeof process !== 'undefined' && process.env && process.env.SITE_URL) ||
+  (globalThis.process?.env?.SITE_URL) ||
   'https://kolortec.com.ar'
 
 /**

@@ -56,11 +56,11 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // render del caller) para no reiniciar el timer de useCarousel sin necesidad.
   const idsKey = slides.map((s) => s.id).join('|')
   const durKey = JSON.stringify(settings.slideDurations || {})
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const durationForIndex = useCallback((i) => {
     const id = slides[i]?.id
     const own = id ? settings.slideDurations?.[id] : undefined
     return typeof own === 'number' && own > 0 ? own : null
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps por firma de contenido (idsKey/durKey) a propósito: ver comentario de arriba; con slides/slideDurations por referencia se reiniciaría el timer en cada render del caller
   }, [idsKey, durKey])
   const auto = useCarousel({ count: slides.length, autoplay: settings.autoplay && activeIndex === undefined, intervalMs: settings.intervalMs, loop: settings.loop, durationForIndex })
   const index = activeIndex ?? auto.index

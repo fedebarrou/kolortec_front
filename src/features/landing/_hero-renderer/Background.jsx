@@ -32,6 +32,7 @@ const clamp01 = (n) => Math.max(0, Math.min(1, n))
  * Sin esto, elegir una animacion para un fondo de frames o video no hacia nada
  * — el control estaria ahi mintiendo.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- helper puro que comparte ScrollRenderer; este archivo se copia byte-idéntico a la store, no se parte. Sólo afecta al Fast Refresh en dev.
 export function animProps(bg) {
   const a = bg && bg.animation
   if (!a || ANIM_TYPES.indexOf(a.type) === -1) return null

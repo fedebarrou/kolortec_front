@@ -108,7 +108,9 @@ function ProductDetailPage() {
   const { slug } = useParams()
   // Data-driven: cargamos el producto REAL desde la API de tiendita por su id/slug.
   const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
+  // Clave (slug + reintento) de la última carga terminada: "cargando" se DERIVA
+  // de si coincide con la clave actual, en vez de prender un flag desde el efecto.
+  const [loadedKey, setLoadedKey] = useState(null)
   const [showPrices, setShowPrices] = useState(true)
   const [showReviews, setShowReviews] = useState(true)
   // Contador de reintentos: el adapter no distingue "no existe" de "no contesta"
@@ -116,10 +118,11 @@ function ProductDetailPage() {
   // que la pantalla vacía ofrece REINTENTAR en vez de afirmar que el producto
   // no existe. Cambiar el contador vuelve a disparar el efecto.
   const [reintento, setReintento] = useState(0)
+  const fetchKey = `${slug}|${reintento}`
+  const loading = loadedKey !== fetchKey
   useEffect(() => {
     let mounted = true
-    setLoading(true)
-    getProductDetail(slug).then((p) => { if (mounted) { setProduct(p); setLoading(false) } })
+    getProductDetail(slug).then((p) => { if (mounted) { setProduct(p); setLoadedKey(`${slug}|${reintento}`) } })
     return () => { mounted = false }
   }, [slug, reintento])
   useEffect(() => {
@@ -247,7 +250,22 @@ function ProductDetailPage() {
   // Medido y no hardcodeado porque el navbar cambia de alto con el idioma y el
   // ancho, y una barra 4px corrida se lee como un error de maquetado.
   const [navTop, setNavTop] = useState(68)
-  const [translatedShortDescription, setTranslatedShortDescription] = useState(product?.shortDescription ?? '')
+  // Traducción de la descripción corta: el texto inmediato (normalizado, o '' si no
+  // hay) se DERIVA en el render; el estado sólo guarda el resultado asíncrono del
+  // traductor, atado a la clave (idioma + texto) para el que se pidió.
+  const shortDescriptionTarget = useMemo(() => {
+    const source = product?.shortDescription ?? ''
+    if (!source) return null
+    const { normalized, sourceLang } = getAutoTranslatedTextTarget(source, lang)
+    return normalized ? { normalized, sourceLang } : null
+  }, [product?.shortDescription, lang])
+  const [asyncShortDescription, setAsyncShortDescription] = useState(null)
+  const shortDescriptionKey = shortDescriptionTarget ? `${lang}|${shortDescriptionTarget.normalized}` : ''
+  const translatedShortDescription = !shortDescriptionTarget
+    ? ''
+    : asyncShortDescription?.key === shortDescriptionKey
+      ? asyncShortDescription.text
+      : shortDescriptionTarget.normalized
   const tabs = useMemo(() => {
     const list = [{ id: 'about', label: t('productDetail.tabs.about', 'About') }]
     // > 1 y no > 0: con una sola foto no hay tira de miniaturas, o sea que
@@ -313,35 +331,21 @@ function ProductDetailPage() {
   }, [slug])
 
   useEffect(() => {
-    const sourceDescription = product?.shortDescription ?? ''
-    if (!sourceDescription) {
-      setTranslatedShortDescription('')
-      return undefined
-    }
-    const { normalized, sourceLang } = getAutoTranslatedTextTarget(sourceDescription, lang)
-    if (!normalized) {
-      setTranslatedShortDescription('')
-      return undefined
-    }
-
-    if (sourceLang === lang) {
-      setTranslatedShortDescription(normalized)
-      return undefined
-    }
+    if (!shortDescriptionTarget) return undefined
+    const { normalized, sourceLang } = shortDescriptionTarget
+    if (sourceLang === lang) return undefined
 
     let cancelled = false
-    setTranslatedShortDescription(normalized)
-
     autoTranslateText({ text: normalized, from: sourceLang, to: lang }).then((translated) => {
       if (!cancelled) {
-        setTranslatedShortDescription(translated || normalized)
+        setAsyncShortDescription({ key: `${lang}|${normalized}`, text: translated || normalized })
       }
     })
 
     return () => {
       cancelled = true
     }
-  }, [lang, product?.shortDescription, slug])
+  }, [lang, shortDescriptionTarget])
 
   useEffect(() => {
     const onScroll = () => {
@@ -454,10 +458,15 @@ function ProductDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const previewStripRef = useRef(null)
 
-  useEffect(() => {
+  // Al cambiar de producto o la cantidad de fotos se vuelve a la primera (ajuste
+  // de estado en el render, sin pasar por un efecto).
+  const galleryKey = `${slug}|${galleryImages.length}`
+  const [prevGalleryKey, setPrevGalleryKey] = useState(galleryKey)
+  if (prevGalleryKey !== galleryKey) {
+    setPrevGalleryKey(galleryKey)
     setActiveImageIndex(0)
     setCurrentVideoIndex(0)
-  }, [slug, galleryImages.length])
+  }
 
   // Centra la miniatura en la tira sin mover el scroll de la PÁGINA
   // (scrollIntoView movía las dos cosas).

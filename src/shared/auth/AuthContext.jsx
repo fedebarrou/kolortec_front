@@ -57,8 +57,12 @@ export function AuthProvider({ children }) {
       window.history.replaceState(null, '', window.location.pathname + window.location.search)
     }
 
-    refreshSession().finally(() => setLoading(false))
-  }, [refreshSession])
+    // Misma hidratación que refreshSession, inline: así el efecto sólo setea estado
+    // desde callbacks de la promesa (no sincrónicamente dentro del cuerpo).
+    getSession()
+      .then((data) => setUser(data ?? null), () => setUser(null))
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, setUser, refreshSession, logout }}>
@@ -75,6 +79,7 @@ export function AuthProvider({ children }) {
  * useAuth() — access auth state and methods anywhere inside <AuthProvider>.
  * Returns { user, loading, setUser, refreshSession, logout }.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- el hook vive junto al Context que lee; separarlo obligaría a re-exportar y tocar los importadores (FooterSection/HeaderSection/ProductReviews/LoginNudge). Sólo afecta al Fast Refresh en dev.
 export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) {

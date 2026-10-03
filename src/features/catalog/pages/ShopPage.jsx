@@ -132,7 +132,7 @@ function ShopPage() {
             <span>{t('catalog.searchFor', 'Busqueda:')} "{query}"</span>
             {productsLoading ? (
               <strong className="animate-pulse text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-[#f4f4f5]">
-                {t('catalog.loadingProducts', 'Buscando…')}
+                {t('catalog.searching', 'Buscando…')}
               </strong>
             ) : (
               <strong className="text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-[#f4f4f5]">
@@ -143,7 +143,7 @@ function ShopPage() {
         </div>
 
         <div className={`${GRID} kt-reveal`}>
-          {productsLoading ? <GridLoading label={t('catalog.loadingProducts', 'Buscando…')} /> : null}
+          {productsLoading ? <GridLoading label={t('catalog.searching', 'Buscando…')} /> : null}
 
           {!productsLoading && filteredProducts.map((item, index) => (
             <ProductCard

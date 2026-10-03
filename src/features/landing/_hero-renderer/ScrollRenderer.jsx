@@ -105,7 +105,7 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
     if (!video) return;
     const onSeeked = () => {
       if (Math.abs(video.currentTime - target.current) > 0.03) {
-        try { video.currentTime = target.current; } catch {}
+        try { video.currentTime = target.current; } catch { /* seek rechazado (video aún no listo): el próximo "seeked"/apply reintenta */ }
       } else seeking.current = false;
     };
     video.addEventListener("seeked", onSeeked);
@@ -121,7 +121,7 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
       target.current = clamp((range.start + p * Math.max(0, range.end - range.start)) * video.duration, 0, Math.max(0, video.duration - 0.05));
       if (!seeking.current) {
         seeking.current = true;
-        try { video.currentTime = target.current; } catch {}
+        try { video.currentTime = target.current; } catch { /* seek rechazado (video aún no listo): el próximo "seeked"/apply reintenta */ }
       }
     };
     if (video.readyState >= 1) apply();
@@ -147,9 +147,12 @@ function ScrubFrames({ bg, progress, reverse, breakpoint }) {
   const canvasRef = useRef(null);
   const imagesRef = useRef([]);
   // En móvil puede haber OTRA secuencia (bg.urlsMobile); sin ella, la de PC.
-  const urls = breakpoint === "mobile" && Array.isArray(bg?.urlsMobile) && bg.urlsMobile.length
-    ? bg.urlsMobile
-    : (Array.isArray(bg?.urls) ? bg.urls : []);
+  // Memoizado: el `[]` de fallback era un array nuevo en cada render y re-disparaba la precarga.
+  const urlsMobile = bg?.urlsMobile;
+  const urlsDesktop = bg?.urls;
+  const urls = useMemo(() => (breakpoint === "mobile" && Array.isArray(urlsMobile) && urlsMobile.length
+    ? urlsMobile
+    : (Array.isArray(urlsDesktop) ? urlsDesktop : [])), [breakpoint, urlsMobile, urlsDesktop]);
   useEffect(() => {
     imagesRef.current = urls.map((url) => { const image = new Image(); image.decoding = "async"; image.src = url; return image; });
   }, [urls]);
@@ -707,7 +710,6 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
     if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
     const breathing = createBreathing({ isIdle: () => arrivedRef.current, onValue: setBreatheG });
     return () => breathing.destroy();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snap.breathing, slides.length]);
 
   // "Saltar" (kolortec skipIntro): sale de la historia y aterriza en lo que
