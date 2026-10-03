@@ -318,7 +318,9 @@ function mapGallery(igData, galeriaData) {
   // Try Instagram first. `connected` = hay un Instagram REAL asociado al tenant (no galería).
   if (igData && igData.connected && Array.isArray(igData.data) && igData.data.length > 0) {
     const images = igData.data
-      .map((item) => item.media_url || item.thumbnail_url)
+      // preview_url lo arma tiendita (thumbnail del video o la foto). media_url de un
+      // VIDEO/REEL es el .mp4: como <img> salía rota.
+      .map((item) => item.preview_url || item.thumbnail_url || item.media_url)
       .filter(Boolean)
     return {
       ...defaultLandingContent.gallery,
