@@ -13,7 +13,13 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 0,
+      "direccion": null,
+      "distancia": 0.0
+    },
+    "grupo": "estructura"
   },
   {
     "nombre_objeto": "panel_lcd",
@@ -29,23 +35,35 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 0,
+      "direccion": null,
+      "distancia": 0.0
+    },
+    "grupo": "estructura"
   },
   {
     "nombre_objeto": "yugo",
     "etiqueta": "Yugo (brazos en U)",
     "centro": [
-      0.0025,
+      0.0,
       0.395,
       -0.0235
     ],
-    "radio": 0.2759,
+    "radio": 0.2661,
     "vista_sugerida": [
       0.0,
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 0,
+      "direccion": null,
+      "distancia": 0.0
+    },
+    "grupo": "estructura"
   },
   {
     "nombre_objeto": "cabezal_chasis",
@@ -55,29 +73,49 @@
       0.5793,
       -0.036
     ],
-    "radio": 0.188,
+    "radio": 0.1709,
     "vista_sugerida": [
       0.0,
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 6,
+      "direccion": [
+        0.0,
+        0.877,
+        -0.48
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "lente_frontal",
     "etiqueta": "Lente frontal",
     "centro": [
       0.0,
-      0.6751,
-      -0.0984
+      0.6726,
+      -0.0941
     ],
-    "radio": 0.1791,
+    "radio": 0.1742,
     "vista_sugerida": [
       0.0,
       0.996,
       0.085
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 5,
+      "direccion": [
+        0.0,
+        0.857,
+        -0.515
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "disipador_heatpipes",
@@ -93,23 +131,43 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 4,
+      "direccion": [
+        0.0,
+        -0.866,
+        0.5
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "ventilador_motor_led",
     "etiqueta": "Ventilador del módulo LED",
     "centro": [
       0.0,
-      0.4422,
-      0.1466
+      0.4382,
+      0.1397
     ],
-    "radio": 0.1016,
+    "radio": 0.0971,
     "vista_sugerida": [
       0.0,
       0.534,
       0.845
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 4,
+      "direccion": [
+        0.0,
+        -0.554,
+        0.833
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "ventilador_2",
@@ -125,7 +183,17 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 4,
+      "direccion": [
+        0.0,
+        -0.866,
+        0.5
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "modulo_cmy",
@@ -141,7 +209,17 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 5,
+      "direccion": [
+        0.0,
+        -0.915,
+        0.403
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "rueda_gobos",
@@ -157,7 +235,17 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 5,
+      "direccion": [
+        -0.081,
+        0.746,
+        -0.661
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "motores_paso_a_paso",
@@ -173,7 +261,17 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 5,
+      "direccion": [
+        0.027,
+        0.6,
+        -0.8
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "placa_control",
@@ -189,7 +287,17 @@
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 4,
+      "direccion": [
+        0.55,
+        0.554,
+        0.625
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "correa_tilt",
@@ -201,11 +309,21 @@
     ],
     "radio": 0.1831,
     "vista_sugerida": [
-      0.0,
-      0.33,
-      0.944
+      0.941,
+      0.188,
+      0.282
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 3,
+      "direccion": [
+        1.0,
+        0.0,
+        -0.0
+      ],
+      "distancia": 0.12
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "encoder",
@@ -217,26 +335,203 @@
     ],
     "radio": 0.0495,
     "vista_sugerida": [
-      0.0,
-      0.33,
-      0.944
+      0.941,
+      0.188,
+      0.282
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 3,
+      "direccion": [
+        1.0,
+        0.0,
+        -0.0
+      ],
+      "distancia": 0.12
+    },
+    "grupo": "internos"
   },
   {
     "nombre_objeto": "cableado",
-    "etiqueta": "Cableado",
+    "etiqueta": "Cableado del brazo",
     "centro": [
-      0.0378,
-      0.4316,
-      0.0023
+      0.1606,
+      0.3791,
+      -0.0103
     ],
-    "radio": 0.2389,
+    "radio": 0.1418,
+    "vista_sugerida": [
+      0.941,
+      0.188,
+      0.282
+    ],
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 3,
+      "direccion": [
+        1.0,
+        0.0,
+        -0.0
+      ],
+      "distancia": 0.12
+    },
+    "grupo": "internos"
+  },
+  {
+    "nombre_objeto": "cableado_cabezal",
+    "etiqueta": "Cableado del cabezal",
+    "centro": [
+      0.0005,
+      0.5283,
+      -0.0019
+    ],
+    "radio": 0.1809,
     "vista_sugerida": [
       0.0,
       0.33,
       0.944
     ],
-    "descripcion": "A CONFIRMAR POR KOLORTEC"
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 4,
+      "direccion": [
+        0.027,
+        -0.696,
+        0.717
+      ],
+      "distancia": 0.15
+    },
+    "grupo": "internos"
+  },
+  {
+    "nombre_objeto": "tapa_cabezal_frontal",
+    "etiqueta": "Tapa frontal del cabezal",
+    "centro": [
+      0.0,
+      0.5708,
+      0.0351
+    ],
+    "radio": 0.285,
+    "vista_sugerida": [
+      0.0,
+      0.33,
+      0.944
+    ],
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 2,
+      "direccion": [
+        -0.78,
+        0.18,
+        0.6
+      ],
+      "distancia": 0.3,
+      "nota": "Sale en diagonal hacia la izquierda: derecho hacia adelante tapaba el interior a la camara del sitio (que mira desde adelante-derecha)."
+    },
+    "grupo": "tapas"
+  },
+  {
+    "nombre_objeto": "tapa_cabezal_trasera",
+    "etiqueta": "Tapa trasera del cabezal (con rejilla del ventilador)",
+    "centro": [
+      0.0,
+      0.5147,
+      -0.0644
+    ],
+    "radio": 0.2835,
+    "vista_sugerida": [
+      0.0,
+      0.33,
+      -0.944
+    ],
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 2,
+      "direccion": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "distancia": 0.3
+    },
+    "grupo": "tapas"
+  },
+  {
+    "nombre_objeto": "tapa_yugo_izq",
+    "etiqueta": "Tapa izquierda del yugo",
+    "centro": [
+      -0.1581,
+      0.395,
+      -0.0
+    ],
+    "radio": 0.1936,
+    "vista_sugerida": [
+      -0.941,
+      0.188,
+      0.282
+    ],
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 1,
+      "direccion": [
+        -1.0,
+        0.0,
+        -0.0
+      ],
+      "distancia": 0.25
+    },
+    "grupo": "tapas"
+  },
+  {
+    "nombre_objeto": "tapa_yugo_der",
+    "etiqueta": "Tapa derecha del yugo",
+    "centro": [
+      0.1581,
+      0.395,
+      -0.0
+    ],
+    "radio": 0.1936,
+    "vista_sugerida": [
+      0.941,
+      0.188,
+      0.282
+    ],
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 1,
+      "direccion": [
+        1.0,
+        0.0,
+        -0.0
+      ],
+      "distancia": 0.25
+    },
+    "grupo": "tapas"
+  },
+  {
+    "nombre_objeto": "placa_brazo",
+    "etiqueta": "Placa electrónica del brazo",
+    "centro": [
+      -0.1377,
+      0.421,
+      -0.0
+    ],
+    "radio": 0.073,
+    "vista_sugerida": [
+      -0.941,
+      0.188,
+      0.282
+    ],
+    "descripcion": "A CONFIRMAR POR KOLORTEC",
+    "despiece": {
+      "orden": 3,
+      "direccion": [
+        -1.0,
+        0.0,
+        -0.0
+      ],
+      "distancia": 0.12
+    },
+    "grupo": "internos"
   }
 ]

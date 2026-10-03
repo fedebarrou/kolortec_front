@@ -48,28 +48,54 @@ if hide_cover:
     for o in bpy.data.objects:
         if o.name == "yugo": pass
 
+import json, mathutils
+jpg = "--jpg" in argv
+if jpg:
+    scene.render.image_settings.file_format = "JPEG"; scene.render.image_settings.quality = 92
+pivot = bpy.data.objects["cabezal_pivot"]
+piezas = json.load(open(os.path.join(os.path.dirname(bpy.data.filepath), "piezas.json"), encoding="utf-8"))
+base_loc = {o.name: o.location.copy() for o in bpy.data.objects}
+
+def estado(abierto, tilt_deg):
+    """pose del cabezal + tapas (orden 1 y 2 del despiece) cerradas o separadas."""
+    pivot.rotation_euler = (math.radians(tilt_deg), 0, 0)
+    for n, l in base_loc.items(): bpy.data.objects[n].location = l
+    bpy.context.view_layer.update()
+    if not abierto: return
+    for pz in piezas:
+        d = pz.get("despiece") or {}
+        if d.get("orden") in (1, 2):
+            gx, gy, gz = d["direccion"]; v = Vector((gx, -gz, gy)) * d["distancia"]   # GLB (x,y,z) -> Blender (x,-z,y)
+            ob = bpy.data.objects[pz["nombre_objeto"]]
+            if ob.parent is not None: v = ob.parent.matrix_world.to_3x3().inverted() @ v
+            ob.location = base_loc[ob.name] + v
+    bpy.context.view_layer.update()
+
 cam_d = bpy.data.cameras.new("cam"); cam = bpy.data.objects.new("cam", cam_d); scene.collection.objects.link(cam); scene.camera = cam
 def shot(name, target, dist, az_deg, el_deg, lens):
     az, el = math.radians(az_deg), math.radians(el_deg)
     loc = Vector(target) + Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el))) * dist
     cam.location = loc; cam_d.lens = lens
     cam.rotation_euler = (Vector(target) - loc).to_track_quat("-Z", "Y").to_euler()
-    scene.render.filepath = os.path.join(out, name + suffix + ".png")
+    scene.render.filepath = os.path.join(out, name + suffix + (".jpg" if jpg else ".png"))
     bpy.ops.render.render(write_still=True)
     print("[render]", scene.render.filepath)
 
+def head(p): return tuple(pivot.matrix_world @ Vector(p))
+
 for v in views:
-    if v == "frente":       shot("frente", (0, 0, 0.40), 2.1, 0, 3, 70)
-    if v == "tres_cuartos": shot("tres_cuartos", (0, 0, 0.40), 2.2, 38, 10, 70)
-    if v == "disipador":    shot("disipador", (0.0, 0.0, 0.39), 0.95, 24, 14, 85)
-    if v == "optica":
-        pv = math.radians(-30); tgt = (0, 0.5 * 0.0 + 0.0, 0)
-        import mathutils
-        pm = mathutils.Matrix.Translation((0, 0, 0.515)) @ mathutils.Matrix.Rotation(pv, 4, "X")
-        shot("optica", tuple(pm @ Vector((0, -0.03, 0.07))), 0.8, 20, 25, 85)
-    if v == "lente":
-        import mathutils
-        pm = mathutils.Matrix.Translation((0, 0, 0.515)) @ mathutils.Matrix.Rotation(math.radians(-30), 4, "X")
-        shot("lente", tuple(pm @ Vector((0, 0, 0.24))), 0.6, 165, 52, 70)
-    if v == "lateral":      shot("lateral", (0, 0, 0.40), 2.2, 90, 4, 70)
-    if v == "trasera":      shot("trasera", (0, 0, 0.40), 2.2, 160, 12, 70)
+    if v == "cerrado_frente": estado(False, 22);  shot("cerrado_frente", (0, 0, 0.42), 2.1, 0, 3, 70)
+    if v == "cerrado_34":     estado(False, -30); shot("cerrado_34", (0, 0, 0.40), 2.2, -50, 10, 70)
+    if v == "abierto_34":     estado(True, -30);  shot("abierto_34", (0, 0, 0.42), 3.3, 38, 12, 70)
+    # --- chequeo de textos (se tienen que leer de izquierda a derecha, sin espejo)
+    if v == "txt_izq":   estado(False, -30); shot("txt_izq", (-0.185, 0, 0.44), 0.7, -90, 0, 70)
+    if v == "txt_der":   estado(False, -30); shot("txt_der", (0.185, 0, 0.44), 0.7, 90, 0, 70)
+    if v == "txt_label": estado(False, -30); shot("txt_label", (0.055, -0.124, 0.1625), 0.32, 0, 38, 70)
+    if v == "txt_logo":  estado(False, -30); shot("txt_logo", (0, -0.0655, 0.2385), 0.35, 0, 0, 70)
+    if v == "txt_panel": estado(False, -30); shot("txt_panel", (0, -0.15, 0.088), 0.42, 0, 4, 70)
+    if v == "txt_trasera": estado(False, -30); shot("txt_trasera", (0, 0.1, 0.42), 1.4, 180, 8, 70)
+    # --- vistas de detalle (modelo abierto, sin tapas)
+    if v == "frente":       estado(True, -30); shot("frente", (0, 0, 0.40), 2.1, 0, 3, 70)
+    if v == "tres_cuartos": estado(True, -30); shot("tres_cuartos", (0, 0, 0.40), 2.2, 38, 10, 70)
+    if v == "disipador":    estado(True, -30); shot("disipador", (0.0, 0.0, 0.39), 0.95, 24, 14, 85)
+    if v == "lateral":      estado(True, -30); shot("lateral", (0, 0, 0.40), 2.2, 90, 4, 70)

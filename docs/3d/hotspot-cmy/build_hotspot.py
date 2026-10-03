@@ -156,6 +156,7 @@ mkmat("decal_etiqueta", (1, 1, 1), 0.0, 0.4, tex="label_top.png")
 mkmat("decal_logo", (1, 1, 1), 0.0, 0.5, tex="yoke_logo.png")
 mkmat("decal_sticker", (1, 1, 1), 0.0, 0.35, tex="sticker_side.png")
 mkmat("plastico_liso", (0.02, 0.02, 0.021), 0.0, 0.7, normal=IMG_PLAST, nstr=0.25, spec=0.3)
+mkmat("led_amarillo", hx('#e9c51c'), 0.0, 0.35, emit=(hx('#e9c51c'), 1.2))
 mkmat("ranura_negra", hx('#050505'), 0.0, 0.8)
 mkmat("correa", hx('#26262a'), 0.0, 0.6, normal=IMG_GRAIN, nstr=0.6)
 
@@ -244,6 +245,20 @@ class Part:
                 bm.faces.new((a[k], a[(k + 1) % seg], b[(k + 1) % seg], b[k]))
         if caps and not closed:
             bm.faces.new(rings[0][::-1]); bm.faces.new(rings[-1])
+        new = [f for f in bm.faces if f not in before]
+        bmesh.ops.recalc_face_normals(bm, faces=new)
+        return self._tag(before, mat)
+
+    def band(self, outer, inner, xa, xb, mat):
+        """banda hueca: contorno exterior/interior (u,v)=(y,z) extruido en X entre xa y xb."""
+        bm = self.bm; before = set(bm.faces); n = len(outer)
+        mk = lambda q, x: bm.verts.new((x, q[0], q[1]))
+        oa = [mk(q, xa) for q in outer]; ob = [mk(q, xb) for q in outer]
+        ia = [mk(q, xa) for q in inner]; ib = [mk(q, xb) for q in inner]
+        for i in range(n):
+            j = (i + 1) % n
+            bm.faces.new((oa[i], oa[j], ob[j], ob[i])); bm.faces.new((ib[i], ib[j], ia[j], ia[i]))
+            bm.faces.new((ia[i], ia[j], oa[j], oa[i])); bm.faces.new((ob[i], ob[j], ib[j], ib[i]))
         new = [f for f in bm.faces if f not in before]
         bmesh.ops.recalc_face_normals(bm, faces=new)
         return self._tag(before, mat)
@@ -395,7 +410,8 @@ def build_panel():
             P.cyl(0.0042, 0.003, T(sx * 0.1195, yf - 0.0045, zc + sz * 0.036) @ Rx(math.pi / 2), "metal_negro", 8)
     return P.finish()
 
-# ================================================================ YUGO
+# ================================================================ YUGO (estructura interna, SIN tapas de brazo)
+FLOOR = 0.262          # piso del hueco en V del puente
 def arm_profile(z0, zc, rr, n=10):
     pts = [(-rr, z0), (rr, z0), (rr, zc)]
     for i in range(1, n):
@@ -403,69 +419,170 @@ def arm_profile(z0, zc, rr, n=10):
     pts.append((-rr, zc))
     return pts
 
+def offset_convex(pts, d):
+    n = len(pts); out = []
+    for i in range(n):
+        a = Vector(pts[i - 1]); b = Vector(pts[i]); c = Vector(pts[(i + 1) % n])
+        t = (c - a).normalized(); nr = Vector((t.y, -t.x))
+        out.append(tuple(b - nr * d))
+    return out
+
+def bridge_z(x):      # techo del puente en x (para el chequeo de choque)
+    ax = abs(x)
+    return FLOOR if ax <= 0.065 else (FLOOR + (ax - 0.065) if ax <= 0.125 else 0.345)
+
 def build_yugo():
     P = Part("yugo")
-    # puente en U (perfil XZ) - extremo +X cortado en 0.12 (brazo abierto)
-    # perfil limpio del puente: piso en V con chaflanes de 45 grados
-    B = [(-0.185, 0.215), (0.12, 0.215), (0.12, 0.345), (0.125, 0.345), (0.065, 0.285), (-0.065, 0.285), (-0.125, 0.345), (-0.185, 0.345)]
+    B = [(-0.125, 0.215), (0.125, 0.215), (0.125, FLOOR + 0.06), (0.065, FLOOR), (-0.065, FLOOR), (-0.125, FLOOR + 0.06)]
     P.poly(B, 0.18, T(0, 0.025, 0) @ M_XZ, "carcasa_plastico", 0.006)
-    # brazo izquierdo (-X): tapa cerrada. Perfil (y,z) con tapa redondeada, extruido en X
-    arm = arm_profile(0.33, 0.51, 0.065)
-    P.poly(arm, 0.06, T(-0.155, 0, 0) @ M_YZ, "carcasa_plastico", 0.012, 3)
-    # brazo derecho (+X): tapa retirada -> chapa de acero con pestanas
     plate = arm_profile(0.215, 0.51, 0.065)
-    P.poly(plate, 0.004, T(0.123, 0, 0) @ M_YZ, "metal_negro", 0.0)
-    for sy in (-1, 1):
-        P.box((0.05, 0.004, 0.30), T(0.147, sy * 0.0635, 0.375), "metal_negro", 0.001)
-    P.box((0.07, 0.13, 0.004), T(0.158, 0, 0.217), "metal_negro", 0.001)
-    # ménsula gris (zincada) donde va el encoder
-    P.box((0.003, 0.11, 0.085), T(0.1275, 0, 0.262), "acero_zincado", 0.0008)
-    # logo KOLORTEC* frontal y sticker lateral HOTSPOT CMY
-    P.quad((-0.0, -0.0655, 0.275), (1, 0, 0), (0, 0, 1), 0.077, 0.077 * 64 / 360, "decal_logo", off=0.0)
-    P.quad((-0.1858, 0.0, 0.44), (0, 1, 0), (0, 0, 1), 0.05, 0.205, "decal_sticker", off=0.0)
-    # tornillos frontales
-    for (x, z) in ((-0.168, 0.232), (0.105, 0.232), (-0.11, 0.33), (0.0, 0.232), (-0.168, 0.33), (-0.075, 0.232)):
+    for sd in (-1, 1):
+        P.poly(plate, 0.004, T(sd * 0.127, 0, 0) @ M_YZ, "metal_negro", 0.0)            # chapa de brazo (queda cuando se saca la tapa)
+        for sy in (-1, 1):
+            P.box((0.044, 0.004, 0.30), T(sd * 0.152, sy * 0.0635, 0.375), "metal_negro", 0.001)   # pestanas
+        P.box((0.045, 0.13, 0.004), T(sd * 0.1535, 0, 0.217), "metal_negro", 0.001)
+    P.box((0.003, 0.11, 0.085), T(0.1305, 0, 0.262), "acero_zincado", 0.0008)          # mensula del encoder (brazo derecho)
+    # logo KOLORTEC* frontal (sobre la cara del puente): right=+X, up=+Z -> normal -Y (hacia quien mira de frente)
+    P.quad((0.0, -0.0655, (0.215 + FLOOR) / 2), (1, 0, 0), (0, 0, 1), 0.077, 0.077 * 64 / 360, "decal_logo")
+    for (x, z) in ((-0.108, 0.232), (0.108, 0.232), (-0.108, 0.29), (0.108, 0.29)):
         P.cyl(0.0045, 0.003, T(x, -0.0665, z) @ Rx(math.pi / 2), "metal_negro", 8)
-    for z in (0.36, 0.5):
-        P.cyl(0.0045, 0.003, T(-0.1865, -0.045, z) @ Ry(math.pi / 2), "metal_negro", 8)
+    return P.finish()
+
+def build_tapa_yugo(sd):
+    """tapa de brazo: caja hueca abierta hacia adentro (cubre polea/correa/encoder o la placa). Sticker lateral en la cara exterior."""
+    P = Part("tapa_yugo_izq" if sd < 0 else "tapa_yugo_der")
+    out = arm_profile(0.215, 0.51, 0.065); inn = offset_convex(out, 0.005)
+    P.band(out, inn, sd * 0.129, sd * 0.178, "carcasa_plastico")
+    P.poly(out, 0.007, T(sd * 0.1815, 0, 0) @ M_YZ, "carcasa_plastico", 0.006, 2)
+    # sticker: 'right' = derecha de quien mira la cara desde afuera (izq: -Y, der: +Y) -> texto sin espejo, normal hacia afuera
+    P.quad((sd * 0.1857, 0.0, 0.44), (0, sd, 0), (0, 0, 1), 0.05, 0.205, "decal_sticker")
+    for z in (0.37, 0.51):
+        P.cyl(0.0045, 0.003, T(sd * 0.1857, -0.043, z) @ Ry(math.pi / 2), "metal_negro", 8)
+        P.cyl(0.0045, 0.003, T(sd * 0.1857, 0.043, z) @ Ry(math.pi / 2), "metal_negro", 8)
+    return P.finish()
+
+def build_placa_brazo():
+    """placa verde con conectores del brazo izquierdo (foto 16.36.05 (5)); queda a la vista al sacar la tapa izquierda."""
+    P = Part("placa_brazo")
+    P.box((0.003, 0.072, 0.125), T(-0.1325, 0.0, 0.42), "pcb_verde", 0.0006)
+    for k in range(5):
+        P.box((0.008, 0.009, 0.013), T(-0.1375, -0.03, 0.375 + 0.02 * k), "conector_blanco", 0.0008)
+        P.box((0.008, 0.009, 0.013), T(-0.1375, 0.03, 0.385 + 0.018 * k), "conector_blanco", 0.0008)
+    P.box((0.005, 0.02, 0.014), T(-0.1355, 0.0, 0.41), "metal_negro", 0.0006)
+    P.box((0.005, 0.014, 0.014), T(-0.1355, 0.0, 0.445), "metal_negro", 0.0006)
+    for z in (0.465, 0.48):
+        P.cyl(0.0045, 0.012, T(-0.1385, -0.012, z) @ Ry(math.pi / 2), "metal_negro", 12)
     return P.finish()
 
 # ================================================================ CABEZAL: chasis
 def build_chasis():
     P = Part("cabezal_chasis")
-    phi = math.atan((0.118 - 0.075) / 0.2)
+    phi = math.atan((0.105 - 0.075) / 0.215)
     for s in (-1, 1):
-        P.box((0.004, 0.15, 0.215), T(s * 0.0965, 0, 0.07) @ Ry(-s * phi), "metal_negro", 0.0005)
+        P.box((0.004, 0.13, 0.215), T(s * 0.09, 0, 0.0675) @ Ry(-s * phi), "metal_negro", 0.0005)
         # discos de tilt y pernos de muñón
         P.cyl(0.036, 0.004, T(s * 0.1135, 0, 0) @ Ry(math.pi / 2), "metal_negro", 28)
         P.cyl(0.022, 0.03, T(s * 0.122, 0, 0) @ Ry(math.pi / 2), "aluminio_cepillado", 24)
-    P.box((0.19, 0.16, 0.004), T(0, 0, 0.17), "metal_negro", 0.0008)
+    P.box((0.17, 0.13, 0.004), T(0, 0, 0.17), "metal_negro", 0.0008)
     for sx in (-1, 1):
         for sy in (-1, 1):
-            P.box((0.012, 0.012, 0.03), T(sx * 0.09, sy * 0.07, 0.185), "metal_negro", 0.001)
-    P.box((0.222, 0.15, 0.004), T(0, 0, 0.025), "metal_negro", 0.0008)
-    P.box((0.236, 0.16, 0.004), T(0, 0, -0.047), "metal_negro", 0.0008)
+            P.box((0.012, 0.012, 0.03), T(sx * 0.075, sy * 0.055, 0.185), "metal_negro", 0.001)
+    P.box((0.2, 0.13, 0.004), T(0, 0, 0.025), "metal_negro", 0.0008)
+    P.box((0.2, 0.13, 0.004), T(0, 0, -0.047), "metal_negro", 0.0008)
     for sx in (-1, 1):
         for sy in (-1, 1):
             P.cyl(0.004, 0.217, T(sx * 0.07, sy * 0.06, 0.0615), "acero_zincado", 8)
     P.box((0.07, 0.012, 0.062), T(0, -0.07, 0.16), "metal_negro", 0.001)   # tapa de la columna optica (mas chica: deja ver la varilla)
     return P.finish(parent=pivot)
 
+# ================================================================ CABEZAL: carcasa (dos mitades)
+# Semiejes de la carcasa ovalada (barril negro mate de las fotos 16.36.04(1), 04(3), 04 y 05): z, a(X), b(Y)
+SHELL = [(-0.222, 0.098, 0.113), (-0.205, 0.1115, 0.128), (-0.18, 0.1175, 0.141), (-0.135, 0.1235, 0.150), (-0.06, 0.1245, 0.154),
+         (0.03, 0.1235, 0.149), (0.12, 0.118, 0.139), (0.19, 0.111, 0.124), (0.245, 0.1095, 0.1165), (0.2745, 0.111, 0.1125), (0.2865, 0.1115, 0.1115)]
+WALL, RIM_T = 0.004, 0.0115
+
+def shell_ab(z):
+    for k in range(len(SHELL) - 1):
+        z0, a0, b0 = SHELL[k]; z1, a1, b1 = SHELL[k + 1]
+        if z0 <= z <= z1:
+            t = (z - z0) / (z1 - z0); return a0 + (a1 - a0) * t, b0 + (b1 - b0) * t
+    return SHELL[-1][1], SHELL[-1][2]
+
+def shell_y(z, x, sgn):
+    a, b = shell_ab(z); return sgn * b * math.sqrt(max(0.0, 1 - (x / a) ** 2))
+
+def shell_half(name, sgn):
+    """media carcasa (sgn=-1 delantera, +1 trasera): solido cerrado de pared 4 mm con borde de boca de 11 mm."""
+    P = Part(name); bm = P.bm; before = set(bm.faces)
+    N = 24; ths = [math.pi * i / N for i in range(N + 1)]; nr = len(SHELL)
+    def ringv(z, a, b): return [bm.verts.new((a * math.cos(t), sgn * b * math.sin(t), z)) for t in ths]
+    outer = [ringv(z, a, b) for (z, a, b) in SHELL]
+    inner = []
+    for k, (z, a, b) in enumerate(SHELL):
+        t = RIM_T if k == nr - 1 else WALL
+        inner.append(ringv(z + (WALL if k == 0 else 0.0), a - t, b - t))
+    F = bm.faces.new
+    for k in range(nr - 1):
+        for i in range(N):
+            F((outer[k][i], outer[k][i + 1], outer[k + 1][i + 1], outer[k + 1][i]))
+            F((inner[k][i], inner[k + 1][i], inner[k + 1][i + 1], inner[k][i + 1]))
+        for e in (0, N):
+            F((outer[k][e], outer[k + 1][e], inner[k + 1][e], inner[k][e]))
+    for i in range(N):
+        F((outer[-1][i], outer[-1][i + 1], inner[-1][i + 1], inner[-1][i]))
+    F(outer[0]); F(inner[0][::-1]); F((outer[0][0], outer[0][N], inner[0][N], inner[0][0]))
+    new = [f for f in bm.faces if f not in before]
+    bmesh.ops.recalc_face_normals(bm, faces=new)
+    P._tag(before, "carcasa_plastico")
+    # agujeros de tornillo (discos oscuros sobre la superficie)
+    zs, xs = (0.05, 0.092) if sgn < 0 else (0.186, 0.085)
+    for sx in (-1, 1):
+        xx = sx * xs; yy = shell_y(zs, xx, sgn); aa, bb = shell_ab(zs)
+        nrm = Vector((xx / aa ** 2, yy / bb ** 2, 0.0)).normalized()          # normal de la superficie ovalada
+        R = Vector((0, 0, 1)).rotation_difference(nrm).to_matrix().to_4x4()
+        P.cyl(0.0095, 0.0016, T(xx, yy, zs) @ T(*(nrm * 0.0006)) @ R, "goma_negra", 14)
+        P.cyl(0.0055, 0.004, T(xx, yy, zs) @ T(*(nrm * 0.0010)) @ R, "ranura_negra", 14)
+    if sgn > 0:
+        # rejilla cuadrada del ventilador (foto 16.36.04(1)): marco saliente + recinto oscuro + malla de barras
+        zc, yc = -0.13, 0.1485
+        P.box((0.135, 0.02, 0.008), T(0, yc, zc + 0.057), "carcasa_plastico", 0.002)
+        P.box((0.135, 0.02, 0.008), T(0, yc, zc - 0.057), "carcasa_plastico", 0.002)
+        P.box((0.008, 0.02, 0.122), T(0.0635, yc, zc), "carcasa_plastico", 0.002)
+        P.box((0.008, 0.02, 0.122), T(-0.0635, yc, zc), "carcasa_plastico", 0.002)
+        P.box((0.119, 0.004, 0.107), T(0, yc - 0.002, zc), "ranura_negra")
+        for k in range(10):
+            P.box((0.0016, 0.0035, 0.107), T(-0.054 + k * 0.012, yc + 0.0075, zc), "goma_negra")
+        for k in range(9):
+            P.box((0.119, 0.0035, 0.0016), T(0, yc + 0.0075, zc - 0.048 + k * 0.012), "goma_negra")
+    else:
+        # ranura de ventilacion inferior (foto 16.36.05 / 05): hueco con aletas, sobre el fondo plano
+        zb = SHELL[0][0]
+        P.box((0.092, 0.03, 0.003), T(0, -0.045, zb - 0.0008), "ranura_negra")
+        for k in range(6):
+            P.box((0.088, 0.0022, 0.0034), T(0, -0.0585 + k * 0.0055, zb - 0.0016), "carcasa_plastico")
+    return P.finish(parent=pivot)
+
+def build_tapa_frontal(): return shell_half("tapa_cabezal_frontal", -1)
+def build_tapa_trasera(): return shell_half("tapa_cabezal_trasera", +1)
+
 # ================================================================ lente frontal
 def build_lente():
     P = Part("lente_frontal")
     # barril acampanado (revolucion cerrada) con aros internos escalonados
-    outer = [(0.060, 0.172), (0.076, 0.172), (0.076, 0.20), (0.082, 0.222), (0.093, 0.250), (0.103, 0.274), (0.1085, 0.2785), (0.1085, 0.2845), (0.1005, 0.2845)]
-    inner = [(0.0975, 0.2745)]
+    outer = [(0.060, 0.172), (0.076, 0.172), (0.076, 0.20), (0.082, 0.222), (0.089, 0.250), (0.0965, 0.274), (0.0985, 0.2785), (0.0985, 0.2845), (0.0925, 0.2845)]
+    inner = [(0.0905, 0.2745)]
     for k in range(6):                                   # 6 escalones internos como en las fotos 16.36.03 / 16.36.06
-        rk = 0.0975 - 0.0062 * k; zk = 0.2745 - 0.0125 * k
-        inner += [(rk - 0.0008, zk - 0.0095), (rk - 0.0062, zk - 0.0095), (rk - 0.0062, zk - 0.0125)]
+        rk = 0.0905 - 0.0050 * k; zk = 0.2745 - 0.0125 * k
+        inner += [(rk - 0.0008, zk - 0.0095), (rk - 0.0050, zk - 0.0095), (rk - 0.0050, zk - 0.0125)]
     inner += [(0.0605, 0.2)]
     P.spin(outer + inner, Matrix.Identity(4), "goma_negra", 56)
     # lente de salida grande (plano-convexa) con aro de retencion
     lens = [(0, 0.2055), (0.0615, 0.2055), (0.0615, 0.2115), (0.047, 0.2185), (0.031, 0.2235), (0.0155, 0.2265), (0, 0.2275)]
     P.spin(lens, Matrix.Identity(4), "vidrio_lente", 48)
     P.tube([(0.0625 * math.cos(2 * math.pi * i / 48), 0.0625 * math.sin(2 * math.pi * i / 48), 0.2105) for i in range(48)], 0.0022, "aluminio_cepillado", 6, closed=True)
+    # array de LEDs amarillos que se ve a traves de la lente (foto 16.36.04): 19 domos hexagonales
+    for (q, r_) in [(q, r_) for q in range(-2, 3) for r_ in range(-2, 3) if abs(q + r_) <= 2]:
+        P.cyl(0.0050, 0.003, T(0.0116 * (q + r_ / 2), 0.0116 * r_ * 0.866, 0.2038), "led_amarillo", 10)
     P.cyl(0.052, 0.004, T(0, 0, 0.165), "vidrio_lente", 32)
     P.cyl(0.058, 0.006, T(0, 0, 0.169), "aluminio_cepillado", 32)
     # tubo optico, tuerca de laton y varilla roscada
@@ -515,12 +632,12 @@ def build_disipador():
 # ================================================================ ventiladores
 def build_fan_a():
     P = Part("ventilador_motor_led")
-    c = (0, -0.1, -0.1365)
+    c = (0, -0.092, -0.1365)
     for sx in (-1, 1):
-        P.box((0.004, 0.03, 0.117), T(sx * 0.0765, -0.105, -0.1365), "metal_negro", 0.001)
-    P.box((0.157, 0.03, 0.004), T(0, -0.105, -0.1365 + 0.0565), "metal_negro", 0.001)
-    P.box((0.157, 0.03, 0.004), T(0, -0.105, -0.1365 - 0.0565), "metal_negro", 0.001)
-    P.box((0.157, 0.03, 0.117), T(0, -0.075, -0.1365), "metal_negro", 0.003)    # carcasa/shroud
+        P.box((0.004, 0.03, 0.117), T(sx * 0.0705, -0.097, -0.1365), "metal_negro", 0.001)
+    P.box((0.145, 0.03, 0.004), T(0, -0.097, -0.1365 + 0.0565), "metal_negro", 0.001)
+    P.box((0.145, 0.03, 0.004), T(0, -0.097, -0.1365 - 0.0565), "metal_negro", 0.001)
+    P.box((0.145, 0.03, 0.117), T(0, -0.067, -0.1365), "metal_negro", 0.003)    # carcasa/shroud
     M = T(*c) @ Rx(math.pi / 2)     # eje del ventilador (z local) -> -Y (frente)
     P.box((0.104, 0.006, 0.027), M @ T(0, 0.049, 0), "goma_negra", 0.001)
     P.box((0.104, 0.006, 0.027), M @ T(0, -0.049, 0), "goma_negra", 0.001)
@@ -703,7 +820,7 @@ def build_encoder():
 def build_cables():
     P = Part("cableado")
     # manga gris desde el cubo de la polea y haz de cables que baja por el brazo
-    spine = [(0.158, 0.0, Z_AX), (0.166, 0.0, 0.50), (0.168, 0.012, 0.46), (0.168, 0.027, 0.405), (0.168, 0.03, 0.34), (0.166, 0.028, 0.29), (0.164, 0.02, 0.245)]
+    spine = [(0.156, 0.0, Z_AX), (0.162, 0.0, 0.50), (0.164, 0.012, 0.46), (0.164, 0.027, 0.405), (0.164, 0.03, 0.34), (0.162, 0.028, 0.29), (0.160, 0.02, 0.245)]
     # suavizado catmull-rom simple
     def smooth(pts, sub=4):
         out = []
@@ -722,30 +839,33 @@ def build_cables():
         P.tube([p + off for p in sp[7:]], 0.0021, "cable_rojo" if i % 2 == 0 else "cable_negro", 5)
     # cables dentro del cabezal (puntos locales del cabezal -> mundo con la pose)
     runs = [
-        ([(0.036, -0.086, 0.075), (-0.075, -0.1, 0.05), (-0.098, -0.09, -0.02), (-0.1, -0.05, -0.075)], "cable_rojo"),
-        ([(0.04, -0.086, 0.072), (-0.07, -0.105, 0.045), (-0.094, -0.095, -0.025), (-0.097, -0.05, -0.078)], "cable_negro"),
-        ([(0.074, -0.086, 0.075), (0.085, -0.098, 0.03), (0.098, -0.09, -0.04), (0.1, -0.05, -0.078)], "cable_rojo"),
-        ([(0.07, -0.086, 0.072), (0.08, -0.103, 0.028), (0.094, -0.095, -0.042), (0.097, -0.05, -0.08)], "cable_negro"),
-        ([(0.046, -0.113, -0.092), (0.09, -0.1, -0.07), (0.1, -0.06, -0.07)], "cable_rojo"),
-        ([(0.044, -0.113, -0.094), (0.088, -0.104, -0.075), (0.097, -0.06, -0.076)], "cable_negro"),
-        ([(-0.07, 0.035, 0.1), (-0.09, 0.06, 0.06), (-0.1, 0.07, 0.0), (-0.1, 0.06, -0.06)], "cable_negro"),
-        ([(0.066, 0.0, 0.03), (0.095, 0.02, 0.05), (0.1, 0.05, 0.1), (0.07, 0.07, 0.16)], "cable_rojo"),
+        ([(0.036, -0.086, 0.075), (-0.065, -0.098, 0.05), (-0.088, -0.088, -0.02), (-0.09, -0.05, -0.075)], "cable_rojo"),
+        ([(0.04, -0.086, 0.072), (-0.06, -0.102, 0.045), (-0.085, -0.092, -0.025), (-0.087, -0.05, -0.078)], "cable_negro"),
+        ([(0.074, -0.086, 0.075), (0.082, -0.096, 0.03), (0.088, -0.088, -0.04), (0.09, -0.05, -0.078)], "cable_rojo"),
+        ([(0.07, -0.086, 0.072), (0.078, -0.1, 0.028), (0.085, -0.092, -0.042), (0.087, -0.05, -0.08)], "cable_negro"),
+        ([(0.04, -0.103, -0.092), (0.08, -0.097, -0.07), (0.09, -0.06, -0.07)], "cable_rojo"),
+        ([(0.038, -0.103, -0.094), (0.078, -0.1, -0.075), (0.087, -0.06, -0.076)], "cable_negro"),
+        ([(-0.07, 0.035, 0.1), (-0.085, 0.06, 0.06), (-0.09, 0.07, 0.0), (-0.09, 0.06, -0.06)], "cable_negro"),
+        ([(0.066, 0.0, 0.03), (0.088, 0.02, 0.05), (0.09, 0.05, 0.1), (0.07, 0.07, 0.16)], "cable_rojo"),
     ]
+    P2 = Part("cableado_cabezal")
     for pts, mat in runs:
-        w = [H(p) for p in pts]
-        P.tube(smooth(w, 4), 0.0022, mat, 5)
-    return P.finish()
+        P2.tube(smooth(pts, 4), 0.0022, mat, 5)
+    return [P.finish(), P2.finish(parent=pivot)]
 
 # ---------------------------------------------------------------- armado
 objs = [build_base(), build_panel(), build_yugo(), build_chasis(), build_lente(), build_disipador(), build_fan_a(), build_fan_b(),
-        build_cmy(), build_gobos(), build_motores(), build_placa(), build_correa(), build_encoder(), build_cables()]
+        build_cmy(), build_gobos(), build_motores(), build_placa(), build_correa(), build_encoder(), *build_cables(),
+        build_tapa_frontal(), build_tapa_trasera(), build_tapa_yugo(-1), build_tapa_yugo(1), build_placa_brazo()]
 
 LABELS = {
     "base": "Base", "panel_lcd": "Panel con pantalla LCD y botonera", "yugo": "Yugo (brazos en U)",
     "cabezal_chasis": "Chasis del cabezal", "lente_frontal": "Lente frontal", "disipador_heatpipes": "Disipador con heat-pipes",
     "ventilador_motor_led": "Ventilador del módulo LED", "ventilador_2": "Ventilador inferior", "modulo_cmy": "Módulo CMY (mezcla de color)",
     "rueda_gobos": "Rueda de gobos", "motores_paso_a_paso": "Motores paso a paso", "correa_tilt": "Polea y correa de tilt",
-    "encoder": "Encoder", "cableado": "Cableado", "placa_control": "Placa electrónica de control",
+    "encoder": "Encoder", "cableado": "Cableado del brazo", "cableado_cabezal": "Cableado del cabezal", "placa_control": "Placa electrónica de control",
+    "tapa_cabezal_frontal": "Tapa frontal del cabezal", "tapa_cabezal_trasera": "Tapa trasera del cabezal (con rejilla del ventilador)",
+    "tapa_yugo_izq": "Tapa izquierda del yugo", "tapa_yugo_der": "Tapa derecha del yugo", "placa_brazo": "Placa electrónica del brazo",
 }
 
 # piezas.json en coordenadas GLB (Y arriba): (x,y,z)_glb = (x, z, -y)_blender
@@ -760,6 +880,11 @@ for ob in objs:
     rad = max((ob.matrix_world @ v.co - c).length for v in ob.data.vertices)
     # direccion sugerida DESDE la pieza HACIA la camara (coordenadas GLB, unitaria)
     d = Vector((0, -1, 0.35))                                    # por defecto: frente y un poco arriba
+    if ob.name == "tapa_cabezal_trasera": d = Vector((0, 1, 0.35))   # se mira desde atras
+    if ob.name == "tapa_yugo_izq": d = Vector((-1, -0.3, 0.2))
+    if ob.name == "tapa_yugo_der": d = Vector((1, -0.3, 0.2))
+    if ob.name in ("correa_tilt", "encoder", "cableado"): d = Vector((1, -0.3, 0.2))
+    if ob.name == "placa_brazo": d = Vector((-1, -0.3, 0.2))
     if ob.name == "lente_frontal": d = PIVOT_M.to_3x3() @ Vector((0, 0, 1)) + Vector((0, -0.6, 0.3))   # boca del barril
     if ob.name == "ventilador_motor_led": d = PIVOT_M.to_3x3() @ Vector((0, -1, 0)) + Vector((0, -0.4, 0.3))
     d.normalize()
@@ -769,8 +894,35 @@ for ob in objs:
         "vista_sugerida": [round(d.x, 3), round(d.z, 3), round(-d.y, 3)],
         "descripcion": "A CONFIRMAR POR KOLORTEC",
     })
+    # despiece sugerido (coordenadas GLB): orden 1 = primera en salir; 0 = no se mueve. Se vuelve a armar en orden inverso.
+    ORDEN = {"tapa_yugo_izq": 1, "tapa_yugo_der": 1, "tapa_cabezal_frontal": 2, "tapa_cabezal_trasera": 2,
+             "correa_tilt": 3, "encoder": 3, "cableado": 3, "placa_brazo": 3,
+             "placa_control": 4, "cableado_cabezal": 4, "ventilador_motor_led": 4, "ventilador_2": 4, "disipador_heatpipes": 4,
+             "motores_paso_a_paso": 5, "modulo_cmy": 5, "rueda_gobos": 5, "lente_frontal": 5, "cabezal_chasis": 6}
+    EXPL = {"tapa_yugo_izq": ((-1, 0, 0), 0.25), "tapa_yugo_der": ((1, 0, 0), 0.25),
+            "tapa_cabezal_frontal": ((0, -1, 0), 0.30), "tapa_cabezal_trasera": ((0, 1, 0), 0.30),
+            "correa_tilt": ((1, 0, 0), 0.12), "encoder": ((1, 0, 0), 0.12), "cableado": ((1, 0, 0), 0.12), "placa_brazo": ((-1, 0, 0), 0.12)}
+    o = ORDEN.get(ob.name, 0)
+    if ob.name in EXPL: ev, dist = EXPL[ob.name]; ev = Vector(ev)
+    else:
+        ev = (c - H((0, 0, 0.03))); ev = ev.normalized() if ev.length > 1e-4 else Vector((0, -1, 0)); dist = 0.15
+    piezas[-1]["despiece"] = {"orden": o, "direccion": [round(ev.x, 3), round(ev.z, 3), round(-ev.y, 3)] if o else None,
+                               "distancia": dist if o else 0.0}
+    piezas[-1]["grupo"] = ("tapas" if ob.name.startswith("tapa_") else "estructura" if o == 0 else "internos")
 with open(os.path.join(HERE, "piezas.json"), "w", encoding="utf-8") as fh:
     json.dump(piezas, fh, ensure_ascii=False, indent=2)
+
+# chequeo de choque: carcasa del cabezal (pose) contra el techo del puente del yugo
+pen = -1.0
+for ob in objs:
+    if not ob.name.startswith("tapa_cabezal"): continue
+    for v in ob.data.vertices:
+        w = PIVOT_M @ v.co
+        if -0.065 <= w.y <= 0.115 and w.z > 0.2:
+            pen = max(pen, bridge_z(w.x) - w.z)
+print(f"[choque] penetracion maxima carcasa/puente = {pen*1000:.1f} mm (negativo = hay luz)")
+# choque carcasa vs brazos (x): semiejes max de la carcasa contra la cara interior de las tapas de brazo (0.129)
+print(f"[choque] semieje X carcasa = {max(a for _, a, _ in SHELL)*1000:.1f} mm, cara interior chapa de brazo = 125.0 mm")
 
 total = sum(len(o.data.polygons) for o in objs)
 print("[total] triangulos =", total)

@@ -64,14 +64,13 @@ const ARRASTRE_MIN_PX = 6
 const DIR_GENERAL = new THREE.Vector3(0.55, 0.32, 1).normalize()
 const FOV_BASE = 30
 
-// Orden del despiece: primero lo de afuera del cabezal, al final el yugo. La
-// base no se mueve (es el piso del equipo).
-const ORDEN_DESPIECE = [
-  'lente_frontal', 'ventilador_2', 'ventilador_motor_led', 'disipador_heatpipes',
-  'placa_control', 'cableado', 'modulo_cmy', 'rueda_gobos', 'motores_paso_a_paso',
-  'correa_tilt', 'encoder', 'cabezal_chasis', 'panel_lcd', 'yugo',
-]
-const FIJAS = new Set(['base'])
+// El despiece lo define el modelo (piezas.json → `despiece`): cada pieza trae
+// su etapa (`orden`: 1 = tapas del yugo, 2 = tapas del cabezal, 3 = brazo,
+// 4-6 = internos), su dirección en el espacio del modelo y su distancia. Orden
+// 0 = estructura fija (base, panel, yugo). Así arranca CERRADO, como en las
+// fotos 1/3/5/11 del cliente, salen las tapas y después las piezas internas.
+// Escala de las distancias del JSON (metros del modelo): 1 = tal cual.
+const ESCALA_DESPIECE = 0.75
 
 const facil = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
 
@@ -269,23 +268,15 @@ function HotspotViewer() {
         nodos.set(nombre, { nodo: o, centroLocal: o.worldToLocal(s.center.clone()), centroMundo: s.center.clone(), radio: s.radius, base: o.position.clone() })
       })
       esfera = new THREE.Box3().setFromObject(modelo).getBoundingSphere(new THREE.Sphere())
-      // Vector de despiece (en mundo, con el equipo armado): desde el centro del
-      // equipo hacia la pieza, con un empuje hacia arriba para el cabezal.
-      const lista = ORDEN_DESPIECE.filter((n) => nodos.has(n))
+      // Vector y etapa de despiece de cada pieza, tal como los define el modelo.
+      const maxOrden = Math.max(1, ...[...piezas.values()].map((p) => p.despiece?.orden || 0))
       nodos.forEach((d, nombre) => {
-        if (FIJAS.has(nombre)) { d.offset = null; return }
-        const dir = d.centroMundo.clone().sub(esfera.center)
-        dir.y = Math.max(dir.y, 0) * 0.6 + 0.12
-        if (dir.lengthSq() < 1e-6) dir.set(0, 1, 0)
-        dir.normalize()
-        // Separación moderada: el encuadre es FIJO y abarca el despiece completo,
-        // así que cuanto más se separan las piezas, más chico se ve el equipo
-        // armado. Con esto el despiece ocupa ~1,4 veces el equipo (más
-        // compacto que antes: el cliente pidió el equipo más protagonista).
-        const empuje = esfera.radius * (0.22 + 0.34 * Math.min(1, d.centroMundo.distanceTo(esfera.center) / esfera.radius))
-        d.offsetMundo = dir.multiplyScalar(empuje)
-        const i = lista.indexOf(nombre)
-        d.orden = (i < 0 ? lista.length : i) / Math.max(1, lista.length)
+        const dsp = piezas.get(nombre)?.despiece
+        if (!dsp || !dsp.orden || !dsp.direccion) { d.offsetMundo = null; return }
+        d.offsetMundo = new THREE.Vector3().fromArray(dsp.direccion).normalize()
+          .multiplyScalar((dsp.distancia || 0.15) * ESCALA_DESPIECE)
+        // Etapa 1 arranca en 0; la última termina en 1 (ver aplicarDespiece).
+        d.orden = (dsp.orden - 1) / maxOrden
       })
     }
 
@@ -297,7 +288,8 @@ function HotspotViewer() {
       qModelo.setFromRotationMatrix(modelo.matrixWorld)
       nodos.forEach((d) => {
         if (!d.offsetMundo) return
-        const ventana = 0.45
+        // Cada etapa dura un poco más que su tramo, así se encadenan.
+        const ventana = 0.32
         const local = THREE.MathUtils.clamp((despiece - d.orden * (1 - ventana)) / ventana, 0, 1)
         const k = facil(local)
         // El offset se midió con el equipo en reposo, o sea en el espacio del

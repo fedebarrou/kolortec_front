@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kolortec · footer</title>
+<style>
+  @font-face { font-family: 'Futura'; src: url('/fonts/futura-extra-black-condensed.otf') format('opentype'); font-weight: 900; }
+  @font-face { font-family: 'Manrope'; src: url('/fonts/manrope-latin.woff2') format('woff2'); font-weight: 200 900; }
+  :root { --y: #f4df33; --k: #050505; --ink: #0b0b0b; --soft: #a9b0ba; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #141414; color: #f5f5f5; font-family: Manrope, sans-serif; }
+  a { color: inherit; text-decoration: none; }
+  .t { font-family: Futura, 'Arial Narrow', Impact, sans-serif; font-weight: 900; text-transform: uppercase; line-height: .95; }
+  .head { max-width: 1440px; margin: 0 auto; padding: 28px 24px 4px; }
+  .head h1 { margin: 0 0 6px; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--y); }
+  .head p { margin: 0; color: #a3aab4; max-width: 90ch; }
+  .opt { max-width: 1440px; margin: 40px auto 0; padding: 0 24px; }
+  .opt-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag { padding: 4px 10px; background: var(--y); color: #090909; font-weight: 800; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .opt-head span.d { color: #a3aab4; font-size: 14px; max-width: 110ch; }
+  .frames { display: grid; grid-template-columns: 1fr 390px; gap: 20px; align-items: start; }
+  @media (max-width: 1100px) { .frames { grid-template-columns: 1fr; } }
+  .frame { border: 1px solid #2a2a2a; border-radius: 6px; overflow: hidden; container-type: inline-size; background: var(--k); }
+  .frame-m { width: 390px; max-width: 100%; justify-self: center; }
+  .lbl { font-size: 11px; color: #8d949f; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 6px; }
+
+  /* ── piezas comunes ─────────────────────────────────────────── */
+  .star { width: 1em; height: 1em; display: inline-block; vertical-align: -.1em; }
+  .cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }
+  .col h4 { margin: 0 0 14px; font: 900 1.05rem/1 Futura, Impact, sans-serif; text-transform: uppercase; color: #fff; }
+  .col h4 i { color: var(--y); font-style: normal; }
+  .col { min-width: 0; }
+  .col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: .92rem; color: #c3c9d2; }
+  .contact a { overflow-wrap: anywhere; }
+  .col a:hover { color: var(--y); }
+  .ico { display: inline-flex; width: 16px; height: 16px; vertical-align: -3px; margin-right: 8px; }
+  .ico svg { width: 100%; height: 100%; fill: currentColor; }
+  .contact strong { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8d949f; font-weight: 800; margin-bottom: 2px; }
+  .legal { display: flex; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding: 18px 6%; font-size: 12px; color: #b4bac3; border-top: 1px solid #1d1d20; }
+  .legal nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  .legal a:hover { color: var(--y); }
+  .gal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .gal a { aspect-ratio: 1; overflow: hidden; position: relative; }
+  .gal img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; filter: grayscale(.2); }
+  .gal a:hover img { transform: scale(1.05); filter: none; }
+  .gal a::after { content: 'Ver producto →'; position: absolute; left: 10px; bottom: 10px; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--y); opacity: 0; transition: opacity .25s; }
+  .gal a:hover::after { opacity: 1; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 10px; font-weight: 800; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+  .btn-k { background: var(--ink); color: var(--y); }
+  .btn-y { background: var(--y); color: var(--ink); }
+  .btn-o { border: 2px solid var(--ink); color: var(--ink); }
+
+  /* ── A · Firma gigante ─────────────────────────────────────── */
+  .A .top { padding: 64px 6% 40px; display: grid; grid-template-columns: 1.2fr 3fr; gap: 48px; }
+  .A .brand p { margin: 14px 0 0; color: var(--soft); font-size: .9rem; line-height: 1.6; max-width: 34ch; }
+  .A .brand .mini { font: 900 1.6rem/1 Futura, Impact, sans-serif; color: #fff; }
+  .A .brand .mini .star { color: var(--y); }
+  .A .firma { padding: 0 3% 0; line-height: .78; font-size: 19.5cqw; color: #fff; white-space: nowrap; overflow: hidden; display: flex; align-items: flex-end; gap: 1cqw; margin: 8px 0 18px; }
+  .A .firma .star { color: var(--y); width: .62em; height: .62em; margin-bottom: .16em; }
+  .A .legal { background: var(--k); border-top-color: #222; }
+
+  /* ── B · Cierre amarillo ───────────────────────────────────── */
+  .B .band { background: var(--y); color: var(--ink); padding: 56px 6%; display: grid; grid-template-columns: auto 1fr auto; gap: 36px; align-items: center; }
+  .B .sello { width: 120px; height: 120px; }
+  .B .band h3 { margin: 0 0 6px; font-size: clamp(2rem, 5cqw, 3.6rem); }
+  .B .band p { margin: 0; font-size: 1rem; color: rgba(11,11,11,.75); max-width: 50ch; }
+  .B .band .acts { display: flex; gap: 12px; flex-wrap: wrap; }
+  .B .main { padding: 48px 6% 36px; }
+  .B .main .cols { grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)); }
+  .B .main .lg { font: 900 1.8rem/1 Futura, Impact, sans-serif; color: #fff; margin-bottom: 12px; }
+  .B .main .lg .star { color: var(--y); }
+  .B .main p { margin: 0; color: var(--soft); font-size: .9rem; line-height: 1.6; max-width: 32ch; }
+
+  /* ── C · Continuidad diagonal ──────────────────────────────── */
+  .C { position: relative; }
+  /* Misma diagonal que Sumate (alta a la derecha, baja a la izquierda), con un
+     filo amarillo de 3px que la marca. */
+  .C .wrap { position: relative; background: #151518; padding-top: 110px;
+             clip-path: polygon(0 70px, 100% 0, 100% 100%, 0 100%); margin-top: 0; }
+  .C .wrap::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 76px; background: var(--y);
+             clip-path: polygon(0 70px, 100% 0, 100% 4px, 0 74px); }
+  .C .pre { height: 70px; background: var(--k); }
+  .C .gal { padding: 0 6%; }
+  .C .main { padding: 44px 6% 30px; }
+  .C .main .cols { grid-template-columns: 1.3fr repeat(4, minmax(0,1fr)); }
+  .C .main .lg { font: 900 1.8rem/1 Futura, Impact, sans-serif; color: #fff; margin-bottom: 12px; }
+  .C .main .lg .star { color: var(--y); }
+  .C .main p { margin: 0; color: var(--soft); font-size: .9rem; line-height: 1.6; max-width: 32ch; }
+  .C .arriba { position: absolute; left: 6%; top: 8px; width: 92px; height: 92px; z-index: 2; cursor: pointer; transition: transform .3s; }
+  .C .arriba:hover { transform: translateY(-4px) rotate(-20deg); }
+  .C .arriba .flecha { position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%); font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--y); text-transform: uppercase; white-space: nowrap; }
+  .C .legal { background: #151518; }
+
+  /* ── celular (container queries: el recuadro de 390 se comporta como un teléfono) ── */
+  @container (max-width: 640px) {
+    .cols, .B .main .cols, .C .main .cols { grid-template-columns: 1fr 1fr; gap: 26px 18px; }
+    .cols > .col:first-child { grid-column: 1 / -1; }
+    .A .top { grid-template-columns: 1fr; gap: 28px; padding: 44px 24px 28px; }
+    .A .firma { font-size: 21cqw; padding: 0 16px; }
+    .B .band { grid-template-columns: 1fr; gap: 18px; padding: 40px 24px; text-align: left; }
+    .B .sello { width: 92px; height: 92px; }
+    .B .main, .C .main { padding: 36px 24px 26px; }
+    .gal { grid-template-columns: repeat(2, 1fr); }
+    .C .gal { padding: 0 24px; }
+    .C .arriba { width: 70px; height: 70px; left: 20px; }
+    .legal { padding: 16px 24px; flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>Footer · tres direcciones</h1>
+  <p>Mismos datos reales en las tres (fotos de la galería, WhatsApp, Instagram, Facebook y el contacto que tiene cargado tu cuenta local; en producción salen los de Kolortec). A la izquierda, compu; a la derecha, celular. En las tres van los arreglos: logo vectorial, contacto visible, texto legal legible, "Guía" con tilde y fotos que llevan al producto.</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="star" viewBox="-50 -50 100 100"><g fill="currentColor">
+      <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0"/>
+      <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(60)"/>
+      <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(120)"/></g></symbol>
+    <path id="arco" d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
+    <symbol id="sello" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="49" fill="#050505" stroke="#f4df33" stroke-width="2"/>
+      <text font-family="Futura, Impact, sans-serif" font-weight="900" font-size="10" letter-spacing="3.2" fill="#f4df33"><textPath href="#arco">KOLORTEC · READY TO WORK · </textPath></text>
+      <use href="#star" x="29" y="29" width="42" height="42" style="color:#f4df33"/>
+    </symbol>
+    <symbol id="wa" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></symbol>
+    <symbol id="ig" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="fb" viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></symbol>
+    <symbol id="mail" viewBox="0 0 24 24"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3 6 9 7 9-7" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  </defs>
+</svg>
+
+<template id="cols">
+  <div class="cols">
+    <div class="col contact">
+      <h4>Contacto<i>.</i></h4>
+      <ul>
+        <li><strong>WhatsApp</strong><a href="#">+54 9 11 2406-2526</a></li>
+        <li><strong>Email</strong><a href="#">contacto@demo.local.test</a></li>
+        <li><strong>Teléfono</strong><a href="#">+54 11 1234-5678</a></li>
+      </ul>
+    </div>
+    <div class="col"><h4>Productos<i>.</i></h4><ul><li><a href="#">Cabezas móviles</a></li><li><a href="#">Pars LED</a></li><li><a href="#">Efectos</a></li><li><a href="#">Ver todo</a></li></ul></div>
+    <div class="col"><h4>Soporte<i>.</i></h4><ul><li><a href="#">Manuales</a></li><li><a href="#">Librerías</a></li><li><a href="#">Guía de mantenimiento</a></li></ul></div>
+    <div class="col"><h4>Seguinos<i>.</i></h4><ul>
+      <li><a href="#"><span class="ico"><svg><use href="#wa"/></svg></span>WhatsApp</a></li>
+      <li><a href="#"><span class="ico"><svg><use href="#ig"/></svg></span>Instagram</a></li>
+      <li><a href="#"><span class="ico"><svg><use href="#fb"/></svg></span>Facebook</a></li></ul></div>
+  </div>
+</template>
+<template id="legal">
+  <div class="legal"><span>© 2026 Kolortec Lighting Systems. Todos los derechos reservados.</span>
+    <nav><a href="#">Contacto</a><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Iniciar sesión</a></nav></div>
+</template>
+<template id="gal">
+  <div class="gal">
+    <a href="#"><img src="https://api.dev.tiendita.com.ar/storage/productos/images/a468474b-db2a-43dc-b438-980236616ba0.webp" alt=""></a>
+    <a href="#"><img src="https://api.dev.tiendita.com.ar/storage/productos/images/f9875455-6856-4608-a55e-cb750703ac8d.webp" alt=""></a>
+    <a href="#"><img src="https://api.dev.tiendita.com.ar/storage/productos/images/316da8b8-a0a3-4d07-903a-532328d8fa94.webp" alt=""></a>
+    <a href="#"><img src="https://api.dev.tiendita.com.ar/storage/productos/images/933d1d4a-dd11-418a-9ac9-6acfe73114b0.webp" alt=""></a>
+  </div>
+</template>
+
+<!-- A -->
+<div class="opt"><div class="opt-head"><span class="tag">A · Firma gigante</span><span class="d">Links compactos arriba (con el contacto como primera columna) y abajo el nombre KOLORTEC* de borde a borde, como firma. Lo más "marca editorial".</span></div>
+  <div class="frames"><div><p class="lbl">Compu</p><div class="frame d" data-o="A"></div></div><div><p class="lbl">Celular</p><div class="frame frame-m" data-o="A"></div></div></div></div>
+<!-- B -->
+<div class="opt"><div class="opt-head"><span class="tag">B · Cierre amarillo</span><span class="d">Una franja amarilla con el sello, "Ready to work" y dos botones (WhatsApp y email); después el footer negro compacto. La página abre y cierra con el amarillo de la marca.</span></div>
+  <div class="frames"><div><p class="lbl">Compu</p><div class="frame d" data-o="B"></div></div><div><p class="lbl">Celular</p><div class="frame frame-m" data-o="B"></div></div></div></div>
+<!-- C -->
+<div class="opt"><div class="opt-head"><span class="tag">C · Continuidad diagonal</span><span class="d">El footer entra con la misma diagonal que "Sumate" y el sello reaparece chico como botón de volver arriba. Galería de fotos clickeable hacia los productos.</span></div>
+  <div class="frames"><div><p class="lbl">Compu</p><div class="frame d" data-o="C"></div></div><div><p class="lbl">Celular</p><div class="frame frame-m" data-o="C"></div></div></div></div>
+<div style="height:60px"></div>
+
+<script>
+  const T = (id) => document.getElementById(id).innerHTML
+  const brand = `<div class="lg"><span>KOLORTEC</span><svg class="star"><use href="#star"/></svg></div><p>Líderes en iluminación profesional de alto rendimiento. Potencia y performance para escenarios exigentes.</p>`
+  const html = {
+    A: `<div class="A"><div class="top"><div class="brand"><div class="mini">KOLORTEC <svg class="star"><use href="#star"/></svg></div><p>Líderes en iluminación profesional de alto rendimiento. Potencia y performance para escenarios exigentes.</p></div>${T('cols')}</div>
+        <div class="firma t">KOLORTEC<svg class="star"><use href="#star"/></svg></div>${T('legal')}</div>`,
+    B: `<div class="B"><div class="band"><svg class="sello"><use href="#sello"/></svg><div><h3 class="t">Ready to work.</h3><p>¿Tenés un evento, un rental o querés ser distribuidor? Hablemos.</p></div>
+        <div class="acts"><a class="btn btn-k" href="#"><span class="ico"><svg><use href="#wa"/></svg></span>WhatsApp</a><a class="btn btn-o" href="#"><span class="ico"><svg><use href="#mail"/></svg></span>Email</a></div></div>
+        <div class="main"><div class="cols"><div class="col">${brand}</div>${T('cols').replace('<div class="cols">','').replace(/<\/div>\s*$/,'')}</div></div>${T('legal')}</div>`,
+    C: `<div class="C"><div class="pre"></div><div class="wrap">${T('gal')}<div class="main"><div class="cols"><div class="col">${brand}</div>${T('cols').replace('<div class="cols">','').replace(/<\/div>\s*$/,'')}</div></div>${T('legal')}</div>
+        <a class="arriba" href="#" title="Volver arriba"><svg style="width:100%;height:100%"><use href="#sello"/></svg><span class="flecha">↑ Arriba</span></a></div>`,
+  }
+  // B: el contacto ya está en la franja amarilla → se saca la columna de contacto del footer.
+  html.B = html.B.replace(/<div class="col contact">[\s\S]*?<\/ul>\s*<\/div>/, '')
+  document.querySelectorAll('.frame').forEach((f) => { f.innerHTML = html[f.dataset.o] })
+</script>
+</body>
+</html>
