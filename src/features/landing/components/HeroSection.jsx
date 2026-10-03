@@ -108,9 +108,15 @@ function HeroSection({ hero }) {
     // dos dedos con una foto recortada adentro, y lo primero que se ve del sitio
     // queda pareciendo un banner publicitario. A pantalla completa la foto se
     // lee, que es para lo que está.
-    const containerHeight = heroSizeMode(config.settings) === 'full' || bp === 'mobile'
-      ? 'calc(100dvh / var(--kt-canvas-scale, 1))'
-      : undefined
+    //
+    // Oct-2026 (pedido del cliente): en MÓVIL ya no es pantalla completa sino
+    // el 65% del alto. Sigue sin usar el alto fijo del modo Encabezado (la
+    // franja de dos dedos de arriba), pero deja ver que hay más página abajo.
+    const containerHeight = bp === 'mobile'
+      ? 'calc(65svh / var(--kt-canvas-scale, 1))'
+      : heroSizeMode(config.settings) === 'full'
+        ? 'calc(100dvh / var(--kt-canvas-scale, 1))'
+        : undefined
     return (
       <section
         ref={heroRef}

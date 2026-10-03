@@ -548,16 +548,19 @@ html {
     }
   }
 
+  /* Partners un 40% más grandes que antes (96 → 134px de alto; pedido del
+     cliente, opción B del mockup 2026-10-03). Todo escala junto: alto, texto,
+     logos y aire entre marcas. */
   .kt-marquee-item-clientlogo {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.9rem;
-    height: 96px;
-    padding: 0 2.4rem;
+    gap: 1.25rem;
+    height: 134px;
+    padding: 0 3.35rem;
     font-family: 'FuturaExtraBlackCondensed', 'Arial Narrow', Impact, sans-serif;
-    font-size: 1.35rem;
+    font-size: 1.9rem;
     font-weight: 900;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -576,8 +579,8 @@ html {
   }
 
   .kt-clientlogo-mark {
-    width: 52px;
-    height: 52px;
+    width: 72px;
+    height: 72px;
     flex-shrink: 0;
     fill: currentColor;
   }
@@ -587,8 +590,8 @@ html {
      la marca. .kt-clientlogo-mark queda como fallback de la data demo (shapes). */
   .kt-clientlogo-img {
     width: auto;
-    height: 52px;
-    max-width: 190px;
+    height: 72px;
+    max-width: 266px;
     object-fit: contain;
     flex-shrink: 0;
     filter: grayscale(1) brightness(1.7);

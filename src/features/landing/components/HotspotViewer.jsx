@@ -41,6 +41,12 @@ const DRACO_PATH = '/assets/3d/draco/'
 // cliente lo pidió en "unos segundos": el zoom tiene que ser una decisión del
 // que mira, no algo que salta al pasar el mouse por encima.
 const DWELL_MS = 1500
+
+// Zoom y ficha por pieza (hover / toque / lista de teclado). APAGADO por ahora
+// (oct-2026, pedido del cliente): hasta que Kolortec mande las descripciones,
+// el visor es sólo el loop de despiece y el giro arrastrando. Para volver a
+// mostrar las piezas alcanza con ponerlo en true; el resto del código sigue.
+const PIEZAS_INTERACTIVAS = false
 // Al salir del modelo se espera un poco antes de volver al plano general, para
 // que pasar por un hueco entre dos piezas no reinicie la cámara.
 const LEAVE_MS = 700
@@ -372,6 +378,7 @@ function HotspotViewer() {
         }
       }
       if (e.pointerType === 'touch') return
+      if (!PIEZAS_INTERACTIVAS) return
       punteroDentro = true
       if (trabaX !== null) {
         if (Math.hypot(e.clientX - trabaX, e.clientY - trabaY) < MOVIMIENTO_MIN_PX) return
@@ -395,7 +402,7 @@ function HotspotViewer() {
       // de ahí, no arranca un hover nuevo.
       if (fue?.movio) { ultimoX = e.clientX; ultimoY = e.clientY; trabar(); return }
       if (!fue) return
-      if (e.pointerType !== 'touch') return
+      if (e.pointerType !== 'touch' || !PIEZAS_INTERACTIVAS) return
       // Toque sin arrastre: elegir pieza / volver.
       const nombre = piezaBajoPuntero(e.clientX, e.clientY)
       if (nombre && nombre !== activa) enfocar(nombre)
@@ -565,7 +572,7 @@ function HotspotViewer() {
       ) : null}
       {/* Las piezas, para teclado y lector de pantalla: el zoom por hover no se
           alcanza con Tab. Ocultas hasta que reciben foco (WCAG 2.1.1). */}
-      {lista.length > 0 ? (
+      {PIEZAS_INTERACTIVAS && lista.length > 0 ? (
         <nav
           className="kt-hotspot-teclado"
           aria-label={t('landing.shop.hotspotPiezas', 'Piezas del equipo')}
@@ -604,9 +611,11 @@ function HotspotViewer() {
           </>
         ) : estado === 'listo' ? (
           <span className="kt-hotspot-hint">
-            {sinHover
-              ? t('landing.shop.hotspotHintTouch', 'Tocá una pieza · arrastrá para girar')
-              : t('landing.shop.hotspotHint', 'Pasá el mouse por una pieza · arrastrá para girar')}
+            {!PIEZAS_INTERACTIVAS
+              ? t('landing.shop.hotspotHintGirar', 'Arrastrá para girar')
+              : sinHover
+                ? t('landing.shop.hotspotHintTouch', 'Tocá una pieza · arrastrá para girar')
+                : t('landing.shop.hotspotHint', 'Pasá el mouse por una pieza · arrastrá para girar')}
           </span>
         ) : null}
       </div>
