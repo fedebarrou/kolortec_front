@@ -1,9 +1,13 @@
 """Recorta/genera las texturas de calcomanias del HOT SPOT CMY a partir de las fotos del cliente.
 Salida: tex_src/*.png  (el export a GLB las pasa a webp).
-Fuente de fotos: C:/Users/Fedev/Downloads/Nueva carpeta/ (fotos propias de Kolortec; ver SOURCES.md)."""
+Fuente de fotos: la carpeta que indique HOTSPOT_FOTOS (fotos propias de Kolortec,
+no van al repo; ver SOURCES.md)."""
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np, os
-D = "C:/Users/Fedev/Downloads/Nueva carpeta/"
+# Carpeta con las fotos originales del equipo (no se versionan).
+D = os.environ.get("HOTSPOT_FOTOS", "").rstrip("/\\") + "/"
+if D == "/":
+    raise SystemExit("Definí HOTSPOT_FOTOS con la carpeta de las fotos del HOT SPOT CMY.")
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tex_src")
 os.makedirs(OUT, exist_ok=True)
 S = 2.016

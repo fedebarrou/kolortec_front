@@ -2280,6 +2280,11 @@ html {
        enfocado se trae solo a la vista. */
     overflow-x: auto;
     overflow-y: hidden;
+    /* Sin barra: la de Windows se veía debajo de los chips. Va acá porque
+       `html` declara scrollbar-width y se hereda, y con eso Chrome ignora
+       ::-webkit-scrollbar (ra VIS-114). El chip enfocado se trae solo a la
+       vista con scrollIntoView. */
+    scrollbar-width: none;
     clip-path: inset(50%);
     width: 1px;
     height: 1px;
@@ -2299,6 +2304,9 @@ html {
     display: flex;
     flex-wrap: nowrap;
     gap: 8px;
+    /* max-content: la lista abarca todos los chips, así su padding cuenta
+       en el área de scroll y el anillo del último chip no se corta. */
+    width: max-content;
     margin: 0;
     padding: 6px 6px; /* lugar para el doble anillo del foco */
     list-style: none;
@@ -2306,6 +2314,9 @@ html {
 
   .kt-hotspot-teclado button {
     flex: none;
+    /* scrollIntoView respeta el margen del ELEMENTO (el scroll-padding del
+       contenedor no): deja lugar para el doble anillo del foco (ra VIS-117). */
+    scroll-margin-inline: 8px;
     white-space: nowrap;
     min-height: 32px;
     padding: 4px 12px;
