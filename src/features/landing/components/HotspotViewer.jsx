@@ -62,6 +62,9 @@ const ARRASTRE_MIN_PX = 6
 // Tres cuartos desde la derecha y algo de arriba: así se ven el disipador y los
 // heat-pipes, que es lo que el cliente quiere mostrar.
 const DIR_GENERAL = new THREE.Vector3(0.55, 0.32, 1).normalize()
+// Ejes de la pantalla para esa vista: derecha y arriba de la cámara.
+const DERECHA_CAMARA = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), DIR_GENERAL).normalize()
+const ARRIBA_CAMARA = new THREE.Vector3().crossVectors(DIR_GENERAL, DERECHA_CAMARA).normalize()
 const FOV_BASE = 30
 
 // El despiece lo define el modelo (piezas.json → `despiece`): cada pieza trae
@@ -71,6 +74,12 @@ const FOV_BASE = 30
 // fotos 1/3/5/11 del cliente, salen las tapas y después las piezas internas.
 // Escala de las distancias del JSON (metros del modelo): 1 = tal cual.
 const ESCALA_DESPIECE = 0.75
+// Apertura HORIZONTAL (pedido del cliente: hay lugar a los costados y así las
+// piezas de afuera dejan ver el interior). Se amplifica la parte de cada
+// vector que va hacia la izquierda/derecha DE LA PANTALLA; la vertical queda
+// igual. Más para las tapas (etapas 1 y 2), que son las que tapan el interior.
+const ABRIR_X_TAPAS = 1.8
+const ABRIR_X_INTERNOS = 1.3
 
 const facil = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
 
@@ -144,7 +153,11 @@ function HotspotViewer() {
 
     let modelo = null
     let esfera = null // esfera del equipo armado, en reposo
-    let esferaDesarmado = null // la del despiece completo (se mide una vez)
+    // Puntos del equipo (armado y desarmado) en ejes de la pantalla, para
+    // encuadrar por el ancho y el alto reales y no por una esfera: con el
+    // despiece abierto a los costados, la esfera achicaba todo el equipo.
+    let puntosEncuadre = null
+    let centroEncuadre = null
     let piezas = new Map() // nombre → datos del JSON
     const nodos = new Map() // nombre → { nodo, centroLocal, radio, base, offset, orden }
     let activa = null
@@ -168,8 +181,8 @@ function HotspotViewer() {
     let despiece = 0
     let sentido = 1
     let quietoHasta = 0
-    const DURACION_DESPIECE = 6 // s de armado a desarmado (lento: pedido del cliente)
-    const PAUSA_PUNTA = 2200 // ms quieto armado / desarmado
+    const DURACION_DESPIECE = 4.6 // s de armado a desarmado (un pelín más ágil que los 6 s de antes)
+    const PAUSA_PUNTA = 1800 // ms quieto armado / desarmado
     let tecladoDentro = false
 
 
@@ -209,23 +222,41 @@ function HotspotViewer() {
       return r / Math.sin(Math.min(vfov, hfov) / 2)
     }
 
+    // Lugar libre alrededor del centro del equipo, en fracciones del canvas.
+    // Escritorio: a la izquierda hasta donde termina la columna de texto
+    // (~36% del canvas), arriba el header y el cartel de login, abajo aire
+    // para la base (la sección siguiente sube tapándola desde abajo).
+    const margenes = () => (window.innerWidth >= 1024
+      ? { izq: zonaX - 0.33, der: 1 - zonaX - 0.04, arr: 0.5 - 0.11, aba: 0.5 - 0.08 }
+      : { izq: zonaX - 0.04, der: 1 - zonaX - 0.04, arr: 0.5 - 0.06, aba: 0.5 - 0.05 })
+
     const encuadrarGeneral = () => {
-      // Desarmado ocupa más: se encuadra la esfera del despiece real.
-      // Tamaño FIJO: siempre el encuadre del despiece completo, armado o no.
-      const e = esferaDesarmado || esfera
-      // La cámara mira un poco por ENCIMA del centro: el equipo baja en el cuadro
-      // y deja libre la franja de arriba, donde se apoya el cartel global de
-      // login (ra VIS-108).
-      general.target.copy(e.center).add(new THREE.Vector3(0, zonaX === 0.5 || window.innerWidth < 1024 ? 0 : -e.radius * 0.1, 0))
-      // En el celular el canvas es bajo: se acerca más para que el equipo
-      // llene la franja (con 0.76 quedaban ~110px de amarillo vacío arriba; con
-      // 0.62 se cortaba la base).
-      // Más chico que el máximo posible: la sección amarilla queda fija y la
-      // siguiente sube tapándola desde abajo, así que la base tiene que
-      // quedar con aire, bien por encima del borde inferior (pedido del
-      // cliente: no llegaba a ver la base).
-      const factor = window.innerWidth < 1024 ? 0.9 : 0.86
-      general.pos.copy(general.target).addScaledVector(DIR_GENERAL, distanciaPara(e.radius) * factor)
+      // Tamaño FIJO: siempre entra el despiece completo, armado o no.
+      const tanV = Math.tan(THREE.MathUtils.degToRad(FOV_BASE) / 2)
+      const tanH = tanV * camera.aspect
+      const m = margenes()
+      // Distancia mínima para que cada punto quede dentro de su lado: un punto
+      // a x (derecha) y z (hacia la cámara) cae en la fracción x / (2·tanH·(d−z)).
+      // El equipo se corre en horizontal hasta que el despiece quede parejo
+      // respecto del lugar que hay a cada lado (a la izquierda está el texto).
+      let xMin = 0
+      let xMax = 0
+      for (let i = 0; i < puntosEncuadre.length; i += 3) {
+        xMin = Math.min(xMin, puntosEncuadre[i])
+        xMax = Math.max(xMax, puntosEncuadre[i])
+      }
+      const corrimiento = (xMax * m.izq + xMin * m.der) / (m.izq + m.der)
+      let dist = 0
+      for (let i = 0; i < puntosEncuadre.length; i += 3) {
+        const x = puntosEncuadre[i] - corrimiento
+        const y = puntosEncuadre[i + 1]
+        const z = puntosEncuadre[i + 2]
+        const fx = x >= 0 ? m.der : m.izq
+        const fy = y >= 0 ? m.arr : m.aba
+        dist = Math.max(dist, z + Math.abs(x) / (2 * tanH * fx), z + Math.abs(y) / (2 * tanV * fy))
+      }
+      general.target.copy(centroEncuadre).addScaledVector(DERECHA_CAMARA, corrimiento)
+      general.pos.copy(general.target).addScaledVector(DIR_GENERAL, dist)
       if (!activa) {
         goPos.copy(general.pos)
         goTarget.copy(general.target)
@@ -244,6 +275,23 @@ function HotspotViewer() {
       // amarillo sin hacer un charco en el piso.
       contra.position.set(c.x - r * 0.4, c.y + r * 0.2, c.z - r * 2.6)
       contra.target.position.set(c.x, c.y + r * 0.55, c.z)
+    }
+
+    // Vértices del modelo en su pose actual (uno de cada 6: alcanza para el
+    // contorno y son ~10k puntos), en coordenadas de mundo.
+    const muestrearPuntos = () => {
+      modelo.updateMatrixWorld(true)
+      const out = []
+      const v = new THREE.Vector3()
+      modelo.traverse((o) => {
+        if (!o.isMesh || !o.geometry?.attributes?.position) return
+        const pos = o.geometry.attributes.position
+        for (let i = 0; i < pos.count; i += 6) {
+          v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld)
+          out.push(v.x, v.y, v.z)
+        }
+      })
+      return out
     }
 
     // Mide cada pieza con el equipo en reposo y prepara su vector de despiece.
@@ -273,8 +321,11 @@ function HotspotViewer() {
       nodos.forEach((d, nombre) => {
         const dsp = piezas.get(nombre)?.despiece
         if (!dsp || !dsp.orden || !dsp.direccion) { d.offsetMundo = null; return }
-        d.offsetMundo = new THREE.Vector3().fromArray(dsp.direccion).normalize()
+        const off = new THREE.Vector3().fromArray(dsp.direccion).normalize()
           .multiplyScalar((dsp.distancia || 0.15) * ESCALA_DESPIECE)
+        const k = dsp.orden <= 2 ? ABRIR_X_TAPAS : ABRIR_X_INTERNOS
+        off.addScaledVector(DERECHA_CAMARA, off.dot(DERECHA_CAMARA) * (k - 1))
+        d.offsetMundo = off
         // Etapa 1 arranca en 0; la última termina en 1 (ver aplicarDespiece).
         d.orden = (dsp.orden - 1) / maxOrden
       })
@@ -514,9 +565,24 @@ function HotspotViewer() {
         // Se mide el despiece completo una vez (sin dibujar) para encuadrarlo.
         despiece = 1
         aplicarDespiece()
-        esferaDesarmado = new THREE.Box3().setFromObject(modelo).getBoundingSphere(new THREE.Sphere())
+        const desarmado = muestrearPuntos()
         despiece = 0
         aplicarDespiece()
+        const armado = muestrearPuntos()
+        const todos = desarmado.concat(armado)
+        // Centro: el de la caja de todos los puntos (en mundo).
+        const caja = new THREE.Box3()
+        for (let i = 0; i < todos.length; i += 3) caja.expandByPoint(new THREE.Vector3(todos[i], todos[i + 1], todos[i + 2]))
+        centroEncuadre = caja.getCenter(new THREE.Vector3())
+        // A ejes de la pantalla (derecha, arriba, hacia la cámara).
+        puntosEncuadre = new Float32Array(todos.length)
+        const p = new THREE.Vector3()
+        for (let i = 0; i < todos.length; i += 3) {
+          p.set(todos[i], todos[i + 1], todos[i + 2]).sub(centroEncuadre)
+          puntosEncuadre[i] = p.dot(DERECHA_CAMARA)
+          puntosEncuadre[i + 1] = p.dot(ARRIBA_CAMARA)
+          puntosEncuadre[i + 2] = p.dot(DIR_GENERAL)
+        }
         montarEscenario()
         encuadrarGeneral()
         camPos.copy(general.pos)
