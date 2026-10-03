@@ -90,8 +90,6 @@ function HotspotViewer() {
   const [estado, setEstado] = useState('cargando') // cargando | listo | error
   const [pieza, setPieza] = useState(null) // { etiqueta, descripcion }
   const [lista, setLista] = useState([]) // [{ nombre, etiqueta }] para teclado
-  // En táctil no hay "pasar el mouse": la indicación cambia de verbo.
-  const sinHover = typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches
 
   useEffect(() => {
     const wrap = wrapRef.current
@@ -219,11 +217,15 @@ function HotspotViewer() {
       // La cámara mira un poco por ENCIMA del centro: el equipo baja en el cuadro
       // y deja libre la franja de arriba, donde se apoya el cartel global de
       // login (ra VIS-108).
-      general.target.copy(e.center).add(new THREE.Vector3(0, zonaX === 0.5 || window.innerWidth < 1024 ? 0 : e.radius * 0.06, 0))
+      general.target.copy(e.center).add(new THREE.Vector3(0, zonaX === 0.5 || window.innerWidth < 1024 ? 0 : -e.radius * 0.1, 0))
       // En el celular el canvas es bajo: se acerca más para que el equipo
       // llene la franja (con 0.76 quedaban ~110px de amarillo vacío arriba; con
       // 0.62 se cortaba la base).
-      const factor = window.innerWidth < 1024 ? 0.8 : 0.71
+      // Más chico que el máximo posible: la sección amarilla queda fija y la
+      // siguiente sube tapándola desde abajo, así que la base tiene que
+      // quedar con aire, bien por encima del borde inferior (pedido del
+      // cliente: no llegaba a ver la base).
+      const factor = window.innerWidth < 1024 ? 0.9 : 0.86
       general.pos.copy(general.target).addScaledVector(DIR_GENERAL, distanciaPara(e.radius) * factor)
       if (!activa) {
         goPos.copy(general.pos)
@@ -610,14 +612,6 @@ function HotspotViewer() {
             <strong>{pieza.etiqueta}</strong>
             {pieza.descripcion ? <p>{pieza.descripcion}</p> : null}
           </>
-        ) : estado === 'listo' ? (
-          <span className="kt-hotspot-hint">
-            {!PIEZAS_INTERACTIVAS
-              ? t('landing.shop.hotspotHintGirar', 'Arrastrá para girar')
-              : sinHover
-                ? t('landing.shop.hotspotHintTouch', 'Tocá una pieza · arrastrá para girar')
-                : t('landing.shop.hotspotHint', 'Pasá el mouse por una pieza · arrastrá para girar')}
-          </span>
         ) : null}
       </div>
     </div>

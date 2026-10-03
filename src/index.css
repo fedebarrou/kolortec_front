@@ -2262,14 +2262,6 @@ html {
     animation: kt-hotspot-in 260ms ease-out;
   }
 
-  .kt-hotspot-hint {
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--kt-hs-ink-soft);
-  }
-
   /* Lista de piezas para teclado: fuera de la vista hasta que algo de adentro
      recibe foco; entonces aparece como una fila de chips ABAJO, en la franja
      libre debajo del equipo. Arriba la tapaba el cartel global de login y en
