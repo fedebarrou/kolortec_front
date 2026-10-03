@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useFullBleed } from '../../../shared/hooks/useFullBleed'
 import { irASeccion } from '../../../shared/utils/irASeccion'
+
+// three.js (~150 KB gz) sólo se baja cuando se monta la sección amarilla.
+const HotspotViewer = lazy(() => import('./HotspotViewer'))
 
 // Accesos de la sección de soporte (data estática en landingData) → key i18n por icono (ES/EN).
 const ACCESS_KEY_BY_ICON = {
@@ -21,7 +24,6 @@ function ShopSection({ shop, ready = true }) {
   const sectionTitle = t('landing.shop.title', shop.title)
   const sectionSubtitle = t('landing.shop.subtitle', shop.subtitle)
   const sectionEyebrow = t('landing.shop.eyebrow', 'Warranty Program')
-  const videoBadge = t('landing.shop.videoBadge', 'Repuestos originales')
   const ctas = shop.ctas ?? []
 
   const prefersReducedMotion =
@@ -33,30 +35,7 @@ function ShopSection({ shop, ready = true }) {
   // A pantalla completa: rompe el lienzo de 1920 para tocar los dos bordes de la
   // pantalla (en un 2K el lienzo se centra y quedaban bandas negras a los lados).
   useFullBleed(sectionRef)
-  const videoRef = useRef(null)
   const [introPhase, setIntroPhase] = useState(prefersReducedMotion ? 'done' : 'priming')
-
-  // Video: se reproduce UNA vez al entrar la sección al viewport y queda en el último frame
-  // (equipo encendido). Sin loop.
-  useEffect(() => {
-    const vid = videoRef.current
-    const el = sectionRef.current
-    if (!vid || !el) return undefined
-    if (!ready) return undefined
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            vid.play?.()?.catch(() => {})
-            obs.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.25 },
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [ready])
 
   // Animación de entrada (cortina + barrido + flash → fundido a negro). Se dispara al entrar
   // la sección al viewport; el contenido se revela mientras el fondo oscurece.
@@ -198,18 +177,6 @@ function ShopSection({ shop, ready = true }) {
           cierre lo dan las secciones que suben encima (Sumate en negro,
           Contactanos sobre la foto), no un cambio de color acá adentro. */}
 
-      {/* Video al borde derecho, mezclado con el fondo por máscara ghost (en mobile pasa a
-          fondo full-bleed atenuado). El asset se va a reemplazar; el comportamiento queda. */}
-      <div className="kt-shop-video-edge kt-shop-from-right" aria-hidden="true">
-        <video
-          ref={videoRef}
-          src="/assets/shop-section-bg.mp4"
-          muted
-          playsInline
-          preload="auto"
-        />
-        <span className="kt-shop-video-badge">{videoBadge}</span>
-      </div>
 
       {introPhase !== 'done' ? (
         <>
@@ -258,6 +225,17 @@ function ShopSection({ shop, ready = true }) {
             </nav>
           ) : null}
         </div>
+      </div>
+      {/* La HOT SPOT CMY en 3D al borde derecho (antes: video). Va DESPUÉS del
+          texto en el DOM para que con Tab se lean primero los accesos y
+          después la lista de piezas; la posición visual la da el CSS. Pasar el mouse
+          por una pieza hace zoom y muestra qué es. En < 1024px baja debajo del
+          texto (ver .kt-shop-3d en index.css): como fondo atenuado detrás del
+          texto, que era lo que hacía el video, no se podría tocar. */}
+      <div className="kt-shop-3d kt-shop-from-right">
+        <Suspense fallback={null}>
+          <HotspotViewer />
+        </Suspense>
       </div>
     </section>
   )

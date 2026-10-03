@@ -1420,6 +1420,11 @@ html {
     gap: 14px;
     overflow-x: auto;
     overflow-y: hidden;
+    scroll-padding-inline: 8px;
+    /* Sin barra: la de Windows (16px con flechas) se veía debajo de los chips.
+       No hace falta: la fila es para teclado y el chip enfocado se trae solo
+       a la vista (scrollIntoView en el onFocus). */
+    scrollbar-width: none;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: 2px;
     -webkit-overflow-scrolling: touch;
@@ -1995,7 +2000,7 @@ html {
   /* Video al borde derecho con máscara ghost (se funde hacia el fondo por la izquierda,
      como la imagen del mockup 2c). En mobile pasa a fondo full-bleed atenuado. */
   /* ── Contactanos: foto ghost al borde derecho ────────────────────────────
-     Misma técnica que .kt-shop-video-edge: la imagen sangra por el borde y una
+     Misma técnica que tenía el video de la sección amarilla: la imagen sangra por el borde y una
      máscara la disuelve hacia el contenido, así no hay canto duro. Se le suma
      una deriva de escala muy lenta (18s) para que no quede muerta; es
      deliberadamente imperceptible — no debe competir con la lista de contactos,
@@ -2146,66 +2151,245 @@ html {
     }
   }
 
-  /* El video crece con la pantalla. Con `min(680px, 52vw)` el tope de 680px lo
-     dejaba clavado: en un 2K ocupaba una cuarta parte del ancho y la sección era
-     casi todo amarillo vacío, mientras que el texto sigue viviendo en la mitad
-     izquierda y no necesita más lugar del que ya tiene. Ahora el tope sube con el
-     viewport y en pantallas grandes el video se lleva el protagonismo. */
-  .kt-shop-video-edge {
+  /* ── Sección amarilla: la HOT SPOT CMY en 3D (HotspotViewer) ───────────────
+     Sobre el amarillo de la sección (se probaron escenario negro, foco y
+     degradé; el cliente eligió el amarillo, 2026-10-03).
+     El canvas es ANCHO (62vw) y pasa por detrás del texto: así el equipo se
+     encuadra por el alto de la sección y sale grande. El modelo se corre a la
+     derecha dentro del canvas (filmOffset en el visor). El texto queda encima
+     (z-10) y sus links siguen recibiendo el puntero; el canvas, transparente. */
+  .kt-shop-3d {
+    --kt-hs-ink: var(--color-background-dark, #090909);
+    --kt-hs-ink-soft: rgba(11, 11, 11, 0.72); /* = .kt-shop-ink--soft */
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     z-index: 1;
-    width: clamp(320px, 54vw, 1280px);
+    width: 62vw;
+    overflow: hidden;
+  }
+
+  .kt-hotspot,
+  .kt-hotspot-canvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* El bloque de texto ocupa TODO el ancho de la sección (w-full, z-10) y su
+     mitad derecha vacía tapaba el canvas: el mouse nunca llegaba al modelo. El
+     contenedor deja pasar el puntero y sólo su columna de texto lo recibe. */
+  .kt-shop-content {
     pointer-events: none;
   }
 
-  .kt-shop-video-edge video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* Espejado horizontal (scaleX -1). La máscara del fundido se invierte a `to left`
-       para que, tras el flip, siga transparentando hacia el contenido (izquierda). */
-    transform: scaleX(-1);
-    -webkit-mask: linear-gradient(to left, transparent, #000 24%);
-    mask: linear-gradient(to left, transparent, #000 24%);
+  .kt-shop-content > * {
+    pointer-events: auto;
   }
 
-  .kt-shop-video-badge {
+  .kt-hotspot-canvas canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    cursor: grab;
+    /* Vertical = scroll de la página; horizontal = girar el equipo. */
+    touch-action: pan-y;
+  }
+
+  .kt-hotspot-canvas canvas:active {
+    cursor: grabbing;
+  }
+
+  /* Mientras baja el modelo la zona queda amarilla y vacía (sin spinner:
+     competiría con la animación de entrada de la sección). */
+  .kt-hotspot[data-estado='cargando'] .kt-hotspot-canvas,
+  .kt-hotspot[data-estado='error'] .kt-hotspot-canvas {
+    opacity: 0;
+  }
+
+  .kt-hotspot-error {
     position: absolute;
-    right: 20px;
-    bottom: 20px;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 9999px;
-    background: rgba(0, 0, 0, 0.55);
-    padding: 6px 14px;
-    /* 12px es el piso de lectura del sitio (sep-2026, al sacar el lienzo que
-       encogia todo). Estaba en 10 y se veia 10: la etiqueta del video la lee
-       alguien parado frente a la pantalla, no con lupa. */
-    font-size: 0.75rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: #f4df33;
-    backdrop-filter: blur(4px);
+    inset: auto 0 45% 40%;
+    margin: 0;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--kt-hs-ink-soft);
   }
 
+  /* Ficha de la pieza e indicación: ABAJO, en la zona del equipo. Arriba las
+     tapaba el cartel global de login (visitantes sin cuenta). Abajo se ve con
+     la sección quieta, que es cuando se hace hover; recién al seguir
+     scrolleando la sección siguiente sube y la tapa, junto con todo lo demás. */
+  .kt-hotspot-ficha {
+    position: absolute;
+    bottom: clamp(32px, 6vh, 64px);
+    left: 44%;
+    max-width: min(360px, 52%);
+    pointer-events: none;
+  }
+
+  .kt-hotspot-ficha strong {
+    display: inline-block;
+    /* Sin padding lateral: el fondo amarillo sólo se ve cuando la ficha pisa
+       el modelo, y con padding el nombre quedaba corrido respecto de la
+       indicación (ra VIS-111). */
+    padding: 8px 0;
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--kt-hs-ink);
+    background: var(--primary, #f4df33);
+    box-shadow: 8px 0 0 var(--primary, #f4df33), -8px 0 0 var(--primary, #f4df33);
+    animation: kt-hotspot-in 260ms ease-out;
+  }
+
+  .kt-hotspot-ficha p {
+    margin: 0;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #f2f4f8;
+    background: rgba(18, 18, 20, 0.92);
+    border: 1px solid var(--line, #252525);
+    border-top: 0;
+    animation: kt-hotspot-in 260ms ease-out;
+  }
+
+  .kt-hotspot-hint {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--kt-hs-ink-soft);
+  }
+
+  /* Lista de piezas para teclado: fuera de la vista hasta que algo de adentro
+     recibe foco; entonces aparece como una fila de chips ABAJO, en la franja
+     libre debajo del equipo. Arriba la tapaba el cartel global de login y en
+     columna tapaba la pieza enfocada (ra VIS-105/107). A la derecha deja lugar
+     al botón flotante de WhatsApp. */
+  .kt-hotspot-teclado {
+    position: absolute;
+    left: 44%;
+    right: 104px;
+    bottom: clamp(16px, 3vh, 32px);
+    /* Una sola fila con scroll horizontal: en varias filas los 15 chips
+       subían hasta la mitad del visor y se encimaban con la ficha. El chip
+       enfocado se trae solo a la vista. */
+    overflow-x: auto;
+    overflow-y: hidden;
+    clip-path: inset(50%);
+    width: 1px;
+    height: 1px;
+  }
+
+  .kt-hotspot-teclado::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kt-hotspot-teclado:focus-within {
+    clip-path: none;
+    width: auto;
+    height: auto;
+  }
+
+  .kt-hotspot-teclado ul {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 6px; /* lugar para el doble anillo del foco */
+    list-style: none;
+  }
+
+  .kt-hotspot-teclado button {
+    flex: none;
+    white-space: nowrap;
+    min-height: 32px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-align: left;
+    color: var(--primary, #f4df33);
+    background: var(--kt-hs-ink);
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* Doble anillo: amarillo adentro, negro afuera. Un solo anillo negro se
+     perdía cuando el chip pisa la base del equipo (gris oscuro): así se lee
+     sobre amarillo y sobre el modelo (WCAG 1.4.11). */
+  .kt-hotspot-teclado button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary, #f4df33), 0 0 0 4px var(--kt-hs-ink);
+  }
+
+  /* Con la fila de chips abierta, la ficha sube por encima de ella. */
+  .kt-hotspot:has(.kt-hotspot-teclado:focus-within) .kt-hotspot-ficha {
+    bottom: calc(clamp(16px, 3vh, 32px) + 56px);
+  }
+
+  @keyframes kt-hotspot-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-hotspot-ficha strong,
+    .kt-hotspot-ficha p {
+      animation: none;
+    }
+  }
+
+  /* < 1024: el video iba de fondo atenuado DETRÁS del texto; un modelo que se
+     toca no puede ir ahí. Baja debajo del texto, a todo el ancho. */
   @media (max-width: 1023px) {
-    .kt-shop-video-edge {
+    .kt-shop-section {
+      flex-wrap: wrap;
+    }
+
+    .kt-shop-3d {
+      position: relative;
+      inset: auto;
+      order: 2;
       width: 100%;
+      height: clamp(380px, 115vw, 640px);
+      margin-top: 8px;
     }
 
-    .kt-shop-video-edge video {
-      opacity: 0.35;
-      -webkit-mask: linear-gradient(to bottom, transparent, #000 30%);
-      mask: linear-gradient(to bottom, transparent, #000 30%);
+    /* En el celular abajo está el botón flotante de WhatsApp: la ficha y la
+       indicación van ARRIBA, en una franja propia (el canvas arranca debajo,
+       así la indicación no se cruza con la lente — ra VIS-106). Alineadas al
+       gutter de la sección (24px). */
+    .kt-hotspot {
+      box-sizing: border-box;
+      padding-top: 48px;
     }
 
-    .kt-shop-video-badge {
-      right: 14px;
-      bottom: 14px;
+    .kt-hotspot-ficha {
+      top: 8px;
+      bottom: auto;
+      left: 24px;
+      max-width: calc(100% - 48px);
+    }
+
+    .kt-hotspot-teclado {
+      left: 24px;
+      right: 24px;
+      top: 48px;
+      bottom: auto;
+    }
+
+    .kt-hotspot:has(.kt-hotspot-teclado:focus-within) .kt-hotspot-ficha {
+      bottom: auto;
+    }
+
+    .kt-hotspot-error {
+      left: 0;
     }
   }
 

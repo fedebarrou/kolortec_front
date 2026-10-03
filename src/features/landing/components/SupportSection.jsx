@@ -36,7 +36,7 @@ function SupportSection({ support, loading = false }) {
     <section className="kt-support-section px-6 py-[clamp(84px,11vw,128px)] lg:px-[calc(10rem+var(--kt-bleed-inset,0px))] kt-section-reveal" id="support" style={{ '--reveal-delay': '240ms' }}>
       {/* Ghost lateral: la foto sangra por el borde derecho y se disuelve hacia
           la izquierda con una máscara — la misma técnica del video de la sección
-          amarilla (.kt-shop-video-edge). Sin borde duro no se lee como una foto
+          amarilla (cuando tenía video). Sin borde duro no se lee como una foto
           pegada al costado sino como parte del fondo. Decorativa: aria-hidden. */}
       {imagen ? (
         <div className="kt-support-ghost" aria-hidden="true">

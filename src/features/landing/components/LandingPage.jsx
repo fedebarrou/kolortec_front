@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import Divider from './Divider'
 import FeaturedSection from './FeaturedSection'
 import HeroSection from './HeroSection'
@@ -12,6 +13,7 @@ import SupportSection from './SupportSection'
 import SectionErrorBoundary from './SectionErrorBoundary'
 import { useLandingContent } from '../hooks/useLandingContent'
 import { useHideBootScreen } from '../../../shared/hooks/useHideBootScreen'
+import { useStickyBottom } from '../../../shared/hooks/useStickyBottom'
 
 // Logo de la barra superior del scrolltelling (SnapChrome). Mismo asset que usaba
 // el ScrollytellingSection hardcodeado. OJO: el archivo tiene extensión .jpeg pero
@@ -46,6 +48,10 @@ function LandingPage() {
   // alto tres veces seguidas. `loading` pasa a false tambien si la API falla (el
   // finally de useLandingContent), asi que no puede quedarse trabada.
   useHideBootScreen(!loading)
+  // La amarilla puede ser más alta que la pantalla (en el celular el modelo 3D
+  // va debajo del texto): se clava por abajo para que se vea entera.
+  const pinRef = useRef(null)
+  useStickyBottom(pinRef)
 
   const hasProducts = (content.products?.items?.length ?? 0) > 0
 
@@ -91,7 +97,7 @@ function LandingPage() {
           ocupa la pantalla entera, así que el recurso cae natural ahí y no hace
           falta tocar el resto. Se fue el spacer que había acá: ahora no hay
           costura que suavizar, una tapa a la otra. */}
-      <div className="kt-stack-pin">
+      <div ref={pinRef} className="kt-stack-pin">
         <SectionErrorBoundary name="Shop">
           <ShopSection shop={content.shop} ready={!loading} />
         </SectionErrorBoundary>
