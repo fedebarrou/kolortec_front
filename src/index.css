@@ -1455,10 +1455,83 @@ html {
      sección clavada, y además hace que sus textos aliñen con los de ella (mismo
      ancho, mismo gutter). El ancho real se lo pone useFullBleed desde
      StackOver.jsx; acá sólo el color y el orden de apilado. */
+  /* Borde superior en DIAGONAL (pedido del cliente, mockup 2026-10-03): alto
+     a la derecha, bajo a la izquierda. Se dibuja con el fondo y no con
+     clip-path porque el sello de Kolortec (.kt-sello) rueda POR ENCIMA del
+     borde, sobre el amarillo: un clip-path lo cortaría. El triángulo de arriba
+     a la izquierda queda transparente y deja ver la amarilla clavada debajo.
+     A la derecha (donde está el modelo 3D) el negro arranca donde arrancaba
+     antes: la diagonal no tapa más de la amarilla. */
   .kt-stack-over {
+    --kt-diag: clamp(48px, 9vw, 150px);
     position: relative;
     z-index: 1;
-    background: #050505;
+    /* La capa lisa arranca 2px ANTES del final de la diagonal: con un
+       --kt-diag fraccionario (9vw = 129,6px) las dos capas no se tocaban y
+       quedaba una línea de 1px que dejaba ver la amarilla (joan REG-003). */
+    background:
+      linear-gradient(to bottom right, transparent calc(50% - 0.6px), var(--bg, #050505) calc(50% + 0.6px)) top / 100% var(--kt-diag) no-repeat,
+      linear-gradient(var(--bg, #050505), var(--bg, #050505)) 0 calc(var(--kt-diag) - 2px) / 100% calc(100% - var(--kt-diag) + 2px) no-repeat;
+  }
+
+  /* El sello que rueda por la diagonal (KolortecSello). Quieto: a la
+     izquierda, apoyado en el borde, a la altura del título (como la opción C).
+     Al entrar en pantalla arranca arriba a la derecha y rueda hasta acá. Las
+     variables las mide el componente según el ancho. */
+  .kt-sello {
+    --sello: clamp(140px, 15vw, 220px);
+    position: absolute;
+    z-index: 2;
+    width: var(--sello);
+    height: var(--sello);
+    left: clamp(16px, 6vw, 10rem);
+    /* El centro queda unos píxeles debajo del borde, que a esta altura de la
+       izquierda está casi en --kt-diag. */
+    top: calc(var(--kt-diag) * 0.9 - var(--sello) * 0.62);
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.45));
+  }
+
+  /* .kt-section-reveal le pone content-visibility:auto a las secciones, y eso
+     incluye contención de pintado: recorta todo lo que asome fuera de la caja.
+     El sello asoma POR ENCIMA del borde de Sumate (sobre el amarillo): en
+     esta sección se pinta normal. */
+  .kt-join-section.kt-section-reveal {
+    content-visibility: visible;
+  }
+
+  .kt-sello svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .kt-sello.is-on {
+    animation: kt-sello-rueda 2.2s cubic-bezier(0.32, 0.02, 0.24, 1) forwards;
+  }
+
+  @keyframes kt-sello-rueda {
+    0% {
+      opacity: 0;
+      transform: translate(var(--sello-dx, 0px), calc(var(--sello-dy, 0px) - 60px)) rotate(var(--sello-giro, 0deg));
+    }
+    12% {
+      opacity: 1;
+      transform: translate(var(--sello-dx, 0px), var(--sello-dy, 0px)) rotate(var(--sello-giro, 0deg));
+    }
+    100% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-sello,
+    .kt-sello.is-on {
+      animation: none;
+      opacity: 1;
+    }
   }
 
   /* FONDO FIJO del cierre: la foto del show detrás de Sumate y Contactanos.

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import KolortecSello from './KolortecSello'
 
 /**
  * Un solo llamado a sumarse, para las dos formas.
@@ -23,7 +24,7 @@ function JoinTeaserSection({ join }) {
 
   return (
     <section
-      className="kt-join-section kt-section-reveal relative isolate flex flex-col justify-center overflow-hidden bg-[#050505] px-6 py-[clamp(110px,15vw,200px)] lg:pr-40 lg:pl-[calc(10rem+var(--kt-bleed-inset,0px))]"
+      className="kt-join-section kt-section-reveal relative isolate flex flex-col justify-center px-6 pb-[clamp(110px,15vw,200px)] pt-[calc(clamp(110px,15vw,200px)+48px)] lg:pr-40 lg:pl-[calc(10rem+var(--kt-bleed-inset,0px))]"
       style={{ '--reveal-delay': '120ms' }}
     >
       {/* SIN el resplandor amarillo que había acá (dos radiales de rgba(244,223,51)
@@ -35,6 +36,10 @@ function JoinTeaserSection({ join }) {
           así que cualquier línea en su tope se lee como el borde inferior del
           bloque amarillo — que no tiene bordes. El corte lo hace el propio
           movimiento de una tapando a la otra. */}
+
+      {/* El borde de arriba es una DIAGONAL (lo dibuja el fondo de
+          .kt-stack-over) y por ella rueda el sello de Kolortec al aparecer. */}
+      <KolortecSello />
 
       <div className="kt-join-grid relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-center md:gap-14">
         <div className="kt-landing-reveal-item flex flex-col gap-3">
