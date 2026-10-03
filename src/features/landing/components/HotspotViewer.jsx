@@ -131,7 +131,7 @@ function HotspotViewer() {
     const principal = new THREE.SpotLight(0xffffff, 26, 8, Math.PI / 7, 0.55, 1.4)
     principal.castShadow = true
     principal.shadow.mapSize.set(2048, 2048)
-    principal.shadow.bias = -0.0004
+    principal.shadow.bias = -0.0002
     principal.shadow.radius = 4
     scene.add(principal, principal.target)
     // Relleno frío desde el frente-izquierda y contraluz blanca que recorta la
@@ -140,6 +140,27 @@ function HotspotViewer() {
     const contra = new THREE.SpotLight(0xffffff, 18, 8, Math.PI / 9, 0.6, 1.4)
     scene.add(relleno, contra, contra.target)
 
+
+    const sombraContacto = (() => {
+      const cv = document.createElement('canvas')
+      cv.width = cv.height = 128
+      const g = cv.getContext('2d')
+      const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64)
+      gr.addColorStop(0, 'rgba(0,0,0,0.55)')
+      gr.addColorStop(0.5, 'rgba(0,0,0,0.25)')
+      gr.addColorStop(1, 'rgba(0,0,0,0)')
+      g.fillStyle = gr
+      g.fillRect(0, 0, 128, 128)
+      const tex = new THREE.CanvasTexture(cv)
+      const plano = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
+      )
+      plano.rotation.x = -Math.PI / 2
+      plano.renderOrder = -1
+      return plano
+    })()
+    scene.add(sombraContacto)
 
     const raycaster = new THREE.Raycaster()
     const puntero = new THREE.Vector2()
@@ -270,6 +291,14 @@ function HotspotViewer() {
       principal.target.position.copy(c)
       principal.shadow.camera.near = r * 0.5
       principal.shadow.camera.far = r * 8
+      // normalBias despega la sombra de la superficie: sin esto las carcasas
+      // curvas se llenaban de rayitas finas ("shadow acne"), que se leían como
+      // una textura rara y no como plástico (cliente: "un pelín más realista").
+      principal.shadow.normalBias = r * 0.02
+      // Sombra de contacto bajo la base: el equipo apoya, no flota.
+      const pisoY = new THREE.Box3().setFromObject(modelo).min.y
+      sombraContacto.position.set(c.x, pisoY + 0.001, c.z)
+      sombraContacto.scale.set(r * 1.25, r * 0.95, 1)
       relleno.position.set(c.x - r * 2, c.y + r, c.z + r * 2)
       // Contraluz desde atrás y abajo hacia el CABEZAL: recorta la silueta en
       // amarillo sin hacer un charco en el piso.
@@ -561,6 +590,15 @@ function HotspotViewer() {
         piezas = new Map(lista.map((p) => [p.nombre_objeto, p]))
         modelo = gltf.scene
         scene.add(modelo)
+        const aniso = renderer.capabilities.getMaxAnisotropy()
+        modelo.traverse((o) => {
+          if (!o.isMesh) return
+          for (const mat of [].concat(o.material)) {
+            for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']) {
+              if (mat[k]) mat[k].anisotropy = aniso
+            }
+          }
+        })
         medirPiezas()
         // Se mide el despiece completo una vez (sin dibujar) para encuadrarlo.
         despiece = 1

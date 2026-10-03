@@ -20,10 +20,7 @@ TEXSRC = os.path.join(HERE, "tex_src")
 TEXGEN = os.path.join(HERE, "tex_gen")
 os.makedirs(TEXGEN, exist_ok=True)
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-OUT_DIR = argv[argv.index("--out-dir") + 1] if "--out-dir" in argv else HERE
-TAG = argv[argv.index("--tag") + 1] if "--tag" in argv else ""
-os.makedirs(OUT_DIR, exist_ok=True)
-GLB_OUT = argv[argv.index("--glb") + 1] if "--glb" in argv else os.path.join(OUT_DIR, "hotspot-cmy%s.glb" % TAG)
+GLB_OUT = argv[argv.index("--glb") + 1] if "--glb" in argv else os.path.join(HERE, "hotspot-cmy.raw.glb")
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
@@ -102,8 +99,6 @@ def make_rough(name, seed, lo, hi, k=3):
 IMG_PLAST = make_normal("plastico_carcasa", 7, 1, 1, 0.22)      # carcasa texturada, grano suave
 IMG_R_PLAST = make_rough("rugosidad_plastico", 21, 0.5, 0.82, 2)   # rugosidad variable (manchas de uso)
 IMG_R_METAL = make_rough("rugosidad_metal", 33, 0.34, 0.66, 3)
-IMG_R_BRIGHT = make_rough("rugosidad_aluminio", 44, 0.2, 0.5, 4)   # metales claros: rugosidad variable
-IMG_R_COPPER = make_rough("rugosidad_cobre", 55, 0.16, 0.38, 3)
 
 # ---------------------------------------------------------------- materiales
 MATS = {}
@@ -137,15 +132,15 @@ def mkmat(name, color, metal=0.0, rough=0.5, alpha=None, tex=None, normal=None, 
     MATS[name] = m
     return m
 
-mkmat("carcasa_plastico", (0.024, 0.024, 0.026), 0.0, 0.6, normal=IMG_GRAIN, nstr=0.75, rough_img=IMG_R_PLAST, spec=0.3)   # pintura texturada fina
+mkmat("carcasa_plastico", (0.028, 0.028, 0.03), 0.0, 0.6, normal=IMG_PLAST, nstr=0.7, rough_img=IMG_R_PLAST, spec=0.3)
 mkmat("metal_negro", (0.02, 0.02, 0.022), 0.5, 0.5, normal=IMG_GRAIN, nstr=0.9, rough_img=IMG_R_METAL, spec=0.4)
 mkmat("goma_negra", (0.018, 0.018, 0.018), 0.0, 0.8, normal=IMG_GRAIN, nstr=0.5, rough_img=IMG_R_PLAST, spec=0.25)
-mkmat("aluminio_cepillado", hx('#c4c6c9'), 1.0, 0.36, normal=IMG_BRUSH, nstr=0.9, rough_img=IMG_R_BRIGHT)
-mkmat("aluminio_aletas", hx('#b7babd'), 1.0, 0.30, rough_img=IMG_R_BRIGHT)
-mkmat("cobre", hx('#d9824f'), 1.0, 0.24, rough_img=IMG_R_COPPER)
+mkmat("aluminio_cepillado", hx('#c4c6c9'), 1.0, 0.36, normal=IMG_BRUSH, nstr=0.9)
+mkmat("aluminio_aletas", hx('#b7babd'), 1.0, 0.30)
+mkmat("cobre", hx('#d9824f'), 1.0, 0.24)
 mkmat("laton", hx('#c9a24a'), 1.0, 0.30)
-mkmat("acero_zincado", hx('#8c8f92'), 0.9, 0.38, normal=IMG_BRUSH, nstr=0.5, rough_img=IMG_R_METAL)
-mkmat("vidrio_lente", hx('#2f7f78'), 0.0, 0.015, alpha=0.32, spec=1.0)   # tinte verde azulado leve, brillo alto (IOR 1.5 por defecto)
+mkmat("acero_zincado", hx('#8c8f92'), 0.9, 0.38, normal=IMG_BRUSH, nstr=0.5)
+mkmat("vidrio_lente", hx('#0f3a38'), 0.0, 0.03, alpha=0.45)
 mkmat("vidrio_c", hx('#1aa7c9'), 0.0, 0.05, alpha=0.5)
 mkmat("vidrio_m", hx('#c4287f'), 0.0, 0.05, alpha=0.5)
 mkmat("vidrio_y", hx('#e3d319'), 0.0, 0.05, alpha=0.5)
@@ -160,7 +155,7 @@ mkmat("decal_panel", (1, 1, 1), 0.0, 0.45, tex="panel_front.png")
 mkmat("decal_etiqueta", (1, 1, 1), 0.0, 0.4, tex="label_top.png")
 mkmat("decal_logo", (1, 1, 1), 0.0, 0.5, tex="yoke_logo.png")
 mkmat("decal_sticker", (1, 1, 1), 0.0, 0.35, tex="sticker_side.png")
-mkmat("plastico_liso", (0.022, 0.022, 0.023), 0.0, 0.7, normal=IMG_GRAIN, nstr=0.45, rough_img=IMG_R_PLAST, spec=0.3)
+mkmat("plastico_liso", (0.02, 0.02, 0.021), 0.0, 0.7, normal=IMG_PLAST, nstr=0.25, spec=0.3)
 mkmat("led_amarillo", hx('#e9c51c'), 0.0, 0.35, emit=(hx('#e9c51c'), 1.2))
 mkmat("ranura_negra", hx('#050505'), 0.0, 0.8)
 mkmat("correa", hx('#26262a'), 0.0, 0.6, normal=IMG_GRAIN, nstr=0.6)
@@ -173,7 +168,6 @@ class Part:
         self.uv = self.bm.loops.layers.uv.new("UVMap")
         self.mats = []
         self.decal = set()
-        self.autobevel = 0.0012     # 1,2 mm, 2 segmentos, en todos los cantos duros
 
     def _mi(self, mat):
         if mat not in self.mats: self.mats.append(mat)
@@ -192,7 +186,6 @@ class Part:
         return new
 
     def box(self, size, m, mat, bevel=0.0, bseg=2):
-        if min(size) >= 0.0035: bevel = max(bevel, self.autobevel)
         before = set(self.bm.faces)
         mm = m @ Matrix.Diagonal((size[0], size[1], size[2], 1))
         bmesh.ops.create_cube(self.bm, size=1.0, matrix=mm)
@@ -207,7 +200,6 @@ class Part:
     def poly(self, pts, depth, m, mat, bevel=0.0, bseg=2):
         """prisma: poligono (x,y) extruido en z in [-d/2, d/2], luego matriz m."""
         bm = self.bm; before = set(bm.faces); n = len(pts)
-        if n <= 16 and depth >= 0.0035: bevel = max(bevel, self.autobevel)
         b = [bm.verts.new(m @ Vector((x, y, -depth / 2))) for x, y in pts]
         t = [bm.verts.new(m @ Vector((x, y, depth / 2))) for x, y in pts]
         bm.faces.new(b[::-1]); bm.faces.new(t)
@@ -257,57 +249,6 @@ class Part:
         bmesh.ops.recalc_face_normals(bm, faces=new)
         return self._tag(before, mat)
 
-    def absorb(self, other):
-        """incorpora la malla de otra Part (con sus materiales) a esta."""
-        me = bpy.data.meshes.new("abs_" + other.name); other.bm.to_mesh(me); other.bm.free()
-        before = set(self.bm.faces)
-        self.bm.from_mesh(me)
-        for f in [f for f in self.bm.faces if f not in before]:
-            f.material_index = self._mi(other.mats[f.material_index])
-        bpy.data.meshes.remove(me)
-
-    def bevel_hard(self, w=0.0013, ang=60):
-        """bisel (2 segmentos) en todos los cantos duros que ya existen (no toca decales)."""
-        bm = self.bm
-        edges = [e for e in bm.edges if len(e.link_faces) == 2 and e.calc_face_angle(0) > math.radians(ang)
-                 and not any(f in self.decal for f in e.link_faces)]
-        if edges:
-            bmesh.ops.bevel(bm, geom=edges, offset=w, offset_type='OFFSET', profile=0.5, segments=2, affect='EDGES')
-
-    def cut_holes(self, specs):
-        """agujeros reales (booleano exacto) en lo que ya esta construido. specs: [(pos, normal_hacia_afuera, radio, profundidad)]."""
-        bm = self.bm
-        me = bpy.data.meshes.new("tmp_" + self.name); bm.to_mesh(me)
-        for mn in self.mats: me.materials.append(MATS[mn])
-        ob = bpy.data.objects.new("tmp_" + self.name, me); coll.objects.link(ob)
-        cb = bmesh.new()
-        for (pos, nrm, r, d) in specs:
-            nrm = Vector(nrm).normalized()
-            R = Vector((0, 0, 1)).rotation_difference(nrm).to_matrix().to_4x4()
-            c = Vector(pos) - nrm * (d / 2 - 0.0012)
-            bmesh.ops.create_cone(cb, cap_ends=True, cap_tris=False, segments=18, radius1=r, radius2=r, depth=d + 0.0024, matrix=T(*c) @ R)
-        cme = bpy.data.meshes.new("tmpc"); cb.to_mesh(cme); cb.free()
-        co = bpy.data.objects.new("tmpc", cme); coll.objects.link(co)
-        md = ob.modifiers.new("b", 'BOOLEAN'); md.operation = 'DIFFERENCE'; md.solver = 'EXACT'; md.object = co
-        bpy.context.view_layer.objects.active = ob
-        for o in bpy.context.view_layer.objects: o.select_set(False)
-        ob.select_set(True)
-        bpy.ops.object.modifier_apply(modifier="b")
-        bm.clear(); bm.from_mesh(ob.data)
-        self.uv = bm.loops.layers.uv.verify()
-        bpy.data.objects.remove(ob); bpy.data.objects.remove(co)
-        bpy.data.meshes.remove(me); bpy.data.meshes.remove(cme)
-
-    def screw(self, pos, nrm, r=0.0043, depth=0.0035):
-        """tornillo Phillips hundido: cabeza al fondo del agujero (hacer despues de cut_holes)."""
-        nrm = Vector(nrm).normalized()
-        R = Vector((0, 0, 1)).rotation_difference(nrm).to_matrix().to_4x4()
-        base = Vector(pos) - nrm * (depth - 0.0009)
-        self.cyl(r, 0.0016, T(*base) @ R, "metal_negro", 14, bevel=0.0004)
-        top = base + nrm * 0.0008
-        for a in (0, math.pi / 2):
-            self.box((0.0062, 0.0011, 0.0004), T(*top) @ R @ Rz(a), "ranura_negra")
-
     def band(self, outer, inner, xa, xb, mat):
         """banda hueca: contorno exterior/interior (u,v)=(y,z) extruido en X entre xa y xb."""
         bm = self.bm; before = set(bm.faces); n = len(outer)
@@ -349,7 +290,7 @@ class Part:
         # normales: suave, con aristas duras donde el angulo es grande
         for f in bm.faces: f.smooth = True
         for e in bm.edges:
-            if len(e.link_faces) == 2 and e.calc_face_angle(0) > math.radians(50): e.smooth = False
+            if len(e.link_faces) == 2 and e.calc_face_angle(0) > math.radians(38): e.smooth = False
         loose = [v for v in bm.verts if not v.link_faces]
         if loose: bmesh.ops.delete(bm, geom=loose, context='VERTS')
         nonman = sum(1 for e in bm.edges if len(e.link_faces) != 2)
@@ -361,7 +302,6 @@ class Part:
         ob["pieza"] = self.name; me["pieza"] = self.name
         coll.objects.link(ob)
         if parent is not None: ob.parent = parent
-        wn = ob.modifiers.new("normales_ponderadas", 'WEIGHTED_NORMAL'); wn.keep_sharp = True; wn.mode = 'FACE_AREA'; wn.weight = 50
         print(f"[parte] {self.name:24s} tris={len(me.polygons):6d} aristas_abiertas={nonman}")
         return ob
 
@@ -411,10 +351,6 @@ def build_base():
     new = [f for f in bm.faces if f not in before]
     bmesh.ops.recalc_face_normals(bm, faces=new)
     P._tag(before, "carcasa_plastico", bevel=0.006, bseg=2)
-    # costura (linea de union tapa superior / cuerpo) alrededor de la base, a z=0.115
-    tq = (0.115 - z0) / (z1 - z0)
-    seam = [(x0 + (x1 - x0) * tq, y0 + (y1 - y0) * tq, 0.115) for (x0, y0), (x1, y1) in zip(r0, r1)]
-    P.tube(seam, 0.0007, "ranura_negra", 4, closed=True)
     # orejas / asas laterales (marco con ventana pasante en Y)
     for s in (-1, 1):
         cx = s * 0.1675
@@ -451,9 +387,6 @@ def build_panel():
     P = Part("panel_lcd")
     zc, yf = 0.088, -0.15
     P.box((0.248, 0.008, 0.094), T(0, yf, zc), "carcasa_plastico", 0.002)
-    scr = [((sx * 0.1195, yf - 0.004, zc + sz * 0.036), (0, -1, 0)) for sx in (-1, 1) for sz in (-1, 1)]
-    P.cut_holes([(pp, nn, 0.0052, 0.0034) for pp, nn in scr])
-    for pp, nn in scr: P.screw(pp, nn)
     P.quad((0, yf - 0.0041, zc), (1, 0, 0), (0, 0, 1), 0.2169, 0.0652, "decal_panel", off=0.0)  # normal = x cross z = -y
     # vidrio LCD levemente en relieve (sobre el recuadro de la pantalla)
     k = 0.0002233
@@ -471,6 +404,10 @@ def build_panel():
                     co = lp.vert.co
                     lp[P.uv].uv = (0.5 + co.x / 0.2169, 0.5 + (co.z - zc) / 0.0652)
                 P.decal.add(f)
+    # tornillos
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            P.cyl(0.0042, 0.003, T(sx * 0.1195, yf - 0.0045, zc + sz * 0.036) @ Rx(math.pi / 2), "metal_negro", 8)
     return P.finish()
 
 # ================================================================ YUGO (estructura interna, SIN tapas de brazo)
@@ -498,11 +435,6 @@ def build_yugo():
     P = Part("yugo")
     B = [(-0.125, 0.215), (0.125, 0.215), (0.125, FLOOR + 0.06), (0.065, FLOOR), (-0.065, FLOOR), (-0.125, FLOOR + 0.06)]
     P.poly(B, 0.18, T(0, 0.025, 0) @ M_XZ, "carcasa_plastico", 0.006)
-    scr = [((x, -0.065, z), (0, -1, 0)) for (x, z) in ((-0.108, 0.232), (0.108, 0.232), (-0.108, 0.285), (0.108, 0.285))]
-    P.cut_holes([(pp, nn, 0.0052, 0.0034) for pp, nn in scr])
-    for pp, nn in scr: P.screw(pp, nn)
-    for sx in (-1, 1):                                             # costuras verticales de la cubierta frontal del puente
-        P.box((0.0009, 0.0007, 0.06), T(sx * 0.082, -0.0652, 0.2495), "ranura_negra")
     plate = arm_profile(0.215, 0.51, 0.065)
     for sd in (-1, 1):
         P.poly(plate, 0.004, T(sd * 0.127, 0, 0) @ M_YZ, "metal_negro", 0.0)            # chapa de brazo (queda cuando se saca la tapa)
@@ -512,6 +444,8 @@ def build_yugo():
     P.box((0.003, 0.11, 0.085), T(0.1305, 0, 0.262), "acero_zincado", 0.0008)          # mensula del encoder (brazo derecho)
     # logo KOLORTEC* frontal (sobre la cara del puente): right=+X, up=+Z -> normal -Y (hacia quien mira de frente)
     P.quad((0.0, -0.0655, (0.215 + FLOOR) / 2), (1, 0, 0), (0, 0, 1), 0.077, 0.077 * 64 / 360, "decal_logo")
+    for (x, z) in ((-0.108, 0.232), (0.108, 0.232), (-0.108, 0.29), (0.108, 0.29)):
+        P.cyl(0.0045, 0.003, T(x, -0.0665, z) @ Rx(math.pi / 2), "metal_negro", 8)
     return P.finish()
 
 def build_tapa_yugo(sd):
@@ -519,18 +453,12 @@ def build_tapa_yugo(sd):
     P = Part("tapa_yugo_izq" if sd < 0 else "tapa_yugo_der")
     out = arm_profile(0.215, 0.51, 0.065); inn = offset_convex(out, 0.005)
     P.band(out, inn, sd * 0.129, sd * 0.178, "carcasa_plastico")
-    P.bevel_hard(0.0012)
-    W = Part(P.name + "_pared")          # pared exterior en una parte aparte: el booleano necesita un solido simple
-    W.poly(out, 0.007, T(sd * 0.1815, 0, 0) @ M_YZ, "carcasa_plastico", 0.006, 2)
-    scr = [((sd * 0.185, yy, z), (sd, 0, 0)) for z in (0.37, 0.51) for yy in (-0.043, 0.043)]
-    W.cut_holes([(pp, nn, 0.0052, 0.0034) for pp, nn in scr])
-    for pp, nn in scr: W.screw(pp, nn)
-    P.absorb(W)
-    # costura de la tapa (corte entre la cubierta del brazo y el zocalo) a z=0.31
-    P.tube([(sd * 0.129, -0.0657, 0.31), (sd * 0.1853, -0.0657, 0.31), (sd * 0.1858, -0.0645, 0.31), (sd * 0.1858, 0.0645, 0.31),
-            (sd * 0.1853, 0.0657, 0.31), (sd * 0.129, 0.0657, 0.31)], 0.0007, "ranura_negra", 4)
+    P.poly(out, 0.007, T(sd * 0.1815, 0, 0) @ M_YZ, "carcasa_plastico", 0.006, 2)
     # sticker: 'right' = derecha de quien mira la cara desde afuera (izq: -Y, der: +Y) -> texto sin espejo, normal hacia afuera
     P.quad((sd * 0.1857, 0.0, 0.44), (0, sd, 0), (0, 0, 1), 0.05, 0.205, "decal_sticker")
+    for z in (0.37, 0.51):
+        P.cyl(0.0045, 0.003, T(sd * 0.1857, -0.043, z) @ Ry(math.pi / 2), "metal_negro", 8)
+        P.cyl(0.0045, 0.003, T(sd * 0.1857, 0.043, z) @ Ry(math.pi / 2), "metal_negro", 8)
     return P.finish()
 
 def build_placa_brazo():
@@ -570,13 +498,12 @@ def build_chasis():
 # ================================================================ CABEZAL: carcasa (dos mitades)
 # Semiejes de la carcasa ovalada (barril negro mate de las fotos 16.36.04(1), 04(3), 04 y 05): z, a(X), b(Y)
 SHELL = [(-0.222, 0.098, 0.113), (-0.205, 0.1115, 0.128), (-0.18, 0.1175, 0.141), (-0.135, 0.1235, 0.150), (-0.06, 0.1245, 0.154),
-         (0.03, 0.1235, 0.149), (0.12, 0.118, 0.139), (0.19, 0.111, 0.124), (0.245, 0.1095, 0.1165), (0.2745, 0.111, 0.1125),
-         (0.2788, 0.1112, 0.1119, 0.005), (0.2794, 0.1113, 0.1117, 0.0115), (0.2865, 0.1115, 0.1115, 0.0115)]   # escalon/labio del aro de boca
+         (0.03, 0.1235, 0.149), (0.12, 0.118, 0.139), (0.19, 0.111, 0.124), (0.245, 0.1095, 0.1165), (0.2745, 0.111, 0.1125), (0.2865, 0.1115, 0.1115)]
 WALL, RIM_T = 0.004, 0.0115
 
 def shell_ab(z):
     for k in range(len(SHELL) - 1):
-        z0, a0, b0 = SHELL[k][:3]; z1, a1, b1 = SHELL[k + 1][:3]
+        z0, a0, b0 = SHELL[k]; z1, a1, b1 = SHELL[k + 1]
         if z0 <= z <= z1:
             t = (z - z0) / (z1 - z0); return a0 + (a1 - a0) * t, b0 + (b1 - b0) * t
     return SHELL[-1][1], SHELL[-1][2]
@@ -589,10 +516,10 @@ def shell_half(name, sgn):
     P = Part(name); bm = P.bm; before = set(bm.faces)
     N = 24; ths = [math.pi * i / N for i in range(N + 1)]; nr = len(SHELL)
     def ringv(z, a, b): return [bm.verts.new((a * math.cos(t), sgn * b * math.sin(t), z)) for t in ths]
-    outer = [ringv(r[0], r[1], r[2]) for r in SHELL]
+    outer = [ringv(z, a, b) for (z, a, b) in SHELL]
     inner = []
-    for k, r in enumerate(SHELL):
-        z, a, b = r[:3]; t = r[3] if len(r) > 3 else WALL
+    for k, (z, a, b) in enumerate(SHELL):
+        t = RIM_T if k == nr - 1 else WALL
         inner.append(ringv(z + (WALL if k == 0 else 0.0), a - t, b - t))
     F = bm.faces.new
     for k in range(nr - 1):
@@ -607,16 +534,14 @@ def shell_half(name, sgn):
     new = [f for f in bm.faces if f not in before]
     bmesh.ops.recalc_face_normals(bm, faces=new)
     P._tag(before, "carcasa_plastico")
-    P.bevel_hard(0.0013)           # canto de union entre mitades, borde de boca y fondo: atrapan luz (la union queda como una linea en V)
-    # tornillos HUNDIDOS reales (fotos 1/3/11): agujero booleano con cabeza de tornillo al fondo
+    # agujeros de tornillo (discos oscuros sobre la superficie)
     zs, xs = (0.05, 0.092) if sgn < 0 else (0.186, 0.085)
-    scr = []
     for sx in (-1, 1):
         xx = sx * xs; yy = shell_y(zs, xx, sgn); aa, bb = shell_ab(zs)
         nrm = Vector((xx / aa ** 2, yy / bb ** 2, 0.0)).normalized()          # normal de la superficie ovalada
-        scr.append((Vector((xx, yy, zs)), nrm))
-    P.cut_holes([(pp, nn, 0.0062, 0.0036) for pp, nn in scr])
-    for pp, nn in scr: P.screw(pp, nn, r=0.0048, depth=0.0036)
+        R = Vector((0, 0, 1)).rotation_difference(nrm).to_matrix().to_4x4()
+        P.cyl(0.0095, 0.0016, T(xx, yy, zs) @ T(*(nrm * 0.0006)) @ R, "goma_negra", 14)
+        P.cyl(0.0055, 0.004, T(xx, yy, zs) @ T(*(nrm * 0.0010)) @ R, "ranura_negra", 14)
     if sgn > 0:
         # rejilla cuadrada del ventilador (foto 16.36.04(1)): marco saliente + recinto oscuro + malla de barras
         zc, yc = -0.13, 0.1485
@@ -625,16 +550,10 @@ def shell_half(name, sgn):
         P.box((0.008, 0.02, 0.122), T(0.0635, yc, zc), "carcasa_plastico", 0.002)
         P.box((0.008, 0.02, 0.122), T(-0.0635, yc, zc), "carcasa_plastico", 0.002)
         P.box((0.119, 0.004, 0.107), T(0, yc - 0.002, zc), "ranura_negra")
-        # malla de rombos a 45 grados (foto 1): barras diagonales recortadas al recuadro
-        hh = 0.0595; stp = 0.0156
-        for sg, ang in ((1, math.radians(45)), (-1, math.radians(135))):
-            for i in range(-8, 9):
-                c = i * stp
-                u_a = (-hh - c) / sg; u_b = (hh - c) / sg
-                u0 = max(-hh, min(u_a, u_b)); u1 = min(hh, max(u_a, u_b))
-                if u1 - u0 < 0.006: continue
-                um = (u0 + u1) / 2
-                P.box((0.0016, 0.0035, (u1 - u0) * 1.4142), T(um, yc + 0.0075, zc + sg * um + c) @ Ry(ang), "goma_negra")
+        for k in range(10):
+            P.box((0.0016, 0.0035, 0.107), T(-0.054 + k * 0.012, yc + 0.0075, zc), "goma_negra")
+        for k in range(9):
+            P.box((0.119, 0.0035, 0.0016), T(0, yc + 0.0075, zc - 0.048 + k * 0.012), "goma_negra")
     else:
         # ranura de ventilacion inferior (foto 16.36.05 / 05): hueco con aletas, sobre el fondo plano
         zb = SHELL[0][0]
@@ -713,12 +632,12 @@ def build_disipador():
 # ================================================================ ventiladores
 def build_fan_a():
     P = Part("ventilador_motor_led")
-    c = (0, -0.083, -0.132)
+    c = (0, -0.092, -0.1365)
     for sx in (-1, 1):
-        P.box((0.004, 0.03, 0.108), T(sx * 0.0655, -0.088, -0.132), "metal_negro", 0.001)
-    P.box((0.133, 0.03, 0.004), T(0, -0.088, -0.132 + 0.052), "metal_negro", 0.001)
-    P.box((0.133, 0.03, 0.004), T(0, -0.088, -0.132 - 0.052), "metal_negro", 0.001)
-    P.box((0.133, 0.03, 0.108), T(0, -0.058, -0.132), "metal_negro", 0.003)    # carcasa/shroud (esquinas dentro de la carcasa ovalada)
+        P.box((0.004, 0.03, 0.117), T(sx * 0.0705, -0.097, -0.1365), "metal_negro", 0.001)
+    P.box((0.145, 0.03, 0.004), T(0, -0.097, -0.1365 + 0.0565), "metal_negro", 0.001)
+    P.box((0.145, 0.03, 0.004), T(0, -0.097, -0.1365 - 0.0565), "metal_negro", 0.001)
+    P.box((0.145, 0.03, 0.117), T(0, -0.067, -0.1365), "metal_negro", 0.003)    # carcasa/shroud
     M = T(*c) @ Rx(math.pi / 2)     # eje del ventilador (z local) -> -Y (frente)
     P.box((0.104, 0.006, 0.027), M @ T(0, 0.049, 0), "goma_negra", 0.001)
     P.box((0.104, 0.006, 0.027), M @ T(0, -0.049, 0), "goma_negra", 0.001)
@@ -924,8 +843,8 @@ def build_cables():
         ([(0.04, -0.086, 0.072), (-0.06, -0.102, 0.045), (-0.085, -0.092, -0.025), (-0.087, -0.05, -0.078)], "cable_negro"),
         ([(0.074, -0.086, 0.075), (0.082, -0.096, 0.03), (0.088, -0.088, -0.04), (0.09, -0.05, -0.078)], "cable_rojo"),
         ([(0.07, -0.086, 0.072), (0.078, -0.1, 0.028), (0.085, -0.092, -0.042), (0.087, -0.05, -0.08)], "cable_negro"),
-        ([(0.04, -0.091, -0.09), (0.08, -0.09, -0.07), (0.09, -0.06, -0.07)], "cable_rojo"),
-        ([(0.038, -0.091, -0.092), (0.078, -0.092, -0.075), (0.087, -0.06, -0.076)], "cable_negro"),
+        ([(0.04, -0.103, -0.092), (0.08, -0.097, -0.07), (0.09, -0.06, -0.07)], "cable_rojo"),
+        ([(0.038, -0.103, -0.094), (0.078, -0.1, -0.075), (0.087, -0.06, -0.076)], "cable_negro"),
         ([(-0.07, 0.035, 0.1), (-0.085, 0.06, 0.06), (-0.09, 0.07, 0.0), (-0.09, 0.06, -0.06)], "cable_negro"),
         ([(0.066, 0.0, 0.03), (0.088, 0.02, 0.05), (0.09, 0.05, 0.1), (0.07, 0.07, 0.16)], "cable_rojo"),
     ]
@@ -990,7 +909,7 @@ for ob in objs:
     piezas[-1]["despiece"] = {"orden": o, "direccion": [round(ev.x, 3), round(ev.z, 3), round(-ev.y, 3)] if o else None,
                                "distancia": dist if o else 0.0}
     piezas[-1]["grupo"] = ("tapas" if ob.name.startswith("tapa_") else "estructura" if o == 0 else "internos")
-with open(os.path.join(OUT_DIR, "piezas.json"), "w", encoding="utf-8") as fh:
+with open(os.path.join(HERE, "piezas.json"), "w", encoding="utf-8") as fh:
     json.dump(piezas, fh, ensure_ascii=False, indent=2)
 
 # chequeo de choque: carcasa del cabezal (pose) contra el techo del puente del yugo
@@ -1003,7 +922,7 @@ for ob in objs:
             pen = max(pen, bridge_z(w.x) - w.z)
 print(f"[choque] penetracion maxima carcasa/puente = {pen*1000:.1f} mm (negativo = hay luz)")
 # choque carcasa vs brazos (x): semiejes max de la carcasa contra la cara interior de las tapas de brazo (0.129)
-print(f"[choque] semieje X carcasa = {max(r[1] for r in SHELL)*1000:.1f} mm, cara interior chapa de brazo = 125.0 mm")
+print(f"[choque] semieje X carcasa = {max(a for _, a, _ in SHELL)*1000:.1f} mm, cara interior chapa de brazo = 125.0 mm")
 
 total = sum(len(o.data.polygons) for o in objs)
 print("[total] triangulos =", total)
@@ -1011,7 +930,7 @@ print("[total] triangulos =", total)
 # guardar fuente (.blend) con imagenes de grano empacadas
 for im in bpy.data.images:
     if im.name in ("grano_pintura", "aluminio_cepillado", "plastico_carcasa") or im.filepath: im.pack()
-bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT_DIR, "hotspot-cmy%s.blend" % TAG))
+bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, "hotspot-cmy.blend"))
 
 # exportar GLB crudo (Draco + WebP)
 bpy.ops.export_scene.gltf(
