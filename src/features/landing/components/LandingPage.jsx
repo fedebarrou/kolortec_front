@@ -18,10 +18,12 @@ import { useHideBootScreen } from '../../../shared/hooks/useHideBootScreen'
 // en realidad es WebP — no cambiar el nombre sin re-exportarlo.
 const KOLORTEC_LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
-// Foto de cierre: el frame del estadio lleno con los haces cruzados, el mismo
-// material del scrolltelling. Para cambiarla, cambiá esta ruta (o cargá fotos de
+// Foto de cierre: el frame f150 del scrolltelling (estadio con los haces
+// cruzados) recoloreado a amarillo kolortec con núcleos blancos — pedido del
+// cliente, opción A del mockup docs/mockups/2026-10-03-contacto (el script que
+// la genera está ahí). Para cambiarla, cambiá esta ruta (o cargá fotos de
 // evento en la galería de la cuenta, que van de respaldo).
-const FOTO_CIERRE = '/assets/scrolly-frames/f150.jpg'
+const FOTO_CIERRE = '/assets/cierre-haces-amarillos.jpg'
 
 /**
  * Landing DATA-DRIVEN: refleja EXACTO lo cargado en tiendita para la cuenta. Cada sección mantiene

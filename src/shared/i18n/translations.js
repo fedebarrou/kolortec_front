@@ -114,6 +114,9 @@ export const translations = {
         salesCategory: 'Sales',
         supportCategory: 'Support',
         emptyContacts: "We haven't loaded contact details yet. You'll be able to reach us here soon.",
+        actionEmail: 'Write',
+        actionPhone: 'Call',
+        actionChat: 'Open chat',
       },
       distributor: {
         eyebrow: 'Distributor Program',
@@ -668,6 +671,9 @@ export const translations = {
         salesCategory: 'Ventas',
         supportCategory: 'Soporte',
         emptyContacts: 'Todavía no cargamos los datos de contacto. Pronto vas a poder escribirnos por acá.',
+        actionEmail: 'Escribir',
+        actionPhone: 'Llamar',
+        actionChat: 'Abrir chat',
       },
       distributor: {
         eyebrow: 'Programa de distribuidores',

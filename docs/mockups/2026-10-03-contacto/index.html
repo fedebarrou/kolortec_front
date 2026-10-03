@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kolortec · mockups contacto</title>
+<style>
+  @font-face { font-family: 'Futura'; src: url('/fonts/futura-extra-black-condensed.otf') format('opentype'); font-weight: 900; }
+  @font-face { font-family: 'Manrope'; src: url('/fonts/manrope-latin.woff2') format('woff2'); font-weight: 200 900; }
+  :root { --y: #f4df33; --bg: url('bg-actual.jpg'); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #050505; color: #f5f5f5; font-family: Manrope, sans-serif; }
+  .t { font-family: Futura, 'Arial Narrow', Impact, sans-serif; font-weight: 900; text-transform: uppercase; line-height: 1.02; }
+  .dot { color: var(--y); }
+
+  /* ---------- barra de decisión ---------- */
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center;
+         padding: 12px 24px; background: rgba(5,5,5,.94); border-bottom: 1px solid #222; font-size: 13px; }
+  .bar b { color: var(--y); letter-spacing: .12em; text-transform: uppercase; font-size: 11px; }
+  .bar label { cursor: pointer; padding: 5px 10px; border: 1px solid #333; border-radius: 999px; }
+  .bar input { accent-color: var(--y); }
+  .block-head { padding: 64px 24px 18px; max-width: 1280px; margin: 0 auto; }
+  .block-head h2 { margin: 0 0 6px; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--y); }
+  .block-head p { margin: 0; color: #9aa2ad; max-width: 70ch; }
+  .opt-tag { display: inline-block; margin: 0 0 10px; padding: 4px 10px; background: var(--y); color: #090909;
+             font-weight: 800; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+
+  /* ---------- escena: fondo fijo como en el sitio ---------- */
+  .scene { position: relative; isolation: isolate; padding: clamp(56px,8vw,110px) 24px; min-height: 560px;
+           background: #050505; overflow: hidden; }
+  .scene::before { content: ''; position: absolute; inset: 0; z-index: -2; background: var(--bg) center/cover no-repeat;
+                   background-attachment: fixed; }
+  .scene::after { content: ''; position: absolute; inset: 0; z-index: -1;
+                  background: linear-gradient(#050505 0, transparent 18%, transparent 82%, #050505 100%), rgba(5,5,5,.68); }
+  /* rgba(5,5,5,.68) = .kt-closing-fade-sides del sitio: misma oscuridad que en producción */
+  .scene.bg-actual::before { background-image: url('bg-actual.jpg'); }
+  .scene.bg-a::before { background-image: url('bg-a-amarillo.jpg'); }
+  .scene.bg-b::before { background-image: url('bg-b-mixto.jpg'); }
+  .inner { max-width: 1120px; margin: 0 auto; }
+  .head h3 { margin: 0 0 8px; font-size: clamp(1.6rem,4.1vw,3.1rem); }
+  .head p { margin: 0; color: #aab2be; max-width: 52ch; }
+  .ico { display: inline-grid; place-items: center; flex: none; }
+  .ico svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  /* ACTUAL: panel de vidrio con borde amarillo */
+  .c0 .panel { max-width: 640px; padding: 44px 48px; background: rgba(8,8,10,.55); backdrop-filter: blur(14px) saturate(120%);
+               border-left: 3px solid var(--y); box-shadow: 0 24px 70px rgba(0,0,0,.45); }
+  .c0 .head { border-left: 1px solid rgba(244,223,51,.5); padding-left: 16px; margin-bottom: 20px; }
+  .c0 ul { list-style: none; margin: 0; padding: 0; }
+  .c0 li a { display: grid; grid-template-columns: 44px 1fr; gap: 2px 16px; align-items: center; padding: 20px 0; color: inherit; text-decoration: none; }
+  .c0 .ico { grid-row: span 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(244,223,51,.45); color: var(--y); }
+  .c0 strong { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #8d949f; }
+  .c0 li span.v { font-size: 1.15rem; }
+
+  /* OPCIÓN 1 — Sin caja: el dato grande directo sobre la foto */
+  .c1 .wrap { max-width: 720px; padding: 8px 0 8px 0; }
+  .c1 .scrim { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(5,5,5,.92) 0, rgba(5,5,5,.7) 45%, transparent 75%); }
+  .c1 .head { margin-bottom: 36px; }
+  .c1 a.row { display: flex; align-items: baseline; gap: 18px; padding: 14px 0; color: #fff; text-decoration: none; }
+  .c1 .lbl { width: 92px; flex: none; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--y); font-weight: 700; }
+  .c1 .v { font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 600; letter-spacing: -.01em;
+           background: linear-gradient(var(--y),var(--y)) 0 100%/0 2px no-repeat; transition: background-size .25s; }
+  .c1 a.row:hover .v { background-size: 100% 2px; }
+
+  /* OPCIÓN 2 — Dos tarjetas lado a lado, cada una con su acción */
+  .c2 .head { text-align: center; margin: 0 auto 36px; }
+  .c2 .head p { margin: 0 auto; }
+  .c2 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; max-width: 860px; margin: 0 auto; }
+  .c2 a.card { display: grid; gap: 14px; padding: 28px; background: rgba(10,10,12,.82); backdrop-filter: blur(10px);
+               border: 1px solid #262626; color: #fff; text-decoration: none; transition: border-color .2s, transform .2s; }
+  .c2 a.card:hover { border-color: var(--y); transform: translateY(-2px); }
+  .c2 .ico { width: 48px; height: 48px; background: var(--y); color: #090909; }
+  .c2 .ico svg { width: 24px; height: 24px; }
+  .c2 .lbl { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #8d949f; font-weight: 700; }
+  .c2 .v { font-size: 1.3rem; font-weight: 600; word-break: break-word; }
+  .c2 .go { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--y); font-weight: 800; }
+
+  /* OPCIÓN 3 — Botones grandes (acción primero) */
+  .c3 .head p { color: #d4d8de; }
+  .c3 .inner { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+  @media (max-width: 860px) { .c3 .inner { grid-template-columns: 1fr; } }
+  .c3 .btns { display: grid; gap: 14px; }
+  .c3 a.btn { display: flex; align-items: center; gap: 16px; padding: 20px 24px; text-decoration: none; font-weight: 700; }
+  .c3 a.btn .ico svg { width: 24px; height: 24px; }
+  .c3 a.btn small { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .75; font-weight: 800; }
+  .c3 a.btn span.v { font-size: 1.15rem; }
+  .c3 .p { background: var(--y); color: #090909; }
+  .c3 .s { background: rgba(5,5,5,.6); backdrop-filter: blur(10px); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+  .c3 .s .ico { color: var(--y); }
+  .c3 .s:hover { border-color: var(--y); }
+
+  /* ---------- partners ---------- */
+  .partners { padding: 34px 0; overflow: hidden; border-top: 1px solid #151515; }
+  .partners .note { padding: 0 24px 10px; font-size: 12px; color: #8d949f; max-width: 1280px; margin: 0 auto; }
+  .marq { display: flex; width: max-content; animation: m 40s linear infinite; }
+  .marq span { font-family: Futura, Impact, sans-serif; font-weight: 900; text-transform: uppercase; color: rgba(255,255,255,.42);
+               padding: 0 calc(var(--s) * 1.78); letter-spacing: .18em; font-size: var(--s);
+               border-left: 1px solid rgba(244,223,51,.18); display: grid; place-items: center; height: calc(var(--s) * 4.45); }
+  @keyframes m { to { transform: translateX(-50%); } }
+
+  @media (max-width: 600px) {
+    .c0 .panel { padding: 24px 22px; }
+    .c1 a.row { flex-direction: column; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>Fondo para todo</b>
+  <label><input type="radio" name="bg" value="bg-actual" checked> Actual</label>
+  <label><input type="radio" name="bg" value="bg-a"> A · amarillo</label>
+  <label><input type="radio" name="bg" value="bg-b"> B · amarillo + blanco</label>
+  <span style="color:#8d949f">Cambia el fondo de todas las escenas de abajo, así se elige el contenedor sobre el fondo que va.</span>
+</div>
+
+<!-- ============ 1. FONDO ============ -->
+<div class="block-head">
+  <h2>1 · Imagen de fondo de Contactanos</h2>
+  <p>Es la misma foto de hoy (el recital), recoloreada: no es otra imagen. Las luces de color pasan a amarillo kolortec (#f4df33) y los núcleos de los haces quedan blancos. Elegí arriba con la barra y mirá cómo queda detrás de cada contenedor.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;padding:0 24px;max-width:1280px;margin:0 auto">
+  <figure style="margin:0"><img src="bg-actual.jpg" style="width:100%;display:block"><figcaption style="padding:8px 0;color:#8d949f">Actual</figcaption></figure>
+  <figure style="margin:0"><img src="bg-a-amarillo.jpg" style="width:100%;display:block"><figcaption style="padding:8px 0;color:#8d949f"><b class="dot">A</b> · amarillo dominante, núcleos blancos</figcaption></figure>
+  <figure style="margin:0"><img src="bg-b-mixto.jpg" style="width:100%;display:block"><figcaption style="padding:8px 0;color:#8d949f"><b class="dot">B</b> · amarillo pálido tirando a blanco</figcaption></figure>
+</div>
+
+<!-- ============ 2. CONTENEDOR ============ -->
+<div class="block-head">
+  <h2>2 · Contenedor de email y teléfono</h2>
+  <p>Mismos datos, cuatro formas. La primera es la de hoy, como referencia.</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m4 7 8 6 8-6"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z"/></symbol>
+</svg>
+
+<section class="scene c0 bg-actual"><div class="inner">
+  <div class="opt-tag">Actual</div>
+  <div class="panel">
+    <div class="head"><h3 class="t">Contactanos<span class="dot">.</span></h3>
+      <p>Escribinos por WhatsApp o email - nuestro equipo de ventas y soporte tecnico esta para ayudarte.</p></div>
+    <ul>
+      <li><a href="#"><span class="ico"><svg><use href="#mail"/></svg></span><strong>Email</strong><span class="v">contacto@demo.local.test</span></a></li>
+      <li><a href="#"><span class="ico"><svg><use href="#phone"/></svg></span><strong>Teléfono</strong><span class="v">+54 11 1234-5678</span></a></li>
+    </ul>
+  </div>
+</div></section>
+
+<section class="scene c1 bg-actual"><div class="scrim"></div><div class="inner">
+  <div class="opt-tag">Opción 1 · Sin caja</div>
+  <div class="wrap">
+    <div class="head"><h3 class="t">Contactanos<span class="dot">.</span></h3>
+      <p>Escribinos por WhatsApp o email - nuestro equipo de ventas y soporte tecnico esta para ayudarte.</p></div>
+    <a class="row" href="#"><span class="lbl">Email</span><span class="v">contacto@demo.local.test</span></a>
+    <a class="row" href="#"><span class="lbl">Teléfono</span><span class="v">+54 11 1234-5678</span></a>
+  </div>
+</div></section>
+
+<section class="scene c2 bg-actual"><div class="inner">
+  <div class="opt-tag">Opción 2 · Dos tarjetas</div>
+  <div class="head"><h3 class="t">Contactanos<span class="dot">.</span></h3>
+    <p>Escribinos por WhatsApp o email - nuestro equipo de ventas y soporte tecnico esta para ayudarte.</p></div>
+  <div class="cards">
+    <a class="card" href="#"><span class="ico"><svg><use href="#mail"/></svg></span><span class="lbl">Email</span><span class="v">contacto@demo.local.test</span><span class="go">Escribir →</span></a>
+    <a class="card" href="#"><span class="ico"><svg><use href="#phone"/></svg></span><span class="lbl">Teléfono</span><span class="v">+54 11 1234-5678</span><span class="go">Llamar →</span></a>
+  </div>
+</div></section>
+
+<section class="scene c3 bg-actual"><div class="inner">
+  <div>
+    <div class="opt-tag">Opción 3 · Botones</div>
+    <div class="head"><h3 class="t">Contactanos<span class="dot">.</span></h3>
+      <p>Escribinos por WhatsApp o email - nuestro equipo de ventas y soporte tecnico esta para ayudarte.</p></div>
+  </div>
+  <div class="btns">
+    <a class="btn p" href="#"><span class="ico"><svg><use href="#phone"/></svg></span><span><small>Llamar o WhatsApp</small><span class="v">+54 11 1234-5678</span></span></a>
+    <a class="btn s" href="#"><span class="ico"><svg><use href="#mail"/></svg></span><span><small>Email</small><span class="v">contacto@demo.local.test</span></span></a>
+  </div>
+</div></section>
+
+<!-- ============ 3. PARTNERS ============ -->
+<div class="block-head">
+  <h2>3 · Logos de partners</h2>
+  <p>En tu local las marcas no tienen logo cargado y se muestran como texto; con logo, la escala es la misma. Hoy miden 96 px de alto.</p>
+</div>
+<div class="partners"><div class="note"><span class="opt-tag">Actual · 96 px</span></div>
+  <div class="marq" style="--s:21.6px"><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span></div></div>
+<div class="partners"><div class="note"><span class="opt-tag">A · +25% · 120 px</span></div>
+  <div class="marq" style="--s:27px"><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span></div></div>
+<div class="partners"><div class="note"><span class="opt-tag">B · +40% · 134 px</span></div>
+  <div class="marq" style="--s:30.2px"><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span><span>Alba</span><span>Sinteplast</span><span>Sherwin Williams</span><span>Tekno</span></div></div>
+<div style="height:80px"></div>
+
+<script>
+  document.querySelectorAll('input[name=bg]').forEach(r => r.addEventListener('change', () => {
+    document.querySelectorAll('.scene').forEach(s => { s.classList.remove('bg-actual','bg-a','bg-b'); s.classList.add(r.value) })
+  }))
+</script>
+</body>
+</html>
