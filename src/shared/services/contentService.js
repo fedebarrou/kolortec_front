@@ -1251,6 +1251,31 @@ export async function logout() {
 }
 
 /**
+ * publicRequest(path, { method, body })
+ * Pedido a /public/* con la sesión (cookie) y el X-Account-Host de siempre, para los endpoints que
+ * necesitan el status y el cuerpo del error (p. ej. /public/me/consentimientos). NO lanza por HTTP
+ * (devuelve { ok, status, data }); sólo lanza si falta la URL del API o no hay red.
+ */
+export async function publicRequest(path, { method = 'GET', body } = {}) {
+  if (!API_BASE_URL) {
+    throw new Error('VITE_API_BASE_URL is not configured')
+  }
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers: buildHeaders(),
+    credentials: 'include',
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  })
+  let data = null
+  try {
+    data = await res.json()
+  } catch {
+    data = null
+  }
+  return { ok: res.ok, status: res.status, data }
+}
+
+/**
  * requestOtp({ channel, identifier })
  * POSTs to /public/auth/otp/request.
  * channel: 'email' | 'whatsapp'

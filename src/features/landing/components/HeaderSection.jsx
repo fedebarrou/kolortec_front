@@ -640,15 +640,26 @@ function HeaderSection() {
           </form>
 
           {user ? (
-            <button
-              aria-label={t('a11y.logout', 'Cerrar sesión')}
-              title={t('a11y.logout', 'Cerrar sesión')}
-              className="h-9 w-9 bg-primary text-background-dark hover:bg-white transition-all inline-flex items-center justify-center rounded-lg"
-              type="button"
-              onClick={() => logout()}
-            >
-              <span className="material-symbols-outlined text-[18px] leading-none">logout</span>
-            </button>
+            <>
+              {/* Panel del cliente: «Mis datos» (sus datos y sus preferencias de promociones). */}
+              <Link
+                to="/mis-datos"
+                aria-label={t('header.myData', 'Mis datos')}
+                title={t('header.myData', 'Mis datos')}
+                className="h-9 w-9 border border-white/20 bg-white/5 text-white hover:border-primary hover:text-primary transition-all inline-flex items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                <span className="material-symbols-outlined text-[18px] leading-none" aria-hidden="true">account_circle</span>
+              </Link>
+              <button
+                aria-label={t('a11y.logout', 'Cerrar sesión')}
+                title={t('a11y.logout', 'Cerrar sesión')}
+                className="h-9 w-9 bg-primary text-background-dark hover:bg-white transition-all inline-flex items-center justify-center rounded-lg"
+                type="button"
+                onClick={() => logout()}
+              >
+                <span className="material-symbols-outlined text-[18px] leading-none">logout</span>
+              </button>
+            </>
           ) : (
             <button
               aria-label={t('header.loginAria', 'Iniciar sesión')}
@@ -743,6 +754,16 @@ function HeaderSection() {
             {item.label}
           </Link>
         ))}
+
+        {user ? (
+          <Link
+            to="/mis-datos"
+            onClick={() => setIsMobileOpen(false)}
+            className="relative z-10 block rounded-lg px-[0.55rem] py-[0.65rem] text-[0.75rem] font-extrabold uppercase tracking-[0.12em] text-[#e5e7eb] hover:bg-[rgba(244,223,51,0.96)] hover:text-[#050505]"
+          >
+            {t('header.myData', 'Mis datos')}
+          </Link>
+        ) : null}
 
         {/* Las redes, que salieron de la barra: acá entran con su nombre al lado
             en vez de tres íconos de 36px que no se llegan a leer. */}

@@ -16,6 +16,7 @@ const GarantiasPage = lazy(() => import('./features/warranty/pages/GarantiasPage
 const ContactPage = lazy(() => import('./features/contact/pages/ContactPage'))
 const JoinPage = lazy(() => import('./features/join/pages/JoinPage'))
 const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
+const MisDatosPage = lazy(() => import('./features/account/pages/MisDatosPage'))
 const GuidesIndexPage = lazy(() => import('./features/guides/pages/GuidesIndexPage'))
 const GuideDetailPage = lazy(() => import('./features/guides/pages/GuideDetailPage'))
 const DownloadRedirect = lazy(() => import('./features/landing/components/DownloadRedirect'))
@@ -120,6 +121,8 @@ function App() {
         <Route path="/distribuidores" element={<Navigate to="/sumate" replace />} />
         <Route path="/rentals" element={<Navigate to="/sumate" replace />} />
         <Route path="/login" element={<LoginPage />} />
+        {/* Panel del cliente con sesión (preferencias de promociones). La página de baja del back enlaza acá. */}
+        <Route path="/mis-datos" element={<MisDatosPage />} />
         {/* Comodín DENTRO del layout: el 404 tiene que traer header y footer,
             que son justamente la forma de salir de él. */}
         <Route path="*" element={<NotFoundPage />} />

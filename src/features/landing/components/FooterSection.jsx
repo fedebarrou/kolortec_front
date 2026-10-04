@@ -214,7 +214,7 @@ function FooterSection() {
       <div className="kt-footer-legal">
         <p>{copyright}</p>
         <nav aria-label={t('footer.legalNav', 'Legales')}>
-          {user ? null : <Link to="/login">{t('header.loginAria', 'Iniciar sesión')}</Link>}
+          {user ? <Link to="/mis-datos">{t('header.myData', 'Mis datos')}</Link> : <Link to="/login">{t('header.loginAria', 'Iniciar sesión')}</Link>}
           <Link to="/contacto">{t('pageTitle.contact', 'Contacto')}</Link>
           <Link to="/privacidad">{t('footer.privacy', 'Privacidad')}</Link>
           <Link to="/terminos">{t('footer.terms', 'Términos')}</Link>
