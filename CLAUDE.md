@@ -1,17 +1,10 @@
 # CLAUDE.md — kolortec (storefront)
 
 > ⚠️ **INFRA VPS — el reverse proxy es CADDY (no nginx), desde jun-2026.**
-> kolortec **todavía NO está live** en el VPS (sus dominios `kolortec.com.ar` / `kolortec.com` están
-> registrados en `account_domains` de tiendita pero NO ruteados aún). **Cuando se suba al VPS**, se
-> sirve detrás de **Caddy** (proxy único; reemplazó a nginx). Antes de deployarlo / rutearlo, leé
-> `tiendita/.claude/ECOSISTEMA-CADDY.md`.
->
-> **Para ponerlo live (cuando toque):**
-> 1. DNS: apuntar `kolortec.com.ar` (y `.com`) → `212.85.14.157` (en Hostinger).
-> 2. Caddyfile del VPS (`/opt/docker-proxy/caddy/Caddyfile`): agregar
->    `kolortec.com.ar, www.kolortec.com.ar, kolortec.com { reverse_proxy kolortec_web:80 }`
->    y `docker exec caddy_edge caddy validate ... && caddy reload ...`. Caddy emite el cert solo.
-> 3. (NO usar el `kolortec/deploy/kolortec.conf` de nginx — quedó obsoleto; el edge es Caddy.)
+> kolortec **ya está en el VPS y `kolortec.com.ar` responde** detrás de Caddy (ver
+> `tiendita/.claude/ECOSISTEMA-CADDY.md`). Muestra el cartel «Sitio en construcción» mientras la
+> cuenta de kolortec en tiendita no esté **publicada**. Estado del día y pendientes: `docs/ESTADO.md`.
+> (NO usar el `kolortec/deploy/kolortec.conf` de nginx — quedó obsoleto; el edge es Caddy.)
 
 ## Qué es
 Storefront público (Vite + React, SPA) de la marca kolortec. **Consume la API PÚBLICA de tiendita**
