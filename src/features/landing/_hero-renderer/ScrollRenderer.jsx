@@ -11,6 +11,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Background, animProps } from "./Background";
+import { cssColor, cssFontFamily, cssNumber, cssZIndex, safeSrc } from "./cssSafe";
 import { ElementView, boxAt } from "./elements/ElementView";
 import { createSnapEngine } from "./snapEngine";
 import { SnapChrome } from "./SnapChrome";
@@ -129,7 +130,7 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
     return () => video.removeEventListener("loadedmetadata", apply);
   }, [progress, range.start, range.end, reverse]);
 
-  return <video ref={ref} src={url} poster={poster} muted playsInline preload="auto" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
+  return <video ref={ref} src={safeSrc(url)} poster={safeSrc(poster)} muted playsInline preload="auto" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
 }
 
 // ⚠ ACA HUBO UN RECORTE DE 0.62 EN MOVIL y se saco a proposito (sep-2026).
@@ -154,7 +155,7 @@ function ScrubFrames({ bg, progress, reverse, breakpoint }) {
     ? urlsMobile
     : (Array.isArray(urlsDesktop) ? urlsDesktop : [])), [breakpoint, urlsMobile, urlsDesktop]);
   useEffect(() => {
-    imagesRef.current = urls.map((url) => { const image = new Image(); image.decoding = "async"; image.src = url; return image; });
+    imagesRef.current = urls.map((url) => { const image = new Image(); image.decoding = "async"; image.src = safeSrc(url) || ''; return image; });
   }, [urls]);
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -213,17 +214,17 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
     if (time > to - exit) return (to - time) / exit;
     return 1;
   };
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: config.theme?.colors?.bg || "#111", fontFamily: config.theme?.fontFamily || "var(--site-font, Inter, sans-serif)", containerType: "inline-size", containerName: "hc-stage" }}>
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} />
     {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} /> : null}
-    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${slide.overlay})` }} /> : null}
+    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})` }} /> : null}
     {/* El scrim es una propiedad del SLIDE, no del modo: hasta ahora el modo
         continuous no lo montaba y el preview del admin si, asi que una escena
         continuous con scrim se veia distinta en el editor que publicada. Se
         alinea hacia el editor —que es el que respeta la configuracion— porque
         hoy no hay ninguna escena continuous en produccion: riesgo cero. */}
     {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} /> : null}
-    {[...(slide.elements || [])].filter((el) => !el.timing || (time >= el.timing.from && time <= el.timing.to)).sort((a, b) => a.z - b.z).map((el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: el.z }}><ElementView el={el} bp={breakpoint} reveal={reveal(el)} accentColor={config.theme?.colors?.primary} themePreset={themePreset} /></div>; })}
+    {[...(slide.elements || [])].filter((el) => !el.timing || (time >= el.timing.from && time <= el.timing.to)).sort((a, b) => a.z - b.z).map((el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: cssZIndex(el.z) }}><ElementView el={el} bp={breakpoint} reveal={reveal(el)} accentColor={cssColor(config.theme?.colors?.primary)} themePreset={themePreset} /></div>; })}
   </div>;
 }
 
@@ -290,13 +291,13 @@ export function ScrollScrim({ breakpoint, variant }) {
 
 function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide = null, breatheG = 0, parallaxY = 0 }) {
   const themePreset = config.theme?.preset;
-  const accentColor = config.theme?.colors?.primary;
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: config.theme?.colors?.bg || "#111", fontFamily: config.theme?.fontFamily || "var(--site-font, Inter, sans-serif)", containerType: "inline-size", containerName: "hc-stage" }}>
+  const accentColor = cssColor(config.theme?.colors?.primary);
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     {/* Breathing (idle, kolortec): el fondo pulsa a grayscale y vuelve al color. */}
     <div style={{ position: "absolute", inset: 0, filter: breatheG > 0.01 ? `grayscale(${breatheG.toFixed(3)})` : undefined }}>
       <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} scrubAlways />
     </div>
-    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${slide.overlay})` }} /> : null}
+    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})` }} /> : null}
     {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} /> : null}
     {/* Paso SALIENTE (Fase 1c, kolortec: bloques saliente/entrante montados a la
         vez): se mantiene ~700ms animando afuera (snapState="leaving") mientras
@@ -307,7 +308,7 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
       .map((el, i) => {
         const box = boxAt(el, breakpoint);
         const drift = parallaxY ? (0.6 + i * 0.35) * parallaxY : 0;
-        return <div key={`leaving:${el.id}`} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: Math.max(el.z ?? 1, 0), transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined }}>
+        return <div key={`leaving:${el.id}`} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: Math.max(cssNumber(el.z ?? 1, 1), 0), transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined }}>
           <ElementView el={el} bp={breakpoint} snapState="leaving" accentColor={accentColor} themePreset={themePreset} />
         </div>;
       }) : null}
@@ -322,7 +323,7 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
       // pending→in anima en vez de desmontar/remontar por keyframe.
       const snapState = bgLayer ? undefined : (arrived ? "in" : "pending");
       return <div key={el.id} style={{
-        position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: Math.max(el.z ?? 1, 0),
+        position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: Math.max(cssNumber(el.z ?? 1, 1), 0),
         transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined,
         pointerEvents: bgLayer ? "none" : (arrived ? "auto" : "none"),
       }}><ElementView el={el} bp={breakpoint} snapState={snapState} accentColor={accentColor} themePreset={themePreset} /></div>;
@@ -756,7 +757,7 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
   // último real (sigue en pantalla, deslizándose por el sticky-unpin nativo).
   const slide = slides[Math.min(stepIndex, slides.length - 1)];
   if (!slide) return null;
-  const accent = config.theme?.colors?.primary || "#fff";
+  const accent = cssColor(config.theme?.colors?.primary, "#fff");
   return <div ref={wrapRef} data-scroll-hero data-scroll-mode="snap" style={{
       "--site-header-h": `${headerH}px`,
       position: "relative",
@@ -770,7 +771,7 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
       // aire. `--story-gap` para ajustar el margen por sitio.
       marginBottom: `calc(var(--site-header-h, 0px) + var(--story-gap, 2rem))`,
     }}>
-    <div style={{ position: "sticky", top: 0, height: stepH, fontFamily: config.theme?.fontFamily || "var(--site-font, Inter, sans-serif)", containerType: "inline-size", containerName: "hc-stage" }}>
+    <div style={{ position: "sticky", top: 0, height: stepH, fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
       <SnapStage config={config} slide={slide} breakpoint={breakpoint} progress={progress} arrived={arrived && !pastEnd} leavingSlide={leavingSlide} breatheG={snap.breathing ? breatheG : 0} parallaxY={snap.parallax ? parallaxY : 0} />
       <SnapChrome
         snap={snap}

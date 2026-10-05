@@ -1,3 +1,4 @@
+import { safeSrc } from '../cssSafe'
 export function LogoView({ p }) {
   if (!p.url) {
     return (
@@ -6,5 +7,5 @@ export function LogoView({ p }) {
       </div>
     )
   }
-  return <img data-fit src={p.url} alt={p.alt} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+  return <img data-fit src={safeSrc(p.url)} alt={p.alt} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
 }

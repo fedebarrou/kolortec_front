@@ -1,4 +1,5 @@
 import { cqwType } from '../responsive'
+import { cssColor, cssFontFamily, cssLineHeight, cssTextTransform, cssWeight } from '../cssSafe'
 
 /**
  * typoStyle(p, slot, fallbacks={}) — arma el style tipográfico de un slot.
@@ -35,11 +36,11 @@ export function typoStyle(p, slot, fallbacks = {}) {
   const out = {}
 
   if (slot.font) {
-    const v = p[slot.font] || fallbacks.fontFamily
+    const v = cssFontFamily(p[slot.font]) || fallbacks.fontFamily
     if (v !== undefined) out.fontFamily = v
   }
   if (slot.weight) {
-    const v = p[slot.weight] ?? fallbacks.fontWeight
+    const v = cssWeight(p[slot.weight]) ?? fallbacks.fontWeight
     if (v !== undefined) out.fontWeight = v
   }
   if (slot.size) {
@@ -48,20 +49,20 @@ export function typoStyle(p, slot, fallbacks = {}) {
     if (size !== undefined) out.fontSize = size
   }
   if (slot.lh) {
-    const v = p[slot.lh] ?? fallbacks.lineHeight
+    const v = cssLineHeight(p[slot.lh]) ?? fallbacks.lineHeight
     if (v !== undefined) out.lineHeight = v
   }
   if (slot.ls) {
     const em = p[slot.ls]
-    const ls = em != null && em !== '' ? `${em}em` : fallbacks.letterSpacing
+    const ls = em != null && em !== '' && Number.isFinite(Number(em)) ? `${Number(em)}em` : fallbacks.letterSpacing
     if (ls !== undefined) out.letterSpacing = ls
   }
   if (slot.transform) {
-    const v = p[slot.transform] ?? fallbacks.textTransform
+    const v = cssTextTransform(p[slot.transform]) ?? fallbacks.textTransform
     if (v !== undefined) out.textTransform = v
   }
   if (slot.color) {
-    const v = p[slot.color] ?? fallbacks.color
+    const v = cssColor(p[slot.color]) ?? fallbacks.color
     if (v !== undefined) out.color = v
   }
 

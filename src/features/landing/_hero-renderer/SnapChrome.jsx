@@ -48,6 +48,7 @@
  * "Saltar" SIEMPRE vive en la mini top-bar (kolortec no tiene variante
  * bottom-left: el layer del intro tapa el header real por completo).
  */
+import { cssColor, safeSrc } from "./cssSafe";
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -87,7 +88,7 @@ export function SnapChrome({
     // los hosts CON container (store, "Probar con scroll", preview de Mi web)
     // la container query manda siempre (misma especificidad, pero declarada
     // después → gana en cascada) — ver bloque "Hero Labs: SnapChrome" del CSS.
-    <div data-bp={breakpoint} style={{ "--scrolly-accent": accent, display: "contents" }}>
+    <div data-bp={breakpoint} style={{ "--scrolly-accent": cssColor(accent, "#fff"), display: "contents" }}>
       {/* Indicador de pasos (kolortec): segmentos con fill CONTINUO. */}
       {showChrome && snap?.progress !== false ? (
         <div aria-hidden="true" className="scrolly-progress">
@@ -112,7 +113,7 @@ export function SnapChrome({
         <div className="scrolly-topbar">
           {showLogo ? (
             <button type="button" onClick={onLogoClick} aria-label={logoAria} className="scrolly-logo-btn">
-              <img src={logoUrl} alt="" style={{ height: 24, width: "auto", objectFit: "contain" }} />
+              <img src={safeSrc(logoUrl)} alt="" style={{ height: 24, width: "auto", objectFit: "contain" }} />
             </button>
           ) : <span aria-hidden="true" />}
           {showSkip ? <SkipButton onSkip={onSkip} /> : null}

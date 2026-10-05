@@ -106,7 +106,10 @@ export function scrollStepHeight(settings, breakpoint) {
   const px = breakpoint === "mobile"
     ? (s.scrollHeightMobile ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightMobile)
     : (s.scrollHeightDesktop ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightDesktop);
-  return `${px}px`;
+  // Dato guardado que termina en `height:` del escenario: se fuerza a número finito. SIN importar
+  // cssSafe a propósito: check-hero-roundtrip carga este archivo suelto (data: URL), sin imports.
+  const n = Number(px);
+  return `${Number.isFinite(n) && px !== "" && px !== null ? n : SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightDesktop}px`;
 }
 
 /**

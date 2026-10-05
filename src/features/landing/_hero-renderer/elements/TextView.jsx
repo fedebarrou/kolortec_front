@@ -1,5 +1,6 @@
 import { cqw } from '../responsive'
 import { typoStyle } from './typo'
+import { cssColor, cssPick, cssShadow, cssTextAlign } from '../cssSafe'
 
 const justify = { top: 'flex-start', center: 'center', bottom: 'flex-end' }
 const items = { left: 'flex-start', center: 'center', right: 'flex-end' }
@@ -27,7 +28,7 @@ function withAccentDot(content, accentDot, accentColor) {
 // props.accentColor pisa el acento del DISEÑO solo para este elemento (punto
 // final + rayita del antetitulo). Igual que en MessageView.
 export function TextView({ p, accentColor: designAccent, themePreset }) {
-  const accentColor = p.accentColor || designAccent
+  const accentColor = cssColor(p.accentColor) || cssColor(designAccent)
   const fs = Number(p.fontSize) || 0
   const isTitleLike = p.role === 'title' || fs >= 40
   // kolortec: el eyebrow (texto chico, ≤ 14px) NO lleva sombra; solo título y cuerpo.
@@ -39,10 +40,10 @@ export function TextView({ p, accentColor: designAccent, themePreset }) {
   // typoStyle resuelve ese "em gana sobre px legacy" vía el fallback: si
   // letterSpacingEm está ausente, cae al `cqw(p.letterSpacing)` de siempre.
   const typo = typoStyle(p, TEXT_SLOT, { letterSpacing: cqw(p.letterSpacing) })
-  const text = { ...typo, textAlign: p.align, textShadow: p.textShadow || defaultShadow, textWrap: themePreset === 'kolortec' ? undefined : 'balance', whiteSpace: 'pre-line' }
+  const text = { ...typo, textAlign: cssTextAlign(p.align), textShadow: cssShadow(p.textShadow) || defaultShadow, textWrap: themePreset === 'kolortec' ? undefined : 'balance', whiteSpace: 'pre-line' }
   const chrome = {
-    background: p.bg, borderRadius: cqw(p.radius), padding: cqw(p.padding),
-    border: p.borderWidth ? `${cqw(p.borderWidth)} solid ${p.borderColor}` : undefined,
+    background: cssColor(p.bg), borderRadius: cqw(p.radius), padding: cqw(p.padding),
+    border: p.borderWidth && cssColor(p.borderColor) ? `${cqw(p.borderWidth)} solid ${cssColor(p.borderColor)}` : undefined,
   }
   const content = withAccentDot(p.content, p.accentDot, accentColor)
   // eyebrowLine (nuevo, opcional): raya de acento antes del texto (kolortec:
@@ -56,7 +57,7 @@ export function TextView({ p, accentColor: designAccent, themePreset }) {
   // contenido REAL (hug) para el bounding box de selección/drag, nunca la caja
   // completa 100%×100% del wrapper — ver contrato Fase 3 (bounding box fiel).
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: justify[p.vAlign], alignItems: items[p.align] }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: cssPick(justify, p.vAlign), alignItems: cssPick(items, p.align) }}>
       <div data-fit style={fitStyle}>{eyebrowLine}{content}</div>
     </div>
   )

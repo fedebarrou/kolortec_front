@@ -1,12 +1,13 @@
 import { useCallback } from 'react'
 import { Background } from './Background'
+import { cssAspect, cssColor, cssFontFamily, cssLength, cssNumber, cssPick, cssZIndex } from './cssSafe'
 import { ElementView, boxAt } from './elements/ElementView'
 import { useCarousel } from './useCarousel'
 import { ScrollScrim } from './ScrollRenderer'
 import { SIZE_COMPAT_DEFAULTS } from './scroll-contract'
 
 const shadowOf = (s) =>
-  ({ none: 'none', sm: '0 1px 4px rgba(0,0,0,.2)', md: '0 6px 20px rgba(0,0,0,.3)', lg: '0 12px 40px rgba(0,0,0,.45)' }[s])
+  cssPick({ none: 'none', sm: '0 1px 4px rgba(0,0,0,.2)', md: '0 6px 20px rgba(0,0,0,.3)', lg: '0 12px 40px rgba(0,0,0,.45)' }, s)
 
 function slideStyle(visible, i, activeIndex, isSlide) {
   if (!isSlide) {
@@ -34,12 +35,12 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
           el carrusel lo IGNORABA, asi que una escena con scrim se veia sin el.
           Va despues del fondo y antes de los elementos, igual que en ScrollStage. */}
       {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={bp} variant={slide.scrim} /> : null}
-      {slide.overlay > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${slide.overlay})` }} />}
+      {slide.overlay > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})` }} />}
       {[...slide.elements].sort((a, b) => a.z - b.z).map((el) => {
         const box = boxAt(el, bp)
         return (
           <div key={el.id} data-el data-id={el.id}
-            style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: el.z }}>
+            style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: cssZIndex(el.z) }}>
             <ElementView el={el} bp={bp} accentColor={accentColor} />
           </div>
         )
@@ -70,8 +71,8 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // fullHeight:false explícito). Un diseño sin ellas rendereaba `height:
   // undefined` acá mientras el admin lo mostraba full — ver scroll-contract.js.
   const fullHeight = settings.fullHeight ?? SIZE_COMPAT_DEFAULTS.fullHeight
-  const heightDesktop = settings.heightDesktop ?? SIZE_COMPAT_DEFAULTS.heightDesktop
-  const heightMobile = settings.heightMobile ?? SIZE_COMPAT_DEFAULTS.heightMobile
+  const heightDesktop = cssLength(settings.heightDesktop ?? SIZE_COMPAT_DEFAULTS.heightDesktop)
+  const heightMobile = cssLength(settings.heightMobile ?? SIZE_COMPAT_DEFAULTS.heightMobile)
   // MODO CONTENEDOR: el hero deja de ser full-bleed y respeta los márgenes
   // laterales de la página, como el `.hero--contained` del renderer legacy.
   // El ancho lo declara CADA SITIO con `--hero-gutter` / `--hero-maxw`, para que
@@ -97,28 +98,28 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // ganando: si el host fuerza un alto, no hay aspecto que valga.
   const aspecto = contained
     ? (breakpoint === 'mobile'
-        ? (settings.aspectMobile ?? SIZE_COMPAT_DEFAULTS.aspectMobile)
-        : (settings.aspectDesktop ?? SIZE_COMPAT_DEFAULTS.aspectDesktop))
+        ? cssAspect(settings.aspectMobile ?? SIZE_COMPAT_DEFAULTS.aspectMobile)
+        : cssAspect(settings.aspectDesktop ?? SIZE_COMPAT_DEFAULTS.aspectDesktop))
     : null
   const usaAspecto = !!aspecto && containerHeight == null
   // Parentesis obligatorios: `??` liga mas fuerte que `?:`, sin ellos
   // `containerHeight ?? usaAspecto ? a : b` se evalua como `(containerHeight ?? usaAspecto) ? a : b`
   // y un containerHeight presente daria undefined (hero sin alto).
   const height = containerHeight ?? (usaAspecto ? undefined : (fullHeight ? 'var(--vh-full, 100vh)' : (breakpoint === 'mobile' ? heightMobile : heightDesktop)))
-  const radius = contained ? theme.radius : (bleed ? 0 : theme.radius)
+  const radius = contained ? cssLength(theme.radius) : (bleed ? 0 : cssLength(theme.radius))
   const shadow = contained ? shadowOf(theme.shadow) : (bleed ? 'none' : shadowOf(theme.shadow))
   const isSlide = settings.transition === 'slide'
-  const accent = theme.colors?.accent || '#fff'
+  const accent = cssColor(theme.colors?.accent, '#fff')
   // containerName 'hc-stage': SIN el nombre, las reglas `@container hc-stage`
   // (hero-anim.css) no matchean y el widget `message` preset kolortec cae al
   // layout mobile (centrado abajo) en vez del desktop (derecha, centrado).
   // Faltaba en las 3 copias del renderer, no solo acá.
   return (
-    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: theme.fontFamily || 'var(--site-font, Inter, sans-serif)', background: theme.colors.bg, containerType: 'inline-size', containerName: 'hc-stage' }}>
+    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), containerType: 'inline-size', containerName: 'hc-stage' }}>
       {config.background && config.background.type !== 'none' && (
         <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} /></div>
       )}
-      {slides.map((s, i) => <SlideView key={s.id} slide={s} bp={breakpoint} visible={i === index} slideIndex={i} activeIndex={index} isSlide={isSlide} accentColor={theme.colors?.primary} />)}
+      {slides.map((s, i) => <SlideView key={s.id} slide={s} bp={breakpoint} visible={i === index} slideIndex={i} activeIndex={index} isSlide={isSlide} accentColor={cssColor(theme.colors?.primary)} />)}
       {settings.arrows && slides.length > 1 && (
         <>
           <button aria-label="anterior" onClick={auto.prev} style={arrow('left', accent)}>&#8249;</button>

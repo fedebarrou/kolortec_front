@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { cqw } from '../responsive'
 import { typoStyle } from './typo'
+import { cssColor, cssColorAlpha, cssPick } from '../cssSafe'
 
 const cross = { left: 'flex-start', center: 'center', right: 'flex-end' }
 const BACKDROP = 'radial-gradient(ellipse 56% 54% at 50% 50%, rgba(8,4,20,.70) 0%, rgba(8,4,20,.44) 46%, rgba(8,4,20,0) 76%)'
@@ -59,15 +60,15 @@ export function StatsView({ p, reveal }) {
   // 'uppercase') — acá sólo el fallback de fontFamily (y, para la etiqueta,
   // de color, que hoy comparte el `color` de la cifra).
   const numTypo = typoStyle(p, NUM_SLOT, { fontFamily: '"Schibsted Grotesk", sans-serif' })
-  const labelTypo = typoStyle(p, LABEL_SLOT, { fontFamily: '"Archivo", system-ui, sans-serif', color: p.color })
+  const labelTypo = typoStyle(p, LABEL_SLOT, { fontFamily: '"Archivo", system-ui, sans-serif', color: cssColor(p.color) })
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: cross[p.align] }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: cssPick(cross, p.align) }}>
       <div data-fit style={{ position: 'relative', display: 'inline-flex', alignItems: 'stretch', gap: 0, maxWidth: '100%' }}>
         {p.glow && (
           <span aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '128%', height: '210%', background: BACKDROP, filter: 'blur(9px)', zIndex: 0, pointerEvents: 'none' }} />
         )}
         {p.items.map((it, i) => (
-          <div key={i} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? `1px solid ${p.color}59` : undefined }}>
+          <div key={i} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? (cssColorAlpha(p.color, '59') ? `1px solid ${cssColorAlpha(p.color, '59')}` : undefined) : undefined }}>
             <span style={{ ...numTypo, textShadow: p.glow ? NUM_GLOW : '0 2px 18px rgba(0,0,0,.45)' }}>
               {shown(it.value)}
             </span>

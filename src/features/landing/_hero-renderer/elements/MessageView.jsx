@@ -1,5 +1,6 @@
 import { cqw, cqwType } from '../responsive'
 import { typoStyle } from './typo'
+import { cssColor, cssPick, cssTextAlign, safeHref } from '../cssSafe'
 
 const cross = { left: 'flex-start', center: 'center', right: 'flex-end' }
 const SHADOW = '0 2px 18px rgba(0,0,0,.45)'
@@ -86,7 +87,7 @@ const alignMargin = (align) => ({
 // amarillo de marca no se ve: ahi el punto final y la rayita del antetitulo van
 // en otro color. `props.ctaBg` hace lo mismo con el fondo del boton, que antes
 // tambien salia del acento del diseño sin forma de cambiarlo.
-const accentOf = (p, accentColor) => p.accentColor || accentColor
+const accentOf = (p, accentColor) => cssColor(p.accentColor) || cssColor(accentColor)
 
 function KolortecMessage({ p, accentColor: designAccent }) {
   const accentColor = accentOf(p, designAccent)
@@ -97,7 +98,7 @@ function KolortecMessage({ p, accentColor: designAccent }) {
   // globals.css) — pisando el responsive propio de kolortec (center en
   // mobile, right en desktop: `text-center md:text-right`). Sin override, el
   // bloque completo (posición Y alineación de texto) sigue ese responsive.
-  const explicitAlign = p.align && p.align !== 'right' ? p.align : null
+  const explicitAlign = cssPick(cross, p.align) && p.align !== 'right' ? p.align : null
   const titleTypo = typoStyle(p, TITLE_SLOT, KOLORTEC_TITLE_FALLBACKS)
   const subTypo = typoStyle(p, SUB_SLOT, KOLORTEC_SUB_FALLBACKS)
   // eyebrow: color por defecto = accentColor (dinámico, no puede vivir en la
@@ -131,7 +132,7 @@ function KolortecMessage({ p, accentColor: designAccent }) {
           </div>
         )}
         {p.cta && (
-          <a href={p.ctaHref || '#'} style={{ marginTop: 32, display: 'inline-flex', minHeight: 44, alignItems: 'center', background: p.ctaBg || accentColor, padding: '0 28px', textDecoration: 'none', boxShadow: '0 10px 30px rgba(0,0,0,.4)', borderRadius: 0, ...ctaTypo }}>
+          <a href={p.ctaHref ? safeHref(p.ctaHref) : '#'} style={{ marginTop: 32, display: 'inline-flex', minHeight: 44, alignItems: 'center', background: cssColor(p.ctaBg) || accentColor, padding: '0 28px', textDecoration: 'none', boxShadow: '0 10px 30px rgba(0,0,0,.4)', borderRadius: 0, ...ctaTypo }}>
             {p.cta}
           </a>
         )}
@@ -153,14 +154,14 @@ export function MessageView({ p, accentColor: designAccent }) {
   // subFontFamily encadena a fontFamily del título antes de caer al genérico
   // — mismo orden que el código de siempre.
   const subFontFamilyFallback = p.fontFamily || '"Hanken Grotesk", sans-serif'
-  const subTypo = typoStyle(p, SUB_SLOT, { fontFamily: subFontFamilyFallback, fontWeight: 500, fontSize: cqwType(17), lineHeight: 1.3, color: p.color })
+  const subTypo = typoStyle(p, SUB_SLOT, { fontFamily: subFontFamilyFallback, fontWeight: 500, fontSize: cqwType(17), lineHeight: 1.3, color: cssColor(p.color) })
   const eyebrowFontFamilyFallback = p.subFontFamily || '"Archivo", system-ui, sans-serif'
-  const eyebrowTypo = typoStyle(p, EYEBROW_SLOT, { fontFamily: eyebrowFontFamilyFallback, fontWeight: 800, fontSize: cqwType(13), letterSpacing: '.32em', textTransform: 'uppercase', color: p.color })
+  const eyebrowTypo = typoStyle(p, EYEBROW_SLOT, { fontFamily: eyebrowFontFamilyFallback, fontWeight: 800, fontSize: cqwType(13), letterSpacing: '.32em', textTransform: 'uppercase', color: cssColor(p.color) })
   const ctaTypo = typoStyle(p, CTA_SLOT, { fontWeight: 700, fontSize: cqwType(15), color: '#fff' })
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: cross[p.align] }}>
-      <div data-fit style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: cross[p.align], gap: cqw(10), maxWidth: '100%', textAlign: p.align }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: cssPick(cross, p.align) }}>
+      <div data-fit style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: cssPick(cross, p.align), gap: cqw(10), maxWidth: '100%', textAlign: cssTextAlign(p.align) }}>
         {p.glow && (
           <span aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '124%', height: '186%', background: BACKDROP, filter: 'blur(9px)', zIndex: 0, pointerEvents: 'none' }} />
         )}
@@ -176,7 +177,7 @@ export function MessageView({ p, accentColor: designAccent }) {
         <div className={p.glow ? 'rl-aura' : undefined} style={{ ...z1, ...titleTypo, textShadow: p.glow ? TITLE_GLOW : SHADOW, WebkitTextStroke: p.glow ? '0.6px rgba(12,6,28,.22)' : undefined, paintOrder: 'stroke fill', textWrap: 'balance', whiteSpace: 'pre-line' }}>{withAccentDot(p.title || 'Tu mensaje acá', p.accentDot, accentColor)}</div>
         {p.sub && <div style={{ ...z1, ...subTypo, opacity: .92, textShadow: SHADOW, textWrap: 'balance', whiteSpace: 'pre-line' }}>{p.sub}</div>}
         {p.cta && (
-          <a href={p.ctaHref || '#'} style={{ ...z1, marginTop: cqw(4), display: 'inline-flex', alignItems: 'center', background: '#EE5237', padding: `${cqw(11)} ${cqw(22)}`, borderRadius: cqw(99), textDecoration: 'none', boxShadow: '0 8px 22px rgba(238,82,55,.4)', ...ctaTypo }}>{p.cta}</a>
+          <a href={p.ctaHref ? safeHref(p.ctaHref) : '#'} style={{ ...z1, marginTop: cqw(4), display: 'inline-flex', alignItems: 'center', background: '#EE5237', padding: `${cqw(11)} ${cqw(22)}`, borderRadius: cqw(99), textDecoration: 'none', boxShadow: '0 8px 22px rgba(238,82,55,.4)', ...ctaTypo }}>{p.cta}</a>
         )}
       </div>
     </div>

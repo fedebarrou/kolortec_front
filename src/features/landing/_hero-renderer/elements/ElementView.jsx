@@ -1,3 +1,4 @@
+import { cssAngle, cssNumber } from '../cssSafe'
 import { TextView } from './TextView'
 import { ButtonView } from './ButtonView'
 import { MediaView } from './MediaView'
@@ -18,9 +19,16 @@ export function effectiveProps(el, bp) {
   return el.props
 }
 
+// x/y/w/h salen de datos guardados y se interpolan en left/top/width/height: se fuerzan a
+// número finito acá, en el único lugar por donde pasan todas las cajas (si falta, NaN: igual que
+// el "undefined%" de antes, inválido y descartado por el navegador).
+function cleanBox(b) {
+  return b && { ...b, x: cssNumber(b.x, NaN), y: cssNumber(b.y, NaN), w: cssNumber(b.w, NaN), h: cssNumber(b.h, NaN) }
+}
+
 // eslint-disable-next-line react-refresh/only-export-components -- idem effectiveProps: helper puro de geometría usado por CarouselRenderer/ScrollRenderer.
 export function boxAt(el, bp) {
-  return bp === 'tablet' ? (el.pos.tablet ?? el.pos.desktop) : el.pos[bp]
+  return cleanBox(bp === 'tablet' ? (el.pos.tablet ?? el.pos.desktop) : el.pos[bp])
 }
 
 function inner(el, bp, reveal, accentColor, themePreset) {
@@ -61,7 +69,7 @@ export function ElementView({ el, bp, reveal, accentColor, themePreset, snapStat
   if (el.hidden?.[bp]) return null
   const animType = ANIM_TYPES.includes(el.animation?.type) ? el.animation.type : 'fade'
   const parts = []
-  let opacity = el.opacity
+  let opacity = el.opacity === undefined ? undefined : cssNumber(el.opacity, 1)
   let anim
   let filter
   let transition
@@ -74,7 +82,7 @@ export function ElementView({ el, bp, reveal, accentColor, themePreset, snapStat
     }
   } else if (reveal === undefined) {
     // Optional chaining: elementos legacy pueden venir sin objeto animation.
-    anim = animType !== 'none' ? `hc-${animType} ${el.animation?.durationMs ?? 500}ms ease ${el.animation?.delayMs ?? 0}ms both` : undefined
+    anim = animType !== 'none' ? `hc-${animType} ${cssNumber(el.animation?.durationMs ?? 500, 500)}ms ease ${cssNumber(el.animation?.delayMs ?? 0, 0)}ms both` : undefined
   } else {
     const r = Math.max(0, Math.min(1, reveal))
     const eo = 1 - Math.pow(1 - r, 3)
@@ -93,9 +101,9 @@ export function ElementView({ el, bp, reveal, accentColor, themePreset, snapStat
 
   const tf = parts.join(' ') || undefined
   const persistent = []
-  const s = el.scale ?? 1
+  const s = cssNumber(el.scale ?? 1, 1)
   if (s !== 1) persistent.push(`scale(${s})`)
-  if (el.rotation) persistent.push(`rotate(${el.rotation}deg)`)
+  if (el.rotation) persistent.push(`rotate(${cssAngle(el.rotation)}deg)`)
 
   return (
     <div style={{ width: '100%', height: '100%', transform: persistent.join(' ') || undefined, transformOrigin: 'top left' }}>
