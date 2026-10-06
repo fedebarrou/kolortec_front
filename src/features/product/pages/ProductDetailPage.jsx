@@ -216,6 +216,30 @@ function ProductDetailPage() {
   }
   const [selectedVariantId] = useState(product?.variants?.[0]?.id ?? '')
 
+  // Presentación (kit / pack / caja vs suelto). `presentaciones` viene vacío salvo
+  // que el producto tenga más de una: sin lengüetas la ficha es la de siempre (el
+  // precio y el mensaje de consulta salen de `product`). La elegida arranca en la
+  // primera (la variante principal, la del precio de siempre); si el id guardado
+  // ya no existe —otro producto— cae a la primera.
+  const [presentacionId, setPresentacionId] = useState(null)
+  const presentaciones = product?.presentaciones ?? []
+  const presentacionElegida = presentaciones.find((o) => o.id === presentacionId) ?? presentaciones[0] ?? null
+  const soloKit = presentaciones.length === 0 && !!product?.presentacion?.texto
+  const etiquetaPresentacion = (o) => o.label ?? t('productDetail.loose', 'Suelto')
+  const precioMostrado = presentacionElegida ? presentacionElegida.price : product?.price
+  const monedaMostrada = presentacionElegida ? presentacionElegida.moneda : product?.moneda
+  // Flechas del radiogroup: mueve la selección y el foco a la lengüeta vecina.
+  const moverPresentacion = (event) => {
+    const paso = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key]
+    if (!paso || presentaciones.length < 2) return
+    event.preventDefault()
+    const i = presentaciones.findIndex((o) => o.id === presentacionElegida?.id)
+    const sig = presentaciones[(i + paso + presentaciones.length) % presentaciones.length]
+    setPresentacionId(sig.id)
+    const grupo = event.currentTarget
+    requestAnimationFrame(() => grupo.querySelector('[aria-checked="true"]')?.focus())
+  }
+
   // La galería se calcula ACÁ ARRIBA, antes que `tabs`: el tab "Imágenes" sólo
   // tiene sentido si existe la tira de miniaturas, y para saberlo hay que tener
   // la galería armada. Antes el tab dependía de `product.gallery.length > 0`
@@ -635,7 +659,7 @@ function ProductDetailPage() {
                  Estaba escrito acá a mano y era el relleno 55-5555: este botón
                  —el CTA de consulta de cada producto— linkeaba a un WhatsApp
                  inexistente en producción. */
-              href={`${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}`)}`}
+              href={`${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}${presentacionElegida ? ` (${presentacionElegida.label ?? 'Suelto'})` : soloKit ? ` (${product.presentacion.texto})` : ''}`)}`}
               target="_blank"
               rel="noreferrer"
             >
@@ -714,12 +738,64 @@ function ProductDetailPage() {
               <div className="kt-detail-summary">
                 <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]">{product.name}</h1>
                 {translatedShortDescription ? <p className="kt-detail-intro">{translatedShortDescription}</p> : null}
-                {showPrices ? (
-                  <div className="mt-5 flex items-baseline gap-2">
-                    <strong className="title-font text-[clamp(1.8rem,3vw,2.6rem)] leading-none text-primary">
-                      {formatPrice(product.price, product.moneda)}
-                    </strong>
+                {showPrices || soloKit ? (
+                  <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2" aria-live={presentaciones.length > 0 ? 'polite' : undefined}>
+                    {/* «Consultar precio» de una presentación sin precio (el suelto de un
+                        kit) va más chico y en gris —mockup kolortec-producto/a.html, `.sin`—
+                        pero SÓLO con lengüetas: sin ellas la ficha es la de siempre. */}
+                    {showPrices ? (
+                      <strong
+                        className={`title-font leading-none ${
+                          presentaciones.length > 0 && !(Number(precioMostrado) > 0)
+                            ? 'text-[clamp(1.4rem,2.2vw,1.9rem)] text-[color:var(--soft)]'
+                            : 'text-[clamp(1.8rem,3vw,2.6rem)] text-primary'
+                        }`}
+                      >
+                        {formatPrice(precioMostrado, monedaMostrada)}
+                      </strong>
+                    ) : null}
+                    {/* Producto con UN solo kit (sin lengüetas): la ficha lo dice con la
+                        misma etiqueta que la tarjeta del catálogo, junto al precio. */}
+                    {soloKit ? (
+                      <span
+                        data-kt-presentacion
+                        className="border border-[color:var(--line2)] px-2 py-1 text-[12px] font-black uppercase tracking-[0.06em]"
+                        style={{ backgroundColor: 'rgba(10,10,10,0.82)', color: 'var(--ink)' }}
+                      >
+                        {product.presentacion.texto}
+                      </span>
+                    ) : null}
                   </div>
+                ) : null}
+                {presentaciones.length > 0 ? (
+                  <>
+                    <div id="kt-presentacion-label" className="kt-pres-label">
+                      {t('productDetail.presentation', 'Presentación')}
+                    </div>
+                    <div
+                      className="kt-pres-tabs"
+                      role="radiogroup"
+                      aria-labelledby="kt-presentacion-label"
+                      onKeyDown={moverPresentacion}
+                    >
+                      {presentaciones.map((o) => {
+                        const activa = o.id === presentacionElegida?.id
+                        return (
+                          <button
+                            key={o.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={activa}
+                            tabIndex={activa ? 0 : -1}
+                            className="kt-pres-tab title-font"
+                            onClick={() => setPresentacionId(o.id)}
+                          >
+                            {etiquetaPresentacion(o)}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </>
                 ) : null}
                 {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
                     Si no hay innovaciones cargadas, no se muestra nada acá. */}

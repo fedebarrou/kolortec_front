@@ -107,6 +107,14 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
   const name = dict.get(item.name) || item.name
   const category = dict.get(categoryName) || categoryName
   const tags = useMemo(() => normalizeTags(item.tags), [item.tags])
+  // «Kit x8» / «Pack x6» / «Caja x12»: la presentación de la variante principal, como
+  // una etiqueta más del racimo (kits 06-oct). Sin precio: la card sigue sin precio.
+  // Si el tenant ya cargó una etiqueta con el mismo texto, no se repite.
+  const presentacion = item.presentacion?.texto || ''
+  const tagsSinRepetir = useMemo(
+    () => (presentacion ? tags.filter((tag) => tag.label.trim().toLowerCase() !== presentacion.toLowerCase()) : tags),
+    [tags, presentacion],
+  )
   const showImage = !!item.image && !imgFailed
   // Linkea SIEMPRE al producto real (por su id/slug de la API). El detalle se carga data-driven.
   const detailId = item.slug || item.id || slugifyProductName(item.name)
@@ -164,14 +172,23 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
             READY TO WORK + RENTAL mide 194px: en la grilla de 3 columnas (1024) la
             foto da 224px y el 85% dejaba 190 — seis píxeles de menos mandaban la
             segunda etiqueta a un renglón propio y le comían el doble de foto. */}
-        {item.badge || tags.length > 0 ? (
+        {item.badge || presentacion || tagsSinRepetir.length > 0 ? (
           <div className="absolute right-2 top-2 z-[2] flex max-w-[92%] flex-wrap justify-end gap-1.5">
             {item.badge ? (
               <span className="bg-primary px-2 py-1 text-[12px] font-black uppercase tracking-[0.06em] text-[#111]">
                 {item.badge}
               </span>
             ) : null}
-            {tags.map((tag) => (
+            {presentacion ? (
+              <span
+                data-kt-presentacion
+                className="px-2 py-1 text-[12px] font-black uppercase tracking-[0.06em]"
+                style={{ backgroundColor: 'rgba(10,10,10,0.82)', color: 'var(--ink)' }}
+              >
+                {presentacion}
+              </span>
+            ) : null}
+            {tagsSinRepetir.map((tag) => (
               <span
                 key={tag.label}
                 className="px-2 py-1 text-[12px] font-black uppercase tracking-[0.06em]"

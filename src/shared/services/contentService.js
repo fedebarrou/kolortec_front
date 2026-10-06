@@ -141,6 +141,46 @@ function imagenesDe(p) {
   return (Array.isArray(p?.media) ? p.media : []).filter(esImagen).map((m) => m.url)
 }
 
+/**
+ * Presentación de la variante: kit / pack / caja ({tipo, cantidad, texto}) o null.
+ * La API la emite en el producto (variante principal) y en cada variante
+ * (CONTRATO-kits-2026-10-06, punto 6). Un producto suelto trae null.
+ */
+function mapPresentacion(raw) {
+  if (!raw || typeof raw.texto !== 'string' || raw.texto.trim() === '') return null
+  return { tipo: raw.tipo || '', cantidad: Number(raw.cantidad) || 0, texto: raw.texto.trim() }
+}
+
+/**
+ * Opciones de las lengüetas «Kit x8 | Suelto» de la ficha. Vacío (= la ficha se ve
+ * como siempre, sin lengüetas) salvo que el producto tenga MÁS DE UNA variante, que
+ * alguna sea kit/pack/caja y que las etiquetas no se repitan: dos variantes sueltas
+ * (p. ej. dos colores) darían dos lengüetas «Suelto» indistinguibles.
+ * Orden y principal igual que la API: `orden`, `sku`; la primera es la del precio de siempre.
+ */
+function mapPresentaciones(p) {
+  const vs = Array.isArray(p?.variantes) ? p.variantes.filter((v) => v && v.id != null) : []
+  if (vs.length < 2) return []
+  const ordenadas = [...vs].sort(
+    (a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0) || String(a.sku || '').localeCompare(String(b.sku || '')),
+  )
+  const opciones = ordenadas.map((v) => {
+    const presentacion = mapPresentacion(v.presentacion)
+    return {
+      id: v.id,
+      presentacion,
+      // null = variante suelta: el texto «Suelto» lo pone la ficha (i18n).
+      label: presentacion ? presentacion.texto : null,
+      price: v.precio,
+      moneda: v.moneda || p.moneda,
+    }
+  })
+  if (!opciones.some((o) => o.presentacion)) return []
+  const claves = opciones.map((o) => o.label ?? '')
+  if (new Set(claves).size !== claves.length) return []
+  return opciones
+}
+
 function mapProducto(p) {
   return {
     id: p.id,
@@ -156,6 +196,7 @@ function mapProducto(p) {
     // que /linea/:slug no tenia con que filtrar y content.lines quedaba huerfano.
     line: (p.linea ?? '').trim() || undefined,
     badge: p.destacado ? 'Destacado' : undefined,
+    presentacion: mapPresentacion(p.presentacion),
     price: p.precio,
     moneda: p.moneda,
     stock: p.stock_disponible,
@@ -198,6 +239,9 @@ function mapProductoDetail(p) {
     gallery: gallery.length > 0 ? gallery : (heroImage ? [heroImage] : []),
     price: p.precio,
     moneda: p.moneda,
+    // Kit único (sin lengüetas): la ficha lo dice con una etiqueta junto al precio.
+    presentacion: mapPresentacion(p.presentacion),
+    presentaciones: mapPresentaciones(p),
     category: p.categoria,
     tags: mapBadges(p),
     technicalSpecs: (Array.isArray(p.specs) ? p.specs : [])
