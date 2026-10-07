@@ -6,6 +6,9 @@ import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
 import { CarouselRenderer } from '../_hero-renderer/CarouselRenderer'
 import { heroSizeMode } from '../_hero-renderer/scroll-contract'
 
+/** El hero se agranda al salir de pantalla (useHeroExitZoom). Apagado a pedido del cliente (oct-2026). */
+const ZOOM_AL_SALIR = false
+
 // Detect breakpoint once per mount (matchMedia — not reactive to resize, good enough for hero).
 function useBreakpoint() {
   const [bp, setBp] = useState(() => {
@@ -69,8 +72,12 @@ function HeroSection({ hero }) {
   // arriba: no puede quedar después del return condicional. `isLab` es la
   // bandera que rearma el efecto cuando el hero por fin se monta: en el primer
   // render todavía no llegó el contenido y el ref está vacío.
+  //
+  // Oct-2026 (pedido del cliente): APAGADO, al cliente no le gusta que el hero
+  // se agrande al scrollear. Se deja el hook y el CSS para poder volver a
+  // prenderlo cambiando sólo esta bandera.
   const heroRef = useRef(null)
-  useHeroExitZoom(heroRef, isLab)
+  useHeroExitZoom(heroRef, isLab && ZOOM_AL_SALIR)
 
   useEffect(() => {
     if (isLab || slides.length <= 1) return undefined
