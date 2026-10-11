@@ -669,6 +669,29 @@ html {
     position: relative;
   }
 
+  /* Con el mouse sobre el carrusel la tira se frena y RECIÉN AHÍ aparecen las
+     flechas (pedido de Fede, 11-oct: «al poner el mouse encima se detiene, ahí
+     deben aparecer los arrows para pasar»). La pausa va en el envoltorio y no
+     sólo en .kt-marquee: si no, al llevar el mouse a la flecha la tira volvía a
+     girar. Las flechas van ADENTRO del envoltorio (sobre el borde esfumado) para
+     que el camino del mouse hasta ellas no salga del :hover. */
+  @media (hover: hover) {
+    .kt-marquee-nav-wrap:hover .kt-marquee-track {
+      animation-play-state: paused;
+    }
+
+    .kt-marquee-nav-wrap .kt-marquee-arrow {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .kt-marquee-nav-wrap:hover .kt-marquee-arrow,
+    .kt-marquee-nav-wrap:focus-within .kt-marquee-arrow {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
   .kt-marquee-arrow {
     position: absolute;
     top: 50%;
@@ -683,7 +706,7 @@ html {
     color: var(--primary, #f4df33);
     cursor: pointer;
     transform: translateY(-50%);
-    transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+    transition: opacity 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
     backdrop-filter: blur(6px);
   }
 
@@ -704,13 +727,8 @@ html {
     transform: translateY(-50%) scale(1.06);
   }
 
-  .kt-marquee-arrow-prev { left: -8px; }
-  .kt-marquee-arrow-next { right: -8px; }
-
-  @media (min-width: 1024px) {
-    .kt-marquee-arrow-prev { left: -64px; }
-    .kt-marquee-arrow-next { right: -64px; }
-  }
+  .kt-marquee-arrow-prev { left: 12px; }
+  .kt-marquee-arrow-next { right: 12px; }
 
   @media (max-width: 767px) {
     .kt-marquee-arrow { width: 44px; height: 44px; }
@@ -721,6 +739,11 @@ html {
      vuelve una fila con scroll horizontal y las flechas lo mueven de a una card
      (pedido de Fede, 11-oct: «se debe ver igual el arrow para poder pasar»). */
   @media (prefers-reduced-motion: reduce) {
+    .kt-marquee-nav-wrap .kt-marquee-arrow {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     .kt-marquee-cards {
       overflow-x: auto;
       scrollbar-width: none;
