@@ -11,8 +11,9 @@ import { useCallback, useRef } from 'react'
  * Un toque = una card (ancho del item + gap), en ~420ms con ease-out para que
  * se lea como un deslizamiento y no como un salto.
  *
- * Con `prefers-reduced-motion` la animación no existe (`animation: none`):
- * `nudge` no hace nada y las flechas se ocultan por CSS.
+ * Con `prefers-reduced-motion` la animación no existe (`animation: none`) y el
+ * contenedor pasa a tener scroll horizontal (index.css): ahí la flecha mueve el
+ * scroll de a una card, sin deslizamiento animado.
  *
  * @param {import('react').RefObject<HTMLElement>} containerRef el .kt-marquee
  * @returns {(dir: 1 | -1) => void}
@@ -26,13 +27,19 @@ export function useMarqueeNudge(containerRef) {
   return useCallback((dir) => {
     const track = containerRef.current?.querySelector('.kt-marquee-track')
     const anim = track?.getAnimations?.()[0]
-    if (!track || !anim) return
+    const item = track?.firstElementChild
+    if (!track || !item) return
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0
+
+    if (!anim) {
+      // Reducir movimiento: la tira está quieta y se scrollea. Salto directo,
+      // sin animación, que es justamente lo que pidió el usuario al sistema.
+      containerRef.current.scrollBy({ left: (item.getBoundingClientRect().width + gap) * dir, behavior: 'auto' })
+      return
+    }
 
     const duracion = Number(anim.effect?.getComputedTiming?.().duration) || 0
-    const item = track.firstElementChild
-    if (!duracion || !item) return
-
-    const gap = parseFloat(getComputedStyle(track).columnGap) || 0
+    if (!duracion) return
     // Recorrido de una vuelta del keyframe: la mitad del track más medio gap
     // (translateX(calc(-50% - 0.25rem))).
     const recorrido = track.scrollWidth / 2 + gap / 2

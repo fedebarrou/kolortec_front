@@ -716,8 +716,19 @@ html {
     .kt-marquee-arrow { width: 44px; height: 44px; }
   }
 
+  /* Con «reducir movimiento» la tira no gira (animation: none, más abajo).
+     Para que igual se puedan ver todos los destacados, el carrusel de cards se
+     vuelve una fila con scroll horizontal y las flechas lo mueven de a una card
+     (pedido de Fede, 11-oct: «se debe ver igual el arrow para poder pasar»). */
   @media (prefers-reduced-motion: reduce) {
-    .kt-marquee-arrow { display: none; }
+    .kt-marquee-cards {
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .kt-marquee-cards::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   /* La card crece al pasar el mouse. Vive en LA CARD y no en el contenedor del
