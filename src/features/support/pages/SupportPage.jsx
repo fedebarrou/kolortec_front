@@ -153,6 +153,7 @@ function DownloadCard({ item, downloadCta, onDownload }) {
         <Link
           to={`/producto/${item.productSlug}`}
           className="text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-[#8b909a] transition hover:text-primary"
+          translate="no"
         >
           {item.product}
         </Link>
@@ -182,6 +183,7 @@ function DownloadRow({ item, downloadCta, onDownload }) {
         <Link
           to={`/producto/${item.productSlug}`}
           className="truncate text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-[#8b909a] transition hover:text-primary"
+          translate="no"
         >
           {item.product}
         </Link>

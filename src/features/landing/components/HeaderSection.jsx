@@ -618,7 +618,7 @@ function HeaderSection() {
                         <span className="grid min-w-0 gap-0.5">
                           {/* El nombre es lo que buscás: va MÁS GRANDE que la
                               descripción. Estaba al revés. */}
-                          <strong className="truncate text-[13px] font-bold uppercase leading-[1.2] tracking-[0.04em]">{item.name}</strong>
+                          <strong className="truncate text-[13px] font-bold uppercase leading-[1.2] tracking-[0.04em]" translate="no">{item.name}</strong>
                           <small className="line-clamp-1 text-[12px] leading-[1.3] text-[#a9b1bd]">{item.description}</small>
                         </span>
                         {item.badge ? <em className="rounded-full bg-primary px-2 py-[3px] text-[0.75rem] font-black uppercase tracking-[0.09em] not-italic text-[#0b0b0b]">{item.badge}</em> : null}

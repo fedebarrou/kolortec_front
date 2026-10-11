@@ -18,6 +18,7 @@ import { resolveAccountHost } from './accountHost.js'
 import { DEMO_MODE } from '../../config.js'
 import { normalizeScrollDesign } from '../../features/landing/_hero-renderer/scroll-contract.js'
 import { safeSrc } from '../../features/landing/_hero-renderer/cssSafe.js'
+import { setProtectedTermsLoader } from './dynamicTranslationService.js'
 
 // Valores admitidos de `slide.scrim`. 'kolortec' = 4 capas NEGRAS (look original);
 // 'kolortec-light' = las mismas capas en crema, para escenas sobre fondo claro.
@@ -96,6 +97,13 @@ async function fetchWithFallback(path, fallbackValue) {
     return fallbackValue
   }
 }
+
+// Los nombres de producto no se traducen nunca (ver dynamicTranslationService).
+// Sale del mismo /public/productos cacheado: no suma requests.
+setProtectedTermsLoader(async () => {
+  const raw = await fetchWithFallback('/public/productos', [])
+  return (Array.isArray(raw) ? raw : []).flatMap((p) => [p?.nombre, p?.nombre_visible])
+})
 
 // ---------------------------------------------------------------------------
 // Mappers — raw tiendita API → component-expected shapes

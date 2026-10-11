@@ -636,7 +636,7 @@ function ProductDetailPage() {
                   <path d="M15 5l-7 7 7 7" />
                 </svg>
               </button>
-              <strong className="title-font text-[13px] md:text-[14px] leading-none tracking-[0.14em]">{product.name}</strong>
+              <strong className="title-font text-[13px] md:text-[14px] leading-none tracking-[0.14em]" translate="no">{product.name}</strong>
             </div>
             {/* Dos ajustes para que subir los rótulos de 11 a 12px no cueste ancho:
                 - `gap` de 22 a 14px hasta xl, que devuelve los ~40px que suma la
@@ -754,7 +754,7 @@ function ProductDetailPage() {
               </figure>
 
               <div className="kt-detail-summary">
-                <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]">{product.name}</h1>
+                <h1 className="title-font kt-detail-name text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.95]" translate="no">{product.name}</h1>
                 {translatedShortDescription ? <p className="kt-detail-intro">{translatedShortDescription}</p> : null}
                 {showPrices || soloKit ? (
                   <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2" aria-live={presentaciones.length > 0 ? 'polite' : undefined}>

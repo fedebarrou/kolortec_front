@@ -1,4 +1,6 @@
-const CACHE_STORAGE_KEY = 'kolortec-dynamic-translation-cache-v1'
+// v2: desde que los nombres de producto se protegen (ver más abajo). Las
+// traducciones viejas guardadas podían tener un nombre traducido adentro.
+const CACHE_STORAGE_KEY = 'kolortec-dynamic-translation-cache-v2'
 const MAX_CACHE_ENTRIES = 400
 
 const runtimeCache = new Map()
@@ -53,6 +55,82 @@ function detectTextLanguage(text) {
   return englishScore > spanishScore ? 'en' : 'es'
 }
 
+/*
+ * Nombres de producto: NUNCA se traducen (pedido del cliente, 11-oct: «el nombre
+ * es su identidad, esté en el idioma que esté»). Antes de mandar un texto al
+ * traductor, cada nombre se cambia por un marcador KTnKT y a la vuelta se
+ * repone tal como estaba escrito. Alfanumérico a propósito: con [[n]] el
+ * LibreTranslate propio (translate.soytiendita.store) devolvía corchetes de más
+ * o de menos en 3 de 5 frases («[[[0]]», «[1]]»); KTnKT pasó 5 de 5 ahí y en
+ * MyMemory. Cerrado por los dos lados para que KT1KT no se confunda con KT10KT.
+ *
+ * La lista la carga contentService (setProtectedTermsLoader) con los nombres
+ * del catálogo. Se pide una sola vez y se espera antes de la primera traducción:
+ * el hero se traduce antes de que la home pida los productos.
+ */
+let protectedTerms = []
+let termsLoader = null
+let termsPromise = null
+
+export function setProtectedTermsLoader(loader) {
+  termsLoader = typeof loader === 'function' ? loader : null
+  termsPromise = null
+}
+
+function ensureProtectedTerms() {
+  if (!termsLoader) return Promise.resolve(protectedTerms)
+  if (!termsPromise) {
+    termsPromise = Promise.resolve()
+      .then(() => termsLoader())
+      .then((list) => {
+        const unicos = new Set((Array.isArray(list) ? list : []).map(normalizeText).filter((t) => t.length >= 3))
+        // Lista vacía = el catálogo no respondió (fetchWithFallback devuelve []):
+        // se vuelve a pedir en la próxima traducción en vez de quedar sin
+        // nombres protegidos toda la sesión (joan REG-002).
+        if (unicos.size === 0) termsPromise = null
+        // Los más largos primero: «BEAM 5R PRO» antes que «BEAM 5R».
+        else protectedTerms = [...unicos].sort((a, b) => b.length - a.length)
+        return protectedTerms
+      })
+      .catch(() => {
+        termsPromise = null
+        return protectedTerms
+      })
+  }
+  return termsPromise
+}
+
+// Tope de espera por la lista de nombres: si el catálogo tarda o se cuelga, la
+// traducción sigue con lo que haya (joan REG-001). Antes de este cambio la
+// traducción no dependía del catálogo y no tiene que volverse más lenta por él.
+const TERMS_TIMEOUT_MS = 2500
+
+function protectedTermsWithTimeout() {
+  let timer
+  const tope = new Promise((resolve) => { timer = setTimeout(() => resolve(protectedTerms), TERMS_TIMEOUT_MS) })
+  return Promise.race([ensureProtectedTerms(), tope]).finally(() => clearTimeout(timer))
+}
+
+const escapeRegex = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** Cambia cada nombre protegido por KTnKT. Devuelve el texto y lo que se sacó. */
+export function maskProtectedTerms(text, terms = protectedTerms) {
+  const sacados = []
+  if (!terms.length) return { masked: text, sacados }
+  const re = new RegExp(`(?<![\\p{L}\\p{N}])(?:${terms.map(escapeRegex).join('|')})(?![\\p{L}\\p{N}])`, 'giu')
+  const masked = text.replace(re, (m) => {
+    sacados.push(m)
+    return `KT${sacados.length - 1}KT`
+  })
+  return { masked, sacados }
+}
+
+/** Repone los nombres. Tolera mayúsculas cambiadas o espacios: «kt 0 kt». */
+export function unmaskProtectedTerms(text, sacados) {
+  if (!sacados.length) return text
+  return text.replace(/KT\s*(\d+)\s*KT/gi, (m, i) => (sacados[Number(i)] ?? m))
+}
+
 function getCacheKey(text, from, to) {
   return `${from}->${to}:${normalizeText(text)}`
 }
@@ -76,13 +154,18 @@ function getLibreTranslatedText(payload) {
 }
 
 export async function autoTranslateText({ text, from = 'es', to = 'en' }) {
-  const normalized = normalizeText(text)
-  if (!normalized || from === to) return normalized
+  const original = normalizeText(text)
+  if (!original || from === to) return original
 
   readStoredCache()
+  const { masked: normalized, sacados } = maskProtectedTerms(original, await protectedTermsWithTimeout())
+  // Si el texto ES un nombre (o sólo nombres), no hay nada que traducir.
+  if (!normalized.replace(/KT\d+KT/g, '').replace(/[\s\p{P}]/gu, '')) return original
+  // La clave lleva el texto ENMASCARADO: «Fluido para KT0KT» se traduce una vez
+  // y sirve para cualquier producto.
   const cacheKey = getCacheKey(normalized, from, to)
   const cached = runtimeCache.get(cacheKey)
-  if (cached) return cached
+  if (cached) return unmaskProtectedTerms(cached, sacados)
 
   try {
     let translated = ''
@@ -135,9 +218,9 @@ export async function autoTranslateText({ text, from = 'es', to = 'en' }) {
     const finalText = normalizeText(translated) || normalized
     runtimeCache.set(cacheKey, finalText)
     persistCache()
-    return finalText
+    return unmaskProtectedTerms(finalText, sacados)
   } catch {
-    return normalized
+    return original
   }
 }
 

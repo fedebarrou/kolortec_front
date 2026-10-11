@@ -53,14 +53,17 @@ function KolortecSello() {
     const ro = new ResizeObserver(medir)
     ro.observe(host)
 
-    // Arranca cuando el borde de la sección ya subió un tercio de la pantalla.
+    // Arranca apenas el borde de la sección asoma por abajo (92% del alto).
+    // Antes esperaba a que subiera un tercio de la pantalla y había que
+    // scrollear de más: la amarilla quedaba casi tapada antes de verlo rodar
+    // (pedido del cliente, 11-oct).
     // Se chequea en el scroll (no con un IntersectionObserver al montar):
     // mientras la página carga, las secciones de arriba todavía no tienen
     // alto y esta queda un instante en pantalla — el sello rodaba solo, antes
     // de que nadie llegara (mismo problema que la intro de la amarilla).
     const chequear = () => {
       const top = host.getBoundingClientRect().top
-      if (top > window.innerHeight * 0.67 || top < -host.offsetHeight) return
+      if (top > window.innerHeight * 0.92 || top < -host.offsetHeight) return
       medir()
       el.classList.add('is-on')
       window.removeEventListener('scroll', chequear)

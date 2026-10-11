@@ -99,12 +99,14 @@ function useCategoryName(slug) {
 function ProductCard({ item, className = '', style, showDetailLink = true, detailHref, focusable = true }) {
   const { t } = useLanguage()
   const [imgFailed, setImgFailed] = useState(false)
-  // El nombre y la categoría vienen de la DB de tiendita, siempre en castellano —
-  // el i18n estático no los alcanza. Se traducen al vuelo y se muestra el original
-  // hasta que llega la traducción.
+  // La categoría viene de la DB de tiendita, siempre en castellano — el i18n
+  // estático no la alcanza: se traduce al vuelo y se muestra el original hasta
+  // que llega la traducción. El NOMBRE del producto NO se traduce nunca (pedido
+  // del cliente, 11-oct: «es su identidad, esté en el idioma que esté»); antes
+  // pasaba por este mismo diccionario.
   const categoryName = useCategoryName(item.category)
-  const dict = useAutoTranslatedDict(useMemo(() => [item.name, categoryName], [item.name, categoryName]))
-  const name = dict.get(item.name) || item.name
+  const dict = useAutoTranslatedDict(useMemo(() => [categoryName], [categoryName]))
+  const name = item.name
   const category = dict.get(categoryName) || categoryName
   const tags = useMemo(() => normalizeTags(item.tags), [item.tags])
   // «Kit x8» / «Pack x6» / «Caja x12»: la presentación de la variante principal, como
@@ -216,7 +218,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
                   renglones el punto se despegaba (27px a la derecha del final del
                   primer renglón y una línea más arriba). En flujo normal sigue al
                   último carácter y envuelve con él. */}
-              <h3 className="title-font m-0 text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary">
+              <h3 className="title-font m-0 text-[1.1rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)] transition-colors duration-300 group-hover:text-primary group-focus-within:text-primary" translate="no">
                 {name}
                 <span className="text-primary">.</span>
               </h3>

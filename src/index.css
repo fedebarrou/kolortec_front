@@ -1649,7 +1649,10 @@ html {
      Al entrar en pantalla arranca arriba a la derecha y rueda hasta acá. Las
      variables las mide el componente según el ancho. */
   .kt-sello {
-    --sello: clamp(140px, 15vw, 220px);
+    /* Piso 88px (antes 140): en un celular de 390px el sello ocupaba más de
+       un tercio del ancho (pedido del cliente, 11-oct). Desde ~590px manda el
+       15vw: también achica en tablet (768px → 115px, antes 140). */
+    --sello: clamp(88px, 15vw, 220px);
     position: absolute;
     z-index: 2;
     width: var(--sello);
@@ -1678,7 +1681,7 @@ html {
   }
 
   .kt-sello.is-on {
-    animation: kt-sello-rueda 2.2s cubic-bezier(0.32, 0.02, 0.24, 1) forwards;
+    animation: kt-sello-rueda 1.6s cubic-bezier(0.32, 0.02, 0.24, 1) forwards;
   }
 
   @keyframes kt-sello-rueda {
