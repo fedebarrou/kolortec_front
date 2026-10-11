@@ -53,8 +53,7 @@ const FAMILIAS = {
   },
 }
 
-function DownloadCard({ item, downloadCta, onDownload }) {
-  const familia = FAMILIAS[item.family] || FAMILIAS.manual
+function DownloadButton({ item, familia, downloadCta, onDownload }) {
   // El archivo abierto va en un <a> DE VERDAD y no en un <button>: así se puede
   // copiar el link, abrirlo en otra pestaña con el botón del medio y lo ve un
   // crawler. El <button> queda sólo para lo que sí pide identificarse.
@@ -75,6 +74,64 @@ function DownloadCard({ item, downloadCta, onDownload }) {
       {conLogin ? 'lock' : 'download'}
     </span>
   )
+  return conLogin ? (
+    <button
+      type="button"
+      onClick={() => onDownload(item)}
+      className={claseBoton}
+      style={{ borderColor: '#383838' }}
+      onMouseEnter={pintar}
+      onMouseLeave={despintar}
+    >
+      {icono}
+      {downloadCta}
+    </button>
+  ) : (
+    <a
+      {...propsDeDescarga(item)}
+      className={claseBoton}
+      style={{ borderColor: '#383838' }}
+      onMouseEnter={pintar}
+      onMouseLeave={despintar}
+    >
+      {icono}
+      {downloadCta}
+    </a>
+  )
+}
+
+// Foto del equipo al que pertenece el documento: se reconoce el aparato antes
+// de leer el nombre. Sin foto (o si falla), el ícono de la familia en su lugar:
+// nunca un cuadro vacío ni el ícono de imagen rota.
+function ProductThumb({ item, familia, className }) {
+  const [rota, setRota] = useState(false)
+  if (item.productImage && !rota) {
+    return (
+      <img
+        src={item.productImage}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onError={() => setRota(true)}
+        className={`shrink-0 rounded-[10px] bg-[#0f0f10] object-contain ${className}`}
+      />
+    )
+  }
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center rounded-[10px] ${className}`}
+      style={{ backgroundColor: familia.tint, color: familia.color }}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 24 24" className="h-[45%] w-[45%] stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.9]">
+        <path d={familia.icono} />
+      </svg>
+    </span>
+  )
+}
+
+function DownloadCard({ item, downloadCta, onDownload }) {
+  const familia = FAMILIAS[item.family] || FAMILIAS.manual
   return (
     <article
       className="group flex flex-col gap-3 rounded-[12px] border bg-[#0d0d0e] p-5 transition hover:-translate-y-1"
@@ -83,15 +140,7 @@ function DownloadCard({ item, downloadCta, onDownload }) {
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#242424' }}
     >
       <div className="flex items-start justify-between gap-3">
-        <span
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px]"
-          style={{ backgroundColor: familia.color, color: familia.texto }}
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 24 24" className="h-[19px] w-[19px] stroke-current fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.9]">
-            <path d={familia.icono} />
-          </svg>
-        </span>
+        <ProductThumb item={item} familia={familia} className="h-14 w-14" />
         <span
           className="rounded-[4px] px-2 py-1 text-[12px] font-black uppercase tracking-[0.1em]"
           style={{ backgroundColor: familia.tint, color: familia.color }}
@@ -112,39 +161,65 @@ function DownloadCard({ item, downloadCta, onDownload }) {
 
       <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#232323] pt-3">
         <span className="text-[0.75rem] text-[#8b909a]">{item.size || '—'}</span>
-        {conLogin ? (
-          <button
-            type="button"
-            onClick={() => onDownload(item)}
-            className={claseBoton}
-            style={{ borderColor: '#383838' }}
-            onMouseEnter={pintar}
-            onMouseLeave={despintar}
-          >
-            {icono}
-            {downloadCta}
-          </button>
-        ) : (
-          <a
-            {...propsDeDescarga(item)}
-            className={claseBoton}
-            style={{ borderColor: '#383838' }}
-            onMouseEnter={pintar}
-            onMouseLeave={despintar}
-          >
-            {icono}
-            {downloadCta}
-          </a>
-        )}
+        <DownloadButton item={item} familia={familia} downloadCta={downloadCta} onDownload={onDownload} />
       </div>
     </article>
   )
+}
+
+// Vista de LISTA: una fila por documento, para el que viene a buscar uno
+// puntual entre muchos. La franja de color a la izquierda es la familia
+// (amarillo manual / cian librería), el mismo código que las tarjetas.
+function DownloadRow({ item, downloadCta, onDownload }) {
+  const familia = FAMILIAS[item.family] || FAMILIAS.manual
+  return (
+    <li
+      className="flex items-center gap-4 border-b border-l-[3px] border-b-[#232323] bg-[#0d0d0e] py-3 pl-3 pr-4 transition last:border-b-0 hover:bg-[#161618]"
+      style={{ borderLeftColor: familia.color }}
+    >
+      <ProductThumb item={item} familia={familia} className="h-12 w-12" />
+      <div className="grid min-w-0 flex-1 gap-1">
+        <Link
+          to={`/producto/${item.productSlug}`}
+          className="truncate text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-[#8b909a] transition hover:text-primary"
+        >
+          {item.product}
+        </Link>
+        <h3 className="title-font m-0 truncate text-[1.02rem] leading-[1.2] text-[#f2f2f2]">{item.label}</h3>
+      </div>
+      <span
+        className="hidden rounded-[4px] px-2 py-1 text-[12px] font-black uppercase tracking-[0.1em] sm:inline"
+        style={{ backgroundColor: familia.tint, color: familia.color }}
+      >
+        {item.ext}
+      </span>
+      <span className="hidden w-[70px] text-right text-[0.75rem] text-[#8b909a] md:inline">{item.size || '—'}</span>
+      <DownloadButton item={item} familia={familia} downloadCta={downloadCta} onDownload={onDownload} />
+    </li>
+  )
+}
+
+const VISTA_KEY = 'kt-descargas-vista'
+
+function leerVista() {
+  try {
+    return window.localStorage.getItem(VISTA_KEY) === 'lista' ? 'lista' : 'grilla'
+  } catch {
+    return 'grilla'
+  }
 }
 
 function SupportPage() {
   const { t } = useLanguage()
   const [query, setQuery] = useState('')
   const [familia, setFamilia] = useState('todas')
+  // Grilla o lista. Se recuerda en este navegador: el que eligió lista vuelve
+  // a encontrarla así.
+  const [vista, setVista] = useState(leerVista)
+  const cambiarVista = (v) => {
+    setVista(v)
+    try { window.localStorage.setItem(VISTA_KEY, v) } catch { /* sin storage: vale sólo esta visita */ }
+  }
   const [items, setItems] = useState(null) // null = cargando
   const [downloadIntent, setDownloadIntent] = useState(null)
   // Archivo que quedó pendiente ANTES de mandar al usuario al login. Al volver
@@ -296,6 +371,28 @@ function SupportPage() {
               </button>
             )
           })}
+
+          <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-[#2a2a2a] sm:block" />
+          <div role="group" aria-label={t('support.page.viewLabel', 'Vista')} className="inline-flex rounded-full border border-[#2a2a2a] p-1">
+            {[
+              { id: 'grilla', icon: 'grid_view', label: t('support.page.viewGrid', 'Grilla') },
+              { id: 'lista', icon: 'view_list', label: t('support.page.viewList', 'Lista') },
+            ].map((v) => {
+              const activa = vista === v.id
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => cambiarVista(v.id)}
+                  aria-pressed={activa}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.75rem] font-extrabold uppercase tracking-[0.1em] transition ${activa ? 'bg-[#f2f2f2] text-[#0b0b0b]' : 'text-[#c8ccd4] hover:text-white'}`}
+                >
+                  <span className="material-symbols-outlined text-[17px] leading-none" aria-hidden="true">{v.icon}</span>
+                  {v.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </header>
 
@@ -366,11 +463,19 @@ function SupportPage() {
         // ENTRA NUNCA en el viewport: la grilla se quedaba en opacity 0 para
         // siempre. Una animación de entrada sobre un listado de este largo no
         // aporta nada igual.
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtrados.map((item) => (
-            <DownloadCard key={item.id} item={item} downloadCta={downloadCta} onDownload={pedirDescarga} />
-          ))}
-        </div>
+        vista === 'lista' ? (
+          <ul className="m-0 list-none overflow-hidden rounded-[12px] border border-[#242424] p-0">
+            {filtrados.map((item) => (
+              <DownloadRow key={item.id} item={item} downloadCta={downloadCta} onDownload={pedirDescarga} />
+            ))}
+          </ul>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {filtrados.map((item) => (
+              <DownloadCard key={item.id} item={item} downloadCta={downloadCta} onDownload={pedirDescarga} />
+            ))}
+          </div>
+        )
       ) : (
         <div className="kt-reveal rounded-[12px] border border-dashed border-[#2a2a2a] bg-[#0f0f10] p-12 text-center">
           <p className="m-0 text-[0.95rem] text-[#aeb5bf]">{lista.length === 0 ? emptyAll : emptyResults}</p>

@@ -184,10 +184,21 @@ function ProductDetailPage() {
     const top = Math.max(0, Math.min(rect.height - LENS_SIZE, y - half))
     // El fondo se muestrea desde el cursor REAL (no desde la posición clampeada de la lupa):
     // así en los bordes la ventana llega hasta el borde de la imagen zoomeada.
-    const bgX = Math.max(0, Math.min(rect.width * LENS_ZOOM - LENS_SIZE, x * LENS_ZOOM - half))
-    const bgY = Math.max(0, Math.min(rect.height * LENS_ZOOM - LENS_SIZE, y * LENS_ZOOM - half))
+    // La foto va con object-fit:contain: lo DIBUJADO puede ser más chico que la
+    // caja del <img> (bandas a los costados en una foto muy vertical). La lupa
+    // muestrea sobre lo dibujado, no sobre la caja, o se corre del cursor.
+    const ir = img.getBoundingClientRect()
+    const nw = img.naturalWidth || ir.width
+    const nh = img.naturalHeight || ir.height
+    const escala = Math.min(ir.width / nw, ir.height / nh)
+    const dw = nw * escala
+    const dh = nh * escala
+    const ox = ir.left - rect.left + (ir.width - dw) / 2
+    const oy = ir.top - rect.top + (ir.height - dh) / 2
+    const bgX = Math.max(0, Math.min(dw * LENS_ZOOM - LENS_SIZE, (x - ox) * LENS_ZOOM - half))
+    const bgY = Math.max(0, Math.min(dh * LENS_ZOOM - LENS_SIZE, (y - oy) * LENS_ZOOM - half))
     lens.style.backgroundImage = `url("${img.currentSrc || img.src}")`
-    lens.style.backgroundSize = `${rect.width * LENS_ZOOM}px ${rect.height * LENS_ZOOM}px`
+    lens.style.backgroundSize = `${dw * LENS_ZOOM}px ${dh * LENS_ZOOM}px`
     lens.style.backgroundPosition = `${-bgX}px ${-bgY}px`
     lens.style.left = `${left}px`
     lens.style.top = `${top}px`
@@ -730,7 +741,14 @@ function ProductDetailPage() {
                   onClick={() => setGalleryLightboxIndex(activeImageIndex)}
                   aria-label={`Abrir imagen principal de ${product.name}`}
                 >
-                  <img src={galleryImages[activeImageIndex] || product.heroImage} alt={product.name} />
+                  {/* data-cargada: hasta que la foto carga, el CSS le reserva un alto
+                      (aspect-ratio) para que la ficha no salte al aparecer (joan REG-001). */}
+                  <img
+                    key={galleryImages[activeImageIndex] || product.heroImage}
+                    src={galleryImages[activeImageIndex] || product.heroImage}
+                    alt={product.name}
+                    onLoad={(e) => { e.currentTarget.dataset.cargada = '1' }}
+                  />
                 </button>
                 <span ref={lensRef} className="kt-zoom-lens" aria-hidden="true" />
               </figure>
@@ -807,21 +825,17 @@ function ProductDetailPage() {
                         el tenant cargue la quinta, desaparecía en silencio. */}
                     {product.innovations.map((inn) => (
                       <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
-                        {/* CUADRADO (con esquinas suaves) y no círculo: estos íconos
-                            los sube el tenant desde el admin y son logos o marcas
-                            de forma libre —muchas veces un logotipo horizontal o
-                            un pictograma rectangular—. Un círculo les recorta las
-                            esquinas y parte cualquier cosa que no sea una marca
-                            redonda centrada. Además va `object-contain` y no
-                            `object-cover`: cover RECORTABA el ícono para llenar el
-                            cuadro, o sea que la marca del fabricante se veía a
-                            medias. Con contain entra entera y el marco la sostiene. */}
+                        {/* REDONDAS, sin fondo ni borde: sólo border-radius sobre
+                            la imagen (pedido del cliente, oct-2026). Antes iban en un
+                            cuadrado con fondo y borde para no recortar logos de forma
+                            libre; si se carga un logotipo apaisado, el círculo le
+                            come las puntas: conviene subirlo ya cuadrado. */}
                         {inn.image ? (
                           <img
                             src={inn.image}
                             alt=""
                             loading="lazy"
-                            className="h-14 w-14 shrink-0 rounded-[10px] border border-[#2a2a2a] bg-[#0d0d0e] object-contain p-2"
+                            className="h-14 w-14 shrink-0 rounded-full object-cover"
                           />
                         ) : (
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />

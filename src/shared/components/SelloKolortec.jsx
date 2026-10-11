@@ -1,6 +1,16 @@
 import { useId } from 'react'
 
 /**
+ * El asterisco de la marca, calcado del logo original (public/assets/logo_minimal.png):
+ * seis brazos que se ENSANCHAN hacia afuera, con un brazo horizontal y los otros
+ * cuatro a ±60°. El dibujo anterior eran tres barras «moño» con un brazo VERTICAL:
+ * otro asterisco, que es lo que el cliente notó («el logo no es el original»).
+ * Centrado en 0,0 y entra en un cuadro de -50..50.
+ */
+export const ASTERISCO_KOLORTEC =
+  '0,-13.8 16.7,-47.9 33.8,-37.5 12.9,-7.5 49.6,-10.4 49.6,10.4 12.9,7.5 33.8,37.5 16.7,47.9 0,13.8 -16.7,47.9 -33.8,37.5 -12.9,7.5 -49.6,10.4 -49.6,-10.4 -12.9,-7.5 -33.8,-37.5 -16.7,-47.9'
+
+/**
  * SelloKolortec — el círculo negro con la estrella amarilla y "KOLORTEC · READY
  * TO WORK" en arco. Es la pieza gráfica que rueda por la diagonal de "Sumate"
  * (KolortecSello) y el botón de volver arriba del footer: un solo dibujo para
@@ -20,10 +30,8 @@ function SelloKolortec({ className = '' }) {
       <text fontFamily="FuturaExtraBlackCondensed, Impact, sans-serif" fontWeight="900" fontSize="10" letterSpacing="3.2" style={{ fill: 'var(--primary, #f4df33)' }}>
         <textPath href={`#${arco}`}>KOLORTEC · READY TO WORK · </textPath>
       </text>
-      <g style={{ fill: 'var(--primary, #f4df33)' }} transform="translate(50 50) scale(0.42)">
-        <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" />
-        <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(60)" />
-        <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(120)" />
+      <g style={{ fill: 'var(--primary, #f4df33)' }} transform="translate(50 50) scale(0.37)">
+        <polygon points={ASTERISCO_KOLORTEC} />
       </g>
     </svg>
   )

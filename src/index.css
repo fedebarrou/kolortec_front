@@ -647,6 +647,79 @@ html {
     padding-block: 2.25rem;
   }
 
+  /* "?" de "¿Querés formar parte de Kolortec?": sólo el PUNTO del signo en
+     amarillo. Se pinta con un degradé recortado al texto, cortado en el hueco
+     entre el gancho y el punto. Medido en la Futura Extra Black Condensed: el
+     punto va de -0.016em a 0.206em sobre la línea base y el gancho arranca en
+     0.270em; el corte va a 0.238em. La caja de un inline mide ascent + descent
+     de la fuente (0.963em + 0.239em) desde arriba, así que la línea base cae a
+     0.963em del borde superior: 0.963 - 0.238 = 0.725em. En em, no en %: así
+     no depende del line-height del título. */
+  .kt-qdot {
+    color: transparent;
+    background-image: linear-gradient(to bottom, var(--ink, #f5f5f5) 0.725em, var(--primary, #f4df33) 0.725em);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  /* Flechas a los costados del carrusel de destacados (useMarqueeNudge). Van
+     FUERA del .kt-marquee: adentro las cortaría el overflow y las taparía la
+     máscara de los bordes. */
+  .kt-marquee-nav-wrap {
+    position: relative;
+  }
+
+  .kt-marquee-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(244, 223, 51, 0.55);
+    border-radius: 999px;
+    background: rgba(5, 5, 5, 0.82);
+    color: var(--primary, #f4df33);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+    backdrop-filter: blur(6px);
+  }
+
+  .kt-marquee-arrow svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .kt-marquee-arrow:hover,
+  .kt-marquee-arrow:focus-visible {
+    background: var(--primary, #f4df33);
+    color: #0b0b0b;
+    transform: translateY(-50%) scale(1.06);
+  }
+
+  .kt-marquee-arrow-prev { left: -8px; }
+  .kt-marquee-arrow-next { right: -8px; }
+
+  @media (min-width: 1024px) {
+    .kt-marquee-arrow-prev { left: -64px; }
+    .kt-marquee-arrow-next { right: -64px; }
+  }
+
+  @media (max-width: 767px) {
+    .kt-marquee-arrow { width: 44px; height: 44px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-marquee-arrow { display: none; }
+  }
+
   /* La card crece al pasar el mouse. Vive en LA CARD y no en el contenedor del
      carrusel, para que sea el mismo gesto en la tira de destacados y en la grilla
      del catálogo. z-index para que la que crece pase por encima de sus vecinas en
@@ -950,15 +1023,23 @@ html {
     );
   }
 
+  /* La foto principal respeta la proporción con la que se cargó (pedido del
+     cliente: «se ve cortada»). Antes era min-height:500px + object-fit:cover:
+     una foto apaisada se estiraba a 500px de alto y cover le recortaba los
+     costados. Ahora alto natural, y si una foto muy vertical pasa el tope,
+     `contain` la achica entera en vez de cortarla. */
   .kt-detail-image img {
     width: 100%;
     height: auto;
-    min-height: 500px;
-    max-height: 720px;
-    object-fit: cover;
+    max-height: 760px;
+    object-fit: contain;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     display: block;
+  }
+
+  .kt-detail-image img:not([data-cargada]) {
+    aspect-ratio: 4 / 5;
   }
 
   .kt-detail-name {
@@ -2822,8 +2903,7 @@ html {
 
     .kt-detail-image img {
       height: auto;
-      min-height: 300px;
-      max-height: 420px;
+      max-height: 520px;
     }
 
     .kt-detail-gallery-carousel {

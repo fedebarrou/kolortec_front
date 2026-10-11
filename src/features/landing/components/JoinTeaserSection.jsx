@@ -14,7 +14,7 @@ function JoinTeaserSection({ join }) {
   const data = join ?? {}
 
   const eyebrow = t('landing.join.eyebrow', data.eyebrow ?? 'Sumate a Kolortec')
-  const title = t('landing.join.title', data.title ?? '¿Querés formar parte de Kolortec?')
+  const title = String(t('landing.join.title', data.title ?? '¿Querés formar parte de Kolortec?')).trim()
   const subtitle = t(
     'landing.join.subtitle',
     data.subtitle ?? 'Como distribuidor autorizado o presentando tu proyecto de rental. Acceso a producto, soporte técnico de fábrica y condiciones comerciales preferenciales.',
@@ -48,7 +48,14 @@ function JoinTeaserSection({ join }) {
             <span className="text-[0.75rem] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</span>
           </div>
           <h2 className="title-font m-0 max-w-[18ch] text-left text-[clamp(1.25rem,4.4vw,3.4rem)] leading-[1.04] sm:max-w-none">
-            {title}<span className="text-primary">.</span>
+            {/* Si el título es una pregunta, el acento amarillo NO es un punto
+                agregado ("Kolortec?.") sino el punto del propio "?" (pedido del
+                cliente). Si el texto cargado no termina en "?", vuelve el punto. */}
+            {title.endsWith('?') ? (
+              <>{title.slice(0, -1)}<span className="kt-qdot">?</span></>
+            ) : (
+              <>{title}<span className="text-primary">.</span></>
+            )}
           </h2>
           <p className="m-0 max-w-[60ch] text-[1rem] leading-[1.55] text-[#b7bbc4]">{subtitle}</p>
         </div>

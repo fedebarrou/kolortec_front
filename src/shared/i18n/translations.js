@@ -74,6 +74,8 @@ export const translations = {
       products: {
         title: 'Featured Products',
         cta: 'View Products',
+        prev: 'Previous product',
+        next: 'Next product',
       },
       shop: {
         title: 'Support\ncenter',
@@ -309,6 +311,9 @@ export const translations = {
         contactTitle: 'Need help?',
         contactCta: 'Contact technical support',
         searchPlaceholder: 'Search by product (e.g. KT-X1000)',
+        viewLabel: 'View',
+        viewGrid: 'Grid',
+        viewList: 'List',
         emptyResults: 'No results for this search.',
       },
     },
@@ -321,6 +326,7 @@ export const translations = {
       companyLinks: ['Our Story', 'Projects', 'Contact'],
       libraryTitle: 'Support',
       libraryLinks: ['Manuals', 'Libraries'],
+      liveshow: 'Liveshow',
       listsTitle: 'Listas',
       listsLinks: ['Lista 146', 'Lista 145', 'Lista 144'],
       updatesTitle: 'Follow Us',
@@ -680,6 +686,8 @@ export const translations = {
       products: {
         title: 'Productos Destacados',
         cta: 'Ver Productos',
+        prev: 'Producto anterior',
+        next: 'Producto siguiente',
       },
       shop: {
         title: 'Centro de\nsoporte',
@@ -915,6 +923,9 @@ export const translations = {
         contactTitle: 'Necesitas ayuda?',
         contactCta: 'Contactar soporte tecnico',
         searchPlaceholder: 'Buscar por producto (ej: KT-X1000)',
+        viewLabel: 'Vista',
+        viewGrid: 'Grilla',
+        viewList: 'Lista',
         emptyResults: 'Sin resultados para esta busqueda.',
       },
     },
@@ -927,6 +938,7 @@ export const translations = {
       companyLinks: ['Nuestra Historia', 'Proyectos', 'Contacto'],
       libraryTitle: 'Soporte',
       libraryLinks: ['Manuales', 'Librerías'],
+      liveshow: 'Liveshow',
       listsTitle: 'Listas',
       listsLinks: ['Lista 146', 'Lista 145', 'Lista 144'],
       updatesTitle: 'Seguinos',

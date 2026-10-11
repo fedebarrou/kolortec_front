@@ -17,6 +17,7 @@ import { defaultLandingContent } from '../../features/landing/data/landingData.j
 import { resolveAccountHost } from './accountHost.js'
 import { DEMO_MODE } from '../../config.js'
 import { normalizeScrollDesign } from '../../features/landing/_hero-renderer/scroll-contract.js'
+import { safeSrc } from '../../features/landing/_hero-renderer/cssSafe.js'
 
 // Valores admitidos de `slide.scrim`. 'kolortec' = 4 capas NEGRAS (look original);
 // 'kolortec-light' = las mismas capas en crema, para escenas sobre fondo claro.
@@ -1108,7 +1109,7 @@ function clasificarDoc(doc) {
  * emitía los documentos reales de cada equipo. Esto es la misma fuente que usa
  * la ficha de producto: un documento cargado en el admin aparece en los dos lados.
  *
- * Shape: [{ id, label, product, productSlug, category, family, ext, size, url }]
+ * Shape: [{ id, label, product, productSlug, productImage, category, family, ext, size, url }]
  */
 export async function getDownloads() {
   const raw = await fetchWithFallback('/public/productos', null)
@@ -1124,6 +1125,11 @@ export async function getDownloads() {
         label: d.title || 'Documento',
         product: p.nombre || '',
         productSlug: p.slug || String(p.id),
+        // Foto del equipo: en la vista de lista es lo que se escanea primero
+        // (se reconoce el aparato antes de leer el nombre). Sólo fotos, igual
+        // que la tarjeta del catálogo.
+        // safeSrc: sólo http(s) o `/` (sekh SEC-001).
+        productImage: safeSrc(p.img_url || imagenesDe(p)[0] || '') || '',
         category: p.categoria || '',
         family: clasificarDoc(d),
         ext: String(d.extension || d.tipo || '').toUpperCase(),

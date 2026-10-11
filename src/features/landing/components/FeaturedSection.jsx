@@ -4,6 +4,7 @@ import ProductCard from '../../catalog/components/ProductCard'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
+import { useMarqueeNudge } from '../../../shared/hooks/useMarqueeNudge'
 
 function FeaturedSection({ products }) {
   const { t } = useLanguage()
@@ -16,6 +17,9 @@ function FeaturedSection({ products }) {
   const [marqueeRef, repeats] = useMarqueeFill(items.length, 12)
   const loopItems = useMemo(() => buildMarqueeLoop(items, repeats), [items, repeats])
   const duration = marqueeDuration(items.length, 11, 54)
+  // Flechas a los costados (pedido del cliente): pasar a mano, más rápido que
+  // esperar el giro. El giro automático sigue igual.
+  const nudge = useMarqueeNudge(marqueeRef)
 
   return (
     <section className="px-6 pt-[clamp(84px,11vw,128px)] pb-[clamp(40px,6vw,72px)] lg:px-40 kt-section-reveal" id="products" style={{ '--reveal-delay': '120ms' }}>
@@ -33,6 +37,7 @@ function FeaturedSection({ products }) {
       {/* kt-marquee-cards: pausa en hover (ya la traía .kt-marquee) + la card bajo
           el mouse se agranda. El padding vertical del contenedor es lo que deja
           lugar para ese escalado: .kt-marquee es overflow:hidden. */}
+      <div className="kt-marquee-nav-wrap">
       <div ref={marqueeRef} className="kt-marquee kt-marquee-cards" style={{ '--kt-marquee-duration': duration }}>
         <div className="kt-marquee-track">
           {loopItems.map((item, index) => (
@@ -45,6 +50,17 @@ function FeaturedSection({ products }) {
             </div>
           ))}
         </div>
+      </div>
+      {items.length > 1 ? (
+        <>
+          <button type="button" className="kt-marquee-arrow kt-marquee-arrow-prev" onClick={() => nudge(-1)} aria-label={t('landing.products.prev', 'Producto anterior')}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <button type="button" className="kt-marquee-arrow kt-marquee-arrow-next" onClick={() => nudge(1)} aria-label={t('landing.products.next', 'Producto siguiente')}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </>
+      ) : null}
       </div>
     </section>
   )

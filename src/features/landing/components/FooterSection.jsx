@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFullBleed } from '../../../shared/hooks/useFullBleed'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
+import { ASTERISCO_KOLORTEC } from '../../../shared/components/SelloKolortec'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
@@ -73,6 +74,10 @@ function FooterSection() {
   const supportItems = [
     ...libraryLinks.map((label) => ({ key: `lib-${label}`, label, to: '/descargas' })),
     { key: 'garantias', label: t('pageTitle.warranty', 'Guía de Mantenimiento'), to: '/garantias' },
+    // Liveshow (pedido del cliente, 11-oct): todavía sin página — se arma más
+    // adelante una de "liveroom". Sin `to` se muestra como texto, no como un
+    // link que no lleva a ningún lado. Cuando exista, ponerle el `to`.
+    { key: 'liveshow', label: t('footer.liveshow', 'Liveshow') },
   ]
   // El copyright decía "© 2010" fijo desde siempre. Ahora el año es un marcador
   // en la traducción ({year}, en los dos idiomas) y se sustituye acá: el string
@@ -140,9 +145,7 @@ function FooterSection() {
           <div className="kt-footer-logo title-font" role="img" aria-label={t('a11y.logo', 'Logo de Kolortec')}>
             KOLORTEC
             <svg viewBox="-50 -50 100 100" aria-hidden="true">
-              <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" />
-              <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(60)" />
-              <polygon points="-12,-42 12,-42 6,0 12,42 -12,42 -6,0" transform="rotate(120)" />
+              <polygon points={ASTERISCO_KOLORTEC} />
             </svg>
           </div>
           <p>{t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}</p>
@@ -184,7 +187,7 @@ function FooterSection() {
           <ul>
             {supportItems.map((it) => (
               <li key={`footer-support-${it.key}`}>
-                <Link to={it.to}>{it.label}</Link>
+                {it.to ? <Link to={it.to}>{it.label}</Link> : <span>{it.label}</span>}
               </li>
             ))}
           </ul>
