@@ -5,7 +5,8 @@
 
 ## En producción
 
-- **Código desplegado:** `25da71c` (main). Contenedor `kolortec_web` en el VPS, detrás de Caddy.
+- **Código desplegado:** `1117dbc` (main), el 2026-10-11 19:54Z (antes `e45f266`). Contenedor `kolortec_web` en el VPS,
+  detrás de Caddy. Runbook/rollback: `tiendita-back/docs/deploy/DEPLOY-KOLORTEC-20261011.md`.
 - **Dominio:** `kolortec.com.ar` ya responde (200). Muestra el cartel **«Sitio en construcción»**
   porque la cuenta de kolortec en tiendita **no está publicada** (`published=false` en
   `/api/public/web-config`). Con `?preview=<token>` se ve el sitio entero.
