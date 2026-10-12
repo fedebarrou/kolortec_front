@@ -5,12 +5,12 @@
 
 ## En producción
 
-- **Código desplegado:** `a597feb` (main), el 2026-10-12 20:31Z, deploy 20261012h: «Saltar» del scrolltelling vuelve
-  a tener clic (el escenario aísla sus capas con `isolation: isolate`). Contenedor `kolortec_web`, imagen `eb59cf7802fa`.
-  Verificado desde afuera: «Saltar» queda arriba en `elementFromPoint` y el clic aterriza al final de la historia
-  (scrollY 3668 = top 68 + alto 3600). Rollback: imagen `kolortec-web:pre-20261012h` (`c40295ad6713`, = `023ffcc`) +
-  `/opt/kolortec.prev-20261012h`; script `rollback` en `/opt/tiendita/_upload/20261012h/remoto-20261012h.sh`.
-  Sin suite completa, por decisión de Fedev (hotfix). Bitácora: `tiendita-back/docs/BITACORA.md`.
+- **Código desplegado:** `5160a1e` (main), el 2026-10-12 22:35Z, deploy 20261012i (con «Tiendita para diseñadores», CON
+  suite completa por pedido de Fedev): los efectos nuevos del editor (motion, stagger, scroll reveal) se ven igual que en el store.
+  Contenedor `kolortec_web`, imagen `0cc97d00ad0a`. Afuera: `?preview` 200, chunk `HomePage-CHNHJnnU.js` con «Saltar» y `stagger`;
+  `kolortec.com.ar` sigue con el cartel. Cuenta: plan hasta 2027-09-28, `site_mode=external`, `mcp-addon` activo; Asistente IA
+  NO (plan `ai-addon` en `draft`, decide Fedev). Rollback: `kolortec-web:pre-20261012i` (`eb59cf7802fa`, = `a597feb`) +
+  `/opt/kolortec.prev-20261012i`; `FECHA=20261012i bash /opt/tiendita/_upload/20261012i/remoto.sh rollback` (vuelve los 4 árboles).
 - **Dominio:** `kolortec.com.ar` ya responde (200). Muestra el cartel **«Sitio en construcción»**
   porque la cuenta de kolortec en tiendita **no está publicada** (`published=false` en
   `/api/public/web-config`). Con `?preview=<token>` se ve el sitio entero.
