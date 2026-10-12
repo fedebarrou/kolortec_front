@@ -748,31 +748,36 @@ function ProductDetailPage() {
                 onMouseMove={handleHeroMouseMove}
                 onMouseLeave={handleHeroMouseLeave}
               >
-                <button
-                  type="button"
-                  className="block w-full cursor-zoom-in border-0 bg-transparent p-0"
-                  onClick={() => setGalleryLightboxIndex(activeImageIndex)}
-                  aria-label={`Abrir imagen principal de ${product.name}`}
-                >
-                  {/* data-cargada: hasta que la foto carga, el CSS le reserva un alto
-                      (aspect-ratio) para que la ficha no salte al aparecer (joan REG-001). */}
-                  <img
-                    key={galleryImages[activeImageIndex] || product.heroImage}
-                    src={galleryImages[activeImageIndex] || product.heroImage}
-                    alt={product.name}
-                    onLoad={(e) => { e.currentTarget.dataset.cargada = '1' }}
-                  />
-                </button>
-                {galleryImages.length > 1 ? (
-                  <>
-                    <button type="button" className="kt-marquee-arrow kt-marquee-arrow-prev kt-detail-arrow" onClick={() => pasarImagen(-1)} aria-label={t('productDetail.prevImage', 'Imagen anterior')}>
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-                    </button>
-                    <button type="button" className="kt-marquee-arrow kt-marquee-arrow-next kt-detail-arrow" onClick={() => pasarImagen(1)} aria-label={t('productDetail.nextImage', 'Imagen siguiente')}>
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
-                    </button>
-                  </>
-                ) : null}
+                {/* Envoltorio con el alto de la FOTO: la <figure> se estira al alto
+                    de la columna derecha (grid stretch) y las flechas, centradas
+                    contra ella, quedaban ~100px por debajo del medio de la imagen. */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="block w-full cursor-zoom-in border-0 bg-transparent p-0"
+                    onClick={() => setGalleryLightboxIndex(activeImageIndex)}
+                    aria-label={`Abrir imagen principal de ${product.name}`}
+                  >
+                    {/* data-cargada: hasta que la foto carga, el CSS le reserva un alto
+                        (aspect-ratio) para que la ficha no salte al aparecer (joan REG-001). */}
+                    <img
+                      key={galleryImages[activeImageIndex] || product.heroImage}
+                      src={galleryImages[activeImageIndex] || product.heroImage}
+                      alt={product.name}
+                      onLoad={(e) => { e.currentTarget.dataset.cargada = '1' }}
+                    />
+                  </button>
+                  {galleryImages.length > 1 ? (
+                    <>
+                      <button type="button" className="kt-marquee-arrow kt-marquee-arrow-prev kt-detail-arrow" onClick={() => pasarImagen(-1)} aria-label={t('productDetail.prevImage', 'Imagen anterior')}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+                      </button>
+                      <button type="button" className="kt-marquee-arrow kt-marquee-arrow-next kt-detail-arrow" onClick={() => pasarImagen(1)} aria-label={t('productDetail.nextImage', 'Imagen siguiente')}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+                      </button>
+                    </>
+                  ) : null}
+                </div>
                 <span ref={lensRef} className="kt-zoom-lens" aria-hidden="true" />
               </figure>
 
