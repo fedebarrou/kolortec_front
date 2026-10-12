@@ -5,10 +5,12 @@
 
 ## En producción
 
-- **Código desplegado:** `546aff7` (main), el 2026-10-12 07:57Z (antes `9eb95c9`). Contenedor `kolortec_web` en el VPS,
-  detrás de Caddy, imagen `910c03c2886f`. Runbook/rollback: `tiendita-back/docs/deploy/DEPLOY-KOLORTEC-20261012.md`.
-  Rollback disponible: imagen `kolortec-web:pre-20261012` + `/opt/kolortec.prev-20261012` (vuelve a `9eb95c9`); sigue
-  también `pre-20261011b` + `/opt/kolortec.prev-20261011b`. Desplegado sin suite completa: el repo no tiene suite.
+- **Código desplegado:** `a597feb` (main), el 2026-10-12 20:31Z, deploy 20261012h: «Saltar» del scrolltelling vuelve
+  a tener clic (el escenario aísla sus capas con `isolation: isolate`). Contenedor `kolortec_web`, imagen `eb59cf7802fa`.
+  Verificado desde afuera: «Saltar» queda arriba en `elementFromPoint` y el clic aterriza al final de la historia
+  (scrollY 3668 = top 68 + alto 3600). Rollback: imagen `kolortec-web:pre-20261012h` (`c40295ad6713`, = `023ffcc`) +
+  `/opt/kolortec.prev-20261012h`; script `rollback` en `/opt/tiendita/_upload/20261012h/remoto-20261012h.sh`.
+  Sin suite completa, por decisión de Fedev (hotfix). Bitácora: `tiendita-back/docs/BITACORA.md`.
 - **Dominio:** `kolortec.com.ar` ya responde (200). Muestra el cartel **«Sitio en construcción»**
   porque la cuenta de kolortec en tiendita **no está publicada** (`published=false` en
   `/api/public/web-config`). Con `?preview=<token>` se ve el sitio entero.
