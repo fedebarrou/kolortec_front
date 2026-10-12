@@ -11,10 +11,11 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Background, animProps } from "./Background";
-import { cssColor, cssFontFamily, cssNumber, cssZIndex, safeSrc } from "./cssSafe";
+import { cssColor, cssFontFamily, cssNumber, safeSrc } from "./cssSafe";
 import { ElementView, boxAt } from "./elements/ElementView";
 import { createSnapEngine } from "./snapEngine";
 import { SnapChrome } from "./SnapChrome";
+import { esFondo, estiloCapaEscena, partirCapas, porZ, zIndexCapa } from "./layers";
 import { createBreathing, parallaxFor } from "./snapIdle";
 import { SNAP_DEFAULTS, SCROLL_SIZE_COMPAT_DEFAULTS, scrollStepHeight, scrollStepPx, scrollBleedWidth, viewportScale } from "./scroll-contract";
 
@@ -214,17 +215,23 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
     if (time > to - exit) return (to - time) / exit;
     return 1;
   };
+  // Orden de capas (./layers.js): fondo de escena -> elementos de FONDO (z <= 0, la foto
+  // como elemento `media`) -> overlay -> scrim -> elementos de CONTENIDO (z >= 1). La
+  // oscuridad va arriba de la foto y abajo del texto. zIndex explicitos.
+  const { fondo, contenido } = partirCapas((slide.elements || []).filter((el) => !el.timing || (time >= el.timing.from && time <= el.timing.to)));
+  const pintar = (el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}><ElementView el={el} bp={breakpoint} reveal={reveal(el)} accentColor={cssColor(config.theme?.colors?.primary)} themePreset={themePreset} /></div>; };
   return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} />
     {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} /> : null}
-    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})` }} /> : null}
+    {fondo.map(pintar)}
+    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})`, ...estiloCapaEscena() }} /> : null}
     {/* El scrim es una propiedad del SLIDE, no del modo: hasta ahora el modo
         continuous no lo montaba y el preview del admin si, asi que una escena
         continuous con scrim se veia distinta en el editor que publicada. Se
         alinea hacia el editor —que es el que respeta la configuracion— porque
         hoy no hay ninguna escena continuous en produccion: riesgo cero. */}
-    {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} /> : null}
-    {[...(slide.elements || [])].filter((el) => !el.timing || (time >= el.timing.from && time <= el.timing.to)).sort((a, b) => a.z - b.z).map((el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: cssZIndex(el.z) }}><ElementView el={el} bp={breakpoint} reveal={reveal(el)} accentColor={cssColor(config.theme?.colors?.primary)} themePreset={themePreset} /></div>; })}
+    {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} style={estiloCapaEscena(true)} /> : null}
+    {contenido.map(pintar)}
   </div>;
 }
 
@@ -278,9 +285,10 @@ function ContinuousScrollRenderer({ config, breakpoint }) {
 
 // Scrim kolortec (4 capas fijas de legibilidad, ScrollytellingSection.jsx:435-444).
 // Geometría/gradientes: app/globals.css bloque "Hero Labs: SnapChrome".
-export function ScrollScrim({ breakpoint, variant }) {
+// `style` (opcional): el host le fija zIndex/pointerEvents en el orden de capas de la escena.
+export function ScrollScrim({ breakpoint, variant, style }) {
   return (
-    <div className={`scrolly-scrim${breakpoint === "mobile" ? " scrolly-scrim--mobile" : ""}${variant === "kolortec-light" ? " scrolly-scrim--light" : ""}`} aria-hidden="true">
+    <div className={`scrolly-scrim${breakpoint === "mobile" ? " scrolly-scrim--mobile" : ""}${variant === "kolortec-light" ? " scrolly-scrim--light" : ""}`} style={style} aria-hidden="true">
       <span className="scrolly-scrim-1" />
       <span className="scrolly-scrim-2" />
       <span className="scrolly-scrim-3" />
@@ -292,13 +300,32 @@ export function ScrollScrim({ breakpoint, variant }) {
 function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide = null, breatheG = 0, parallaxY = 0 }) {
   const themePreset = config.theme?.preset;
   const accentColor = cssColor(config.theme?.colors?.primary);
+  // Orden de capas (./layers.js): fondo de escena -> elementos de FONDO (z <= 0) -> overlay ->
+  // scrim -> elementos de CONTENIDO (z >= 1). zIndex explicitos; ver ./layers.js.
+  const nodos = porZ(slide.elements).map((el, i) => {
+      const box = boxAt(el, breakpoint);
+      // Capa de FONDO (z <= 0, p.ej. scrims/gradientes de legibilidad kolortec):
+      // persiste durante el tween — sin fade-out, sin remount, sin parallax.
+      const bgLayer = esFondo(el);
+      // Parallax sutil (kolortec): cada capa deriva con un factor distinto.
+      const drift = !bgLayer && parallaxY ? (0.6 + i * 0.35) * parallaxY : 0;
+      // snapState (Fase 1c): key ESTABLE (sin nonce) — la transición CSS
+      // pending→in anima en vez de desmontar/remontar por keyframe.
+      const snapState = bgLayer ? undefined : (arrived ? "in" : "pending");
+      return { fondo: bgLayer, nodo: <div key={el.id} style={{
+        position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el),
+        transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined,
+        pointerEvents: bgLayer ? "none" : (arrived ? "auto" : "none"),
+      }}><ElementView el={el} bp={breakpoint} snapState={snapState} accentColor={accentColor} themePreset={themePreset} /></div> };
+    });
   return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     {/* Breathing (idle, kolortec): el fondo pulsa a grayscale y vuelve al color. */}
     <div style={{ position: "absolute", inset: 0, filter: breatheG > 0.01 ? `grayscale(${breatheG.toFixed(3)})` : undefined }}>
       <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} scrubAlways />
     </div>
-    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})` }} /> : null}
-    {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} /> : null}
+    {nodos.filter((n) => n.fondo).map((n) => n.nodo)}
+    {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})`, ...estiloCapaEscena() }} /> : null}
+    {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={breakpoint} variant={slide.scrim} style={estiloCapaEscena(true)} /> : null}
     {/* Paso SALIENTE (Fase 1c, kolortec: bloques saliente/entrante montados a la
         vez): se mantiene ~700ms animando afuera (snapState="leaving") mientras
         el entrante hace lo mismo al revés — ver ElementView SNAP_TRANSITION. */}
@@ -308,26 +335,11 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
       .map((el, i) => {
         const box = boxAt(el, breakpoint);
         const drift = parallaxY ? (0.6 + i * 0.35) * parallaxY : 0;
-        return <div key={`leaving:${el.id}`} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: Math.max(cssNumber(el.z ?? 1, 1), 0), transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined }}>
+        return <div key={`leaving:${el.id}`} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el), transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined }}>
           <ElementView el={el} bp={breakpoint} snapState="leaving" accentColor={accentColor} themePreset={themePreset} />
         </div>;
       }) : null}
-    {[...(slide.elements || [])].sort((a, b) => a.z - b.z).map((el, i) => {
-      const box = boxAt(el, breakpoint);
-      // Capa de FONDO (z <= 0, p.ej. scrims/gradientes de legibilidad kolortec):
-      // persiste durante el tween — sin fade-out, sin remount, sin parallax.
-      const bgLayer = (el.z ?? 1) <= 0;
-      // Parallax sutil (kolortec): cada capa deriva con un factor distinto.
-      const drift = !bgLayer && parallaxY ? (0.6 + i * 0.35) * parallaxY : 0;
-      // snapState (Fase 1c): key ESTABLE (sin nonce) — la transición CSS
-      // pending→in anima en vez de desmontar/remontar por keyframe.
-      const snapState = bgLayer ? undefined : (arrived ? "in" : "pending");
-      return <div key={el.id} style={{
-        position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: Math.max(cssNumber(el.z ?? 1, 1), 0),
-        transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined,
-        pointerEvents: bgLayer ? "none" : (arrived ? "auto" : "none"),
-      }}><ElementView el={el} bp={breakpoint} snapState={snapState} accentColor={accentColor} themePreset={themePreset} /></div>;
-    })}
+    {nodos.filter((n) => !n.fondo).map((n) => n.nodo)}
   </div>;
 }
 

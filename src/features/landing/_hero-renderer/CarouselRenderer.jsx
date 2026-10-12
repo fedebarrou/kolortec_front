@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 import { Background } from './Background'
-import { cssAspect, cssColor, cssFontFamily, cssLength, cssNumber, cssPick, cssZIndex } from './cssSafe'
+import { cssAspect, cssColor, cssFontFamily, cssLength, cssNumber, cssPick } from './cssSafe'
 import { ElementView, boxAt } from './elements/ElementView'
 import { useCarousel } from './useCarousel'
+import { estiloCapaEscena, partirCapas, zIndexCapa } from './layers'
 import { ScrollScrim } from './ScrollRenderer'
 import { SIZE_COMPAT_DEFAULTS } from './scroll-contract'
 
@@ -28,23 +29,31 @@ function slideStyle(visible, i, activeIndex, isSlide) {
 }
 
 function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accentColor }) {
+  // Orden de capas (./layers.js): fondo de escena -> elementos de FONDO (z <= 0,
+  // la foto como elemento `media`) -> scrim -> overlay -> elementos de CONTENIDO
+  // (z >= 1). La oscuridad va arriba de la foto y abajo del texto. zIndex explicitos.
+  const { fondo, contenido } = partirCapas(slide.elements)
+  const pintar = (el) => {
+    const box = boxAt(el, bp)
+    return (
+      <div key={el.id} data-el data-id={el.id}
+        style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}>
+        <ElementView el={el} bp={bp} accentColor={accentColor} />
+      </div>
+    )
+  }
   return (
     <div style={slideStyle(visible, slideIndex, activeIndex, isSlide)} data-slide>
       <Background bg={slide.background} />
+      {fondo.map(pintar)}
       {/* Scrim de escena: el mismo campo `slide.scrim` del modo scroll. Antes
           el carrusel lo IGNORABA, asi que una escena con scrim se veia sin el.
-          Va despues del fondo y antes de los elementos, igual que en ScrollStage. */}
-      {slide.scrim && slide.scrim !== "none" ? <ScrollScrim breakpoint={bp} variant={slide.scrim} /> : null}
-      {slide.overlay > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})` }} />}
-      {[...slide.elements].sort((a, b) => a.z - b.z).map((el) => {
-        const box = boxAt(el, bp)
-        return (
-          <div key={el.id} data-el data-id={el.id}
-            style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: cssZIndex(el.z) }}>
-            <ElementView el={el} bp={bp} accentColor={accentColor} />
-          </div>
-        )
-      })}
+          Va arriba de los elementos de fondo y debajo del contenido. Ni el scrim
+          ni el overlay capturan el mouse: si no, taparian un elemento de fondo
+          (seleccionarlo, arrastrarlo, clickearlo). */}
+      {slide.scrim && slide.scrim !== 'none' ? <ScrollScrim breakpoint={bp} variant={slide.scrim} style={estiloCapaEscena()} /> : null}
+      {slide.overlay > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})`, ...estiloCapaEscena(true) }} />}
+      {contenido.map(pintar)}
     </div>
   )
 }
