@@ -38,7 +38,7 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
     return (
       <div key={el.id} data-el data-id={el.id}
         style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}>
-        <ElementView el={el} bp={bp} accentColor={accentColor} />
+        <ElementView el={el} bp={bp} accentColor={accentColor} active={visible} />
       </div>
     )
   }

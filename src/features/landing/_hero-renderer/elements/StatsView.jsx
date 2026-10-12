@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { cqw } from '../responsive'
 import { typoStyle } from './typo'
 import { cssColor, cssColorAlpha, cssPick } from '../cssSafe'
+import { estiloEscalonado } from './stagger'
 
 const cross = { left: 'flex-start', center: 'center', right: 'flex-end' }
 const BACKDROP = 'radial-gradient(ellipse 56% 54% at 50% 50%, rgba(8,4,20,.70) 0%, rgba(8,4,20,.44) 46%, rgba(8,4,20,0) 76%)'
@@ -31,7 +32,7 @@ function formatCount(raw, r) {
   return `${p.prefix}${s}${p.suffix}`
 }
 
-export function StatsView({ p, reveal }) {
+export function StatsView({ p, reveal, escalonado }) {
   const visible = (reveal ?? 1) > 0.02
   // `anim` es el avance de la animación (lo escribe sólo el rAF y el cleanup que
   // lo rebobina); el avance mostrado se DERIVA: sin countUp = 1, oculto = 0.
@@ -68,7 +69,7 @@ export function StatsView({ p, reveal }) {
           <span aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '128%', height: '210%', background: BACKDROP, filter: 'blur(9px)', zIndex: 0, pointerEvents: 'none' }} />
         )}
         {p.items.map((it, i) => (
-          <div key={i} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? (cssColorAlpha(p.color, '59') ? `1px solid ${cssColorAlpha(p.color, '59')}` : undefined) : undefined }}>
+          <div key={i} data-hero-anim={escalonado ? '' : undefined} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? (cssColorAlpha(p.color, '59') ? `1px solid ${cssColorAlpha(p.color, '59')}` : undefined) : undefined, ...estiloEscalonado(escalonado, i) }}>
             <span style={{ ...numTypo, textShadow: p.glow ? NUM_GLOW : '0 2px 18px rgba(0,0,0,.45)' }}>
               {shown(it.value)}
             </span>
