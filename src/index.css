@@ -1072,6 +1072,13 @@ html {
     display: block;
   }
 
+  /* Flechas de la foto principal: mismo botón que las de destacados, pero
+     siempre visibles (en celular no hay hover que las haga aparecer) y por
+     encima de la lupa (z 6) y del degradé del borde derecho. */
+  .kt-detail-arrow {
+    z-index: 7;
+  }
+
   .kt-detail-image img:not([data-cargada]) {
     aspect-ratio: 4 / 5;
   }

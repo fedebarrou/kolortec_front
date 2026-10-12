@@ -174,6 +174,11 @@ function ProductDetailPage() {
     const fig = heroImageRef.current
     const lens = lensRef.current
     if (!fig || !lens) return
+    // Sobre las flechas no hay lupa: taparía el botón que se está por tocar.
+    if (event.target.closest?.('.kt-detail-arrow')) {
+      lens.style.opacity = '0'
+      return
+    }
     const img = fig.querySelector('img')
     if (!img) return
     const rect = fig.getBoundingClientRect()
@@ -520,6 +525,14 @@ function ProductDetailPage() {
     centrarMiniatura(index)
   }
 
+  // Flechas de la foto principal (pedido del cliente, oct-2026). Dan la vuelta:
+  // desde la última, «siguiente» vuelve a la portada.
+  const pasarImagen = (paso) => {
+    const total = galleryImages.length
+    if (total < 2) return
+    elegirImagen((activeImageIndex + paso + total) % total)
+  }
+
   const goToSection = (id) => {
     const node = document.getElementById(id)
     if (!node) return
@@ -750,6 +763,16 @@ function ProductDetailPage() {
                     onLoad={(e) => { e.currentTarget.dataset.cargada = '1' }}
                   />
                 </button>
+                {galleryImages.length > 1 ? (
+                  <>
+                    <button type="button" className="kt-marquee-arrow kt-marquee-arrow-prev kt-detail-arrow" onClick={() => pasarImagen(-1)} aria-label={t('productDetail.prevImage', 'Imagen anterior')}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+                    </button>
+                    <button type="button" className="kt-marquee-arrow kt-marquee-arrow-next kt-detail-arrow" onClick={() => pasarImagen(1)} aria-label={t('productDetail.nextImage', 'Imagen siguiente')}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </>
+                ) : null}
                 <span ref={lensRef} className="kt-zoom-lens" aria-hidden="true" />
               </figure>
 
@@ -828,14 +851,18 @@ function ProductDetailPage() {
                         {/* REDONDAS, sin fondo ni borde: sólo border-radius sobre
                             la imagen (pedido del cliente, oct-2026). Antes iban en un
                             cuadrado con fondo y borde para no recortar logos de forma
-                            libre; si se carga un logotipo apaisado, el círculo le
-                            come las puntas: conviene subirlo ya cuadrado. */}
+                            libre. `contain` y no `cover`: los íconos llegan
+                            apaisados (160×90) y `cover` se quedaba con el centro
+                            cuadrado, cortando la lamparita y las flechas, así que
+                            se veían corridos. Ahora entra la imagen entera,
+                            centrada, sobre negro (el mismo fondo del ícono). Una
+                            imagen cuadrada sigue llenando el círculo igual que antes. */}
                         {inn.image ? (
                           <img
                             src={inn.image}
                             alt=""
                             loading="lazy"
-                            className="h-14 w-14 shrink-0 rounded-full object-cover"
+                            className="h-14 w-14 shrink-0 rounded-full bg-black object-contain object-center"
                           />
                         ) : (
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
