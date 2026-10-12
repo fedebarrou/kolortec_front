@@ -5,10 +5,10 @@
 
 ## En producción
 
-- **Código desplegado:** `9eb95c9` (main), el 2026-10-11 20:29Z (antes `1117dbc`). Contenedor `kolortec_web` en el VPS,
-  detrás de Caddy. Runbook/rollback (secciones «20261011b»): `tiendita-back/docs/deploy/DEPLOY-KOLORTEC-20261011.md`.
-  Rollback disponible: imagen `kolortec-web:pre-20261011b` + `/opt/kolortec.prev-20261011b`. Las copias viejas
-  (`pre-*` / `prev-*` anteriores) se borraron el mismo día a pedido de Fede.
+- **Código desplegado:** `546aff7` (main), el 2026-10-12 07:57Z (antes `9eb95c9`). Contenedor `kolortec_web` en el VPS,
+  detrás de Caddy, imagen `910c03c2886f`. Runbook/rollback: `tiendita-back/docs/deploy/DEPLOY-KOLORTEC-20261012.md`.
+  Rollback disponible: imagen `kolortec-web:pre-20261012` + `/opt/kolortec.prev-20261012` (vuelve a `9eb95c9`); sigue
+  también `pre-20261011b` + `/opt/kolortec.prev-20261011b`. Desplegado sin suite completa: el repo no tiene suite.
 - **Dominio:** `kolortec.com.ar` ya responde (200). Muestra el cartel **«Sitio en construcción»**
   porque la cuenta de kolortec en tiendita **no está publicada** (`published=false` en
   `/api/public/web-config`). Con `?preview=<token>` se ve el sitio entero.
