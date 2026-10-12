@@ -19,6 +19,7 @@ import ProductCard from '../../catalog/components/ProductCard'
 import ProductBlogs from '../components/ProductBlogs'
 import ProductReviews from '../components/ProductReviews'
 import ReferenceMaterial from '../components/ReferenceMaterial'
+import InnovacionIcono from '../components/InnovacionIcono'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
@@ -853,22 +854,11 @@ function ProductDetailPage() {
                         el tenant cargue la quinta, desaparecía en silencio. */}
                     {product.innovations.map((inn) => (
                       <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
-                        {/* REDONDAS, sin fondo ni borde: sólo border-radius sobre
-                            la imagen (pedido del cliente, oct-2026). Antes iban en un
-                            cuadrado con fondo y borde para no recortar logos de forma
-                            libre. `contain` y no `cover`: los íconos llegan
-                            apaisados (160×90) y `cover` se quedaba con el centro
-                            cuadrado, cortando la lamparita y las flechas, así que
-                            se veían corridos. Ahora entra la imagen entera,
-                            centrada, sobre negro (el mismo fondo del ícono). Una
-                            imagen cuadrada sigue llenando el círculo igual que antes. */}
+                        {/* REDONDAS (pedido del cliente, oct-2026) y como ÍCONO: entera,
+                            centrada y del mismo tamaño que las demás, suba lo que
+                            suba el cliente. El encuadre lo hace InnovacionIcono. */}
                         {inn.image ? (
-                          <img
-                            src={inn.image}
-                            alt=""
-                            loading="lazy"
-                            className="h-14 w-14 shrink-0 rounded-full bg-black object-contain object-center"
-                          />
+                          <InnovacionIcono src={inn.image} />
                         ) : (
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
                         )}
