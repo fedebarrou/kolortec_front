@@ -79,5 +79,17 @@ for (const c of COPIAS.slice(1)) {
   lee(`${c.dir}/layers.js`) === base ? ok(`layers.js ${c.n} idéntico al de kolortec`) : falla(`layers.js ${c.n} DIFIERE de kolortec`);
 }
 
+// ── (d) el escenario de scroll aísla sus capas (12-oct-2026) ───────────────────
+// Los zIndex de ./layers.js (hasta 1002+) tienen que quedar ADENTRO del escenario: si no, tapan el chrome de
+// afuera (Saltar, flechas: zIndex 5) y «Saltar» queda sin clic. Se cuida con `isolation: isolate` en su raíz.
+for (const c of COPIAS.slice(0, 1)) { // sólo la copia de ESTE repo: las otras se cuidan en su propio chequeo
+  const f = c.dir + "/" + (existsSync(c.dir + "/ScrollRenderer.jsx") ? "ScrollRenderer.jsx" : "ScrollStage.jsx");
+  if (!existsSync(f)) continue;
+  const txt = lee(f);
+  const raices = (txt.match(/overflow: ["']hidden["'],[^}]*background: cssColor\(config\.theme\?\.colors\?\.bg/g) || []);
+  const aisladas = raices.filter((r) => /isolation: ["']isolate["']/.test(r)).length;
+  raices.length && aisladas === raices.length ? ok(`${c.n}: ${aisladas} escenario(s) de scroll aislados`) : falla(`${c.n}: escenario de scroll SIN isolation (${aisladas}/${raices.length}) — tapa «Saltar»`);
+}
+
 console.log(fallas ? `\n${fallas} falla(s)` : "\nOK — el overlay y el scrim van arriba de la foto y abajo del contenido");
 process.exit(fallas ? 1 : 0);

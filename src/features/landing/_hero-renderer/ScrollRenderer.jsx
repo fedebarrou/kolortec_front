@@ -220,7 +220,9 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
   // oscuridad va arriba de la foto y abajo del texto. zIndex explicitos.
   const { fondo, contenido } = partirCapas((slide.elements || []).filter((el) => !el.timing || (time >= el.timing.from && time <= el.timing.to)));
   const pintar = (el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}><ElementView el={el} bp={breakpoint} reveal={reveal(el)} accentColor={cssColor(config.theme?.colors?.primary)} themePreset={themePreset} /></div>; };
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
+  // isolation: los zIndex altos de las capas (./layers.js, hasta 1002+) quedan ADENTRO del escenario y no tapan
+  // el chrome de afuera (Saltar, flechas: zIndex 5). Sin esto «Saltar» quedó sin clic (Kolortec, 12-oct-2026).
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} />
     {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} /> : null}
     {fondo.map(pintar)}
@@ -318,7 +320,7 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
         pointerEvents: bgLayer ? "none" : (arrived ? "auto" : "none"),
       }}><ElementView el={el} bp={breakpoint} snapState={snapState} accentColor={accentColor} themePreset={themePreset} /></div> };
     });
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     {/* Breathing (idle, kolortec): el fondo pulsa a grayscale y vuelve al color. */}
     <div style={{ position: "absolute", inset: 0, filter: breatheG > 0.01 ? `grayscale(${breatheG.toFixed(3)})` : undefined }}>
       <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} scrubAlways />
