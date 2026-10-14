@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFullBleed } from '../../../shared/hooks/useFullBleed'
 import ImageLightbox from '../../../shared/components/ImageLightbox'
-import { ASTERISCO_KOLORTEC } from '../../../shared/components/SelloKolortec'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
@@ -140,14 +139,17 @@ function FooterSection() {
 
       <div className="kt-footer-cols">
         <div className="kt-footer-brand">
-          {/* Logo vectorial (el JPEG tenía su propio fondo negro y se le veía
-              el recuadro contra el pie). */}
-          <div className="kt-footer-logo title-font" role="img" aria-label={t('a11y.logo', 'Logo de Kolortec')}>
-            KOLORTEC
-            <svg viewBox="-50 -50 100 100" aria-hidden="true">
-              <polygon points={ASTERISCO_KOLORTEC} />
-            </svg>
-          </div>
+          {/* El logo ORIGINAL (mismo asset que el header): la altura del asterisco y la
+              tipografía ya vienen ajustadas en el archivo. No recrearlo con texto + SVG. */}
+          <img
+            className="kt-footer-logo"
+            src="/assets/Grupo-Kolortec-1024x150.jpeg"
+            alt={t('a11y.logo', 'Logo de Kolortec')}
+            width="1024"
+            height="150"
+            loading="lazy"
+            decoding="async"
+          />
           <p>{t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}</p>
         </div>
 
