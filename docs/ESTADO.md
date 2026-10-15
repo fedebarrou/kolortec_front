@@ -1,11 +1,24 @@
-# Estado de kolortec — al 2026-10-03
+# Estado de kolortec — al 2026-10-14
 
 > Foto del día. Lo que cambia seguido (deploys, pendientes de producción) vive en tiendita:
 > `tiendita-back/docs/BITACORA.md` y `tiendita-back/docs/PENDIENTES-VPS.md`.
 
 ## En producción
 
-- **Código desplegado:** `5160a1e` (main), el 2026-10-12 22:35Z, deploy 20261012i (con «Tiendita para diseñadores», CON
+- **Código desplegado:** `fa3f0b4` (feat/efectos-disenadores), el 2026-10-15 00:38:15Z (14-oct 21:38 ART), deploy
+  **20261014a** (sólo `kolortec_web`; suite local `npm run lint` + `npx vite build` en verde, por pedido de Fedev): footer y
+  favicon con los logos originales (`Grupo-Kolortec-1024x150.jpeg`, `logo_minimal.png`), sello y placeholders con
+  `logo_minimal.png`, fuera `public/favicon.svg`. Imagen `b318835b71ce` (antes `0cc97d00ad0a`). tgz `git archive fa3f0b4` =
+  `39416fdd…e65359a` (local = remoto, `/opt/_upload/kolortec-20261014a/`); árbol nuevo vs viejo = exactamente
+  `git diff 5160a1e..fa3f0b4`, nada sólo-VPS. Afuera: `/?preview=x` 200 24710 B con `rel="icon" type="image/png"
+  href="/assets/logo_minimal.png"` y `index-ChDtjRRb.js` (227600 B, `kt-footer-logo` con `src` Grupo-Kolortec, 0
+  `favicon.svg`); `logo_minimal.png` 200 `image/png` 7126 B; `Grupo-Kolortec-1024x150.jpeg` 200 `image/jpeg` 12274 B;
+  `/favicon.svg` ahora 404; `/` y `www.` siguen con el cartel (1510 B). Caddyfile `e1c23681…1a1d1a` antes = después; restarts 0.
+  Ventana `ventas-vps` 00:35:48Z → vencida 00:50:48Z (cierre explícito 02:03:09Z), 5 usos, último 00:38:08Z.
+  **Rollback 20261014a:** `mv /opt/kolortec /opt/kolortec.fallido-20261014a && mv /opt/kolortec.prev-20261014a /opt/kolortec
+  && docker tag kolortec-web:pre-20261014a kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
+  --no-build kolortec_web` (`pre-20261014a` = `0cc97d00ad0a` = `5160a1e`; vuelve a pedir `index-BSa3_cDD.js`).
+- **Deploy anterior:** `5160a1e` (main), el 2026-10-12 22:35Z, deploy 20261012i (con «Tiendita para diseñadores», CON
   suite completa por pedido de Fedev): los efectos nuevos del editor (motion, stagger, scroll reveal) se ven igual que en el store.
   Contenedor `kolortec_web`, imagen `0cc97d00ad0a`. Afuera: `?preview` 200, chunk `HomePage-CHNHJnnU.js` con «Saltar» y `stagger`;
   `kolortec.com.ar` sigue con el cartel. Cuenta: plan hasta 2027-09-28, `site_mode=external`, `mcp-addon` activo; Asistente IA
