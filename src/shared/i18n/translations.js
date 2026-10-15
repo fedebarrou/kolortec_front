@@ -321,7 +321,7 @@ export const translations = {
     },
     footer: {
       about:
-        'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.',
+        'Professional lighting for live shows. In-house manufacturing, local technical support and spare parts in stock',
       productsTitle: 'Products',
       productsLinks: ['X-Series Floods', 'Precision Spots', 'Architectural Washes', 'Portable Gear'],
       companyTitle: 'Company',
@@ -935,7 +935,7 @@ export const translations = {
     },
     footer: {
       about:
-        'Líderes globales en soluciones de iluminación industrial de alto rendimiento. Potencia y performance para entornos exigentes.',
+        'Iluminación profesional para espectáculos. Fabricación propia, soporte técnico local y repuestos en stock',
       productsTitle: 'Productos',
       productsLinks: ['Floods Serie X', 'Spots de Precision', 'Washes Arquitecturales', 'Equipos Portatiles'],
       companyTitle: 'Empresa',

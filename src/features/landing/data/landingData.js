@@ -345,7 +345,7 @@ export const defaultLandingContent = {
   },
   footer: {
     about:
-      'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.',
+      'Professional lighting for live shows. In-house manufacturing, local technical support and spare parts in stock',
     columns: [
       { title: 'Products', links: ['X-Series Floods', 'Precision Spots', 'Architectural Washes'] },
       { title: 'Company', links: ['Our Story', 'Projects', 'Careers'] },

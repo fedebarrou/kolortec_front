@@ -150,7 +150,7 @@ function FooterSection() {
             loading="lazy"
             decoding="async"
           />
-          <p>{t('footer.about', 'Global leaders in high-output industrial lighting solutions. Built for power, designed for performance.')}</p>
+          <p>{t('footer.about', 'Professional lighting for live shows. In-house manufacturing, local technical support and spare parts in stock')}</p>
         </div>
 
         {contactos.length > 0 ? (
