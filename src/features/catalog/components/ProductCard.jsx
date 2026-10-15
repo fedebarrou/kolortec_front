@@ -154,7 +154,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
         ) : (
           // Placeholder cuando el producto no tiene imagen: bg negro + isotipo kolortec.
           <div className="absolute inset-0 flex items-center justify-center bg-deep-black">
-            <img src="/favicon.svg" alt="" aria-hidden="true" className="h-16 w-16 opacity-80" />
+            <img src="/assets/logo_minimal.png" alt="" aria-hidden="true" className="h-16 w-16 opacity-80 object-contain" />
           </div>
         )}
 

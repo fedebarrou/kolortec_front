@@ -42,7 +42,7 @@ function ProductBlogs({ posts }) {
                 />
               ) : (
                 <span className="flex h-full w-full items-center justify-center">
-                  <img src="/favicon.svg" alt="" aria-hidden="true" className="h-10 w-10 opacity-70" />
+                  <img src="/assets/logo_minimal.png" alt="" aria-hidden="true" className="h-10 w-10 opacity-70 object-contain" />
                 </span>
               )}
             </span>

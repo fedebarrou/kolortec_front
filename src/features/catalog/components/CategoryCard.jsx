@@ -34,7 +34,7 @@ function CategoryCard({ category, count }) {
         />
       ) : (
         <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center bg-deep-black">
-          <img src="/favicon.svg" alt="" className="h-12 w-12 opacity-30" />
+          <img src="/assets/logo_minimal.png" alt="" className="h-12 w-12 opacity-30 object-contain" />
         </span>
       )}
 

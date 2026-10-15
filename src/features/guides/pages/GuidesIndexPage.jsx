@@ -133,7 +133,7 @@ function GuidesIndexPage() {
                           'radial-gradient(ellipse 70% 90% at 50% 0%, rgba(244,223,51,0.10), transparent 70%), linear-gradient(160deg, #141414 0%, #0a0a0a 100%)',
                       }}
                     >
-                      <img src="/favicon.svg" alt="" aria-hidden="true" className="h-16 w-16 opacity-25" />
+                      <img src="/assets/logo_minimal.png" alt="" aria-hidden="true" className="h-16 w-16 opacity-25 object-contain" />
                     </span>
                   )}
                   <span

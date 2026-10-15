@@ -78,7 +78,7 @@ function Miniatura({ info }) {
   return (
     <span className="kt-rail-media">
       {src === null ? (
-        <img src="/favicon.svg" alt="" aria-hidden="true" className="h-10 w-10 opacity-70" />
+        <img src="/assets/logo_minimal.png" alt="" aria-hidden="true" className="h-10 w-10 opacity-70 object-contain" />
       ) : (
         <img
           src={src}
