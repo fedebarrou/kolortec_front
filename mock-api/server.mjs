@@ -1,5 +1,6 @@
 import http from 'node:http'
 import { defaultLandingContent } from '../src/features/landing/data/landingData.js'
+import { handlePublic } from './public-fixtures.mjs'
 
 const PORT = Number(process.env.PORT || 3000)
 
@@ -43,6 +44,8 @@ const server = http.createServer((req, res) => {
   }
 
   const url = new URL(req.url || '/', `http://${req.headers.host}`)
+  // API pública de tiendita simulada (galería de producto, marcas, productos) + sus archivos.
+  if (handlePublic(req, res, url, `http://${req.headers.host}`, sendJson)) return
   const handler = routes[url.pathname]
 
   if (!handler) {
@@ -53,6 +56,6 @@ const server = http.createServer((req, res) => {
   sendJson(res, 200, handler())
 })
 
-server.listen(PORT, () => {
+server.listen(PORT, '127.0.0.1', () => {
   console.log(`[mock-api] listening on http://localhost:${PORT}`)
 })

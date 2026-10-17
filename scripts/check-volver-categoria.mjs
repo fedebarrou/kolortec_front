@@ -32,6 +32,8 @@ const PRODUCTOS = Array.from({ length: 16 }, (_, i) => ({
   variantes: [],
 }))
 
+const HOST_PROD = /soytiendita\.store|tiendita\.com\.ar/
+const prodLeak = []
 const fallas = []
 const ok = (cond, msg) => {
   console.log(`${cond ? 'OK  ' : 'FALLA'} ${msg}`)
@@ -49,6 +51,19 @@ async function nuevaPagina(browser) {
   await page.setRequestInterception(true)
   page.on('request', (req) => {
     const url = req.url()
+    // Guarda contra producción (REG-002): el vite de :5288 apunta a api.soytiendita.store. Lo que NO sea la API
+    // pública interceptada y vaya a esos hosts se ABORTA y se cuenta; con PROD_LEAK > 0 el check falla.
+    // El traductor (translate.soytiendita.store) también es de producción: se contesta 503 desde acá y la ficha
+    // cae a su texto original. No sale nada hacia afuera.
+    if (/^https:\/\/translate\.soytiendita\.store\//.test(url)) {
+      const h = { 'Access-Control-Allow-Origin': req.headers().origin || '*' }
+      if (req.method() === 'OPTIONS') return req.respond({ status: 204, headers: { ...h, 'Access-Control-Allow-Headers': 'Content-Type' } })
+      return req.respond({ status: 503, headers: h, contentType: 'application/json', body: '{}' })
+    }
+    if (!/\/api\/public\//.test(url) && HOST_PROD.test(url)) {
+      prodLeak.push(url)
+      return req.abort()
+    }
     if (!/\/api\/public\//.test(url)) return req.continue()
     const headers = {
       'Access-Control-Allow-Origin': req.headers().origin || '*',
@@ -193,6 +208,9 @@ try {
 } finally {
   await browser.close()
 }
+
+console.log(`\nPROD_LEAK ${prodLeak.length}${prodLeak.length ? ` → ${[...new Set(prodLeak)].join(', ')}` : ''}`)
+if (prodLeak.length) fallas.push(`PROD_LEAK ${prodLeak.length}: salieron pedidos hacia producción`)
 
 if (fallas.length) {
   console.error(`\n${fallas.length} falla(s).`)

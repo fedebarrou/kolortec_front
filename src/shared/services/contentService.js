@@ -19,6 +19,7 @@ import { DEMO_MODE } from '../../config.js'
 import { normalizeScrollDesign } from '../../features/landing/_hero-renderer/scroll-contract.js'
 import { safeSrc } from '../../features/landing/_hero-renderer/cssSafe.js'
 import { setProtectedTermsLoader } from './dynamicTranslationService.js'
+import { normalizarEscala } from '../utils/marcas-tamano.js'
 
 // Valores admitidos de `slide.scrim`. 'kolortec' = 4 capas NEGRAS (look original);
 // 'kolortec-light' = las mismas capas en crema, para escenas sobre fondo claro.
@@ -454,6 +455,9 @@ function mapMarcasToClientLogos(raw) {
       name: m.nombre,
       logo: m.logo_url || null,
       link: m.link || null,
+      // Ajuste por marca (0,70–1,40; falta/basura → 1). PartnersStrip lo aplica con
+      // medirLogo(): el mismo número que se ve en la tienda de tiendita.
+      escala: normalizarEscala(m.escala),
       // Keep shapes undefined so the FooterSection can branch on logo presence
     }))
 }
@@ -1171,6 +1175,38 @@ export async function getProductBlogs(productId) {
     null,
   )
   return mapBlogToGuides(raw) || []
+}
+
+/**
+ * getProductMedia(productId)
+ * Fotos y videos ASOCIADOS a un producto (trabajos reales con ese equipo, la
+ * sección «En obra» de la ficha): GET /public/galeria?producto_id=X →
+ * [{ id, tipo: 'imagen'|'video', url, titulo, destacado }], ya ordenada por el back.
+ * Es OTRO path que /public/galeria (la galería del footer): tiene su propia entrada
+ * de cache. Sin media asociada, o si falla el pedido → [] y la ficha no dibuja la
+ * sección. NO toca la galería principal del producto (`media` de /public/productos)
+ * ni su video.
+ *
+ * Forma de salida: { id, type: 'image'|'video', url, title, featured }. Se descartan
+ * ítems sin url o de un tipo desconocido; se respeta el orden del back.
+ */
+export async function getProductMedia(productId) {
+  if (!productId) return []
+  const raw = await fetchWithFallback(
+    `/public/galeria?producto_id=${encodeURIComponent(productId)}`,
+    null,
+  )
+  const list = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : []
+  return list
+    // Sólo http(s) o rutas del propio sitio: un `javascript:` o `data:` que venga de la API no llega al DOM (sekh SEC-001).
+    .filter((m) => m && typeof m.url === 'string' && /^(https?:\/\/|\/(?!\/))/i.test(m.url) && (m.tipo === 'imagen' || m.tipo === 'video'))
+    .map((m, i) => ({
+      id: m.id ?? `m${i}`,
+      type: m.tipo === 'video' ? 'video' : 'image',
+      url: m.url,
+      title: typeof m.titulo === 'string' ? m.titulo.trim() : '',
+      featured: Boolean(m.destacado),
+    }))
 }
 
 // ---------------------------------------------------------------------------

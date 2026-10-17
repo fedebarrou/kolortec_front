@@ -111,6 +111,10 @@ html {
        las fichas y cards). Existen para que los componentes nuevos (lengüetas de
        presentación, kits 06-oct) usen nombre y no un hex más. */
     --line2: #2a2a2a;
+    /* Borde de CONTROL (chip inactivo, etc.): --line/--line2 son bordes decorativos de tarjeta
+       (1,2:1 sobre --bg) y un control cuyo único contorno es ése no se ve (WCAG 1.4.11 pide 3:1).
+       #6b6b6b = 3,8:1 sobre #050505. scripts/check-media.mjs lo mide. */
+    --line-control: #6b6b6b;
     --ink: #f5f5f5;
     --muted: #a0a0a0;
     --soft: #aeb2ba;
@@ -597,10 +601,10 @@ html {
   /* El logo REAL de la marca (marcas.logo_url de la API). En escala de grises, se
      colorea al hover: una tira de logos ajenos no puede competirle al amarillo de
      la marca. .kt-clientlogo-mark queda como fallback de la data demo (shapes). */
+  /* Ancho y alto los pone PartnersStrip (medirLogo: igualado por área × escala de la
+     marca). Ya no hay 72px fijos ni tope de 266px: los topes viven en la función. */
   .kt-clientlogo-img {
     width: auto;
-    height: 72px;
-    max-width: 266px;
     object-fit: contain;
     flex-shrink: 0;
     filter: grayscale(1) brightness(1.7);
@@ -1465,6 +1469,299 @@ html {
   .kt-detail-shell-short {
     content-visibility: visible;
     contain-intrinsic-size: auto;
+  }
+
+  /* ───────────────────────── «En obra» · media asociada al producto ─────────────────────────
+     Mockup C congelado: docs/diseno/mockups/2026-10-17-media-producto/c.html (decisión en
+     docs/diseno/DECISIONES-VISUALES.md). Piso tipográfico 12px. Colores = tokens de :root. */
+  .kt-media {
+    --kt-media-cols: 4;
+    --kt-media-ratio: 4 / 3;
+    --kt-media-gap: 16px;
+    --kt-media-radius: 8px;
+  }
+
+  .kt-media-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .kt-media-chip {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border: 1px solid var(--line-control);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--soft);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 180ms var(--ease-smooth), color 180ms var(--ease-smooth);
+  }
+
+  .kt-media-chip:hover { color: var(--ink); border-color: var(--soft); }
+  .kt-media-chip[aria-pressed='true'] { border-color: var(--primary); color: var(--primary); }
+  .kt-media-chip:focus-visible,
+  .kt-media-item:focus-visible,
+  .kt-media-more:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  .kt-media-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--kt-media-cols), minmax(0, 1fr));
+    gap: var(--kt-media-gap);
+    margin-top: 20px;
+  }
+
+  .kt-media-card { min-width: 0; }
+
+  .kt-media-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--kt-media-ratio);
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    border-radius: var(--kt-media-radius);
+    background: #000;
+    cursor: zoom-in;
+    text-align: left;
+  }
+
+  .kt-media-item img,
+  .kt-media-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 500ms var(--ease-smooth);
+  }
+
+  .kt-media-item:hover img,
+  .kt-media-item:hover video { transform: scale(1.04); }
+
+  .kt-media-badge {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(10, 10, 10, 0.82);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .kt-media-badge svg { width: 12px; height: 12px; color: var(--primary); }
+
+  .kt-media-play {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    margin: auto;
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+  }
+
+  .kt-media-play svg { width: 22px; height: 22px; margin-left: 3px; }
+
+  .kt-media-caption {
+    margin: 10px 2px 0;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #e8e8e8;
+  }
+
+  .kt-media-more { display: none; }
+
+  @media (max-width: 860px) {
+    .kt-media { --kt-media-cols: 2; --kt-media-gap: 10px; }
+    .kt-media-caption { font-size: 12px; }
+    /* Celular: 6 ítems y «Ver los N» (el botón sólo existe si hay más de 6). */
+    .kt-media-grid:not(.is-expanded) .kt-media-card:nth-child(n + 7) { display: none; }
+    .kt-media-more {
+      grid-column: span 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      border: 1px solid var(--line2);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .kt-media-more:hover { border-color: var(--primary); color: var(--primary); }
+  }
+
+  /* Visor: capa a pantalla completa con tira de miniaturas. */
+  .kt-media-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 1800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow: auto;
+    background: rgba(5, 5, 5, 0.94);
+  }
+
+  .kt-media-lb {
+    position: relative;
+    width: min(1200px, 100%);
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 56px 72px 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(5, 5, 5, 0.94);
+  }
+
+  .kt-media-stage {
+    position: relative;
+    width: min(100%, 860px);
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #000;
+    touch-action: pan-y;
+  }
+
+  .kt-media-stage img,
+  .kt-media-stage video { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  .kt-media-x,
+  .kt-media-arrow {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 180ms var(--ease-smooth), color 180ms var(--ease-smooth), border-color 180ms var(--ease-smooth);
+  }
+
+  .kt-media-x:hover,
+  .kt-media-arrow:hover { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+  .kt-media-x:focus-visible,
+  .kt-media-arrow:focus-visible,
+  .kt-media-thumb:focus-visible,
+  .kt-media-cta:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  .kt-media-x { position: absolute; right: 16px; top: 12px; width: 44px; height: 44px; background: transparent; }
+  .kt-media-x svg { width: 18px; height: 18px; }
+  .kt-media-arrow { position: absolute; top: 42%; width: 48px; height: 48px; background: rgba(0, 0, 0, 0.55); }
+  .kt-media-arrow svg { width: 20px; height: 20px; }
+  .kt-media-arrow.is-prev { left: 12px; }
+  .kt-media-arrow.is-next { right: 12px; }
+
+  .kt-media-title { margin: 0; font-size: 16px; font-weight: 700; text-align: center; }
+  .kt-media-count { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: var(--muted); }
+
+  /* «Consultar por este equipo» — rescatado de la opción B. Mismo botón que el CTA de la ficha. */
+  .kt-media-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 8px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: filter 180ms var(--ease-smooth);
+  }
+
+  .kt-media-cta:hover { filter: brightness(1.06); }
+  .kt-media-cta svg { width: 18px; height: 18px; }
+
+  .kt-media-strip {
+    display: flex;
+    gap: 8px;
+    max-width: 100%;
+    padding: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .kt-media-strip::-webkit-scrollbar { display: none; }
+
+  .kt-media-thumb {
+    position: relative;
+    flex: 0 0 96px;
+    height: 64px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 180ms var(--ease-smooth);
+  }
+
+  .kt-media-thumb:hover { opacity: 0.85; }
+  /* La miniatura ACTUAL se marca con un anillo INTERIOR (::after); el foco del teclado es el anillo
+     EXTERIOR (outline + offset 2px, regla de arriba). Antes los dos eran un outline de 2px primary y la
+     actual con foco no se distinguía de la actual sin foco (VIS-004). Con ambos se ven los dos anillos. */
+  .kt-media-thumb.is-on { opacity: 1; }
+  .kt-media-thumb.is-on::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--primary);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .kt-media-thumb img,
+  .kt-media-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .kt-media-thumb i {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+  }
+
+  .kt-media-thumb i svg { width: 9px; height: 9px; }
+
+  @media (max-width: 640px) {
+    .kt-media-viewer { padding: 16px 0; }
+    .kt-media-lb { padding: 56px 0 14px; border-radius: 0; border-inline: 0; }
+    .kt-media-arrow { display: none; }
+    .kt-media-thumb { flex-basis: 72px; height: 48px; }
   }
 
   .kt-section-reveal {

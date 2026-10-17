@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
+import { medirLogo, proporcionNatural } from '../../../shared/utils/marcas-tamano'
 
 /**
  * PartnersStrip — la tira de marcas que trabajan con Kolortec.
@@ -35,9 +36,40 @@ function renderShape(shape, index) {
   }
 }
 
+// Proporción natural ya medida por logo. La tira REPITE cada marca varias veces: la
+// primera copia que carga la anota y las demás nacen con la medida final, sin
+// saltar de tamaño.
+const proporciones = new Map()
+
+/**
+ * El logo ya no mide 72px de alto fijo: se iguala por ÁREA con medirLogo() (la misma
+ * fórmula que la tienda de tiendita, src/shared/utils/marcas-tamano.js) y se retoca
+ * con la `escala` de cada marca (0,70–1,40, por defecto 1). Hasta que la imagen
+ * carga no se conoce la proporción: se pinta a la altura base (72 × escala) y al
+ * cargar toma su medida final.
+ */
 function Mark({ logo }) {
-  if (logo.logo) {
-    return <img className="kt-clientlogo-img" src={logo.logo} alt="" loading="lazy" decoding="async" />
+  const src = logo.logo
+  const [proporcion, setProporcion] = useState(() => proporciones.get(src) ?? null)
+  if (src) {
+    const { w, h } = medirLogo({ proporcion, escala: logo.escala, contexto: 'tira' })
+    return (
+      <img
+        className="kt-clientlogo-img"
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        style={{ width: w ?? 'auto', height: h }}
+        onLoad={(e) => {
+          const r = proporcionNatural(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
+          if (r) {
+            proporciones.set(src, r)
+            setProporcion(r)
+          }
+        }}
+      />
+    )
   }
   if (logo.shapes?.length) {
     return (

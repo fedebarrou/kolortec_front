@@ -119,6 +119,12 @@ function HeroSection({ hero }) {
     // Oct-2026 (pedido del cliente): en MÓVIL ya no es pantalla completa sino
     // el 65% del alto. Sigue sin usar el alto fijo del modo Encabezado (la
     // franja de dos dedos de arriba), pero deja ver que hay más página abajo.
+    //
+    // ⚠ ESTE MARCO ESTÁ DECLARADO EN TIENDITA: appearance.hero_frame de la cuenta
+    // ({ gutter: 24, gutter_wide: 160, wide_from: 1024, max_width: null, mobile_height_vh: 65 })
+    // para que el editor del Hero Labs encuadre sobre esta misma caja. Si cambia el 65,
+    // o el --hero-gutter de index.css, cambia también ese dato; lo mide
+    // tiendita-front/scripts/check-hero-encuadre-publicado.mjs.
     const containerHeight = bp === 'mobile'
       ? 'calc(65svh / var(--kt-canvas-scale, 1))'
       : heroSizeMode(config.settings) === 'full'

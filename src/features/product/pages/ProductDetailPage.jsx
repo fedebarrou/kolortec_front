@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { trackEvent } from '../../../shared/services/tracking'
-import { getProductBlogs, getProductDetail, getSiteConfig } from '../../../shared/services/contentService'
+import { getProductBlogs, getProductDetail, getProductMedia, getSiteConfig } from '../../../shared/services/contentService'
 import {
   abrirArchivo,
   familiaDoc,
@@ -17,11 +17,13 @@ import { WHATSAPP_URL } from '../../../shared/components/SocialLinks'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
 import ProductBlogs from '../components/ProductBlogs'
+import ProductMedia from '../components/ProductMedia'
 import ProductReviews from '../components/ProductReviews'
 import ReferenceMaterial from '../components/ReferenceMaterial'
 import InnovacionIcono from '../components/InnovacionIcono'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
+import { useRevealSections } from '../../../shared/hooks/useRevealSections'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
 import { SITE } from '../../../shared/seo/Seo'
@@ -165,12 +167,27 @@ function ProductDetailPage() {
     return () => { mounted = false }
   }, [product?.id])
   const productBlogs = blogsByProduct.id && blogsByProduct.id === product?.id ? blogsByProduct.posts : []
+  // «En obra»: fotos y videos de trabajos reales asociados al producto
+  // (/public/galeria?producto_id=). Mismo patrón que las notas: el id va adentro del
+  // estado para descartar lo que no es de este producto; sin media → [] y no hay
+  // sección ni lengüeta.
+  const [mediaByProduct, setMediaByProduct] = useState({ id: null, items: [] })
+  useEffect(() => {
+    const productId = product?.id
+    if (!productId) return undefined
+    let mounted = true
+    getProductMedia(productId).then((items) => {
+      if (mounted) setMediaByProduct({ id: productId, items })
+    })
+    return () => { mounted = false }
+  }, [product?.id])
+  const productMedia = mediaByProduct.id && mediaByProduct.id === product?.id ? mediaByProduct.items : []
   // Relacionados: el carrusel se repite hasta tapar el ancho de pantalla (ver
   // useMarqueeFill). Con 10 productos y un monitor ancho, duplicar el set dejaba
   // media pista más angosta que el viewport y se veía el hueco girando.
   const relatedCount = product?.related?.length ?? 0
   const [relatedFillRef, relatedRepeats] = useMarqueeFill(relatedCount, 12)
-  const detailBodyRef = useRef(null)
+  const detailBodyRef = useRevealSections()
   const heroImageRef = useRef(null)
   const lensRef = useRef(null)
   // Sección a la que estamos yendo por un click de tab (el spy se calla hasta
@@ -255,6 +272,11 @@ function ProductDetailPage() {
   const presentacionElegida = presentaciones.find((o) => o.id === presentacionId) ?? presentaciones[0] ?? null
   const soloKit = presentaciones.length === 0 && !!product?.presentacion?.texto
   const etiquetaPresentacion = (o) => o.label ?? t('productDetail.loose', 'Suelto')
+  // Consulta por WhatsApp de ESTE producto (con su presentación): la usan el CTA de la
+  // barra de secciones y el botón «Consultar por este equipo» del visor de «En obra».
+  const consultaHref = product
+    ? `${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}${presentacionElegida ? ` (${presentacionElegida.label ?? 'Suelto'})` : soloKit ? ` (${product.presentacion.texto})` : ''}`)}`
+    : ''
   const precioMostrado = presentacionElegida ? presentacionElegida.price : product?.price
   const monedaMostrada = presentacionElegida ? presentacionElegida.moneda : product?.moneda
   // Flechas del radiogroup: mueve la selección y el foco a la lengüeta vecina.
@@ -325,11 +347,13 @@ function ProductDetailPage() {
     // #gallery no existe en el DOM y el tab llevaba a la nada.
     if (galleryImages.length > 1) list.push({ id: 'gallery', label: t('productDetail.tabs.gallery', 'Fotos') })
     if ((product?.videos?.length ?? 0) > 0) list.push({ id: 'video', label: t('productDetail.tabs.video', 'Video') })
+    // `nuevo`: la lengüeta se pinta con el color de marca (mockup C).
+    if (productMedia.length > 0) list.push({ id: 'media', label: t('productDetail.tabs.media', 'En obra'), nuevo: true })
     if ((product?.downloads?.length ?? 0) > 0) list.push({ id: 'downloads', label: t('productDetail.tabs.downloads', 'Descargas') })
     if ((product?.accessories?.length ?? 0) > 0) list.push({ id: 'accessories', label: t('productDetail.tabs.accessories', 'Accesorios') })
     if ((product?.technicalSpecs?.length ?? 0) > 0) list.push({ id: 'technical-specs', label: t('productDetail.tabs.technicalSpecs', 'Especificaciones') })
     return list
-  }, [t, product, galleryImages.length])
+  }, [t, product, galleryImages.length, productMedia.length])
 
   // Se MIDE la altura real de las dos barras en vez de hardcodear 74/88 + 40/44.
   // Los números fijos ya no coincidían con nada: en 1440 el lienzo tiene
@@ -434,48 +458,9 @@ function ProductDetailPage() {
     }
   }, [tabs])
 
-  useEffect(() => {
-    const scope = detailBodyRef.current
-    if (!scope) return undefined
-
-    const animatedNodes = Array.from(
-      scope.querySelectorAll('.kt-detail-anim, .kt-graphene-separator'),
-    )
-
-    if (animatedNodes.length === 0) return undefined
-
-    animatedNodes.forEach((node, index) => {
-      const delay = Math.min(index * 55, 280)
-      node.style.setProperty('--reveal-delay', `${delay}ms`)
-    })
-
-    const revealNode = (node) => {
-      if (node.classList.contains('is-visible')) return
-      node.classList.add('is-visible')
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
-          revealNode(entry.target)
-          observer.unobserve(entry.target)
-        })
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -14% 0px' },
-    )
-
-    animatedNodes.forEach((node) => observer.observe(node))
-
-    return () => {
-      observer.disconnect()
-    }
-    // productBlogs.length en las deps: "Notas relacionadas" se monta cuando resuelve
-    // SU propio fetch, después de este efecto. Sin volver a correr, esa sección nunca
-    // entraba al observer, se quedaba en opacity:0 para siempre y el bloque existía en
-    // el DOM pero no se veía. Va .length y no el array: el ternario que lo calcula
-    // devuelve un [] nuevo en cada render y colgaría el efecto en loop.
-  }, [product, productBlogs.length])
+  // Reveal de las secciones de la ficha (.kt-detail-anim). El hook engancha cada sección en
+  // cuanto se monta —«Video», «En obra», «Notas relacionadas» llegan con SU propio fetch, después
+  // del primer render—, así que ya no hay deps a mano que olvidar (VIS-001).
 
   // El filtro viejo era /software|firmware/i SOBRE EL LABEL, y los documentos
   // que carga el tenant se llaman "Ficha técnica…" y "Carta DMX…": no matcheaba
@@ -679,7 +664,7 @@ function ProductDetailPage() {
                 <button
                   key={tab.id}
                   type="button"
-                  className={`text-[12px] ${activeTab === tab.id ? 'is-active' : ''}`}
+                  className={`text-[12px] ${activeTab === tab.id ? 'is-active' : ''}${tab.nuevo ? ' [&:not(.is-active)]:text-primary' : ''}`}
                   aria-current={activeTab === tab.id ? 'true' : undefined}
                   onClick={() => {
                     setActiveTab(tab.id)
@@ -696,7 +681,7 @@ function ProductDetailPage() {
                  Estaba escrito acá a mano y era el relleno 55-5555: este botón
                  —el CTA de consulta de cada producto— linkeaba a un WhatsApp
                  inexistente en producción. */
-              href={`${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}${presentacionElegida ? ` (${presentacionElegida.label ?? 'Suelto'})` : soloKit ? ` (${product.presentacion.texto})` : ''}`)}`}
+              href={consultaHref}
               target="_blank"
               rel="noreferrer"
             >
@@ -743,7 +728,7 @@ function ProductDetailPage() {
                   goToSection(tab.id)
                 }}
                 className={`h-11 shrink-0 whitespace-nowrap border-b-2 text-[12px] font-bold uppercase tracking-[0.1em] transition ${
-                  activeTab === tab.id ? 'border-primary text-[#f4f7fb]' : 'border-transparent text-[#c6ccd7]'
+                  activeTab === tab.id ? 'border-primary text-[#f4f7fb]' : `border-transparent ${tab.nuevo ? 'text-primary' : 'text-[#c6ccd7]'}`
                 }`}
               >
                 {tab.label}
@@ -1031,6 +1016,14 @@ function ProductDetailPage() {
               })()}
             </section>
             </>
+            ) : null}
+
+            {/* «En obra»: pegada a «Video del producto». Sin media no se dibuja nada. */}
+            {productMedia.length > 0 ? (
+              <>
+              <div className="kt-graphene-separator" aria-hidden="true" />
+              <ProductMedia items={productMedia} productName={product.name} consultaHref={consultaHref} />
+              </>
             ) : null}
 
             {product.downloads.length > 0 ? (
