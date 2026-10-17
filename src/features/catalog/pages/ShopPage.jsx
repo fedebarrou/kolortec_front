@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigationType, useSearchParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import CategoryCard from '../components/CategoryCard'
 import CatalogFilterBar from '../components/CatalogFilterBar'
@@ -14,6 +14,7 @@ import {
   productMatchesFilters,
   syncFilterAxes,
 } from '../data/filters'
+import { useScrollRestoration } from '../../../shared/hooks/useScrollRestoration'
 
 // Grilla del catálogo: la MISMA densidad para productos y para categorías. Son el
 // mismo tipo de objeto (una foto cuadrada con un nombre) y estaban de a 1 por fila
@@ -21,6 +22,20 @@ import {
 // la grilla se quedaba clavada en 2 columnas.
 const GRID = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4'
 const GRID_FULL_ROW = 'col-span-2 lg:col-span-3 xl:col-span-4'
+
+// Los filtros viven en la URL (?categoria=a,b&etiqueta=x), no en un useState: al
+// abrir un producto filtrado y volver atrás, el estado local se perdía y la página
+// caía en la grilla de categorías sin filtros.
+const FILTER_KEYS = ['categoria', 'etiqueta']
+
+function filtersFromParams(params) {
+  const out = {}
+  FILTER_KEYS.forEach((key) => {
+    const ids = (params.get(key) || '').split(',').map((v) => v.trim()).filter(Boolean)
+    if (ids.length) out[key] = ids
+  })
+  return out
+}
 
 function ShopPage() {
   const { t } = useLanguage()
@@ -32,8 +47,24 @@ function ShopPage() {
   const [products, setProducts] = useState(null)
   const [categories, setCategories] = useState(null)
   const [catsAvailable, setCatsAvailable] = useState(true)
-  const [searchParams] = useSearchParams()
-  const [activeFilters, setActiveFilters] = useState({})
+  const [searchParams, setSearchParams] = useSearchParams()
+  const filtrosEnUrl = FILTER_KEYS.map((k) => searchParams.get(k) || '').join('|')
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- la firma de texto evita un objeto nuevo por render
+  const activeFilters = useMemo(() => filtersFromParams(searchParams), [filtrosEnUrl])
+  // Reemplaza la entrada (no la apila): «atrás» no recorre cada clic de filtro, y
+  // la URL que queda es la que se restaura al volver de una ficha.
+  const setActiveFilters = (next) => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev)
+      FILTER_KEYS.forEach((key) => {
+        const ids = next?.[key] ?? []
+        if (ids.length) params.set(key, ids.join(','))
+        else params.delete(key)
+      })
+      return params
+    }, { replace: true, preventScrollReset: true })
+  }
+  const navigationType = useNavigationType()
   const query = (searchParams.get('q') ?? '').trim().toLowerCase()
   const isSearching = query.length > 0
 
@@ -62,12 +93,16 @@ function ShopPage() {
     return () => { mounted = false }
   }, [])
 
+  // Arriba al entrar o al cambiar la búsqueda; al volver atrás (POP), no: manda el
+  // scroll guardado de esa entrada.
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' })
+    if (navigationType !== 'POP') window.scrollTo({ top: 0, behavior: 'auto' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sólo al cambiar la búsqueda
   }, [query])
 
   const catsLoading = categories === null
   const productsLoading = products === null
+  useScrollRestoration(!catsLoading && !productsLoading, query)
   const activeCount = countActiveFilters(activeFilters)
   const hasFilterBar = FILTER_AXES.length > 0
 

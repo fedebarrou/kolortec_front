@@ -3215,9 +3215,11 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
     min-width: 0;
   }
 
+  /* 23px de alto (era 2rem = 32px, ~28 % menos): el cliente lo veía muy grande
+     al lado del texto de marca (17-oct). Mismo alto en 1440 y en 390. */
   .kt-footer-logo {
     display: block;
-    height: 2rem;
+    height: 1.4375rem;
     width: auto;
     max-width: 100%;
     margin-bottom: 12px;

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigationType, useParams, useSearchParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import CatalogEmptyState from '../components/CatalogEmptyState'
 import { getShopProducts } from '../../../shared/services/contentService'
@@ -7,6 +7,7 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
 import { loadCategory, getCategories } from '../../../data/categories.js'
 import { productTagIds } from '../data/filters'
+import { useScrollRestoration } from '../../../shared/hooks/useScrollRestoration'
 
 // Misma densidad que /products: son el mismo objeto. Antes acá iban de a 1 por
 // fila en celular (cards de 342×428 → 5.800px de scroll con 13 productos).
@@ -28,9 +29,22 @@ function CategoryPage() {
     ? catState
     : { status: undefined, category: null }
 
-  const [tagState, setTagState] = useState({ slug: null, tag: 'all' })
-  const selectedTag = tagState.slug === categorySlug ? tagState.tag : 'all'
-  const setSelectedTag = (tag) => setTagState({ slug: categorySlug, tag })
+  // La etiqueta elegida vive en la URL (?etiqueta=rental), no en un useState: al
+  // entrar a una ficha y volver atrás, el estado local se perdía y la categoría
+  // aparecía sin el filtro que habías puesto. Cambiar de etiqueta REEMPLAZA la
+  // entrada del historial (replace) para que «atrás» no recorra cada clic de filtro.
+  // Pasar a otra categoría cambia el path y la query se va con él: arranca en 'all'.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tagDeLaUrl = searchParams.get('etiqueta') || 'all'
+  const setSelectedTag = (tag) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (tag === 'all') next.delete('etiqueta')
+      else next.set('etiqueta', tag)
+      return next
+    }, { replace: true, preventScrollReset: true })
+  }
+  const navigationType = useNavigationType()
 
   // Arranca vacío (sin flash de categorías default); se llenan con las del tenant al cargar.
   const [allCategories, setAllCategories] = useState([])
@@ -54,8 +68,11 @@ function CategoryPage() {
     return () => { mounted = false }
   }, [categorySlug])
 
+  // Arriba de todo al ENTRAR a una categoría; al volver atrás (POP) no: ahí manda
+  // el scroll guardado de esa entrada (useScrollRestoration, más abajo).
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' })
+    if (navigationType !== 'POP') window.scrollTo({ top: 0, behavior: 'auto' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sólo al cambiar de categoría
   }, [categorySlug])
 
   const categoryProducts = useMemo(
@@ -83,12 +100,17 @@ function CategoryPage() {
     return [...porId.entries()].map(([id, label]) => ({ id, label }))
   }, [categoryProducts])
 
+  // Una etiqueta de la URL que esta categoría no tiene (link viejo o escrito a mano) cae a «Todos»:
+  // si no, la lista quedaba vacía y ningún botón marcado.
+  const selectedTag = tagDeLaUrl !== 'all' && availableTags.some((tag) => tag.id === tagDeLaUrl) ? tagDeLaUrl : 'all'
+
   const filteredProducts = useMemo(() => {
     if (selectedTag === 'all') return categoryProducts
     return categoryProducts.filter((item) => productTagIds(item).includes(selectedTag))
   }, [categoryProducts, selectedTag])
 
   const productsLoading = products === null
+  useScrollRestoration(status === 'ok' && !productsLoading, categorySlug)
 
   if (status === undefined) {
     // Cargando la categoría desde la API — sección vacía para no parpadear "no encontrada".

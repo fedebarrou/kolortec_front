@@ -100,15 +100,27 @@ function ProductDetailPage() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
 
-  // Volver SIEMPRE al listado de categorias, no al historial. history.back() te
-  // devolvia a donde vinieras: desde el buscador del navbar, desde un link
-  // compartido o desde otra ficha, "volver" te sacaba a cualquier lado o
-  // directamente afuera del sitio. Desde una ficha de producto el destino que
-  // siempre tiene sentido es el catalogo.
-  const volver = () => navigate('/products')
   const { slug } = useParams()
   // Data-driven: cargamos el producto REAL desde la API de tiendita por su id/slug.
   const [product, setProduct] = useState(null)
+  // «Volver» de la ficha. Antes iba SIEMPRE a /products: desde una categoría te
+  // tiraba un nivel más atrás (al listado de categorías) y perdías la categoría, el
+  // filtro y el lugar en la grilla. Ahora:
+  //  - si llegaste navegando DENTRO del sitio (hay una entrada anterior de la app,
+  //    `history.state.idx > 0` del router), vuelve por el historial: la categoría con
+  //    su ?etiqueta= y su scroll, el buscador, o la ficha anterior — donde estabas;
+  //  - si entraste directo (link compartido, Google, pestaña nueva), no hay a dónde
+  //    «volver» dentro del sitio y history.back() te sacaría afuera: cae a la
+  //    categoría del producto, o al catálogo si no tiene.
+  const volver = () => {
+    const idx = typeof window !== 'undefined' ? window.history.state?.idx : 0
+    if (typeof idx === 'number' && idx > 0) {
+      navigate(-1)
+      return
+    }
+    const cat = product?.category ? String(product.category) : ''
+    navigate(cat ? `/products/${encodeURIComponent(cat)}` : '/products')
+  }
   // Clave (slug + reintento) de la última carga terminada: "cargando" se DERIVA
   // de si coincide con la clave actual, en vez de prender un flag desde el efecto.
   const [loadedKey, setLoadedKey] = useState(null)
