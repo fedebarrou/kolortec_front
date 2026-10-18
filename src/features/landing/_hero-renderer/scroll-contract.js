@@ -62,9 +62,10 @@ export function heroSizeMode(settings) {
  * espejo de SCROLL_SIZE_COMPAT_DEFAULTS en el admin (_schema/defaults.js).
  * Si se edita allá, editar acá.
  *
- *   scrollFullWidth  : el escenario se sale del contenedor y ocupa el ancho
- *                      real de la pantalla. Default FALSE = como venía,
- *                      hereda el ancho de quien lo contiene.
+ *   (RETIRADO 18-oct-2026, decisión de Fedev) scrollFullWidth: el escenario
+ *                      SIEMPRE se sale del contenedor y ocupa el ancho real de
+ *                      la pantalla. El valor guardado se IGNORA (los diseños
+ *                      viejos con `false` se ven a todo el ancho, sin migrar).
  *   scrollFullHeight : cada paso ocupa el alto real de la pantalla. Default
  *                      TRUE = como venía (el sticky siempre fue 100vh).
  *                      En false, cada paso mide scrollHeight{Desktop,Mobile}.
@@ -81,7 +82,6 @@ export function heroSizeMode(settings) {
  * de cada paso sobre un alto que no era el que se estaba pintando.
  */
 export const SCROLL_SIZE_COMPAT_DEFAULTS = {
-  scrollFullWidth: false,
   scrollFullHeight: true,
   scrollHeightDesktop: 720,
   scrollHeightMobile: 560,

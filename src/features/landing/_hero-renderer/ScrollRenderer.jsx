@@ -17,11 +17,13 @@ import { createSnapEngine } from "./snapEngine";
 import { SnapChrome } from "./SnapChrome";
 import { esFondo, estiloCapaEscena, partirCapas, porZ, zIndexCapa } from "./layers";
 import { createBreathing, parallaxFor } from "./snapIdle";
-import { SNAP_DEFAULTS, SCROLL_SIZE_COMPAT_DEFAULTS, scrollStepHeight, scrollStepPx, scrollBleedWidth, viewportScale } from "./scroll-contract";
+import { SNAP_DEFAULTS, scrollStepHeight, scrollStepPx, scrollBleedWidth, viewportScale } from "./scroll-contract";
 
 /**
  * Full-bleed del escenario: lo saca del contenedor y lo lleva al ancho real de
- * la pantalla. Se aplica sólo con `settings.scrollFullWidth` encendido.
+ * la pantalla. Se aplica SIEMPRE (18-oct-2026, decisión de Fedev: la historia
+ * ocupa todo el ancho; el ajuste `scrollFullWidth` se retiró y, si un diseño viejo
+ * lo trae guardado en false, se ignora).
  *
  * No usa `100vw` (incluye la barra de scroll: dejaría ~10px de overflow, que en
  * kolortec tapa el overflow-x:clip pero en el store sería una barra horizontal
@@ -249,7 +251,7 @@ function ContinuousScrollRenderer({ config, breakpoint }) {
   const ref = useRef(null);
   const [time, setTime] = useState(0);
   const stepH = scrollStepHeight(config.settings, breakpoint);
-  useBleed(config.settings?.scrollFullWidth ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollFullWidth, ref);
+  useBleed(true, ref);
   const slides = (config.slides || []).filter((slide) => !slide.hidden);
   const fallbackDuration = config.settings.scrollDurationSec || 8;
   const durations = slides.map((slide) => config.settings.stepDurations?.[slide.id] || fallbackDuration);
@@ -412,7 +414,7 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
   // los umbrales. Los dos salen del contrato para que no se separen: si el CSS
   // dice una cosa y el JS otra, los pasos disparan corridos.
   const stepH = scrollStepHeight(config.settings, breakpoint);
-  useBleed(config.settings?.scrollFullWidth ?? SCROLL_SIZE_COMPAT_DEFAULTS.scrollFullWidth, wrapRef);
+  useBleed(true, wrapRef);
   const pasoPx = () => scrollStepPx(config.settings, breakpoint);
 
   // Efectos idle (kolortec): breathing (grayscale pulsante) + parallax sutil.
