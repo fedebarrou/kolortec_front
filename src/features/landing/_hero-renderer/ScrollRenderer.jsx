@@ -102,6 +102,11 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
   const seeking = useRef(false);
   const range = trim || { start: 0, end: 1 };
 
+  // Si cambia la fuente (en el celular el bp pasa de desktop a mobile DESPUES del primer montaje
+  // y se cambia al urlMobile) el seek en vuelo se cancela y 'seeked' nunca llega: sin esto
+  // `seeking` queda trabado en true y el video no se mueve mas.
+  useEffect(() => { seeking.current = false; }, [url]);
+
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
@@ -129,7 +134,7 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
     if (video.readyState >= 1) apply();
     else video.addEventListener("loadedmetadata", apply, { once: true });
     return () => video.removeEventListener("loadedmetadata", apply);
-  }, [progress, range.start, range.end, reverse]);
+  }, [progress, range.start, range.end, reverse, url]);
 
   return <video ref={ref} src={safeSrc(url)} poster={safeSrc(poster)} muted playsInline preload="auto" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
 }
@@ -165,8 +170,11 @@ function ScrubFrames({ bg, progress, reverse, breakpoint }) {
     const p = reverse ? 1 - progress : progress;
     const image = images[Math.max(0, Math.min(images.length - 1, Math.round(p * (images.length - 1))))];
     const paint = () => { if (!image.naturalWidth) return; canvas.width = image.naturalWidth; canvas.height = image.naturalHeight; canvas.getContext("2d")?.drawImage(image, 0, 0); };
-    if (image.complete) paint(); else image.addEventListener("load", paint, { once: true });
-  }, [progress, reverse, urls.length]);
+    if (image.complete) { paint(); return }
+    image.addEventListener("load", paint, { once: true });
+    // Cleanup: un frame de la secuencia ANTERIOR que termina de bajar tarde no puede pisar el actual.
+    return () => image.removeEventListener("load", paint);
+  }, [progress, reverse, urls]); // `urls` y no su largo: mobile y PC suelen tener la misma cantidad y el cambio de secuencia no repintaba
   return <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
 }
 
