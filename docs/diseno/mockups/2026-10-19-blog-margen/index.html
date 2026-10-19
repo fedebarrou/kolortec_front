@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kolortec · margen del blog</title>
+<style>
+:root{--bg:#0b0b0c;--fg:#eceef1;--mut:#9aa1ab;--line:#2a2a2e;--acc:#f4df33}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,"Segoe UI",sans-serif}
+main{max-width:1500px;margin:0 auto;padding:32px 16px 80px}
+h1{font-size:28px;margin:0 0 6px}h2{font-size:22px;margin:56px 0 8px;border-top:1px solid var(--line);padding-top:28px}h3{font-size:17px;margin:32px 0 8px}
+p,li{color:var(--mut)}b{color:var(--fg)}code{background:#1a1a1d;padding:1px 5px;border-radius:4px;font-size:13px;color:var(--fg)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}
+.opt{margin:14px 0 26px}.tag{display:inline-block;background:var(--acc);color:#000;font-weight:800;padding:1px 8px;border-radius:4px;margin-right:8px}
+.what{margin:4px 0 8px;color:var(--fg)}
+.frame{max-height:80vh;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#000}
+.frame img{display:block;width:100%;height:auto}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;align-items:start}
+.pair .frame{max-height:none}.pair img{width:390px;max-width:100%;margin:0 auto}
+a.zoom{font-size:13px;color:var(--acc)}.note{border-left:3px solid var(--acc);padding:6px 12px;background:#141416}
+</style></head><body><main>
+<h1>Kolortec · margen del blog y «Seguí leyendo»</h1>
+<p>Capturas del sitio real (dev local <code>localhost:5288</code>, rama <code>fix/kolortec-blog</code> con lo staged), 19-oct-2026, Chrome + Playwright. Clic en cualquier captura para verla al 100 %. Esta página no elige: muestra.</p>
+
+<div class="note">
+<p><b>De dónde sale el ancho.</b> No hay un contenedor único: cada sección lleva su propio <code>lg:px-40</code> (160px desde 1024px), en 20 archivos. Además: <code>.kt-container</code> y <code>.kt-detail-tabs</code> (<code>padding-inline:10rem</code>, detalle de producto), <code>.kt-footer-gal / -cols / -legal</code> (<code>10rem + bleed</code>, en <code>src/index.css</code>), y en la home <code>lg:pl-[calc(10rem+…)]</code> / <code>lg:px-[calc(10rem+…)]</code> (Shop, Support, Join). El header ya está a <b>80px a 1440</b> (<code>lg:px-10 xl:px-20 2xl:px-40</code>: sube a 160 recién desde 1536px).</p>
+<p><b>Ojo:</b> en el código actual sólo el <b>detalle</b> de la nota usa <code>lg:px-20</code>. El <b>índice</b> <code>/soporte/guias</code> sigue en <code>lg:px-40</code> (160px, medido). Y el footer de la nota sigue a 160px.</p>
+</div>
+
+<h3>Márgenes medidos a 1440 (getBoundingClientRect + padding, izq / der), antes de inyectar</h3>
+<div class="tw"><table>
+<tr><th>Página</th><th>Header</th><th>Contenido</th><th>Footer</th><th>Con A inyectado</th></tr>
+<tr><td>Home</td><td>80 / 80</td><td>160 / 160 en todas las secciones (Shop: 160 / 620)</td><td>160 / 160</td><td>todo a 80 (Shop 80 / 620); alto 4682 → 4722</td></tr>
+<tr><td>Catálogo</td><td>80 / 80</td><td>160 / 160 (h1 en x=160)</td><td>160 / 160</td><td>80 / 80; alto 1869 → 1919</td></tr>
+<tr><td>Producto</td><td>80 / 80</td><td>160 / 160 (<code>.kt-container</code>)</td><td>160 / 160</td><td>80 / 80</td></tr>
+<tr><td>Blog índice</td><td>80 / 80</td><td>160 / 160 (h1 en x=160)</td><td>160 / 160</td><td>80 / 80</td></tr>
+<tr><td>Blog nota</td><td>80 / 80</td><td><b>80 / 80</b> (h1 en x=80)</td><td>160 / 160</td><td>contenido igual; footer a 80</td></tr>
+</table></div>
+<p>Sin scroll horizontal en ninguna captura (scrollWidth = 1440 y 390).</p>
+
+<h2>Decisión 1 · margen lateral</h2>
+<p><span class="tag">A</span>80px por lado en TODO el sitio: secciones, contenedor de producto y footer (CSS inyectado que pasa los gutters de 10rem a 5rem desde 1024px).<br>
+<span class="tag">B</span>Como está hoy: 80px sólo en el blog, 160px en el resto. En cada página, <b>B arriba</b> y <b>A abajo</b>.</p>
+<h3>Home <code>/</code></h3>
+<div class="opt"><p class="what"><span class="tag">B</span>Secciones a 160px; header a 80. <a class="zoom" href="shots/home-B-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/home-B-1440.jpg" target="_blank"><div class="frame"><img src="shots/home-B-1440.jpg" alt="Home, opción B, a 1440" loading="lazy"></div></a></div>
+<div class="opt"><p class="what"><span class="tag">A</span>Todas las secciones y el footer a 80px, alineados con el header. <a class="zoom" href="shots/home-A-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/home-A-1440.jpg" target="_blank"><div class="frame"><img src="shots/home-A-1440.jpg" alt="Home, opción A, a 1440" loading="lazy"></div></a></div>
+<h3>Catálogo (categoría) <code>/products/cabezas-moviles</code></h3>
+<div class="opt"><p class="what"><span class="tag">B</span>Título y grilla a 160px. <a class="zoom" href="shots/catalogo-B-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/catalogo-B-1440.jpg" target="_blank"><div class="frame"><img src="shots/catalogo-B-1440.jpg" alt="Catálogo (categoría), opción B, a 1440" loading="lazy"></div></a></div>
+<div class="opt"><p class="what"><span class="tag">A</span>Título y grilla a 80px: la grilla gana 160px de ancho. <a class="zoom" href="shots/catalogo-A-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/catalogo-A-1440.jpg" target="_blank"><div class="frame"><img src="shots/catalogo-A-1440.jpg" alt="Catálogo (categoría), opción A, a 1440" loading="lazy"></div></a></div>
+<h3>Producto <code>/producto/moving-spot-300</code></h3>
+<div class="opt"><p class="what"><span class="tag">B</span>Galería, ficha, relacionados y footer a 160px. <a class="zoom" href="shots/producto-B-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/producto-B-1440.jpg" target="_blank"><div class="frame"><img src="shots/producto-B-1440.jpg" alt="Producto, opción B, a 1440" loading="lazy"></div></a></div>
+<div class="opt"><p class="what"><span class="tag">A</span>Galería, ficha, relacionados y footer a 80px. <a class="zoom" href="shots/producto-A-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/producto-A-1440.jpg" target="_blank"><div class="frame"><img src="shots/producto-A-1440.jpg" alt="Producto, opción A, a 1440" loading="lazy"></div></a></div>
+<h3>Blog · índice <code>/soporte/guias</code></h3>
+<div class="opt"><p class="what"><span class="tag">B</span>Hoy el índice está a 160px (lg:px-40), no a 80. <a class="zoom" href="shots/blog-indice-B-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/blog-indice-B-1440.jpg" target="_blank"><div class="frame"><img src="shots/blog-indice-B-1440.jpg" alt="Blog · índice, opción B, a 1440" loading="lazy"></div></a></div>
+<div class="opt"><p class="what"><span class="tag">A</span>Índice a 80px, igual que la nota. <a class="zoom" href="shots/blog-indice-A-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/blog-indice-A-1440.jpg" target="_blank"><div class="frame"><img src="shots/blog-indice-A-1440.jpg" alt="Blog · índice, opción A, a 1440" loading="lazy"></div></a></div>
+<h3>Blog · nota <code>/soporte/guias/limpieza-optica</code></h3>
+<div class="opt"><p class="what"><span class="tag">B</span>Contenido a 80px; el footer sigue a 160px. <a class="zoom" href="shots/blog-nota-B-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/blog-nota-B-1440.jpg" target="_blank"><div class="frame"><img src="shots/blog-nota-B-1440.jpg" alt="Blog · nota, opción B, a 1440" loading="lazy"></div></a></div>
+<div class="opt"><p class="what"><span class="tag">A</span>Contenido igual; sólo el footer pasa a 80px. <a class="zoom" href="shots/blog-nota-A-1440.jpg" target="_blank">ver al 100 %</a></p><a href="shots/blog-nota-A-1440.jpg" target="_blank"><div class="frame"><img src="shots/blog-nota-A-1440.jpg" alt="Blog · nota, opción A, a 1440" loading="lazy"></div></a></div>
+
+<h2>Decisión 2 · «Seguí leyendo» en celular (390px)</h2>
+<p>Detalle de nota, página completa a 390. Alto medido de la sección «Seguí leyendo» (título + tarjetas) con las notas simuladas.</p>
+<div class="pair">
+<div><p class="what"><span class="tag">3</span>Tres tarjetas con foto apiladas, como hoy. Sección: <b>1139px</b> (tarjetas 344 + 344 + 322). Página: 3831px. <a class="zoom" href="shots/seguileyendo-3-390.jpg" target="_blank">ver al 100 %</a></p>
+<a href="shots/seguileyendo-3-390.jpg" target="_blank"><div class="frame"><img src="shots/seguileyendo-3-390.jpg" alt="Seguí leyendo con 3 tarjetas a 390px" loading="lazy"></div></a></div>
+<div><p class="what"><span class="tag">2</span>Dos tarjetas: la tercera oculta debajo de <code>sm</code> (CSS inyectado). Sección: <b>798px</b> (−341px). Página: 3489px. <a class="zoom" href="shots/seguileyendo-2-390.jpg" target="_blank">ver al 100 %</a></p>
+<a href="shots/seguileyendo-2-390.jpg" target="_blank"><div class="frame"><img src="shots/seguileyendo-2-390.jpg" alt="Seguí leyendo con 2 tarjetas a 390px" loading="lazy"></div></a></div>
+</div>
+<p>Entre <code>sm</code> y <code>lg</code> el código ya oculta la tercera (<code>sm:max-lg:hidden</code>). La opción 2 lleva eso también a menos de 640px.</p>
+
+<h2>Qué se simuló</h2>
+<ul>
+<li><b>Producción no se tocó.</b> <code>api.soytiendita.store</code> y <code>translate.soytiendita.store</code> bloqueados con <code>page.route</code> (0 pedidos). El dev server vivo apunta a la API <b>local</b> (<code>api.dev.tiendita.com.ar</code>); de ahí salen hero, galería del footer, marcas y web-config.</li>
+<li><b>Blog</b> (<code>/public/blog</code>): 4 notas inventadas con el contenido de las fixtures del QA; portadas = fotos de <code>public/assets</code>.</li>
+<li><b>Productos y categorías</b> (<code>/public/productos</code>, <code>/public/categorias</code>): la cuenta local tenía datos de otra tienda de prueba (bolsos, camperas). Se simularon 8 productos con nombres de iluminación y fotos de <code>public/assets/products</code>; esas fotos son de grampas y accesorios, así que nombre y foto no coinciden.</li>
+<li>Animaciones de entrada forzadas a visibles para que la captura salga completa, igual en A y en B.</li>
+</ul>
+</main></body></html>

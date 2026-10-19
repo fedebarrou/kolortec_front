@@ -4,6 +4,7 @@ import Seo, { SITE } from '../../../shared/seo/Seo'
 import { articleJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { getGuideBySlug, getGuides } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
+import GuideCard from '../components/GuideCard'
 
 // El adapter (contentService.parseBlogContent) aplana el contenido del blog a
 // texto plano: prefija "•  " a cada <li> y "⚠  " a cada <warn>. Renderizar eso
@@ -45,7 +46,7 @@ function GuideBody({ body }) {
       {blocks.map((block, i) => {
         if (block.type === 'list') {
           return (
-            <ul key={`l-${i}`} className="m-0 grid list-none gap-2 p-0 text-[1rem] leading-[1.6] text-[#b7bbc4]">
+            <ul key={`l-${i}`} className="m-0 grid max-w-[52ch] list-none gap-2 p-0 text-[1rem] leading-[1.6] text-[#b7bbc4] xl:max-w-[52rem] xl:text-[1.25rem] xl:leading-[1.7]">
               {block.items.map((item, j) => (
                 <li key={`${i}-${j}`} className="flex items-start gap-2.5">
                   <span aria-hidden="true" className="mt-[0.55em] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
@@ -59,7 +60,7 @@ function GuideBody({ body }) {
           return (
             <p
               key={`w-${i}`}
-              className="m-0 flex items-start gap-2 rounded-[8px] border border-[rgba(244,223,51,0.35)] bg-[rgba(244,223,51,0.08)] px-3 py-2 text-[0.92rem] leading-[1.5] text-[#e7d98a]"
+              className="m-0 flex items-start gap-2 rounded-[8px] border border-[rgba(244,223,51,0.35)] bg-[rgba(244,223,51,0.08)] px-3 py-2 text-[0.92rem] leading-[1.5] lg:px-4 lg:py-3 lg:text-[1.0625rem] lg:leading-[1.6] text-[#e7d98a]"
             >
               <span className="material-symbols-outlined text-[18px] leading-none text-primary" aria-hidden="true">
                 warning
@@ -69,7 +70,7 @@ function GuideBody({ body }) {
           )
         }
         return (
-          <p key={`p-${i}`} className="m-0 text-[1rem] leading-[1.65] text-[#b7bbc4]">
+          <p key={`p-${i}`} className="m-0 max-w-[52ch] text-[1rem] leading-[1.65] text-[#b7bbc4] xl:max-w-[52rem] xl:text-[1.25rem] xl:leading-[1.7]">
             {block.text}
           </p>
         )
@@ -122,7 +123,7 @@ function GuideDetailPage() {
 
   if (loading) {
     return (
-      <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
+      <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-10 xl:px-20 2xl:px-40">
         <div className="h-4 w-24 animate-pulse rounded bg-[#1a1a1a]" />
         <div className="mt-6 h-12 w-3/4 max-w-[60ch] animate-pulse rounded bg-[#141414]" />
         <div className="mt-4 h-4 w-2/3 max-w-[50ch] animate-pulse rounded bg-[#111]" />
@@ -132,7 +133,7 @@ function GuideDetailPage() {
 
   if (!guide) {
     return (
-      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-10 xl:px-20 2xl:px-40">
         <Seo
           title={t('seo.guideNotFound', 'Guía no encontrada · Kolortec')}
           description={t('seo.guideNotFoundDesc', 'Esta guía no existe o se cambió de URL. Volvé al índice de soporte para ver todas las guías técnicas.')}
@@ -167,7 +168,7 @@ function GuideDetailPage() {
   ])
 
   return (
-    <article className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-40">
+    <article className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-10 xl:px-20 2xl:px-40">
       <Seo
         title={guide.seoTitle || `${guide.title} · Kolortec`}
         description={guide.seoDescription || guide.excerpt}
@@ -214,24 +215,26 @@ function GuideDetailPage() {
         </figure>
       ) : null}
 
-      {/* Dos columnas a partir de lg. Antes el cuerpo era una unica columna de
-          `max-w-[78ch]` pegada a la izquierda: a 1440 iba de x=120 a x=691 y el
-          footer llegaba a x=1320, o sea 52% del viewport vacio. Ahora el aside
-          (ayuda + seguí leyendo) ocupa esa banda y queda pegajoso mientras se
-          lee. En mobile stackea, con el aside al final como estaba. */}
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-14">
-        {/* 78ch daba 93 caracteres por linea (el `ch` es el ancho del "0", no el
-            del glifo promedio). Medido carácter por carácter con un Range:
-            52ch da 73 en el cuerpo a 1rem, bajo el tope comodo de lectura
-            (~75). El excerpt del header va a 56ch porque es 1.05rem. */}
-        <div className="grid max-w-[52ch] gap-7">
+      {/* Dos columnas a partir de lg: cuerpo + aside de ayuda, pegajoso mientras
+          se lee. El gutter del blog sigue la MISMA escalera que el header
+          (24 · lg 40 · xl 80 · 2xl 160), así el h1 queda alineado con el logo en
+          todo ancho (ra VIS-002); antes eran 160px fijos y a 1440 el contenido
+          ocupaba 1120px. Es sólo el blog: el resto del sitio sigue en 160
+          (opción B de Fedev, 19-oct). En mobile stackea. */}
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-16">
+        {/* Debajo de lg el tope de lectura va en cada <p>/<ul> (GuideBody):
+            1rem con 52ch también en lg (sin el tope, a 1279 eran 102 caracteres: ra
+            VIS-007). Desde xl el texto sube a 1.25rem (interlineado 1,7) y llena
+            su columna hasta 52rem (opción B de Fedev, 19-oct): a 1440 son ~87
+            caracteres por linea y a 1920 el tope evita las 143 (ra VIS-001). */}
+        <div className="grid gap-7">
           {guide.sections.map((section, i) => (
             // El reveal va por SECCION, no en el contenedor: con las guias de
             // limpieza (27 viñetas) el contenedor mide varios viewports y el
             // `threshold: 0.12` del observer global puede no entrar nunca.
             <section key={`${section.heading || 'sec'}-${i}`} className="kt-reveal">
               {section.heading ? (
-                <h2 className="title-font m-0 mb-3 text-[1.4rem] leading-[1.2] text-white">
+                <h2 className="title-font m-0 mb-3 text-[1.4rem] leading-[1.2] text-white lg:text-[1.6rem]">
                   {section.heading}
                 </h2>
               ) : null}
@@ -252,29 +255,28 @@ function GuideDetailPage() {
               {guide.cta?.label || t('pages.guides.helpButton', 'Contactar soporte')}
             </Link>
           </aside>
-
-          {related.length > 0 ? (
-            <section className="border-t border-[#2a2a2a] pt-6 kt-reveal">
-              <h2 className="title-font m-0 mb-4 text-[1.25rem] leading-[1.05]">
-                {t('pages.guides.keepReading', 'Seguí leyendo')}<span className="text-primary">.</span>
-              </h2>
-              <ul className="grid gap-3 list-none m-0 p-0 sm:grid-cols-3 lg:grid-cols-1">
-                {related.map((g) => (
-                  <li key={g.slug} className="kt-reveal-item">
-                    <Link
-                      to={`/soporte/guias/${g.slug}`}
-                      className="block rounded-[10px] border border-[#2a2a2a] bg-[#0f0f10] p-4 transition hover:border-primary/50"
-                    >
-                      <strong className="title-font block text-[1rem] leading-[1.25] text-white">{g.title}</strong>
-                      <span className="mt-1 block text-[0.85rem] leading-[1.45] text-[#9ca3af]">{g.excerpt}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
         </div>
       </div>
+
+      {/* SEGUI LEYENDO, a todo el ancho y con foto. Antes era una columna de
+          tarjetas de texto dentro del aside; ahora son las mismas tarjetas del
+          indice (GuideCard) en una fila de tres. El reveal va por tarjeta, no en
+          el <ul> (mismo criterio que el indice). Entre sm y lg entran dos: la
+          tercera se oculta para no dejar una tarjeta huerfana. */}
+      {related.length > 0 ? (
+        <section className="mt-16 border-t border-[color:var(--line2)] pt-10 lg:mt-20" aria-labelledby="guide-keep-reading">
+          <h2 id="guide-keep-reading" className="title-font m-0 mb-6 text-[1.4rem] leading-[1.1] lg:text-[1.6rem]">
+            {t('pages.guides.keepReading', 'Seguí leyendo')}<span className="text-primary">.</span>
+          </h2>
+          <ul className="m-0 grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((g, i) => (
+              <li key={g.slug} className={`kt-reveal${i >= 2 ? ' sm:max-lg:hidden' : ''}`}>
+                <GuideCard guide={g} headingTag="h3" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </article>
   )
 }
