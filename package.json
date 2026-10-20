@@ -14,6 +14,7 @@
     "prerender": "node scripts/pre-render.mjs",
     "lint": "eslint .",
     "check:marcas": "node scripts/check-marcas-tamano.mjs",
+    "check:marcas-nombre": "node scripts/check-marcas-nombre.mjs",
     "check:media": "node scripts/check-media.mjs",
     "check:volver": "node scripts/check-volver-categoria.mjs",
     "preview": "vite preview",

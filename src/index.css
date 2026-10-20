@@ -570,7 +570,9 @@ html {
     align-items: center;
     justify-content: center;
     gap: 1.25rem;
-    height: 134px;
+    /* min-height y no height: con los logos +15 % (alto base 83) y la escala de una marca al máximo, el logo más
+       alto mide 151px y no entra en 134. Con min-height la tira crece sólo si hace falta; si no, queda en 134. */
+    min-height: 134px;
     padding: 0 3.35rem;
     font-family: 'FuturaExtraBlackCondensed', 'Arial Narrow', Impact, sans-serif;
     font-size: 1.9rem;
@@ -581,6 +583,18 @@ html {
     white-space: nowrap;
     border-left: 1px solid rgba(244, 223, 51, 0.28);
     transition: color 240ms ease-out;
+  }
+
+  /* «Nombre de la marca: abajo» (mockup 2026-10-20, opción C): columna con el nombre chico debajo del logo. */
+  .kt-marquee-item-clientlogo--abajo {
+    flex-direction: column;
+    /* ra VIS-001: los logos miden distinto; anclados abajo, todos los nombres quedan en la misma línea. */
+    justify-content: flex-end;
+    padding-bottom: 1rem;
+    gap: 0.5rem;
+    min-height: 150px;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
   }
 
   .kt-marquee-item-clientlogo:first-child {

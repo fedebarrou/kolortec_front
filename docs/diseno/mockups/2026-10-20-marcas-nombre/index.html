@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marcas asociadas — nombre y tamaño</title>
+<style>
+  :root {
+    --fondo: #050505; --linea: rgba(244, 223, 51, 0.28); --texto: rgba(255, 255, 255, 0.42);
+    --rotulo: #f4df33; --papel: #111; --gris: #8a8a8a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #1a1a1a; color: #eee; font: 15px/1.5 system-ui, sans-serif; }
+  header { padding: 24px 32px 8px; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; color: var(--gris); }
+  .opcion { margin: 28px 0; }
+  .opcion h2 { margin: 0 32px 4px; font-size: 17px; color: var(--rotulo); }
+  .opcion p { margin: 0 32px 10px; color: var(--gris); font-size: 14px; }
+  .tira { background: var(--fondo); overflow: hidden; padding: 28px 0 40px; }
+  .pista { display: flex; width: max-content; }
+  .item {
+    flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 1.25rem;
+    height: 134px; padding: 0 3.35rem; border-left: 1px solid var(--linea);
+    font-family: 'FuturaExtraBlackCondensed', 'Arial Narrow', Impact, sans-serif;
+    font-size: 1.9rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--texto); white-space: nowrap;
+  }
+  .item:first-child { border-left: none; }
+  .item img { object-fit: contain; filter: grayscale(1) brightness(1.7); opacity: .55; }
+  .abajo .item { flex-direction: column; gap: .5rem; height: 150px; font-size: .8rem; letter-spacing: .2em; }
+  .celu { width: 390px; margin: 0 32px; border: 1px solid #333; }
+  .celu .tira { padding: 20px 0 28px; }
+  .celu .item { height: 100px; padding: 0 1.6rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Marcas asociadas — ¿con nombre o sin nombre, y de qué tamaño?</h1>
+  <p>Logos reales de Kolortec (8 de 54). Mismo cálculo de tamaño que la web: igualado por área, escala 1. La tira real gira; acá está quieta para comparar.</p>
+</header>
+
+<section class="opcion" data-alto="72" data-modo="derecha">
+  <h2>A · Hoy — logo + nombre a la derecha (alto base 72 px)</h2>
+  <p>Lo que se ve ahora en kolortec.com.ar.</p>
+</section>
+
+<section class="opcion" data-alto="83" data-modo="sin">
+  <h2>B · Sólo logo, +15 % (alto base 83 px)</h2>
+  <p>Lo que pediste para Kolortec: sin nombre y un poco más grande.</p>
+</section>
+
+<section class="opcion" data-alto="90" data-modo="sin">
+  <h2>B+ · Sólo logo, +25 % (alto base 90 px)</h2>
+  <p>Por si +15 % se queda corto.</p>
+</section>
+
+<section class="opcion abajo" data-alto="83" data-modo="abajo">
+  <h2>C · Logo +15 % con el nombre chico abajo</h2>
+  <p>La tercera opción del panel, para otras tiendas que quieran el nombre.</p>
+</section>
+
+<section class="opcion" data-alto="83" data-modo="sin" data-celu="1">
+  <h2>B en celular (390 px)</h2>
+  <p>Cómo se ve la opción B en un teléfono.</p>
+</section>
+
+<script>
+  const MARCAS = [
+    ["Power Records", "1076baa0-71ff-43d0-855c-181eb5656ba9"], ["Audioluz", "c2c5d9f1-f183-4dcf-99e6-fb3471d350a7"],
+    ["Sasami", "aa6bf11d-eff8-409d-976a-ebfe04b88082"], ["Decibelza", "90b631e1-f4a9-4f2a-b0cd-5d9ac22d1c8d"],
+    ["Grupo CMI srl", "224b0617-cede-4df1-8acf-8c5637e6213e"], ["Congress Rental", "38f0918a-ecd3-48ad-97d5-a16033592720"],
+    ["La Trastienda", "ba1e7e8d-f61e-45d3-828a-d10a2da08cc1"], ["Teatro Colon", "822da335-b5b6-4790-83f6-3acdc862d706"],
+  ];
+  const BASE = "https://archivos.soytiendita.store/partners/e7fa6b73-2ece-4425-9ef3-ab7b498af26c/";
+
+  // Copia de medirLogo (src/shared/utils/marcas-tamano.js) con el alto base como parámetro.
+  function medir(base, r) {
+    let h = Math.min(Math.max(base * Math.sqrt(2.5 / r), base * 0.62), base * 1.3);
+    let w = h * r;
+    const tope = base * 3.7;
+    if (w > tope) { w = tope; h = w / r; }
+    return { w: Math.round(w), h: Math.round(h) };
+  }
+
+  for (const sec of document.querySelectorAll(".opcion")) {
+    const alto = Number(sec.dataset.alto), modo = sec.dataset.modo;
+    const tira = document.createElement("div"); tira.className = "tira";
+    const pista = document.createElement("div"); pista.className = "pista";
+    for (const [nombre, id] of MARCAS) {
+      const item = document.createElement("span"); item.className = "item";
+      const img = new Image(); img.alt = ""; img.style.height = alto + "px";
+      img.onload = () => { const m = medir(alto, img.naturalWidth / img.naturalHeight); img.style.width = m.w + "px"; img.style.height = m.h + "px"; };
+      img.src = BASE + id + ".webp";
+      item.append(img);
+      if (modo !== "sin") { const t = document.createElement("span"); t.textContent = nombre; item.append(t); }
+      pista.append(item);
+    }
+    tira.append(pista);
+    if (sec.dataset.celu) { const c = document.createElement("div"); c.className = "celu"; c.append(tira); sec.append(c); }
+    else sec.append(tira);
+  }
+</script>
+</body>
+</html>

@@ -33,10 +33,10 @@ const caso = (nombre, fn) => {
   console.log(`  ✔ ${nombre}`)
 }
 
-caso('base de la tira = 72px (el alto fijo de antes)', () => {
-  assert.equal(ALTO_BASE.tira, 72)
+caso('base de la tira = 83px (72 + 15 %, 20-oct-2026)', () => {
+  assert.equal(ALTO_BASE.tira, 83)
   // Un logo 2,5:1 es la referencia: mide exactamente el alto base.
-  assert.deepEqual(medirLogo({ proporcion: 2.5, contexto: 'tira' }), { w: 180, h: 72 })
+  assert.deepEqual(medirLogo({ proporcion: 2.5, contexto: 'tira' }), { w: 208, h: 83 })
 })
 
 caso('a igual escala, proporciones distintas quedan con la misma ÁREA (±3 %) dentro de los topes', () => {
@@ -49,9 +49,9 @@ caso('a igual escala, proporciones distintas quedan con la misma ÁREA (±3 %) d
 })
 
 caso('topes: alto entre 62 % y 130 % del base, ancho a 3,7× el base', () => {
-  assert.equal(medirLogo({ proporcion: 0.2, contexto: 'tira' }).h, Math.round(72 * 1.3)) // muy alto y angosto
-  assert.equal(medirLogo({ proporcion: 10, contexto: 'tira' }).w, Math.round(72 * 3.7)) // muy ancho y bajo
-  assert.equal(medirLogo({ proporcion: 4, contexto: 'tira' }).h >= Math.round(72 * 0.62), true)
+  assert.equal(medirLogo({ proporcion: 0.2, contexto: 'tira' }).h, Math.round(83 * 1.3)) // muy alto y angosto
+  assert.equal(medirLogo({ proporcion: 10, contexto: 'tira' }).w, Math.round(83 * 3.7)) // muy ancho y bajo
+  assert.equal(medirLogo({ proporcion: 4, contexto: 'tira' }).h >= Math.round(83 * 0.62), true)
 })
 
 caso('la escala multiplica la medida y se acota a 0,70–1,40', () => {
@@ -69,15 +69,17 @@ caso('escala ausente o basura vale 1', () => {
 })
 
 caso('sin proporción conocida sólo se escala el alto (el ancho sale solo)', () => {
-  assert.deepEqual(medirLogo({ proporcion: null, contexto: 'tira' }), { w: null, h: 72 })
-  assert.deepEqual(medirLogo({ proporcion: null, escala: 1.4, contexto: 'tira' }), { w: null, h: 101 })
+  assert.deepEqual(medirLogo({ proporcion: null, contexto: 'tira' }), { w: null, h: 83 })
+  assert.deepEqual(medirLogo({ proporcion: null, escala: 1.4, contexto: 'tira' }), { w: null, h: 116 })
   assert.equal(proporcionNatural(0, 0), null)
   assert.equal(proporcionNatural(300, 100), 3)
 })
 
-caso('con escala máxima el logo más alto sigue entrando en el item de la tira (134px)', () => {
+// Con base 83 (20-oct-2026) el logo más alto con escala máxima mide 151px: ya no entra en los 134px del item, que por
+// eso pasó de height a min-height (src/index.css, .kt-marquee-item-clientlogo): crece sólo si hace falta.
+caso('con escala máxima el logo más alto mide a lo sumo 151px (83 × 1,3 × 1,4) y el item de la tira crece para alojarlo', () => {
   const { h } = medirLogo({ proporcion: 0.2, escala: ESCALA_MAX, contexto: 'tira' })
-  assert.ok(h <= 134, `alto ${h} > 134`)
+  assert.ok(h <= Math.round(83 * 1.3 * ESCALA_MAX), `alto ${h} > ${Math.round(83 * 1.3 * ESCALA_MAX)}`)
 })
 
 // Misma copia que tiendita. La de la tienda es OBLIGATORIA: si no está a mano el check FALLA (antes avisaba

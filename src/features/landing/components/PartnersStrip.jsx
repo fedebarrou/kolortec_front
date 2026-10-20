@@ -3,6 +3,7 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { medirLogo, proporcionNatural } from '../../../shared/utils/marcas-tamano'
+import { decidirNombreMarca } from '../../../shared/utils/marcas-nombre'
 
 /**
  * PartnersStrip — la tira de marcas que trabajan con Kolortec.
@@ -42,13 +43,13 @@ function renderShape(shape, index) {
 const proporciones = new Map()
 
 /**
- * El logo ya no mide 72px de alto fijo: se iguala por ÁREA con medirLogo() (la misma
+ * El logo ya no mide un alto fijo: se iguala por ÁREA con medirLogo() (la misma
  * fórmula que la tienda de tiendita, src/shared/utils/marcas-tamano.js) y se retoca
  * con la `escala` de cada marca (0,70–1,40, por defecto 1). Hasta que la imagen
- * carga no se conoce la proporción: se pinta a la altura base (72 × escala) y al
+ * carga no se conoce la proporción: se pinta a la altura base (83 × escala) y al
  * cargar toma su medida final.
  */
-function Mark({ logo }) {
+function Mark({ logo, alt = '' }) {
   const src = logo.logo
   const [proporcion, setProporcion] = useState(() => proporciones.get(src) ?? null)
   if (src) {
@@ -57,7 +58,7 @@ function Mark({ logo }) {
       <img
         className="kt-clientlogo-img"
         src={src}
-        alt=""
+        alt={alt}
         loading="lazy"
         decoding="async"
         style={{ width: w ?? 'auto', height: h }}
@@ -111,10 +112,17 @@ function PartnersStrip({ logos }) {
             // girando: dejarlas muertas al click era peor), pero sale del orden de
             // tabulación y se marca aria-hidden para no leerse N veces.
             const duplicado = index >= clientLogos.length
+            // «Nombre de la marca» (section_card_styles.marcas.name_position, panel de Mi web):
+            //   'no'     → sólo el logo; el nombre pasa a ser el alt del logo + el title/aria-label del link
+            //   'abajo'  → columna, el nombre chico debajo (mockup 2026-10-20, opción C)
+            //   'derecha' o sin valor → como siempre (nombre a la derecha del logo)
+            // Una marca SIN logo ni shapes no tiene otra cosa que mostrar: conserva su nombre aunque sea 'no'.
+            // La decisión vive en shared/utils/marcas-nombre.js (pura, probada por scripts/check-marcas-nombre.mjs).
+            const { mostrarNombre, itemClass, alt, title, ariaLabel } = decidirNombreMarca(logo)
             const contenido = (
               <>
-                <Mark logo={logo} />
-                <span>{logo.name}</span>
+                <Mark logo={logo} alt={alt} />
+                {mostrarNombre && <span>{logo.name}</span>}
               </>
             )
             return logo.link ? (
@@ -123,7 +131,9 @@ function PartnersStrip({ logos }) {
                 href={logo.link}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="kt-marquee-item-clientlogo"
+                className={itemClass}
+                title={title}
+                aria-label={ariaLabel}
                 aria-hidden={duplicado ? 'true' : undefined}
                 tabIndex={duplicado ? -1 : undefined}
               >
@@ -132,7 +142,8 @@ function PartnersStrip({ logos }) {
             ) : (
               <span
                 key={`${logo.name}-${index}`}
-                className="kt-marquee-item-clientlogo"
+                className={itemClass}
+                title={title}
                 aria-hidden={duplicado ? 'true' : undefined}
               >
                 {contenido}

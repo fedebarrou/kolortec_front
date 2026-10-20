@@ -20,6 +20,7 @@ import { normalizeScrollDesign } from '../../features/landing/_hero-renderer/scr
 import { safeSrc } from '../../features/landing/_hero-renderer/cssSafe.js'
 import { setProtectedTermsLoader } from './dynamicTranslationService.js'
 import { normalizarEscala } from '../utils/marcas-tamano.js'
+import { normalizarNamePosition } from '../utils/marcas-nombre.js'
 
 // Valores admitidos de `slide.scrim`. 'kolortec' = 4 capas NEGRAS (look original);
 // 'kolortec-light' = las mismas capas en crema, para escenas sobre fondo claro.
@@ -444,7 +445,7 @@ function mapWebConfigToSupport(cfg) {
  * Components that render SVG shapes fall back to the hardcoded logos when
  * logo_url is absent; if logo_url is present, the component should render an <img>.
  */
-function mapMarcasToClientLogos(raw) {
+function mapMarcasToClientLogos(raw, namePosition = null) {
   // Data-driven: sin marcas cargadas → sin logos (no se muestran los hardcodeados).
   if (!Array.isArray(raw) || raw.length === 0) {
     return []
@@ -458,6 +459,9 @@ function mapMarcasToClientLogos(raw) {
       // Ajuste por marca (0,70–1,40; falta/basura → 1). PartnersStrip lo aplica con
       // medirLogo(): el mismo número que se ve en la tienda de tiendita.
       escala: normalizarEscala(m.escala),
+      // «Nombre de la marca» (section_card_styles.marcas.name_position de /public/web-config): no | derecha | abajo.
+      // Es de TODA la sección, no de cada marca; null (sin elegir) = como siempre, nombre a la derecha.
+      namePosition,
       // Keep shapes undefined so the FooterSection can branch on logo presence
     }))
 }
@@ -824,7 +828,7 @@ export async function getLandingContent() {
   const lines = deriveLines(productosRaw)
   const gallery = mapGallery(igFeed, galeriaRaw)
   const support = mapWebConfigToSupport(webConfig)
-  const clientLogos = mapMarcasToClientLogos(marcasRaw)
+  const clientLogos = mapMarcasToClientLogos(marcasRaw, normalizarNamePosition(webConfig?.section_card_styles?.marcas?.name_position))
   const hero = mapHeroConfig(heroCfgRaw)
 
   const footer = {

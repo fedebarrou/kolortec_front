@@ -4,6 +4,21 @@ Lo más nuevo arriba. Mockups congelados en `docs/diseno/mockups/`.
 
 ---
 
+### 2026-10-20 · Tira de marcas: nombre de la marca — elegida: B «sólo logo, +15 %» (Fedev)
+
+**Qué se eligió.** En Kolortec la tira muestra **sólo los logos**, sin el nombre al lado, y **un 15 % más grandes**: el alto base de la tira (`ALTO_BASE.tira`) pasa de 72 a 83 px. Un logo cuadrado mide 108×108.
+- Nueva opción por cuenta en el panel (Mi web → Marcas): «Nombre de la marca: No mostrar · A la derecha · Abajo». Vive en `section_card_styles.marcas.name_position`.
+- Kolortec la usa en «No mostrar». Sin elegir (null), cada sitio queda como antes, con el nombre a la derecha.
+- Una marca sin logo muestra igual su nombre, porque es lo único que tiene. Con «No mostrar», el nombre queda como `aria-label` del link.
+
+**Qué se descartó y por qué.**
+- **A (logo + nombre a la derecha, como estaba)**: el nombre repite lo que ya dice el logo y ocupa el doble de ancho.
+- **B+ (sólo logo, +25 %)**: más grande de lo que hacía falta; la tira ganaba alto sin ganar lectura.
+- **C (nombre chico abajo)**: queda como tercera opción del panel, para tiendas cuyos logos no se leen solos. Los nombres se anclan abajo para quedar alineados.
+
+**Mockup congelado:** `docs/diseno/mockups/2026-10-20-marcas-nombre/index.html`.
+**Medido:** cuadrados a 108×108 y sin `<span>` de nombre, a 1440 y a 390 (ra 92/100).
+
 ### 2026-10-17 · Ficha de producto: «En obra» (media asociada) — elegida: C «el cruce» (Fedev)
 
 **Qué se eligió.** Grilla pareja «En obra» justo después de «Video del producto», con lengüeta propia.

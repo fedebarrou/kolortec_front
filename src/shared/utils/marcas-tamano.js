@@ -15,10 +15,10 @@ export const ESCALA_MIN = 0.7;
 export const ESCALA_MAX = 1.4;
 export const ESCALA_DEFECTO = 1;
 
-/** Alto base (px) de un logo «promedio» según dónde se muestra: tira de la web externa, grilla de la tienda, ticker. */
-export const ALTO_BASE = { tira: 72, tienda: 48, ticker: 36 };
+/** Alto base (px) de un logo «promedio» según dónde se muestra: tira de la web externa (83 = 72 + 15 %, 20-oct-2026), grilla de la tienda, ticker. */
+export const ALTO_BASE = { tira: 83, tienda: 48, ticker: 36 };
 
-const PROPORCION_REFERENCIA = 2.5; // un logo 2,5 veces más ancho que alto mide exactamente el alto base
+export const PROPORCION_REFERENCIA = 2.5; // un logo 2,5 veces más ancho que alto mide exactamente el alto base
 const ALTO_MIN = 0.62; // tope de alto: nunca menos del 62 % del base…
 const ALTO_MAX = 1.3; // …ni más del 130 %
 const ANCHO_MAX = 3.7; // tope de ancho: 3,7 veces el alto base
@@ -39,13 +39,14 @@ export function proporcionNatural(ancho, alto) {
 
 /**
  * Medida final del logo en px.
- * `igualar: false` es «como subí los logos» (vista previa del panel): alto base fijo, sin igualar ni escala.
+ * `igualar: false` es «como subí los logos» (vista previa del panel): alto base fijo, sin igualar por área. La `escala`
+ * de cada marca se aplica SIEMPRE, en los dos modos (el retoque por marca no se pierde al mirar «como subí»).
  * @param {{ proporcion: number|null, escala?: number, contexto?: "tira"|"tienda"|"ticker", igualar?: boolean }} p
  * @returns {{ w: number|null, h: number }} sin proporción conocida no se puede igualar: sólo `h` (el ancho sale solo).
  */
 export function medirLogo({ proporcion, escala, contexto = "tienda", igualar = true } = {}) {
   const base = ALTO_BASE[contexto] ?? ALTO_BASE.tienda;
-  const k = igualar === false ? 1 : normalizarEscala(escala);
+  const k = normalizarEscala(escala);
   const r = Number(proporcion);
   if (!Number.isFinite(r) || r <= 0) return { w: null, h: Math.round(base * k) };
 
