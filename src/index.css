@@ -123,9 +123,21 @@ html {
     /* Innovaciones de la ficha (InnovacionesGrilla): fondo del globo de explicación y punto
        inactivo del carrusel (= --line-control, 3,8:1 sobre --bg: un control no puede quedar en 1,6:1). */
     --innov-globo-bg: #1b1b1b;
+    /* Borde del globo = el amarillo de marca al 60 % (el fallback sin color-mix queda en amarillo pleno);
+       sombra suave; radio compartido por las fichas y el globo (el sitio es de esquinas rectas). */
+    --innov-globo-borde: var(--primary);
+    --innov-globo-sombra: 0 12px 32px rgba(0, 0, 0, 0.55);
+    --innov-radio: 0;
+    --innov-icono-globo: 40px; /* ícono (imagen o inicial) del globo */
     --innov-punto: var(--line-control);
     --border-width: 1px;
     --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @supports (color: color-mix(in srgb, red 50%, blue)) {
+    :root {
+      --innov-globo-borde: color-mix(in srgb, var(--primary) 60%, transparent);
+    }
   }
 
   * {
@@ -1243,13 +1255,26 @@ html {
     gap: 10px;
     padding: 10px;
     border: 1px solid var(--line2);
+    border-radius: var(--innov-radio);
     background: var(--panel);
     color: #f0f2f5;
     font-size: 13px;
     font-weight: 600;
     line-height: 1.25;
     text-align: left;
-    overflow-wrap: anywhere;
+    /* Una palabra larga se parte con guion (según el idioma de la página); `break-word` es sólo el resguardo
+       para códigos sin sílabas (RGBWA+UV, 1200W-XPRO2026) que, si no, desbordarían la ficha. */
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  /* Celular: la ficha mide ~150px y «REFRIGERACIÓN» no entra a 13px; menos aire y 12px (el piso). */
+  @media (max-width: 480px) {
+    .kt-innov-ficha {
+      gap: 8px;
+      padding: 8px;
+      font-size: 12px;
+    }
   }
 
   button.kt-innov-ficha {
@@ -1282,24 +1307,111 @@ html {
     font-weight: 800;
   }
 
-  /* El globo flota sobre lo que está debajo y no mueve el layout; no atrapa el mouse
-     (pasar de una ficha a la de abajo cambia la explicación sin quedar trabado). */
+  .kt-innov-inicial--grande,
+  .kt-innov-globo-icono {
+    width: var(--innov-icono-globo);
+    height: var(--innov-icono-globo);
+  }
+
+  .kt-innov-inicial--grande {
+    font-size: 16px;
+  }
+
+  /* El globo: tarjeta con flechita que apunta a su ficha. Flota sobre lo que está al lado y no mueve el
+     layout. Se puede recorrer con el mouse sin que se cierre (WCAG 1.4.13); en táctil, tocarlo lo cierra.
+     `top`/`bottom`, `left` y `width` los pone el componente; --kt-flecha es la distancia de la flechita
+     al borde izquierdo de la tarjeta. data-lado = por dónde queda respecto de la ficha. */
   .kt-innov-globo {
     position: absolute;
     z-index: 5;
-    padding: 10px 12px;
-    border: 1px solid var(--primary);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--innov-globo-borde);
+    border-radius: var(--innov-radio);
     background: var(--innov-globo-bg);
     color: var(--soft);
     font-size: 13px;
     font-weight: 400;
-    line-height: 1.45;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    pointer-events: none;
+    line-height: 1.55;
+    box-shadow: var(--innov-globo-sombra);
+    --kt-desp: -4px;
+    animation: kt-innov-globo-in 140ms var(--ease-smooth) both;
+  }
+
+  .kt-innov-globo[data-lado='arriba'] {
+    --kt-desp: 4px;
+  }
+
+  .kt-innov-globo::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--kt-flecha, 24px) - 6px);
+    top: -7px;
+    width: 12px;
+    height: 12px;
+    background: var(--innov-globo-bg);
+    border: 1px solid var(--innov-globo-borde);
+    border-right: 0;
+    border-bottom: 0;
+    transform: rotate(45deg);
+  }
+
+  .kt-innov-globo[data-lado='arriba']::before {
+    top: auto;
+    bottom: -7px;
+    border: 1px solid var(--innov-globo-borde);
+    border-left: 0;
+    border-top: 0;
+  }
+
+  .kt-innov-globo-cab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .kt-innov-globo-titulo {
+    min-width: 0;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .kt-innov-globo-texto {
+    display: block;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  @keyframes kt-innov-globo-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--kt-desp));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .kt-innov-globo[hidden] {
     display: none;
+  }
+
+  /* La ficha del producto es un contexto de apilado (animación de entrada) y los separadores de abajo (.kt-graphene-separator,
+     position: relative) quedan, por orden, por encima de todo lo que sale de ella: sin esto una línea se dibuja sobre el globo.
+     Con un globo abierto la ficha pasa por encima de ellos (menos que la cabecera y las pestañas fijas, que usan 30 o más). */
+  .kt-detail-hero:has(.kt-innov-globo:not([hidden])) {
+    position: relative;
+    z-index: 3;
   }
 
   .kt-innov-nav {
@@ -1381,6 +1493,10 @@ html {
   @media (prefers-reduced-motion: reduce) {
     .kt-innov-punto::before {
       transition: none;
+    }
+
+    .kt-innov-globo {
+      animation: none;
     }
   }
 
