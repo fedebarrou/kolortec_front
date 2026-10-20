@@ -120,6 +120,10 @@ html {
     --soft: #aeb2ba;
     --panel: #0d0d0e;
     --on-primary: #0b0b0b;
+    /* Innovaciones de la ficha (InnovacionesGrilla): fondo del globo de explicación y punto
+       inactivo del carrusel (= --line-control, 3,8:1 sobre --bg: un control no puede quedar en 1,6:1). */
+    --innov-globo-bg: #1b1b1b;
+    --innov-punto: var(--line-control);
     --border-width: 1px;
     --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -1180,6 +1184,204 @@ html {
   .kt-pres-tab:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 3px;
+  }
+
+  /* Innovaciones de la ficha con MUCHAS (5 o más): grilla de fichas compactas en compu, carrusel de
+     páginas de 6 (2 columnas × 3 filas) en celular. Mockup congelado
+     docs/diseno/mockups/2026-10-20-innovaciones (opción B, 20-oct-2026). Un solo DOM: en compu la
+     «página» es `display: contents` y las fichas fluyen en la grilla; en celular es una diapositiva
+     con scroll-snap nativo. Hasta 4 innovaciones no se usa nada de esto (lista de siempre). */
+  .kt-innov {
+    position: relative;
+  }
+
+  .kt-innov-hint {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--soft);
+  }
+
+  /* Tres textos, según cómo se interactúa (no sólo el ancho): celular = carrusel, tocar;
+     ≥768px sin mouse (tablet) = grilla, tocar; ≥768px con mouse = grilla, hover. */
+  .kt-innov-hint-mouse,
+  .kt-innov-hint-tap {
+    display: none;
+  }
+
+  .kt-innov-pista {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .kt-innov-pista::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Se asoma el borde de la siguiente página: 28px. */
+  .kt-innov-pagina {
+    flex: 0 0 calc(100% - 28px);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    scroll-snap-align: start;
+  }
+
+  .kt-innov-pagina--unica {
+    flex-basis: 100%;
+  }
+
+  .kt-innov-ficha {
+    min-width: 0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--line2);
+    background: var(--panel);
+    color: #f0f2f5;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  button.kt-innov-ficha {
+    cursor: pointer;
+  }
+
+  .kt-innov-ficha:hover,
+  .kt-innov-ficha[aria-expanded='true'] {
+    border-color: var(--primary);
+  }
+
+  .kt-innov-ficha:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Sin imagen: la inicial en amarillo sobre un círculo (igual de grande que el ícono). */
+  .kt-innov-inicial {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line2);
+    border-radius: 9999px;
+    background: var(--bg);
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  /* El globo flota sobre lo que está debajo y no mueve el layout; no atrapa el mouse
+     (pasar de una ficha a la de abajo cambia la explicación sin quedar trabado). */
+  .kt-innov-globo {
+    position: absolute;
+    z-index: 5;
+    padding: 10px 12px;
+    border: 1px solid var(--primary);
+    background: var(--innov-globo-bg);
+    color: var(--soft);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.45;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+  }
+
+  .kt-innov-globo[hidden] {
+    display: none;
+  }
+
+  .kt-innov-nav {
+    display: flex;
+    align-items: center;
+    margin-top: 6px;
+  }
+
+  .kt-innov-punto {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .kt-innov-punto::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: var(--innov-punto);
+    transition: width 200ms var(--ease-smooth), background-color 200ms;
+  }
+
+  .kt-innov-punto[aria-current='true']::before {
+    width: 18px;
+    border-radius: 4px;
+    background: var(--primary);
+  }
+
+  .kt-innov-punto:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+
+  .kt-innov-pag {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--soft);
+  }
+
+  @media (min-width: 768px) {
+    .kt-innov-hint-tap {
+      display: inline;
+    }
+
+    .kt-innov-hint-tactil,
+    .kt-innov-nav {
+      display: none;
+    }
+
+    .kt-innov-pista {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+
+    .kt-innov-pagina {
+      display: contents;
+    }
+  }
+
+  @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+    .kt-innov-hint-tap {
+      display: none;
+    }
+
+    .kt-innov-hint-mouse {
+      display: inline;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kt-innov-punto::before {
+      transition: none;
+    }
   }
 
   .kt-detail-intro {

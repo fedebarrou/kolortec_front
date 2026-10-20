@@ -128,7 +128,9 @@ function urlConCors(src) {
   }
 }
 
-function InnovacionIcono({ src }) {
+// `tamano` / `relleno`: clases de Tailwind del círculo y del aire del respaldo (56px en la lista de siempre;
+// 34px en la grilla de InnovacionesGrilla).
+function InnovacionIcono({ src, tamano = 'h-14 w-14', relleno = 'p-2.5' }) {
   // El resultado se guarda junto con SU src: si cambia la imagen, no se muestra
   // el ícono de la anterior mientras se procesa la nueva.
   const [hecho, setHecho] = useState({ src: null, url: null })
@@ -161,7 +163,7 @@ function InnovacionIcono({ src }) {
   }, [src])
 
   if (listo) {
-    return <img src={listo} alt="" className="h-14 w-14 shrink-0 rounded-full bg-black object-cover" data-icono="normalizado" />
+    return <img src={listo} alt="" className={`${tamano} shrink-0 rounded-full bg-black object-cover`} data-icono="normalizado" />
   }
   // Respaldo: entera y con aire (p-2.5 deja el dibujo dentro del círculo).
   return (
@@ -169,7 +171,7 @@ function InnovacionIcono({ src }) {
       src={src}
       alt=""
       loading="lazy"
-      className="h-14 w-14 shrink-0 rounded-full bg-black object-contain p-2.5"
+      className={`${tamano} shrink-0 rounded-full bg-black object-contain ${relleno}`}
       data-icono="respaldo"
     />
   )

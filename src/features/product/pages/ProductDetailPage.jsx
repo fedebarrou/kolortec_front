@@ -21,6 +21,8 @@ import ProductMedia from '../components/ProductMedia'
 import ProductReviews from '../components/ProductReviews'
 import ReferenceMaterial from '../components/ReferenceMaterial'
 import InnovacionIcono from '../components/InnovacionIcono'
+import InnovacionesGrilla from '../components/InnovacionesGrilla'
+import { usaGrilla } from '../../../shared/utils/innovaciones-grilla'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { useRevealSections } from '../../../shared/hooks/useRevealSections'
@@ -849,7 +851,9 @@ function ProductDetailPage() {
                         sin avisar ni dar forma de ver el resto. Hoy el máximo
                         cargado son 4, así que el corte no se veía —pero cuando
                         el tenant cargue la quinta, desaparecía en silencio. */}
-                    {product.innovations.map((inn) => (
+                    {usaGrilla(product.innovations.length) ? (
+                      <InnovacionesGrilla items={product.innovations} />
+                    ) : product.innovations.map((inn) => (
                       <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
                         {/* REDONDAS (pedido del cliente, oct-2026) y como ÍCONO: entera,
                             centrada y del mismo tamaño que las demás, suba lo que
