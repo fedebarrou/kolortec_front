@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useAutoTranslatedDict } from '../../../shared/services/useAutoTranslatedDict'
+import StockBarra from '../../../shared/components/StockBarra'
 import { getCategoryNames, peekCategoryNames, humanizeCategorySlug } from '../../../data/categories.js'
 
 const slugifyProductName = (value) =>
@@ -256,6 +257,9 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
               </span>
             ) : null}
           </div>
+          {/* Nivel de stock (ajuste stock.indicador): fuera de la fila del CTA para que éste siga alineado al nombre.
+              item.stockNivel null → no dibuja nada. */}
+          <StockBarra nivel={item.stockNivel} className="mt-2" />
         </div>
       </div>
     </article>

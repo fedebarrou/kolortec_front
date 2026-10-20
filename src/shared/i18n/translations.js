@@ -183,6 +183,12 @@ export const translations = {
     productCard: {
       cta: 'View product',
     },
+    stockBar: {
+      alto: 'In stock',
+      medio: 'Few units left',
+      bajo: 'Last units',
+      sin: 'Out of stock',
+    },
     productDetail: {
       unavailableTitle: 'We couldn\'t show this product',
       unavailableSubtitle: 'It may no longer be published, or the connection dropped just now. Try again; if it keeps happening, browse the full catalog.',
@@ -804,6 +810,12 @@ export const translations = {
     },
     productCard: {
       cta: 'Ver producto',
+    },
+    stockBar: {
+      alto: 'En stock',
+      medio: 'Pocas unidades',
+      bajo: 'Últimas unidades',
+      sin: 'Sin stock',
     },
     productDetail: {
       unavailableTitle: 'No pudimos mostrar este producto',

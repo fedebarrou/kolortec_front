@@ -2,11 +2,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { defaultLandingContent } from '../data/landingData'
-import { getShopProducts } from '../../../shared/services/contentService'
+import { getAjustes, getShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { irASeccionCuandoAparezca } from '../../../shared/utils/irASeccion'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
+import { filtrarMenu } from '../../../shared/utils/menu-ajustes'
 
 const normalizeText = (value) =>
   value
@@ -75,6 +76,8 @@ function HeaderSection() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [products, setProducts] = useState(defaultLandingContent.products.items)
+  // Ajustes de la cuenta (/public/web-config → ajustes): null hasta que llegan, y null si el back no los manda → menú de siempre.
+  const [ajustes, setAjustes] = useState(null)
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1)
   const mobileMenuRef = useRef(null)
   const mobileMenuBtnRef = useRef(null)
@@ -115,14 +118,20 @@ function HeaderSection() {
   // librerías) y a la que ya redirige /soporte.
   // "Servicios" entra acá porque /servicios no estaba enlazada desde ningún
   // lado: era una página huérfana que sólo se alcanzaba tipeando la URL.
+  // Un ítem desaparece si su sección está apagada o figura en `menu.ocultas` (shared/utils/menu-ajustes.js).
+  // Sin `ajustes` (back viejo) queda el menú de siempre.
   const navItems = useMemo(
-    () => [
-      { label: t('header.nav.home', 'Inicio'), to: '/' },
-      { label: t('header.nav.catalog', 'Productos'), to: '/products' },
-      { label: t('pageTitle.services', 'Servicios'), to: '/servicios' },
-      { label: t('header.nav.support', 'Soporte'), to: '/descargas' },
-    ],
-    [t],
+    () =>
+      filtrarMenu(
+        [
+          { id: 'home', label: t('header.nav.home', 'Inicio'), to: '/' },
+          { id: 'catalog', label: t('header.nav.catalog', 'Productos'), to: '/products' },
+          { id: 'services', label: t('pageTitle.services', 'Servicios'), to: '/servicios' },
+          { id: 'support', label: t('header.nav.support', 'Soporte'), to: '/descargas' },
+        ],
+        ajustes,
+      ),
+    [t, ajustes],
   )
 
   // Las URLs de las redes ya no viven acá: son las MISMAS que usan el footer y
@@ -347,6 +356,16 @@ function HeaderSection() {
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [isMobileOpen])
+
+  useEffect(() => {
+    let mounted = true
+    getAjustes().then((a) => {
+      if (mounted) setAjustes(a)
+    })
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   useEffect(() => {
     let mounted = true
