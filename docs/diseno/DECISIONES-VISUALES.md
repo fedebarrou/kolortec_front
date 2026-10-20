@@ -4,6 +4,18 @@ Lo más nuevo arriba. Mockups congelados en `docs/diseno/mockups/`.
 
 ---
 
+### 2026-10-20 · Ficha de producto: muchas innovaciones — elegida: B «grilla de íconos» + carrusel en celular (Fedev)
+
+**Qué se eligió.** Con 5 o más innovaciones, grilla de fichas compactas (ícono redondo + título); la explicación aparece al pasar el mouse o con el foco, en un globo que no mueve el layout. En celular, la misma grilla en **carrusel de 6 por página** (Fedev: «grilla con carrusel, sino chorizo»), con puntos y «n / N». Con 4 o menos queda la lista completa de siempre.
+
+**Qué se descartó y por qué.**
+- **A (4 completas + «Ver las N restantes»)**: al desplegar vuelve a ser una lista de 20.
+- **C (3 destacadas + grilla)**: decide por el cliente cuáles son «las importantes» con el orden de carga.
+
+**Desvío aceptado (ra 95/100):** en la ficha real la columna es angosta y entran 2 columnas en compu, no 3 (`auto-fill minmax(160px)`): con 3 se cortaban títulos largos.
+
+**Mockup congelado:** `docs/diseno/mockups/2026-10-20-innovaciones/index.html` (incluye la sección «B elegida · celular»).
+
 ### 2026-10-20 · Tira de marcas: nombre de la marca — elegida: B «sólo logo, +15 %» (Fedev)
 
 **Qué se eligió.** En Kolortec la tira muestra **sólo los logos**, sin el nombre al lado, y **un 15 % más grandes**: el alto base de la tira (`ALTO_BASE.tira`) pasa de 72 a 83 px. Un logo cuadrado mide 108×108.
