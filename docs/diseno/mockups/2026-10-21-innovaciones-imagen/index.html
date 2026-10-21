@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Innovaciones con imagen</title>
+<style>
+  :root {
+    --bg: #050505; --panel: #111111; --panel2: #1b1b1b; --linea: #2a2a2a;
+    --ink: #f5f5f5; --soft: #aeb2ba; --primary: #f4df33;
+    --radio: 0px; --img: 56px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #1a1a1a; color: var(--ink); font: 15px/1.5 system-ui, sans-serif; }
+  header { padding: 24px 32px 4px; }
+  header h1 { margin: 0 0 6px; font-size: 22px; }
+  header p { margin: 0; color: #9a9a9a; max-width: 900px; }
+  .op { margin: 36px 0 56px; padding: 0 32px; }
+  .op h2 { margin: 0 0 4px; font-size: 18px; color: var(--primary); }
+  .op > p { margin: 0 0 14px; color: #9a9a9a; font-size: 14px; max-width: 900px; }
+  .marcos { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+  .marco { background: var(--bg); border: 1px solid #333; padding: 22px; position: relative; }
+  .marco.compu { width: 620px; }
+  .marco.celu { width: 390px; padding: 16px; }
+  .marco .rot { position: absolute; top: -22px; left: 0; font-size: 12px; color: #777; }
+  .titulo { font-size: 13px; color: var(--soft); margin: 0 0 12px; }
+
+  /* grilla común: imagen + nombre */
+  .grilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; position: relative; }
+  .celu .grilla { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .celu .ficha { font-size: 12px; gap: 8px; padding: 8px; }
+  .celu .ficha span { min-width: 0; overflow-wrap: break-word; hyphens: auto; }
+  .celu { --img: 44px; }
+  .ficha {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--panel);
+    border: 1px solid var(--linea); border-radius: var(--radio); cursor: pointer; position: relative;
+    font: 700 13px/1.25 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .02em; color: var(--ink);
+    min-height: 76px; text-align: left;
+  }
+  .ficha img { width: var(--img); height: var(--img); object-fit: contain; flex: 0 0 auto; background: #000; }
+  .ficha:hover, .ficha.on { border-color: var(--primary); }
+
+  /* A · globo flotante */
+  .globo {
+    position: absolute; z-index: 5; width: 300px; background: var(--panel2); border: 1px solid var(--primary);
+    padding: 16px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,.6);
+  }
+  .globo .cab { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .globo img { width: 48px; height: 48px; object-fit: contain; background: #000; }
+  .globo b { font-size: 14px; text-transform: uppercase; }
+  .globo p { margin: 0; color: var(--soft); font-size: 13px; line-height: 1.55; }
+  .celu .globo { width: auto; left: 0; right: 0; }
+
+  /* B · la ficha se da vuelta en el lugar */
+  .B .ficha { min-height: 132px; flex-direction: column; justify-content: center; text-align: center; gap: 8px; overflow: hidden; }
+  .B .ficha img { width: 64px; height: 64px; }
+  .B .dorso { position: absolute; inset: 0; background: var(--panel2); padding: 12px; display: flex; align-items: center;
+    font: 400 12.5px/1.45 system-ui, sans-serif; text-transform: none; letter-spacing: 0; color: var(--soft); opacity: 0;
+    transition: opacity .15s; text-align: left; overflow: auto; }
+  .B .ficha.on .dorso { opacity: 1; }
+
+  /* C · panel de detalle debajo de la grilla */
+  .detalle { margin-top: 12px; border: 1px solid var(--primary); background: var(--panel2); padding: 16px; display: flex; gap: 16px; align-items: flex-start; min-height: 118px; }
+  .detalle img { width: 84px; height: 84px; object-fit: contain; background: #000; flex: 0 0 auto; }
+  .detalle b { display: block; font-size: 15px; text-transform: uppercase; margin-bottom: 6px; }
+  .detalle p { margin: 0; color: var(--soft); font-size: 13.5px; line-height: 1.55; }
+  .C .ficha { min-height: 64px; }
+  .C .ficha img { width: 44px; height: 44px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Innovaciones de la ficha: imagen + nombre, y al pasar el mouse te cuenta qué es</h1>
+  <p>Las 9 innovaciones de Kolortec que ya tienen su imagen cargada (datos y fotos reales). Las tres opciones muestran lo mismo: la grilla con imagen y nombre. Cambia <b>dónde aparece la explicación</b> al pasar el mouse (en el celular, al tocar). Pasá el mouse por las fichas.</p>
+</header>
+
+<section class="op A" data-op="A">
+  <h2>A · Globo flotante — la explicación aparece en un globo pegado a la ficha</h2>
+  <p>Es lo que está hecho hoy. El globo tapa un poco las fichas de al lado, pero la grilla no se mueve.</p>
+  <div class="marcos"><div class="marco compu"><span class="rot">Compu</span><p class="titulo">9 innovaciones · pasá el mouse para ver el detalle</p><div class="grilla"></div></div>
+  <div class="marco celu"><span class="rot">Celular (390)</span><p class="titulo">Tocá una innovación</p><div class="grilla"></div></div></div>
+</section>
+
+<section class="op B" data-op="B">
+  <h2>B · La ficha se da vuelta — la explicación aparece adentro de la misma ficha</h2>
+  <p>No tapa nada: la ficha muestra la imagen grande y el nombre, y al pasar el mouse muestra el texto en su lugar. Si la explicación es larga, hay que leerla en una caja chica.</p>
+  <div class="marcos"><div class="marco compu"><span class="rot">Compu</span><p class="titulo">9 innovaciones · pasá el mouse para ver el detalle</p><div class="grilla"></div></div>
+  <div class="marco celu"><span class="rot">Celular (390)</span><p class="titulo">Tocá una innovación</p><div class="grilla"></div></div></div>
+</section>
+
+<section class="op C" data-op="C">
+  <h2>C · Panel de detalle — la explicación aparece abajo de la grilla, siempre en el mismo lugar</h2>
+  <p>La grilla es más compacta y abajo hay un recuadro fijo que muestra la innovación señalada con su imagen grande. Nunca tapa nada; arranca mostrando la primera.</p>
+  <div class="marcos"><div class="marco compu"><span class="rot">Compu</span><p class="titulo">9 innovaciones · pasá el mouse para ver el detalle</p><div class="grilla"></div><div class="detalle"></div></div>
+  <div class="marco celu"><span class="rot">Celular (390)</span><p class="titulo">Tocá una innovación</p><div class="grilla"></div><div class="detalle"></div></div></div>
+</section>
+
+<section class="op C" data-op="C" data-arriba="1">
+  <h2>C1 · Panel de detalle ARRIBA — se lee primero y la grilla queda debajo</h2>
+  <p>El recuadro tiene alto fijo, así que al pasar el mouse nada se mueve. Es lo primero que se ve al llegar a la sección.</p>
+  <div class="marcos"><div class="marco compu"><span class="rot">Compu</span><p class="titulo">9 innovaciones · pasá el mouse para ver el detalle</p><div class="detalle"></div><div class="grilla"></div></div>
+  <div class="marco celu"><span class="rot">Celular (390)</span><p class="titulo">Tocá una innovación</p><div class="detalle"></div><div class="grilla"></div></div></div>
+</section>
+
+<section class="op D" data-op="D">
+  <h2>C2 · La innovación señalada se agranda y ocupa todo el ancho de la grilla</h2>
+  <p>La ficha elegida crece a lo ancho y muestra la explicación ahí mismo. Ojo: al agrandarse empuja las de abajo, así que con el mouse las fichas se corren debajo del puntero. Por eso acá se agranda con un clic, no al pasar el mouse.</p>
+  <div class="marcos"><div class="marco compu"><span class="rot">Compu</span><p class="titulo">9 innovaciones · hacé clic para ver el detalle</p><div class="grilla"></div></div>
+  <div class="marco celu"><span class="rot">Celular (390)</span><p class="titulo">Tocá una innovación</p><div class="grilla"></div></div></div>
+</section>
+
+<section class="op N">
+  <h2>En una pantalla de notebook (1024): la columna de la ficha mide 232 px</h2>
+  <p>Así queda hoy el recuadro (izquierda) y las dos formas de acomodarlo cuando es angosto. Se aplica sólo cuando el recuadro no entra; a 1440 y en el celular queda como C1.</p>
+  <div class="marcos">
+    <div class="marco angosto"><span class="rot">Hoy · imagen al lado (texto apretado)</span><div class="det hoy"><img class="i84"><div><b>SALIDA DE LUZ</b><p class="tx"></p></div></div></div>
+    <div class="marco angosto"><span class="rot">N1 · imagen arriba, texto a todo el ancho</span><div class="det n1"><img class="i84"><b>SALIDA DE LUZ</b><p class="tx"></p></div></div>
+    <div class="marco angosto"><span class="rot">N2 · imagen chica al lado del título, texto abajo</span><div class="det n2"><div class="cab"><img class="i48"><b>SALIDA DE LUZ</b></div><p class="tx"></p></div></div>
+  </div>
+</section>
+
+<style>
+  .marco.angosto { width: 264px; padding: 16px; }
+  .det { border: 1px solid var(--primary); background: var(--panel2); padding: 16px; }
+  .det b { display: block; font-size: 15px; text-transform: uppercase; line-height: 1.5; }
+  .det p { margin: 6px 0 0; color: var(--soft); font-size: 13.5px; line-height: 1.55; }
+  .det img { object-fit: contain; background: #000; display: block; }
+  .det .i84 { width: 84px; height: 84px; }
+  .det .i48 { width: 48px; height: 48px; flex: 0 0 auto; }
+  .det.hoy { display: flex; gap: 16px; align-items: flex-start; }
+  .det.hoy > div { min-width: 0; }
+  .det.n1 .i84 { margin-bottom: 12px; }
+  .det.n2 .cab { display: flex; gap: 12px; align-items: center; }
+  .C[data-arriba] .detalle { margin: 0 0 12px; }
+  .D .ficha.on { grid-column: 1 / -1; min-height: 120px; align-items: flex-start; }
+  .D .ficha .txt { display: none; font: 400 13.5px/1.55 system-ui, sans-serif; text-transform: none; letter-spacing: 0; color: var(--soft); margin-top: 6px; }
+  .D .ficha.on .txt { display: block; }
+  .D .ficha.on img { width: 84px; height: 84px; }
+  .D .ficha .cuerpo { display: flex; flex-direction: column; min-width: 0; }
+</style>
+<script>
+const R = "https://archivos.soytiendita.store/productos/e7fa6b73-2ece-4425-9ef3-ab7b498af26c/innovaciones/logo/";
+const INNOV = [
+  ["APERTURA", "022a125d-2f95-413e-9deb-4315fa205a72", "Lente HILuMix de 16 mm, haz de 2.2°. Los 420 W de la lámpara Osram salen concentrados en una columna que se lee entera en el aire."],
+  ["PROTECCIÓN Y CONSTRUCCIÓN", "6ad7fd3d-0984-434e-ab7a-5a868b314ed9", "Grado de protección IP54. El sellado viene declarado en ficha: el cabezal sube a escenario a cielo abierto sin carpa ni funda."],
+  ["TEMPERATURA DE COLOR", "6e2b6103-fe61-4f7f-a0b9-ad6db049e694", "Blanco cálido y frío mezclables entre 3200 K y 5600 K. El blinder se acomoda a la temperatura del resto del rig en lugar de imponer la suya."],
+  ["ALIMENTACIÓN", "94218398-d473-4d71-86a8-ca83df7b9156", "200 W de consumo declarado para las cuatro celdas. Es el número con el que se arma la línea de alimentación cuando cuelgan varios en la misma vara."],
+  ["SALIDA DE LUZ", "9622d6d5-ed43-425c-85e7-e3bb3983d70c", "18000 lux a 5 metros en ángulo mínimo. Es el dato de iluminancia con el que calculás si el haz aguanta la distancia de tu escenario."],
+  ["CAUDAL Y ALCANCE", "aca9565f-d439-445c-9195-f75383a75c43", "3.500 pies cúbicos por minuto de salida declarada sobre 1200 W, con 2,5 minutos de precalentamiento: queda lista dentro del propio armado."],
+  ["FLUIDO", "bcfd9e78-e86b-4000-8ce6-edeb643bc886", "Tanque de 1,2 L. La autonomía no es un número fijo: la define el caudal que dejes puesto."],
+  ["CONEXIONES", "c10b1f54-85e6-4351-a142-4ac75f064df2", "Señal DMX sobre XLR de 3 pines. Entra y sale por el conector de siempre, sin adaptadores en la cadena."],
+  ["COMPATIBILIDAD", "d0e23c7e-b22f-4520-a2f2-6a1196877925", "Formulado a base de glicoles orgánicos y agua. Está hecho para máquinas de niebla a base de agua y es el consumible que corresponde al fazer AIR MIST."],
+];
+document.querySelectorAll(".det img").forEach(i => { i.src = R + "9622d6d5-ed43-425c-85e7-e3bb3983d70c.webp"; i.alt = ""; });
+document.querySelectorAll(".det .tx").forEach(p => { p.textContent = "18000 lux a 5 metros en ángulo mínimo. Es el dato de iluminancia con el que calculás si el haz aguanta la distancia de tu escenario."; });
+const img = (id) => { const i = new Image(); i.src = R + id + ".webp"; i.alt = ""; return i; };
+
+for (const sec of document.querySelectorAll(".op")) {
+  const op = sec.dataset.op;
+  for (const marco of sec.querySelectorAll(".marco")) {
+    const grilla = marco.querySelector(".grilla");
+    const detalle = marco.querySelector(".detalle");
+    let globo = null;
+    if (op === "A") { globo = document.createElement("div"); globo.className = "globo"; grilla.append(globo); }
+
+    const mostrar = (ficha, [n, id, d]) => {
+      grilla.querySelectorAll(".ficha").forEach(f => f.classList.toggle("on", f === ficha));
+      if (op === "A") {
+        globo.innerHTML = "";
+        const cab = document.createElement("div"); cab.className = "cab";
+        const b = document.createElement("b"); b.textContent = n;
+        cab.append(img(id), b);
+        const p = document.createElement("p"); p.textContent = d;
+        globo.append(cab, p);
+        globo.style.display = "block";
+        const esCelu = marco.classList.contains("celu");
+        globo.style.top = (ficha.offsetTop + ficha.offsetHeight + 10) + "px";
+        if (!esCelu) globo.style.left = Math.min(ficha.offsetLeft, grilla.clientWidth - 300) + "px";
+        const flecha = ficha.offsetLeft + ficha.offsetWidth / 2 - (esCelu ? 0 : Math.min(ficha.offsetLeft, grilla.clientWidth - 300)) - 6;
+        const f = document.createElement("i");
+        f.style.cssText = `position:absolute;top:-7px;left:${flecha}px;width:12px;height:12px;background:var(--panel2);border-left:1px solid var(--primary);border-top:1px solid var(--primary);transform:rotate(45deg)`;
+        globo.append(f);
+      }
+      if (op === "C") {
+        detalle.innerHTML = "";
+        const box = document.createElement("div");
+        const b = document.createElement("b"); b.textContent = n;
+        const p = document.createElement("p"); p.textContent = d;
+        box.append(b, p);
+        detalle.append(img(id), box);
+      }
+    };
+
+    INNOV.forEach((inn, i) => {
+      const [n, id, d] = inn;
+      const f = document.createElement("button"); f.className = "ficha"; f.type = "button";
+      f.append(img(id));
+      if (op === "D") {
+        const c = document.createElement("span"); c.className = "cuerpo";
+        const s = document.createElement("span"); s.textContent = n;
+        const t = document.createElement("span"); t.className = "txt"; t.textContent = d;
+        c.append(s, t); f.append(c);
+        f.addEventListener("click", () => grilla.querySelectorAll(".ficha").forEach(x => x.classList.toggle("on", x === f && !f.classList.contains("on") ? true : x === f ? false : false)));
+        if (i === 0) f.classList.add("on");
+        grilla.append(f);
+        return;
+      }
+      const s = document.createElement("span"); s.textContent = n; f.append(s);
+      if (op === "B") { const dorso = document.createElement("span"); dorso.className = "dorso"; dorso.textContent = d; f.append(dorso); }
+      f.addEventListener("mouseenter", () => mostrar(f, inn));
+      f.addEventListener("click", () => mostrar(f, inn));
+      grilla.insertBefore(f, globo);
+      if (op === "C" && i === 0) setTimeout(() => mostrar(f, inn), 0);
+    });
+    if (op === "A") grilla.addEventListener("mouseleave", () => { if (!marco.classList.contains("celu")) { globo.style.display = "none"; grilla.querySelectorAll(".ficha").forEach(f => f.classList.remove("on")); } });
+  }
+}
+</script>
+</body>
+</html>

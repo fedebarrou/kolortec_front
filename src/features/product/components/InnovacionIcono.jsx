@@ -128,16 +128,19 @@ function urlConCors(src) {
   }
 }
 
-// `tamano` / `relleno`: clases de Tailwind del círculo y del aire del respaldo (56px en la lista de siempre;
-// 34px en la grilla de InnovacionesGrilla).
-function InnovacionIcono({ src, tamano = 'h-14 w-14', relleno = 'p-2.5' }) {
+// `tamano` / `relleno`: clases del círculo y del aire del respaldo (56px en la lista de siempre).
+// `cuadrado`: la imagen tal cual, entera (object-fit: contain) sobre negro y sin esquinas redondas, sin recorte ni
+// normalización: es la imagen de la grilla/recuadro de InnovacionesGrilla (mockup 2026-10-21-innovaciones-imagen, C1).
+// `onError` (sólo con `cuadrado`): la imagen no cargó (404, red); quien la usa cae a la inicial en vez de dejar un
+// cuadrado negro con el ícono de imagen rota (joan REG-002).
+function InnovacionIcono({ src, tamano = 'h-14 w-14', relleno = 'p-2.5', cuadrado = false, onError }) {
   // El resultado se guarda junto con SU src: si cambia la imagen, no se muestra
   // el ícono de la anterior mientras se procesa la nueva.
   const [hecho, setHecho] = useState({ src: null, url: null })
   const listo = hecho.src === src ? hecho.url : cache.get(src)
 
   useEffect(() => {
-    if (cache.has(src)) return undefined
+    if (cuadrado || cache.has(src)) return undefined
     let vivo = true
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -160,8 +163,11 @@ function InnovacionIcono({ src, tamano = 'h-14 w-14', relleno = 'p-2.5' }) {
     return () => {
       vivo = false
     }
-  }, [src])
+  }, [src, cuadrado])
 
+  if (cuadrado) {
+    return <img src={src} alt="" loading="lazy" className={`${tamano} shrink-0 bg-black object-contain`} data-icono="cuadrado" onError={onError} />
+  }
   if (listo) {
     return <img src={listo} alt="" className={`${tamano} shrink-0 rounded-full bg-black object-cover`} data-icono="normalizado" />
   }

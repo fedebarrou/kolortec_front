@@ -327,6 +327,9 @@ function ProductDetailPage() {
   // Medido y no hardcodeado porque el navbar cambia de alto con el idioma y el
   // ancho, y una barra 4px corrida se lee como un error de maquetado.
   const [navTop, setNavTop] = useState(68)
+  // Dónde se clava el recuadro de detalle de las innovaciones (compu): debajo del navbar del sitio MÁS la barra de
+  // secciones de la ficha (la que esté visible: la de escritorio o la de móvil, la otra mide 0), más 12px de aire.
+  const [stickyTop, setStickyTop] = useState(132)
   // Traducción de la descripción corta: el texto inmediato (normalizado, o '' si no
   // hay) se DERIVA en el render; el estado sólo guarda el resultado asíncrono del
   // traductor, atado a la clave (idioma + texto) para el que se pidió.
@@ -380,11 +383,20 @@ function ProductDetailPage() {
     const medir = () => {
       const h = document.querySelector('.site-header')?.getBoundingClientRect().height
       if (h) setNavTop(Math.round(h))
+      const barras = Array.from(document.querySelectorAll('[data-kt-detail-nav]')).reduce((a, el) => a + el.getBoundingClientRect().height, 0)
+      if (h) setStickyTop(Math.round(h + barras + 12))
     }
     medir()
     window.addEventListener('resize', medir)
-    return () => window.removeEventListener('resize', medir)
-  }, [])
+    // La barra de secciones de la ficha no existe mientras carga el producto, y las barras cambian de alto con las
+    // fuentes y el idioma: se vuelve a medir cuando aparece (`loading`) y cuando cambia el tamaño de cualquiera.
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(medir)
+    document.querySelectorAll('.site-header, [data-kt-detail-nav]').forEach((el) => ro?.observe(el))
+    return () => {
+      window.removeEventListener('resize', medir)
+      ro?.disconnect()
+    }
+  }, [loading])
 
   // Vuelta del login: si quedó un archivo pedido para ESTA ficha y ahora hay
   // sesión, se lo ofrecemos en un aviso arriba de Descargas. No se dispara solo
@@ -629,7 +641,7 @@ function ProductDetailPage() {
   ])
 
   return (
-    <section className="kt-detail-page">
+    <section className="kt-detail-page" style={{ '--kt-detail-top': `${stickyTop}px` }}>
       <Seo
         title={product.seoTitle}
         description={product.seoDescription}
@@ -852,7 +864,7 @@ function ProductDetailPage() {
                         cargado son 4, así que el corte no se veía —pero cuando
                         el tenant cargue la quinta, desaparecía en silencio. */}
                     {usaGrilla(product.innovations.length) ? (
-                      <InnovacionesGrilla items={product.innovations} />
+                      <InnovacionesGrilla items={product.innovations} arriba={stickyTop} />
                     ) : product.innovations.map((inn) => (
                       <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
                         {/* REDONDAS (pedido del cliente, oct-2026) y como ÍCONO: entera,
@@ -864,9 +876,9 @@ function ProductDetailPage() {
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
                         )}
                         <div className="grid gap-0.5">
-                          <span className="text-[0.95rem] font-bold leading-tight text-[#f0f2f5]">{inn.title}</span>
+                          <span className="text-[length:var(--innov-titulo-size)] font-[weight:var(--innov-titulo-peso)] leading-[var(--innov-titulo-lh)] text-[color:var(--innov-titulo-color)]">{inn.title}</span>
                           {inn.description ? (
-                            <span className="text-[0.85rem] leading-[1.5] text-[#aeb4bf]">{inn.description}</span>
+                            <span className="text-[length:var(--innov-texto-size)] leading-[var(--innov-texto-lh)] text-[color:var(--innov-texto-color)]">{inn.description}</span>
                           ) : null}
                         </div>
                       </article>

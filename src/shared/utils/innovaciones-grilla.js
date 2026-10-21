@@ -1,8 +1,10 @@
 /**
- * innovaciones-grilla — cómo se muestran las innovaciones de la ficha (mockup 2026-10-20-innovaciones, opción B).
+ * innovaciones-grilla — cómo se muestran las innovaciones de la ficha (mockup 2026-10-20-innovaciones, opción B;
+ * detalle en un recuadro arriba: mockup 2026-10-21-innovaciones-imagen, opción C1).
  *
  * Hasta 4 innovaciones: lista completa con descripción, como siempre. Desde la 5.ª: grilla de fichas
- * compactas (compu) / carrusel de páginas de 6 (celular, 2 columnas × 3 filas).
+ * compactas (compu) / carrusel de páginas de 6 (celular, 2 columnas × 3 filas), con el detalle de la
+ * señalada en un recuadro fijo arriba de la grilla.
  * FUNCIONES PURAS (sin DOM ni React) para probarlas en node: scripts/check-innovaciones-grilla.mjs.
  */
 
@@ -15,6 +17,16 @@ export const POR_PAGINA = 6
 /** ¿Se muestra la grilla/carrusel? Con 4 o menos (o nada), no. */
 export function usaGrilla(cantidad) {
   return Number.isFinite(cantidad) && cantidad > UMBRAL_LISTA
+}
+
+/** ¿La innovación tiene algo para mostrar en el recuadro de detalle? Una descripción de sólo espacios es no tener. */
+export function tieneDescripcion(item) {
+  return typeof item?.description === 'string' && item.description.trim() !== ''
+}
+
+/** Índice de la innovación que el recuadro muestra al cargar: la primera con descripción. Ninguna → -1 (sin recuadro). */
+export function primeraConDescripcion(items) {
+  return Array.isArray(items) ? items.findIndex(tieneDescripcion) : -1
 }
 
 /** Parte la lista en páginas de `porPagina` (la última puede ser más corta). Lista vacía o inválida → []. */
