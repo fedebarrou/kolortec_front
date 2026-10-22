@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Background, animProps } from "./Background";
 import { cssColor, cssFontFamily, cssNumber, safeSrc } from "./cssSafe";
-import { ElementView, boxAt } from "./elements/ElementView";
+import { ElementView, boxAt, msSalidaDelPaso } from "./elements/ElementView";
 import { createSnapEngine } from "./snapEngine";
 import { SnapChrome } from "./SnapChrome";
 import { esFondo, estiloCapaEscena, partirCapas, porZ, zIndexCapa } from "./layers";
@@ -229,10 +229,10 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
   // como elemento `media`) -> overlay -> scrim -> elementos de CONTENIDO (z >= 1). La
   // oscuridad va arriba de la foto y abajo del texto. zIndex explicitos.
   const { fondo, contenido } = partirCapas((slide.elements || []).filter((el) => !el.timing || (time >= el.timing.from && time <= el.timing.to)));
-  const pintar = (el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}><ElementView el={el} bp={breakpoint} reveal={reveal(el)} accentColor={cssColor(config.theme?.colors?.primary)} themePreset={themePreset} /></div>; };
+  const pintar = (el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}><ElementView el={el} bp={breakpoint} tabletComoEscritorio reveal={reveal(el)} accentColor={cssColor(config.theme?.colors?.primary)} themePreset={themePreset} /></div>; };
   // isolation: los zIndex altos de las capas (./layers.js, hasta 1002+) quedan ADENTRO del escenario y no tapan
   // el chrome de afuera (Saltar, flechas: zIndex 5). Sin esto «Saltar» quedó sin clic (Kolortec, 12-oct-2026).
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), color: cssColor(config.theme?.colors?.text, "#ffffff"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} />
     {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} /> : null}
     {fondo.map(pintar)}
@@ -328,9 +328,9 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
         position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el),
         transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined,
         pointerEvents: bgLayer ? "none" : (arrived ? "auto" : "none"),
-      }}><ElementView el={el} bp={breakpoint} snapState={snapState} accentColor={accentColor} themePreset={themePreset} /></div> };
+      }}><ElementView el={el} bp={breakpoint} tabletComoEscritorio snapState={snapState} accentColor={accentColor} themePreset={themePreset} /></div> };
     });
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), color: cssColor(config.theme?.colors?.text, "#ffffff"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     {/* Breathing (idle, kolortec): el fondo pulsa a grayscale y vuelve al color. */}
     <div style={{ position: "absolute", inset: 0, filter: breatheG > 0.01 ? `grayscale(${breatheG.toFixed(3)})` : undefined }}>
       <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} scrubAlways />
@@ -347,17 +347,14 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
       .map((el, i) => {
         const box = boxAt(el, breakpoint);
         const drift = parallaxY ? (0.6 + i * 0.35) * parallaxY : 0;
-        return <div key={`leaving:${el.id}`} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el), transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined }}>
-          <ElementView el={el} bp={breakpoint} snapState="leaving" accentColor={accentColor} themePreset={themePreset} />
+        return <div key={`leaving:${el.id}`} data-paso-saliente="true" style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el), pointerEvents: "none", transform: drift ? `translateY(${drift.toFixed(1)}px)` : undefined }}>
+          <ElementView el={el} bp={breakpoint} tabletComoEscritorio snapState="leaving" accentColor={accentColor} themePreset={themePreset} />
         </div>;
       }) : null}
     {nodos.filter((n) => !n.fondo).map((n) => n.nodo)}
   </div>;
 }
 
-// Debe coincidir con SNAP_TRANSITION de ElementView.jsx (.7s): cuánto se
-// mantiene montado el paso saliente animando afuera (Fase 1c, snapState="leaving").
-const LEAVE_MS = 700;
 
 function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = null, isFirst = false }) {
   const wrapRef = useRef(null);
@@ -470,12 +467,12 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
         setArrived(false);
         arrivedRef.current = false;
         // Fase 1c: capturar el paso SALIENTE (el último arribado) y mantenerlo
-        // montado LEAVE_MS animando afuera — kolortec: saliente/entrante
+        // montado lo que dura su salida más lenta (msSalidaDelPaso: piso 700, techo 2000) — kolortec: saliente/entrante
         // conviven mientras dura la transición.
         const outgoing = slidesRef.current[fromIndexRef.current];
         setLeavingSlide(outgoing || null);
         if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
-        leaveTimerRef.current = setTimeout(() => setLeavingSlide(null), LEAVE_MS);
+        leaveTimerRef.current = setTimeout(() => setLeavingSlide(null), msSalidaDelPaso(outgoing?.elements));
         if (arrivedTimerRef.current) clearTimeout(arrivedTimerRef.current);
       },
       onArrived: () => {

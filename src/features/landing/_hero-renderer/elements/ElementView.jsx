@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { cssAngle, cssNumber } from '../cssSafe'
 import { TextView } from './TextView'
 import { ButtonView } from './ButtonView'
@@ -11,6 +12,7 @@ import { ShapeView } from './ShapeView'
 import { IconView } from './IconView'
 import { RatingView } from './RatingView'
 import { LogoView } from './LogoView'
+import { curvaDe, entradaSnap, estadoSnap, estiloDeReveal, msSalidaSnap, SNAP_CON_KEYFRAMES, SNAP_CURVA_POR_DEFECTO } from './revelar'
 
 // eslint-disable-next-line react-refresh/only-export-components -- helper puro que usa el renderer; el archivo se copia byte-idéntico a la store, no se parte. Sólo afecta al Fast Refresh en dev.
 export function effectiveProps(el, bp) {
@@ -75,24 +77,58 @@ const EXIT_MAX_MS = 400
 const STAGGER_TYPES = ['stats', 'quicklinks']
 const STAGGER_MAX_MS = 600
 
-// snapState (modo snap, Fase 1c): transición CSS opacity/transform — reemplaza
-// la animation por keyframe cuando el host (SnapStage/ScrollStage) mantiene
-// montado el paso saliente ('leaving') y anima el entrante ('pending' → 'in')
-// en vez de desmontar/remontar por nonce. Target 'oculto' idéntico para
-// pending/leaving (kolortec: setActiveStep(-1) aplica el mismo estilo a
-// cualquier bloque no-activo, sin importar si entra o sale).
-const SNAP_HIDDEN_TRANSFORM = 'translateY(34px) scale(0.96)'
-const SNAP_TRANSITION = 'opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1)'
+// snapState (modo snap, Fase 1c): transición CSS — reemplaza la animation por keyframe cuando el host (SnapStage/ScrollStage)
+// mantiene montado el paso saliente ('leaving') y anima el entrante ('pending' → 'in') en vez de desmontar/remontar por nonce.
+// Target 'oculto' idéntico para pending/leaving (kolortec: setActiveStep(-1) aplica el mismo estilo a cualquier bloque no-activo,
+// sin importar si entra o sale).
+// La transición sale de la animación del elemento, igual que en el carrusel: el TIPO decide desde dónde entra (estadoSnap), y
+// durationMs / delayMs / easing los fija el panel. Sólo cuando el diseño no fijó duración o curva rige la de kolortec (0,7 s), y un
+// elemento sin animación ('none' o ausente) entra con el movimiento de kolortec (entradaSnap en ./revelar).
+// VIS-101: lo guardado SÓLO cuenta si el panel de «Por pasos» lo marcó (`animation.enSnap: true`, ver entradaSnap). Sin la marca —las
+// plantillas, los diseños anteriores, lo que genera la IA— rige el movimiento de kolortec, que es lo que se publicaba.
+// Al SALIR (paso saliente, 'leaving') el elemento se monta VISIBLE y recién después de pintar ese primer frame ejecuta su salida: el
+// reverso de su entrada, con la misma duración y curva pero SIN retardo (VIS-102: todos salen juntos, así nunca se corta por el techo
+// de msSalidaDelPaso). `animation.exit` es del carrusel y acá se ignora (VIS-103). Si se montara ya en el estado oculto no habría
+// nada que interpolar y el elemento desaparecería de golpe (el nodo seguía montado, pero invisible).
+// El escalonado no existe acá (el panel no lo ofrece en este modo).
+
+/** Cuánto (ms) debe seguir montado el paso saliente en «Por pasos»: lo que tarda su salida más lenta (piso 700, techo 2000). */
+export function msSalidaDelPaso(elementos) {
+  return msSalidaSnap(elementos, ANIM_TYPES)
+}
 
 // `active` (opcional): sólo lo pasa el carrusel. `false` = esta escena NO es la visible (está saliendo o esperando);
 // ahí corre la salida del elemento, si tiene. Sin `active` (scroll, snap, preview) no hay momento de salida: se ignora `exit`.
-export function ElementView({ el, bp, reveal, accentColor, themePreset, snapState, active }) {
-  if (el.hidden?.[bp]) return null
+/**
+ * ¿El elemento está oculto en este breakpoint? La ÚNICA regla (ElementView la usa para no pintar y el ojo de cada capa del Lab para mostrar el estado).
+ * `tabletComoEscritorio` lo pasa SÓLO el scrolltelling: allí la tablet se veía como escritorio, así que sin `hidden.tablet` explícito rige `hidden.desktop` (lo que
+ * se publicaba). El carrusel no lo pasa y sigue como estaba; con `hidden.tablet` explícito manda ese.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- helper puro de visibilidad que comparten el renderer y el ojo de las capas del Lab; el archivo se copia byte-idéntico, no se parte.
+export function estaOculto(el, bp, tabletComoEscritorio) {
+  return !!(el.hidden?.[bp] ?? (tabletComoEscritorio && bp === 'tablet' ? el.hidden?.desktop : undefined))
+}
+
+export function ElementView({ el, bp, reveal, accentColor, themePreset, snapState, active, tabletComoEscritorio }) {
+  // Paso saliente: false = primer frame (visible); true = ya pintado, ahora ejecuta la salida. Dos rAF = el frame visible llegó a pantalla.
+  const [salidaIniciada, setSalidaIniciada] = useState(false)
+  useEffect(() => {
+    if (snapState !== 'leaving') return undefined
+    let r2 = 0
+    const r1 = requestAnimationFrame(() => { r2 = requestAnimationFrame(() => setSalidaIniciada(true)) })
+    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2) }
+  }, [snapState])
+  if (estaOculto(el, bp, tabletComoEscritorio)) return null
+  // VIS-002 · el paso saliente se ve SALIR sólo si lo elegiste (`animation.enSnap`). Sin la marca, como se publicaba: desaparece de golpe.
+  if (snapState === 'leaving' && el.animation?.enSnap !== true) return null
   const animType = ANIM_TYPES.includes(el.animation?.type) ? el.animation.type : 'fade'
   const easing = EASING_CSS[el.animation?.easing] ?? EASING_CSS.ease
-  const exitType = EXIT_TYPES.includes(el.animation?.exit) ? el.animation.exit : 'none'
-  const saliendo = active === false && exitType !== 'none'
-  const staggerMs = STAGGER_TYPES.includes(el.type) ? Math.min(STAGGER_MAX_MS, Math.max(0, cssNumber(el.animation?.stagger ?? 0, 0))) : 0
+  // `exit` es del carrusel: en «Por pasos» (snapState definido) se ignora aunque el diseño lo traiga; la salida es el reverso de la entrada.
+  const exitType = snapState === undefined && EXIT_TYPES.includes(el.animation?.exit) ? el.animation.exit : 'none'
+  const saleYa = snapState === 'leaving' && salidaIniciada
+  const saliendo = (active === false || saleYa) && exitType !== 'none'
+  // El escalonado rige en el carrusel y en el scroll continuo; en «Por pasos» no (ver SNAP_*).
+  const staggerMs = snapState === undefined && STAGGER_TYPES.includes(el.type) ? Math.min(STAGGER_MAX_MS, Math.max(0, cssNumber(el.animation?.stagger ?? 0, 0))) : 0
   const parts = []
   let opacity = el.opacity === undefined ? undefined : cssNumber(el.opacity, 1)
   let anim
@@ -102,11 +138,24 @@ export function ElementView({ el, bp, reveal, accentColor, themePreset, snapStat
   let escalonado
 
   if (snapState !== undefined) {
-    transition = SNAP_TRANSITION
-    if (snapState !== 'in') {
-      opacity = 0
-      parts.push(SNAP_HIDDEN_TRANSFORM)
+    // 'none' o sin animación = el movimiento de kolortec (lo publicado hoy); un tipo elegido en el Lab se ve tal cual.
+    const { tipo, ms: durSnap, retardo, easing: easingSnap } = entradaSnap(el.animation, ANIM_TYPES)
+    const retraso = snapState === 'in' ? retardo : 0 // sólo la ENTRADA lleva el retardo; el que espera y el que sale, no (VIS-102)
+    const curvaSnap = Object.prototype.hasOwnProperty.call(EASING_CSS, easingSnap) ? EASING_CSS[easingSnap] : SNAP_CURVA_POR_DEFECTO
+    // En pie (visible): entrando, o saliente que todavía no ejecutó su salida.
+    const enPie = snapState === 'in' || (snapState === 'leaving' && !saleYa)
+    const estado = estadoSnap(tipo, enPie)
+    if (snapState === 'in' && SNAP_CON_KEYFRAMES.includes(tipo)) {
+      // bounce / mask-reveal al ENTRAR: el mismo @keyframes del carrusel (rebote; máscara que termina al final, sin fundido de opacidad).
+      anim = `hc-${tipo} ${durSnap}ms ${curvaSnap} ${retraso}ms both`
+    } else {
+      transition = ['opacity', ...Object.keys(estado).map((k) => (k === 'clipPath' ? 'clip-path' : k))]
+        .map((prop) => `${prop} ${durSnap}ms ${curvaSnap} ${retraso}ms`).join(', ')
     }
+    if (estado.transform) parts.push(estado.transform)
+    filter = estado.filter
+    clip = estado.clipPath
+    if (!enPie) opacity = 0
   } else if (reveal === undefined) {
     // Optional chaining: elementos legacy pueden venir sin objeto animation.
     const durMs = cssNumber(el.animation?.durationMs ?? 500, 500)
@@ -120,29 +169,24 @@ export function ElementView({ el, bp, reveal, accentColor, themePreset, snapStat
       anim = `hc-${animType} ${durMs}ms ${easing} ${delayMs}ms both`
     }
   } else {
-    const r = Math.max(0, Math.min(1, reveal))
-    const eo = 1 - Math.pow(1 - r, 3)
-    const off = (1 - eo)
-    const fadeIn = Math.min(1, r * 1.6)
-    switch (animType) {
-      case 'fade': opacity *= r; break
-      case 'slide-up': opacity *= fadeIn; parts.push(`translateY(${off * 45}%)`); break
-      case 'slide-down': opacity *= fadeIn; parts.push(`translateY(${-off * 45}%)`); break
-      case 'zoom': opacity *= fadeIn; parts.push(`scale(${0.7 + 0.3 * eo})`); break
-      case 'bounce': opacity *= fadeIn; parts.push(`translateY(${off * 45}%) scale(${0.92 + 0.08 * eo})`); break
-      case 'kolortec': opacity *= fadeIn; parts.push(`translateY(${off * 34}px) scale(${0.96 + 0.04 * eo})`); break
-      case 'focus': opacity *= eo; parts.push(`translateY(${off * 16}px)`); if (eo < 1) filter = `blur(${off * 5}px)`; break
-      case 'blur-in': opacity *= eo; if (eo < 1) filter = `blur(${off * 14}px)`; break
-      case 'slide-left': opacity *= fadeIn; parts.push(`translateX(${off * 45}%)`); break
-      case 'slide-right': opacity *= fadeIn; parts.push(`translateX(${-off * 45}%)`); break
-      case 'rotate-in': opacity *= fadeIn; parts.push(`rotate(${-8 * off}deg) scale(${0.92 + 0.08 * eo})`); break
-      case 'mask-reveal': if (eo < 1) clip = `inset(0 ${off * 100}% 0 0)`; break
+    // Scroll continuo: la entrada se escrubea con el progreso `reveal`. La curva (easing) le da la forma y el escalonado reparte la
+    // ventana entre los hijos de stats / quicklinks (el contenedor no se anima: lo hace cada hijo, como en el carrusel).
+    const curva = curvaDe(el.animation?.easing)
+    if (staggerMs > 0 && animType !== 'none') {
+      escalonado = { revelar: { tipo: animType, r: reveal, curva, ms: cssNumber(el.animation?.durationMs ?? 600, 600), paso: staggerMs } }
+    } else {
+      const e = estiloDeReveal(animType, reveal, curva)
+      if (e.opacidad !== 1) opacity = (opacity ?? 1) * e.opacidad
+      if (e.transform) parts.push(e.transform)
+      filter = e.filter
+      clip = e.clipPath
     }
   }
 
   const tf = parts.join(' ') || undefined
   // rotate-in y zoom-out giran/escalan desde el centro; el resto, desde la esquina (como siempre).
-  const origen = (saliendo ? exitType === 'zoom-out' : animType === 'rotate-in') ? 'center' : 'top left'
+  const tipoEntrada = snapState !== undefined ? entradaSnap(el.animation, ANIM_TYPES).tipo : animType
+  const origen = (saliendo ? exitType === 'zoom-out' : tipoEntrada === 'rotate-in') ? 'center' : 'top left'
   const persistent = []
   const s = cssNumber(el.scale ?? 1, 1)
   if (s !== 1) persistent.push(`scale(${s})`)

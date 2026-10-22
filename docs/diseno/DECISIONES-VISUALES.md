@@ -67,3 +67,39 @@ Lo más nuevo arriba. Mockups congelados en `docs/diseno/mockups/`.
 - **C (general + igualado + ajuste fino)**: más controles de los que hacen falta. El igualado automático ya resuelve lo desparejo, y el retoque por marca cubre el resto.
 
 **Mockup:** `tiendita-front/docs/diseno/mockups/2026-10-17-tamano-marcas/b.html`.
+
+## Hero · 4ª vuelta de paridad (21-oct-2026): «si lo elegiste en los Labs se ve eso; si no elegiste nada se ve como ya está publicado»
+
+Regla del dueño. Cada ítem de abajo la aplica; ninguno cambia lo que un diseño ya publicado muestra si no trae la marca o la clave.
+
+- **VIS-001** · un encabezado SIN `settings` se publica con autoplay a 7000 ms, sin flechas y con puntos; SIN `theme`, con Inter y la paleta de siempre (`SETTINGS_PUBLICADOS` / `THEME_PUBLICADO` en scroll-contract.js). Un `settings` o `theme` incompleto pasa tal cual (el acento sin `colors.primary` sigue siendo #fff). La vista previa del Lab muestra los mismos valores (normalizeConfig en defaults.js). Los defaults del Lab (`CAROUSEL_SETTINGS_DEFAULTS` / `THEME_DEFAULTS` = newConfig) quedan sólo para diseños NUEVOS.
+- **VIS-002** · el paso saliente de «Por pasos» se ve salir (desvanece y baja 34px) SOLO con `animation.enSnap`; sin la marca desaparece de golpe, como antes.
+- **VIS-003** · el hero de la tienda va a sangre (radio 0, sombra none) SOLO si el diseño trae `fullHeight === true` y `heroWidth === 'full'` explícitos (`heroPantallaCompletaElegida`). Sin esas claves se publica con el radio y la sombra del tema. Medido en navegador (mock de joan, 1440 y 390): Pantalla completa explícita → radio 0 / sombra none; sin claves → radio 24 y sombra; Encabezado → conserva radio y sombra. (El límite que se anotó acá en su día ya se cerró: ver «VIS-003 (corregido)» más abajo.)
+- **VIS-004** · (REEMPLAZADO por «Kolortec celular = Pantalla completa», abajo.) Kolortec: sin `hero_frame.gutter` numérico el celular quedaba en 65svh.
+
+## Kolortec celular = Pantalla completa (Fedev 22-oct)
+
+Decisión del dueño: en el celular el Hero de Kolortec va a **pantalla completa**, no al 65 %. Reemplaza a VIS-004 (65svh sin marco) y al `mobile_height_vh` del marco para el alto del celular.
+- Kolortec: `heroAltura.js` → `alturaDelHero` devuelve `ALTO_PANTALLA` (100dvh / escala del lienzo) en el celular cuando el diseño no eligió nada. Lo ELEGIDO (`heightMobile` / `aspectMobile`) se sigue viendo.
+- Lab: `marcoDelSitio.js` → `altoMovilDelSitio`; el Canvas dibuja el celular de una cuenta con marco declarado a pantalla completa.
+- Pruebas: `scripts/check-hero-altura.mjs` (Kolortec) y `scripts/check-hero-roundtrip.mjs` (Lab).
+
+## Hero · vueltas 5 a 9 (22-oct-2026)
+
+- **Regla de bleed: a sangre (pantalla completa) radio 0; contenido, el radio elegido** · una cuenta que declara `appearance.hero_frame` con `gutter` numérico (Kolortec) pasa `bleed` fijo (su HeroSection): en pantalla completa el hero va a SANGRE (radio 0, sin sombra: «Kolortec siempre a sangre» en pantalla completa); en un Encabezado CONTENIDO conserva el radio y la sombra elegidos (CarouselRenderer: `contained` gana sobre `bleed`, VIS-021). La tienda estándar va a sangre sólo con «Pantalla completa» ELEGIDA (`heroPantallaCompletaElegida`). Es UNA regla en el Lab: `heroVaASangre(settings, heroFrame)` (`sitioDeclaraMarco` en defaults.js) para el Canvas, `LiveCarouselPreview` y `TemplatesButton`, y `heroRadioNoAplica` para el panel de Ajustes.
+- **VIS-003 (corregido)** · el «Límite conocido» que decía que la vista previa del Lab mostraba a sangre un diseño viejo ya NO es cierto: `normalizeConfig` no completa las claves de tamaño (REG-004 / VIS-012), el Lab usa `heroVaASangre` y un diseño legacy mide radio 12 con sombra en el Lab igual que en la tienda (banco v9, diseño «a»: Lab 12px = tienda 12px).
+- **VIS-012** · el Lab NO completa elementos al cargar (`normalizeElement` devuelve el elemento tal cual): el texto suelto mide 16px en el Lab igual que en las sedes (antes 17,36 por el 28px / peso 800 de `propsFor`). Los valores explícitos se escriben al CREAR un elemento (`newElement`, `completarElementoNuevo` para la IA); el Inspector lee con el default del tipo de respaldo, sin escribirlo.
+- **VIS-013** · la misma regla del bleed en todas las vistas del Lab (ver arriba).
+- **VIS-014** · el ojo de cada capa del Lab usa la misma función que `ElementView` para saber si un elemento está oculto (`estaOculto`; en scroll la tablet hereda `hidden.desktop`).
+- **VIS-015** · los cortes de breakpoint (768 / 1024) viven UNA vez por repo en `responsive.js` (`MOBILE_BELOW`, `TABLET_BELOW`, `breakpointDeAncho`) y check-hero-paridad exige el mismo valor en los tres repos.
+- **VIS-016 / VIS-021** · el panel de Ajustes (esquinas redondeadas / radio) usa `heroRadioNoAplica(set, heroFrame)`: los controles se deshabilitan sólo si el hero va de verdad a sangre (regla del sitio Y modo pantalla completa); un Encabezado contenido en una cuenta con marco conserva el radio y la sombra elegidos, como lo publicado.
+- **VIS-017** · el Canvas en tablet usa 4:3 (`PANTALLA_SUPUESTA.tablet`, `PANTALLAS_REALES.tablet`: 5:4 a 16:10): a 768 mide 1024, no 432.
+- **VIS-018** · el lienzo del carrusel dibuja las flechas y los puntos REALES del renderer (placas fantasma sin elementos), para ver que la flecha izquierda puede tapar un botón a 375.
+- **VIS-019** · este documento: corregido el «Límite conocido» y sumados VIS-012 a VIS-020 y la regla de Kolortec.
+- **VIS-020** · los cortes de los container queries del hero (640 / 768 / 1024 / 1280) se nombran en `responsive.js` (`CQ_*`) y check-hero-paridad exige que todo corte de las hojas de las tres sedes sea uno de ellos.
+
+## Límite conocido VIS-026 (22-oct-2026) — se resuelve después del deploy
+
+El texto suelto (`text`) sin `lineHeight` propio hereda el `line-height` de la página: en el Lab da `normal`, en la tienda 24,8px (1,55 × 16 de `globals.css`) y en Kolortec 24px (1,5 × 16). Es el mismo mecanismo que VIS-012 (antes `normalizeElement` escribía `lineHeight: 1.1`). Medido en el banco: font-family, letter-spacing, peso, align y estilo ya coinciden en las tres sedes; sólo difiere el line-height del texto suelto.
+- **NO se arregla en esta rama.** Propuesta de ra: el lienzo del Lab declara lo que el sitio hereda (line-height 1,55 en la tienda / 1,5 en Kolortec) y lo mismo para `font-weight`, `letter-spacing`, el align y el transform, de modo que lo heredado se vea igual en el editor y en la web.
+- Se hace después del deploy.

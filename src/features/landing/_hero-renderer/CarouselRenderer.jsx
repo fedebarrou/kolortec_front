@@ -1,11 +1,11 @@
-import { useCallback } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
 import { Background } from './Background'
 import { cssAspect, cssColor, cssFontFamily, cssLength, cssNumber, cssPick } from './cssSafe'
 import { ElementView, boxAt } from './elements/ElementView'
 import { useCarousel } from './useCarousel'
 import { estiloCapaEscena, partirCapas, zIndexCapa } from './layers'
 import { ScrollScrim } from './ScrollRenderer'
-import { SIZE_COMPAT_DEFAULTS } from './scroll-contract'
+import { SIZE_COMPAT_DEFAULTS, heroPantallaCompletaElegida } from './scroll-contract'
 
 const shadowOf = (s) =>
   cssPick({ none: 'none', sm: '0 1px 4px rgba(0,0,0,.2)', md: '0 6px 20px rgba(0,0,0,.3)', lg: '0 12px 40px rgba(0,0,0,.45)' }, s)
@@ -28,7 +28,35 @@ function slideStyle(visible, i, activeIndex, isSlide) {
   }
 }
 
+// VIS-007 · «si lo elegiste se ve eso; si no elegiste nada se ve como ya está publicado»: sólo un elemento con `animation` (una entrada elegida) repite
+// su entrada al activarse la escena. Uno SIN `animation` caía en el fade de 500 ms por defecto y, al remontarse, parpadeaba en cada pasada; en HEAD
+// no se veía en las escenas 2..N y el Lab tampoco lo muestra. Los `media` tampoco se remontan (arrancarían de cero).
+// Un solo predicado (VIS-012): «el elemento tiene una animación ELEGIDA» = `animation` es un objeto. Lo usan el remontaje y el reinicio de los media.
+const tieneAnimacion = (e) => typeof e.animation === 'object' && !!e.animation
+const repiteEntrada = (el) => el.type !== 'media' && tieneAnimacion(el)
+
 function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accentColor }) {
+  // Todas las escenas están montadas desde el principio, así que la animación de entrada de las escenas 2..N corría al montar (con la
+  // escena invisible) y al activarse ya había terminado: CSS no reinicia una animación que no cambia. Cada vez que la escena PASA a
+  // visible se renueva `gen` y con él la key de sus elementos → se remontan y la entrada corre de nuevo (igual que `replayNonce` en
+  // el lienzo del editor). Al dejar de ser visible NO se remonta: la escena saliente se desvanece sin repetir su entrada.
+  const gen = useRef(0)
+  const estabaVisible = useRef(visible)
+  if (visible && !estabaVisible.current) gen.current += 1
+  estabaVisible.current = visible
+  // Los `media` (video) NO se remontan al reactivar la escena: arrancarían de cero. Se les reinicia sólo la animación de entrada.
+  const caja = useRef(null)
+  const reactivada = gen.current
+  useLayoutEffect(() => {
+    const raiz = caja.current
+    if (reactivada === 0 || !raiz || typeof raiz.getAnimations !== 'function') return
+    const idsMedia = new Set(slide.elements.filter((e) => e.type === 'media' && tieneAnimacion(e)).map((e) => e.id))
+    for (const nodo of raiz.querySelectorAll('[data-el]')) {
+      if (!idsMedia.has(nodo.getAttribute('data-id'))) continue
+      for (const a of nodo.getAnimations({ subtree: true })) { a.cancel(); a.play() }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reactivada])
   // Orden de capas (./layers.js): fondo de escena -> elementos de FONDO (z <= 0,
   // la foto como elemento `media`) -> scrim -> overlay -> elementos de CONTENIDO
   // (z >= 1). La oscuridad va arriba de la foto y abajo del texto. zIndex explicitos.
@@ -36,14 +64,14 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
   const pintar = (el) => {
     const box = boxAt(el, bp)
     return (
-      <div key={el.id} data-el data-id={el.id}
+      <div key={repiteEntrada(el) ? `${el.id}:${gen.current}` : el.id} data-el data-id={el.id}
         style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}>
         <ElementView el={el} bp={bp} accentColor={accentColor} active={visible} />
       </div>
     )
   }
   return (
-    <div style={slideStyle(visible, slideIndex, activeIndex, isSlide)} data-slide>
+    <div ref={caja} style={slideStyle(visible, slideIndex, activeIndex, isSlide)} data-slide>
       <Background bg={slide.background} />
       {fondo.map(pintar)}
       {/* Scrim de escena: el mismo campo `slide.scrim` del modo scroll. Antes
@@ -114,7 +142,10 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // Parentesis obligatorios: `??` liga mas fuerte que `?:`, sin ellos
   // `containerHeight ?? usaAspecto ? a : b` se evalua como `(containerHeight ?? usaAspecto) ? a : b`
   // y un containerHeight presente daria undefined (hero sin alto).
-  const height = containerHeight ?? (usaAspecto ? undefined : (fullHeight ? 'var(--vh-full, 100vh)' : (breakpoint === 'mobile' ? heightMobile : heightDesktop)))
+  // REG-003 · un `heightMobile` ELEGIDO se ve en el celular aunque el diseño no tenga fullHeight/heroWidth (el modo «completo» es sólo el compat): sólo una
+  // «Pantalla completa» elegida (las dos claves explícitas) gana sobre él.
+  const alturaMovilElegida = breakpoint === 'mobile' && Number.isFinite(settings.heightMobile) && !heroPantallaCompletaElegida(settings)
+  const height = containerHeight ?? (usaAspecto ? undefined : ((fullHeight && !alturaMovilElegida) ? 'var(--vh-full, 100vh)' : (breakpoint === 'mobile' ? heightMobile : heightDesktop)))
   const radius = contained ? cssLength(theme.radius) : (bleed ? 0 : cssLength(theme.radius))
   const shadow = contained ? shadowOf(theme.shadow) : (bleed ? 'none' : shadowOf(theme.shadow))
   const isSlide = settings.transition === 'slide'
@@ -124,7 +155,7 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // layout mobile (centrado abajo) en vez del desktop (derecha, centrado).
   // Faltaba en las 3 copias del renderer, no solo acá.
   return (
-    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), containerType: 'inline-size', containerName: 'hc-stage' }}>
+    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), color: cssColor(theme.colors?.text, '#ffffff'), containerType: 'inline-size', containerName: 'hc-stage' }}>
       {config.background && config.background.type !== 'none' && (
         <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} /></div>
       )}

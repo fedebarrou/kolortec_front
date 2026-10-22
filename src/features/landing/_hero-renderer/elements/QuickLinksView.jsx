@@ -13,7 +13,7 @@ export function QuickLinksView({ p, escalonado }) {
   return (
     <div data-fit style={{ display: 'flex', flexWrap: p.layout === 'wrap' ? 'wrap' : 'nowrap', gap: cqw(p.gap) }}>
       {p.items.map((it, i) => (
-        <a key={i} href={safeHref(it.href)} data-hero-anim={escalonado ? '' : undefined} style={{ background: 'rgba(255,255,255,.9)', padding: `${cqw(6)} ${cqw(12)}`, borderRadius: cqw(999), textDecoration: 'none', whiteSpace: 'nowrap', ...typo, ...estiloEscalonado(escalonado, i) }}>
+        <a key={i} href={safeHref(it.href)} data-hero-anim={escalonado ? '' : undefined} style={{ background: 'rgba(255,255,255,.9)', padding: `${cqw(6)} ${cqw(12)}`, borderRadius: cqw(999), textDecoration: 'none', whiteSpace: 'nowrap', ...typo, ...estiloEscalonado(escalonado, i, p.items.length) }}>
           {it.icon ? `${it.icon} ` : ''}{it.label}
         </a>
       ))}

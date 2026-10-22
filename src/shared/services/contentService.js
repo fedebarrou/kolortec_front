@@ -16,7 +16,8 @@
 import { defaultLandingContent } from '../../features/landing/data/landingData.js'
 import { resolveAccountHost } from './accountHost.js'
 import { DEMO_MODE } from '../../config.js'
-import { normalizeScrollDesign } from '../../features/landing/_hero-renderer/scroll-contract.js'
+import { normalizeScrollDesign, completarAjustes } from '../../features/landing/_hero-renderer/scroll-contract.js'
+import { mapCustomFonts } from '../utils/customFonts'
 import { safeSrc } from '../../features/landing/_hero-renderer/cssSafe.js'
 import { setProtectedTermsLoader } from './dynamicTranslationService.js'
 import { normalizarEscala } from '../utils/marcas-tamano.js'
@@ -565,14 +566,6 @@ function textValue(block) {
   return (block && typeof block === 'object' ? block.value : block) || ''
 }
 
-// Default theme para CarouselRenderer cuando el backend no envía theme.
-const DEFAULT_THEME = {
-  colors: { primary: '#5b6cff', secondary: '#9c4dff', text: '#ffffff', bg: '#111111', accent: '#ffd54a' },
-  fontFamily: 'Inter, sans-serif',
-  radius: 12,
-  shadow: 'md',
-}
-
 /**
  * labConfigFromCarousel — arma el config del renderer a partir de un design
  * (carrusel O scrolltelling) del payload de /public/hero-config.
@@ -592,10 +585,14 @@ function labConfigFromCarousel(carousel) {
   // filter por objeto: el back puede emitir null para scenes corruptas en DB.
   const publicScenes = scenes.filter((s) => s && typeof s === 'object' && !s.hidden)
   if (publicScenes.length === 0) return null
+  // settings/theme AUSENTES por completo se completan con lo que se PUBLICABA (completarAjustes: SETTINGS_PUBLICADOS = autoplay a 7000 ms, sin
+  // flechas, con puntos; THEME_PUBLICADO = Inter y la paleta de siempre), no con los defaults del Lab. Un settings/theme que el diseño trae, aunque
+  // incompleto, pasa tal cual. Espejo de tiendita-store/lib/api.js.
+  const { settings, theme } = completarAjustes(carousel?.settings, carousel?.theme)
   return normalizeScrollDesign({
     version: 1,
-    settings: carousel?.settings ?? null,
-    theme: carousel?.theme ?? DEFAULT_THEME,
+    settings,
+    theme,
     background: carousel?.background ?? { type: 'none' },
     slides: publicScenes.map((s) => ({
       id: s.id,
@@ -829,7 +826,13 @@ export async function getLandingContent() {
   const gallery = mapGallery(igFeed, galeriaRaw)
   const support = mapWebConfigToSupport(webConfig)
   const clientLogos = mapMarcasToClientLogos(marcasRaw, normalizarNamePosition(webConfig?.section_card_styles?.marcas?.name_position))
-  const hero = mapHeroConfig(heroCfgRaw)
+  // El marco del hero que la cuenta declara (appearance.hero_frame), el logo de la cuenta y sus fuentes propias: el hero publicado
+  // tiene que usar lo mismo que el Lab (alto en el celular, logo del snap, tipografías cf…). Ver heroAltura.js.
+  const hero = { ...mapHeroConfig(heroCfgRaw), heroFrame: webConfig?.appearance?.hero_frame ?? null }
+  const site = {
+    logo: (typeof webConfig?.logo === 'string' && webConfig.logo) || null,
+    customFonts: mapCustomFonts(webConfig?.appearance?.custom_fonts),
+  }
 
   const footer = {
     ...defaultLandingContent.footer,
@@ -839,6 +842,8 @@ export async function getLandingContent() {
   return {
     // hero: from /public/hero-config (carrusel creado en tiendita); fallback al hero actual
     hero,
+    // site: logo y fuentes propias de la cuenta (/public/web-config)
+    site,
     // brand & nav: from defaults (no dedicated tiendita endpoint yet)
     brand: defaultLandingContent.brand,
     nav: defaultLandingContent.nav,
