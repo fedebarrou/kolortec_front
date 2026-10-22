@@ -58,6 +58,18 @@ ok(tipos('a *** b') === JSON.stringify([['text', 'a *** b']]), 'puro: «a *** b�
 ok(tipos('valor_x_ listo') === JSON.stringify([['text', 'valor_x_ listo']]), 'puro: «valor_x_ listo» no es cursiva (lo exige el lookbehind)')
 ok(tipos('palabra_con_guion_bajo y más') === JSON.stringify([['text', 'palabra_con_guion_bajo y más']]), 'puro: «palabra_con_guion_bajo» no es cursiva')
 ok(parseInline('<b>x</b>').every((x) => x.type === 'text'), 'puro: el HTML nunca es un token de formato (sólo texto)')
+// SEC-002 (9.ª vuelta): sin backtracking cuadrático. 20.000 caracteres con un `*` sin cerrar, y textos largos con miles de marcas, en < 50 ms
+// (se toma el mejor de 3 para que un tirón del equipo no dé un falso rojo).
+const mejorDe3 = (t) => Math.min(...[0, 1, 2].map(() => { const t0 = performance.now(); parseInline(t); return performance.now() - t0 }))
+for (const [nombre, texto] of [
+  ['20.000 caracteres con un «*» sin cerrar', '*' + 'a'.repeat(20000)],
+  ['20.000 caracteres con un «_» sin cerrar', ' _' + 'a'.repeat(20000)],
+  ['100.000 caracteres con 25.000 negritas', '*a* '.repeat(25000)],
+  ['100.000 caracteres con 25.000 cursivas', '_a_ '.repeat(25000)],
+]) {
+  const ms = mejorDe3(texto)
+  ok(ms < 50, `puro: ${nombre} se analizan en ${ms.toFixed(1)} ms (< 50)`)
+}
 // REG-001 (5.ª vuelta): la cursiva puede abarcar una negrita y al revés; ninguna se pierde ni deja sus marcas a la vista.
 const cn = parseInline('_cursiva **negrita** adentro_')
 ok(cn.length === 1 && cn[0].type === 'em' && cn[0].children?.some((h) => h.type === 'strong' && h.text === 'negrita'), 'puro: «_cursiva **negrita** adentro_» → em con strong adentro')

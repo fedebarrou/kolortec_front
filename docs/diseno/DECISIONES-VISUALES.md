@@ -12,6 +12,7 @@ Lo más nuevo arriba. Mockups congelados en `docs/diseno/mockups/`.
 - **Regla.** Cambiar el título de un «no encontrado» en un lugar es cambiarlo en todos: el test falla si el catálogo se separa del 404 del sitio.
 - **Variante `product-not-found` (8.ª vuelta).** La ficha de un producto que no existe (`/producto/<slug>` con la lista de productos cargada y el slug ausente) usa esta misma página: «Producto no encontrado», título grande, `noindex,follow`. Sólo un 404 REAL es «no encontrado»: con la API de productos caída la ficha sigue con «No pudimos mostrar este producto» + Reintentar.
 - **Enlace amarillo (VIS-029).** En todas las «no encontrada», «Volver a productos» es `font-bold text-primary` (#f4df33), la forma publicada (HEAD en categoría y línea, la guía), con destino de 44px y foco. El «Volver» gris queda sólo en la caja de «caída», junto a Reintentar.
+- **Padding de página (VIS-036).** `py-[42px]` es el padding publicado del 404 (App.jsx), de la guía y del catálogo: se conserva a propósito.
 - **Una escala de título de error (VIS-033).** El h1 de «No pudimos mostrar este producto» (API caída) pasa a `clamp(2.4rem,6vw,4.6rem)`, la misma de «Producto no encontrado»: la ficha no tiene dos escalas de título de error. `check-volver-categoria.mjs` mide los dos estados con `scripts/forma-no-encontrada.mjs`, la misma medición que usa `check-filtros.mjs` para categoría y línea.
 
 ---

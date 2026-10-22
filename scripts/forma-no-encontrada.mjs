@@ -1,7 +1,7 @@
 /**
  * forma(page) — la «forma» de una página de catálogo sin contenido («no encontrada» / «catálogo caído»), medida en el navegador: título,
- * tipografía, guía izquierda, posición, enlace «Volver», colores y tokens. La comparten check-filtros (casos 29) y check-volver-categoria
- * (caso 18), para que «Producto no encontrado» se mida con la MISMA regla que «Categoría no encontrada».
+ * tipografía, guía izquierda, posición, enlace «Volver», colores y tokens. La comparten check-filtros (caso 29) y check-volver-categoria
+ * (casos 18 y 19), para que «Producto no encontrado» se mida con la MISMA regla que «Categoría no encontrada».
  */
 export const forma = (p) => p.evaluate(() => {
   const h1 = document.querySelector('h1')

@@ -74,6 +74,11 @@
 import { spawn } from 'node:child_process'
 import puppeteer from 'puppeteer'
 
+// Guarda contra producción (copiada de check-filtros): lo que NO sea la API pública interceptada y vaya a estos hosts se ABORTA y se
+// cuenta; con PROD_LEAK > 0 el check falla.
+const HOST_PROD = /soytiendita\.store|tiendita\.com\.ar/
+const prodLeak = []
+
 const PORT = process.env.KT_PORT || '5192'
 const BASE = (process.env.KT_BASE || `http://127.0.0.1:${PORT}`).replace(/\/$/, '')
 
@@ -151,6 +156,10 @@ async function abrir(browser, { slug, viewport, lang, antes }) {
     const url = req.url()
     if (url === IMG_URL) return req.respond({ status: 200, contentType: 'image/png', body: PNG })
     if (url === IMG_404 || url.startsWith(IMG_404 + '?')) return req.respond({ status: 404, contentType: 'text/plain', body: 'no está' })
+    if (!/\/api\/public\//.test(url) && HOST_PROD.test(url)) {
+      prodLeak.push(url)
+      return req.abort()
+    }
     if (!/\/api\/public\//.test(url)) return req.continue()
     if (req.method() === 'OPTIONS') return req.respond({ status: 204, headers: { ...cors, 'access-control-allow-headers': req.headers()['access-control-request-headers'] || '' } })
     const body = /\/public\/productos(\?.*)?$/.test(url) ? JSON.stringify(PRODUCTOS) : '[]'
@@ -899,6 +908,8 @@ try {
 } finally {
   if (servidor) servidor.kill()
 }
+console.log(`\nPROD_LEAK ${prodLeak.length}${prodLeak.length ? ` → ${[...new Set(prodLeak)].join(', ')}` : ''}`)
+if (prodLeak.length) fallas.push(`PROD_LEAK ${prodLeak.length}: salieron pedidos hacia producción`)
 const bien = total - fallas.filter((f) => !f.startsWith('excepción')).length
 console.log(`\n${bien}/${total} OK${fallas.length ? ' — FALLÓ: ' + fallas.join(' | ') : ''}`)
 process.exit(fallas.length ? 1 : 0)

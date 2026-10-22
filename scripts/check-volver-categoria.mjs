@@ -501,11 +501,14 @@ try {
         robots: document.querySelector('meta[name="robots"]')?.getAttribute('content') ?? '',
         color: enlace ? getComputedStyle(enlace).color : '', primary, alto: Math.round(enlace?.getBoundingClientRect().height ?? 0),
         dicecaida: /No pudimos mostrar/i.test(document.body.innerText),
+        titulo: document.title,
       }
     })
     ok(/Producto no encontrado/i.test(info.h1) && info.h1s === 1 && info.fuente >= 36, `404 real: «Producto no encontrado» como único h1 grande (${info.h1.trim()}, ${info.fuente}px)`)
     ok(!info.reintentar && !info.dicecaida, '404 real: no ofrece Reintentar ni dice «No pudimos mostrar» (no es una API caída)')
     ok(info.robots === 'noindex,follow', `404 real: robots «${info.robots}»`)
+    // REG-001 (joan, 9.ª vuelta): la pestaña dice qué pasó. 404 real = «no encontrado»; API caída (caso 19) = «no disponible».
+    ok(info.titulo === 'Producto no encontrado · Kolortec', `404 real: document.title «${info.titulo}»`)
     ok(info.color === info.primary && info.alto >= 44, `404 real: «Volver a productos» amarillo (${info.color}) y de >= 44px (${info.alto}px)`)
     // VIS-035: la MISMA forma que «Categoría no encontrada» (se mide con forma(), la de check-filtros): título (tamaño, tipografía,
     // interlineado, posición y guía izquierda) y enlace «Volver» (posición, tamaño, color y peso).
@@ -534,7 +537,10 @@ try {
       dice: /No pudimos mostrar este producto/i.test(document.body.innerText),
       noEncontrado: /Producto no encontrado/i.test(document.body.innerText),
       reintentar: [...document.querySelectorAll('button')].some((b) => /Reintentar/i.test(b.textContent)),
+      titulo: document.title,
     }))
+    // REG-001 (joan, 9.ª vuelta): con la API caída la pestaña NO dice «no encontrado» (sería mentirle a quien sólo perdió la conexión).
+    ok(caida.titulo === 'Producto no disponible · Kolortec', `API de productos caída: document.title «${caida.titulo}»`)
     // VIS-033/035: el título de la API caída va a la MISMA escala que el «no encontrado» (en la ficha no hay dos escalas de h1).
     const fc = await forma(page)
     ok(fc.hay && formaCategoria && fc.fuente === formaCategoria.fuente && fc.familia === formaCategoria.familia && fc.interlineado === formaCategoria.interlineado,

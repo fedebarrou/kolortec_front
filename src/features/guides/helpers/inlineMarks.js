@@ -32,23 +32,48 @@ export function parseInline(input) {
   return out
 }
 
+// Las mismas expresiones en dos variantes: global (la PRÓXIMA marca, desde el principio del resto) y pegajosa (¿abre justo acá?).
+const NEGRITA_G = new RegExp(NEGRITA.source, 'g')
+const NEGRITA_Y = new RegExp(NEGRITA.source, 'y')
+const CURSIVA_G = new RegExp(CURSIVA.source, 'gu')
+const CURSIVA_Y = new RegExp(CURSIVA.source, 'yu')
+
+/**
+ * La próxima marca de `resto` (que empieza en `pos` del texto entero): `{ abs, m }` con `abs` = dónde abre, o `{ abs: Infinity }` si
+ * no hay ninguna. Lo ya encontrado MÁS ADELANTE se reutiliza (`cache`) mientras no lo hayamos pasado: sin eso cada vuelta volvía a
+ * recorrer todo el resto buscando la otra marca y un texto largo con miles de marcas era cuadrático (SEC-002).
+ */
+function proxima(reG, reY, cache, resto, pos) {
+  // ¿Abre justo acá? Con el contexto del resto (el lookbehind de la cursiva ve el principio del tramo, como antes de reutilizar nada).
+  reY.lastIndex = 0
+  const aqui = reY.exec(resto)
+  if (aqui) return { abs: pos, m: aqui }
+  if (cache && cache.abs > pos) return cache // vale: ninguna marca arranca entre `pos` y `cache.abs` (o no hay más: Infinity)
+  reG.lastIndex = 0
+  const m = reG.exec(resto)
+  return m ? { abs: pos + m.index, m } : { abs: Infinity, m: null }
+}
+
 /**
  * Parte `texto` en tokens y los agrega a `out`. En cada vuelta toma la marca que ABRE primero (negrita o cursiva) y
  * analiza su interior con las mismas reglas: así la cursiva puede abarcar una negrita (`_uno **dos** tres_`) y la
  * negrita una cursiva (`*uno _dos_ tres*`) sin que ninguna se pierda ni deje sus `*` / `_` a la vista.
  */
 function analizar(texto, out) {
-  let resto = texto
-  while (resto) {
-    const neg = NEGRITA.exec(resto)
-    const cur = CURSIVA.exec(resto)
-    if (!neg && !cur) {
+  let pos = 0
+  let cacheNeg = null
+  let cacheCur = null
+  while (pos < texto.length) {
+    const resto = texto.slice(pos)
+    cacheNeg = proxima(NEGRITA_G, NEGRITA_Y, cacheNeg, resto, pos)
+    cacheCur = proxima(CURSIVA_G, CURSIVA_Y, cacheCur, resto, pos)
+    if (!cacheNeg.m && !cacheCur.m) {
       out.push({ type: 'text', text: resto })
       return
     }
-    const esNegrita = neg && (!cur || neg.index <= cur.index)
-    const m = esNegrita ? neg : cur
-    if (m.index > 0) out.push({ type: 'text', text: resto.slice(0, m.index) })
+    const esNegrita = cacheNeg.m && cacheNeg.abs <= cacheCur.abs
+    const { abs, m } = esNegrita ? cacheNeg : cacheCur
+    if (abs > pos) out.push({ type: 'text', text: texto.slice(pos, abs) })
     if (esNegrita && m[1] !== undefined) {
       // ***x***: negrita Y cursiva.
       out.push({ type: 'strong', text: m[1], children: [{ type: 'em', text: m[1] }] })
@@ -57,7 +82,7 @@ function analizar(texto, out) {
       const hijos = interior(dentro)
       out.push(hijos ? { type: esNegrita ? 'strong' : 'em', text: dentro, children: hijos } : { type: esNegrita ? 'strong' : 'em', text: dentro })
     }
-    resto = resto.slice(m.index + m[0].length)
+    pos = abs + m[0].length
   }
 }
 

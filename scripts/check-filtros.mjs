@@ -679,7 +679,7 @@ try {
     const page = await nuevaPagina(browser, { basuraCats: true })
     await page.goto(`${BASE}/products/strobo`, { waitUntil: 'networkidle2' })
     await page.waitForFunction(() => /No pudimos cargar el cat[aá]logo/i.test(document.body.innerText), { timeout: 15000 }).catch(() => {})
-    const forma = (p) => p.evaluate(() => {
+    const formaCaida = (p) => p.evaluate(() => {
       const b = [...document.querySelectorAll('button')].filter((x) => /Reintentar/i.test(x.textContent))
       const caja = b[0]?.closest('div.border-dashed')
       return {
@@ -691,7 +691,7 @@ try {
         alto: Math.round(b[0]?.getBoundingClientRect().height ?? 0),
       }
     })
-    const caida = await forma(page)
+    const caida = await formaCaida(page)
     ok(caida.botones === 1 && /^No pudimos cargar el cat[aá]logo\./.test(caida.titulo), `categorías caídas: título de CatalogLoadError «${caida.titulo}» y un solo Reintentar (${caida.botones})`)
     ok(!/recarg/i.test(caida.cuerpo) && /Prob[aá] de nuevo/.test(caida.cuerpo), `categorías caídas: el texto no manda recargar (hay botón): «${caida.cuerpo}»`)
     ok(caida.alto >= 44, `categorías caídas: Reintentar de >= 44px (${caida.alto}px)`)
@@ -699,7 +699,7 @@ try {
     const pagina2 = await nuevaPagina(browser, { fallos: Infinity })
     await pagina2.goto(`${BASE}/products/strobo`, { waitUntil: 'networkidle2' })
     await pagina2.waitForFunction(() => /No pudimos cargar los productos/i.test(document.body.innerText), { timeout: 15000 }).catch(() => {})
-    const prodCaida = await forma(pagina2)
+    const prodCaida = await formaCaida(pagina2)
     ok(caida.cls !== '' && caida.cls === prodCaida.cls && caida.cajaCls === prodCaida.cajaCls, 'categorías caídas: botón y caja son los de CatalogLoadError (mismas clases que el error de productos)')
     await pagina2.close()
     ok(await page.evaluate(() => !!document.querySelector('a[href="/products"]')), 'categorías caídas: sigue el enlace «Volver a productos»')

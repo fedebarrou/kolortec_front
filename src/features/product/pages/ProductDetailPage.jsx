@@ -645,8 +645,8 @@ function ProductDetailPage() {
     return (
       <section className="min-h-screen bg-[color:var(--bg)] px-6 py-[42px] lg:px-40">
         <Seo
-          title={t('seo.productNotFound', 'Producto no encontrado · Kolortec')}
-          description={t('seo.productNotFoundDesc', 'Este producto no está publicado o el enlace cambió. Volvé al catálogo para ver toda la línea Kolortec.')}
+          title={t('seo.productUnavailable', 'Producto no disponible · Kolortec')}
+          description={t('seo.productUnavailableDesc', 'No pudimos cargar este producto en este momento. Volvé a intentar en unos minutos.')}
           path={`/producto/${slug || ''}`}
           noindex
         />
