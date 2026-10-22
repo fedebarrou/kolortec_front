@@ -54,15 +54,16 @@ function FilterDropdown({ axis, selected, onToggle, onClear }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={`flex h-12 w-full items-center justify-between gap-2 border bg-[#0b0b0b] px-3.5 text-left transition ${
-          open ? 'border-primary' : 'border-[#2a2d33] hover:border-primary/55'
+        className={`flex h-12 w-full items-center justify-between gap-2 border bg-[color:var(--control-bg)] px-3.5 text-left transition ${
+          open ? 'border-primary' : 'border-[color:var(--line-control)] hover:border-primary/55'
         }`}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
         <span className="flex-1 truncate text-[0.85rem]">
+          {/* Placeholder en --muted (#a0a0a0): 7,5:1 sobre #0b0b0b. El #6f7480 de antes daba 4,2:1 (< 4,5 de AA). */}
           {selectedLabels.length === 0 ? (
-            <span className="text-[#6f7480]">{placeholder}</span>
+            <span className="text-[color:var(--muted)]">{placeholder}</span>
           ) : (
             <span className="text-white">{selectedLabels.join(', ')}</span>
           )}
@@ -79,7 +80,7 @@ function FilterDropdown({ axis, selected, onToggle, onClear }) {
         <div
           role="listbox"
           aria-multiselectable="true"
-          className="absolute left-0 right-0 top-[calc(100%-1px)] z-30 max-h-[280px] overflow-y-auto border border-primary bg-[#0b0b0b] shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
+          className="absolute left-0 right-0 top-[calc(100%-1px)] z-30 max-h-[280px] overflow-y-auto border border-primary bg-[color:var(--control-bg)] shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
         >
           {axis.options.map((opt) => {
             const isSelected = selected.includes(opt.id)

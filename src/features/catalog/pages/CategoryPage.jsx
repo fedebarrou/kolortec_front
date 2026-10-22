@@ -1,24 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigationType, useParams, useSearchParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
+import { estadoOrigen } from '../../product/helpers/origenFicha.js'
 import CatalogEmptyState from '../components/CatalogEmptyState'
-import { getShopProducts } from '../../../shared/services/contentService'
+import CatalogLoadError from '../components/CatalogLoadError'
+import CatalogUnavailablePage from '../components/CatalogUnavailablePage'
+import GridSkeleton, { CATALOG_GRID as GRID, CountGhost } from '../components/GridSkeleton'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
 import { loadCategory, getCategories } from '../../../data/categories.js'
-import { productTagIds } from '../data/filters'
+import { productTagIds, productTagOptions } from '../data/filters'
 import { useScrollRestoration } from '../../../shared/hooks/useScrollRestoration'
+import { useShopProducts } from '../../../shared/hooks/useShopProducts'
 
-// Misma densidad que /products: son el mismo objeto. Antes acá iban de a 1 por
+// Misma densidad que /products (GRID, de GridSkeleton): son el mismo objeto. Antes acá iban de a 1 por
 // fila en celular (cards de 342×428 → 5.800px de scroll con 13 productos).
-const GRID = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4'
 
 function CategoryPage() {
   const { categorySlug } = useParams()
   const { lang, t } = useLanguage()
-  // null = cargando. Antes arrancaba con los productos DEMO del landing, así que
+  // `products === null` = cargando. Antes arrancaba con los productos DEMO del landing, así que
   // una categoría real mostraba items que no existen antes de que llegue la API.
-  const [products, setProducts] = useState(null)
+  // `available === false` = la API de productos falló (no es «la categoría no tiene productos»).
+  const { products, available: productsAvailable, retry: reintentarProductos } = useShopProducts()
   // Tanto la categoría como la etiqueta elegida se guardan JUNTO CON el slug al que
   // pertenecen y se derivan en el render. Es lo que evita el "reset" por efecto
   // (setState sincrónico dentro de useEffect → un render de más con datos de la
@@ -49,14 +53,8 @@ function CategoryPage() {
   // Arranca vacío (sin flash de categorías default); se llenan con las del tenant al cargar.
   const [allCategories, setAllCategories] = useState([])
 
-  useEffect(() => {
-    let mounted = true
-    getShopProducts().then((response) => {
-      if (mounted) setProducts(Array.isArray(response) ? response : [])
-    })
-    return () => { mounted = false }
-  }, [])
-
+  // Sube con el «Reintentar» de la pantalla «no pudimos cargar el catálogo»: vuelve a pedir la categoría y la lista de «otras».
+  const [intentoCat, setIntentoCat] = useState(0)
   useEffect(() => {
     let mounted = true
     loadCategory(categorySlug).then((res) => {
@@ -66,7 +64,13 @@ function CategoryPage() {
       if (mounted && Array.isArray(list) && list.length) setAllCategories(list)
     })
     return () => { mounted = false }
-  }, [categorySlug])
+  }, [categorySlug, intentoCat])
+
+  const reintentar = () => {
+    setCatState({ slug: null, status: undefined, category: null })
+    setIntentoCat((n) => n + 1)
+    reintentarProductos()
+  }
 
   // Arriba de todo al ENTRAR a una categoría; al volver atrás (POP) no: ahí manda
   // el scroll guardado de esa entrada (useScrollRestoration, más abajo).
@@ -90,12 +94,10 @@ function CategoryPage() {
    */
   const availableTags = useMemo(() => {
     const porId = new Map()
+    // `productTagOptions` devuelve id y label YA emparejados (antes eran dos listas con filtros distintos,
+    // alineadas por índice: una etiqueta descartada en una sola corría todos los labels que seguían).
     categoryProducts.forEach((item) => {
-      const ids = productTagIds(item)
-      const labels = (Array.isArray(item.tags) ? item.tags : [])
-        .map((tag) => (typeof tag === 'string' ? tag : tag?.label))
-        .filter(Boolean)
-      ids.forEach((id, i) => { if (!porId.has(id)) porId.set(id, labels[i] ?? id) })
+      productTagOptions(item).forEach(({ id, label }) => { if (!porId.has(id)) porId.set(id, label) })
     })
     return [...porId.entries()].map(([id, label]) => ({ id, label }))
   }, [categoryProducts])
@@ -111,46 +113,32 @@ function CategoryPage() {
 
   const productsLoading = products === null
   useScrollRestoration(status === 'ok' && !productsLoading, categorySlug)
+  // Las cards llevan en el state de qué categoría vienen: la flecha «volver» de la ficha vuelve por el
+  // historial (con ?etiqueta= y scroll) sólo si la página anterior es la categoría del producto.
+  const origenFicha = estadoOrigen(categorySlug)
 
   if (status === undefined) {
-    // Cargando la categoría desde la API — sección vacía para no parpadear "no encontrada".
-    return <section className="min-h-screen bg-[#050505]" aria-busy="true" />
+    // Cargando la categoría desde la API: no se parpadea «no encontrada» ni se deja la pantalla negra; se dibuja el hero
+    // y la grilla fantasma (el mismo alto que los reales, así la página no salta cuando llegan los datos).
+    return (
+      <section className="min-h-screen bg-[color:var(--bg)]" aria-busy="true">
+        <GridSkeleton header="category" />
+      </section>
+    )
   }
 
   // 'unavailable' ≠ 'not-found': si no pudimos traer la lista de categorías, no
   // podemos afirmar que ESTA no exista. Antes las dos daban el mismo 404 duro, así
   // que una caída de /public/categorias convertía una categoría real en inexistente.
   if (status !== 'ok') {
-    const caido = status === 'unavailable'
+    // Una sola página de catálogo sin contenido (CatalogUnavailablePage): caída (con Reintentar) o «no encontrada».
     return (
-      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
-        <Seo
-          title={
-            caido
-              ? t('seo.categoryUnavailable', 'Catálogo no disponible · Kolortec')
-              : t('seo.categoryNotFound', 'Categoría no encontrada · Kolortec')
-          }
-          description={
-            caido
-              ? t('seo.categoryUnavailableDesc', 'No pudimos cargar el catálogo en este momento. Volvé a intentar en unos minutos.')
-              : t('seo.categoryNotFoundDesc', 'La categoría solicitada no existe en el catálogo. Volvé a productos para explorar la línea completa.')
-          }
-          path={`/products/${categorySlug || ''}`}
-          noindex
-        />
-        <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
-          {caido
-            ? t('pages.category.unavailableTitle', 'No pudimos cargar el catalogo')
-            : t('pages.category.notFoundTitle', 'Categoria no encontrada')}
-          <span className="text-primary">.</span>
-        </h1>
-        <p className="mb-3 text-[#a0a0a0]">
-          {caido
-            ? t('pages.category.unavailableBody', 'Hubo un problema al traer las categorias. Proba recargar la pagina en un momento.')
-            : t('pages.category.notFoundBody', 'Esta categoria no existe en el catalogo.')}
-        </p>
-        <Link to="/products" className="font-bold text-primary">{t('pages.category.back', 'Volver a productos')}</Link>
-      </section>
+      <CatalogUnavailablePage
+        path={`/products/${categorySlug || ''}`}
+        variant={status === 'unavailable' ? 'unavailable' : 'category-not-found'}
+        kind="categories"
+        onRetry={reintentar}
+      />
     )
   }
 
@@ -158,7 +146,7 @@ function CategoryPage() {
   const displayDescription = lang === 'en' ? category.descriptionEn || category.description : category.description
 
   return (
-    <section className="min-h-screen bg-[#050505]">
+    <section className="min-h-screen bg-[color:var(--bg)]">
       <Seo
         title={category.seoTitle}
         description={category.seoDescription}
@@ -200,9 +188,9 @@ function CategoryPage() {
         <div className="mb-6 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center kt-reveal">
           <div className="inline-flex items-center gap-2.5 text-[0.82rem] tracking-[0.03em] text-[#9ca3af]">
             {productsLoading ? (
-              <strong className="animate-pulse text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-[#f4f4f5]">
-                {t('catalog.loadingProducts', 'Cargando productos…')}
-              </strong>
+              <CountGhost />
+            ) : !productsAvailable ? (
+              <strong className="text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-[#f4f4f5]">{' '}</strong>
             ) : (
               <strong className="text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-[#f4f4f5]">
                 {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
@@ -235,28 +223,27 @@ function CategoryPage() {
         {/* Cargando ≠ vacío. Sin esta distinción una categoría con 13 productos
             anunciaba "0 ITEMS · PRÓXIMAMENTE" durante toda la carga. */}
         {productsLoading ? (
-          <div className={`${GRID} kt-reveal`} aria-busy="true">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[4/5] w-full animate-pulse bg-[#101012]" />
-            ))}
-          </div>
+          <GridSkeleton className="kt-reveal" />
+        ) : !productsAvailable ? (
+          // La API de productos falló: no es «Próximamente» ni «0 items». Mismo estado que /products.
+          <CatalogLoadError className="kt-reveal" onRetry={reintentarProductos} />
         ) : filteredProducts.length === 0 ? (
           <CatalogEmptyState
             className="kt-reveal"
             title={
               categoryProducts.length === 0
-                ? t('catalog.emptyTitle', 'Proximamente')
+                ? t('catalog.emptyTitle', 'Próximamente')
                 : t('catalog.emptyFiltersTitle', 'Sin coincidencias')
             }
             body={
               categoryProducts.length === 0
-                ? t('catalog.emptyBody', 'Estamos sumando productos a esta categoria. Volve pronto.')
-                : t('catalog.emptyTagBody', 'Ningun producto de esta categoria tiene esa etiqueta.')
+                ? t('catalog.emptyBody', 'Estamos sumando productos a esta categoría. Volvé pronto.')
+                : t('catalog.emptyTagBody', 'Ningún producto de esta categoría tiene esa etiqueta.')
             }
             action={
               categoryProducts.length === 0 ? (
                 <Link to="/products" className="font-bold text-primary hover:underline">
-                  {t('catalog.backToCategories', 'Volver a categorias')}
+                  {t('catalog.backToCategories', 'Volver a categorías')}
                 </Link>
               ) : (
                 <button
@@ -275,6 +262,7 @@ function CategoryPage() {
               <ProductCard
                 key={item.id ?? item.slug ?? `${item.name}-${index}`}
                 item={item}
+                origen={origenFicha}
                 className="opacity-100"
               />
             ))}
@@ -283,7 +271,7 @@ function CategoryPage() {
 
         <div className="mt-14 border-t border-[#2a2a2a] pt-8 kt-reveal">
           <h2 className="title-font m-0 mb-4 text-[1.6rem] leading-[1.05]">
-            {t('catalog.otherCategoriesTitle', 'Otras categorias')}
+            {t('catalog.otherCategoriesTitle', 'Otras categorías')}
             <span className="text-primary">.</span>
           </h2>
           <div className="flex flex-wrap gap-2">

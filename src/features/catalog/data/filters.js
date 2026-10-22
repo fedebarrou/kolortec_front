@@ -43,9 +43,80 @@ function tagLabels(product) {
     .map((label) => label.trim())
 }
 
+/**
+ * Etiquetas de un producto como pares `{ id, label }` YA alineados. El id es el slug del label; una
+ * etiqueta cuyo slug queda vacío («***») se descarta JUNTO con su label. Antes los ids y los labels se
+ * armaban en dos listas y se emparejaban por índice: filtrar una y no la otra corría todos los labels.
+ */
+export function productTagOptions(product) {
+  const out = []
+  tagLabels(product).forEach((label) => {
+    const id = slugifyFacet(label)
+    if (id) out.push({ id, label })
+  })
+  return out
+}
+
 /** Ids de etiqueta de un producto, para cruzar contra lo elegido en la barra. */
 export function productTagIds(product) {
-  return tagLabels(product).map(slugifyFacet).filter(Boolean)
+  return productTagOptions(product).map((o) => o.id)
+}
+
+/**
+ * Texto para buscar: sin acentos ni mayúsculas ni signos («movil» encuentra «Móvil»,
+ * «cabezal-movil» se lee «cabezal movil»).
+ */
+export function normalizeSearch(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+/**
+ * ¿El producto coincide con lo escrito en el buscador? Busca en nombre, descripción, insignia,
+ * ETIQUETAS y CATEGORÍA (su nombre en es/en y su slug). Cada palabra escrita tiene que aparecer
+ * en alguna parte («cabezal rental» = cabezales con la etiqueta Rental). `categories` es la lista
+ * de la cuenta (`{ slug, name, nameEn }`) para resolver el nombre de la categoría del producto.
+ */
+export function productMatchesQuery(product, query, categories = []) {
+  const palabras = normalizeSearch(query).split(' ').filter(Boolean)
+  if (palabras.length === 0) return true
+  if (!product) return false
+  const cat = (Array.isArray(categories) ? categories : []).find((c) => c && c.slug === product.category)
+  const haystack = normalizeSearch(
+    [
+      product.name,
+      product.description,
+      product.badge,
+      ...tagLabels(product),
+      product.category,
+      cat?.name,
+      cat?.nameEn,
+    ]
+      .filter(Boolean)
+      .join(' '),
+  )
+  return palabras.every((p) => haystack.includes(p))
+}
+
+/**
+ * Deja sólo los valores de filtro que EXISTEN en los ejes que ofrece la barra: un `?etiqueta=xyz` o un
+ * `?categoria=inventada` (link viejo o escrito a mano) se ignoran en vez de dar «Sin coincidencias».
+ * Mismo criterio que CategoryPage con su etiqueta.
+ */
+export function sanitizeFilters(activeFilters, axes) {
+  const out = {}
+  Object.entries(activeFilters ?? {}).forEach(([key, ids]) => {
+    const eje = (Array.isArray(axes) ? axes : []).find((a) => a.id === key)
+    if (!eje) return
+    const validos = new Set(eje.options.map((o) => o.id))
+    const keep = (ids ?? []).filter((id) => validos.has(id))
+    if (keep.length) out[key] = keep
+  })
+  return out
 }
 
 /**
@@ -65,15 +136,14 @@ function buildAxes(categories, products) {
       labelEn: c.nameEn || c.name || c.slug,
     }))
   if (catOptions.length >= MIN_OPCIONES) {
-    axes.push({ id: 'categoria', label: 'Categoria', labelEn: 'Category', options: catOptions })
+    axes.push({ id: 'categoria', label: 'Categoría', labelEn: 'Category', options: catOptions })
   }
 
   const vistas = new Set()
   const tagOptions = []
   ;(Array.isArray(products) ? products : []).forEach((product) => {
-    tagLabels(product).forEach((label) => {
-      const id = slugifyFacet(label)
-      if (!id || vistas.has(id)) return
+    productTagOptions(product).forEach(({ id, label }) => {
+      if (vistas.has(id)) return
       vistas.add(id)
       tagOptions.push({ id, label, labelEn: label })
     })

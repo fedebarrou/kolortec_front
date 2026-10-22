@@ -4,6 +4,36 @@ Lo más nuevo arriba. Mockups congelados en `docs/diseno/mockups/`.
 
 ---
 
+### 2026-10-21 · «No encontrada» de categoría y línea: el título grande del sitio (decisión del hilo, 7.ª vuelta)
+
+**Qué se decidió.** La página «Categoría no encontrada» / «Línea no encontrada» vuelve a la **forma publicada del sitio**: el título grande (h1 `title-font`, `clamp(2.4rem,6vw,4.6rem)`, punto amarillo) + el cuerpo en `--muted` + el enlace «Volver a productos». Es la misma que ya usan el 404 de `App.jsx`, la guía no encontrada y la ficha del producto, y la que tenían categoría y línea en HEAD. La variante **«catálogo caído»** sigue siendo la caja punteada con Reintentar (`CatalogLoadError`).
+- **Motivo.** En la 5.ª vuelta se había unificado «no encontrada» con la caja de «caída»: quedaba una caja chica, distinta del resto del sitio. ra (VIS-026) lo marcó; no se inventa un diseño nuevo.
+- **Dónde vive.** Una sola vez, en `CatalogUnavailablePage` (variantes `category-not-found` / `line-not-found`). No hay un componente de 404 exportado que reutilizar (`NotFoundPage` está dentro de `App.jsx` y trae eyebrow «404» y tres botones), por eso se igualan medidas y clases; `scripts/check-filtros.mjs` (caso 29) compara el tamaño y la tipografía del h1 contra el 404 real.
+- **Regla.** Cambiar el título de un «no encontrado» en un lugar es cambiarlo en todos: el test falla si el catálogo se separa del 404 del sitio.
+- **Variante `product-not-found` (8.ª vuelta).** La ficha de un producto que no existe (`/producto/<slug>` con la lista de productos cargada y el slug ausente) usa esta misma página: «Producto no encontrado», título grande, `noindex,follow`. Sólo un 404 REAL es «no encontrado»: con la API de productos caída la ficha sigue con «No pudimos mostrar este producto» + Reintentar.
+- **Enlace amarillo (VIS-029).** En todas las «no encontrada», «Volver a productos» es `font-bold text-primary` (#f4df33), la forma publicada (HEAD en categoría y línea, la guía), con destino de 44px y foco. El «Volver» gris queda sólo en la caja de «caída», junto a Reintentar.
+- **Una escala de título de error (VIS-033).** El h1 de «No pudimos mostrar este producto» (API caída) pasa a `clamp(2.4rem,6vw,4.6rem)`, la misma de «Producto no encontrado»: la ficha no tiene dos escalas de título de error. `check-volver-categoria.mjs` mide los dos estados con `scripts/forma-no-encontrada.mjs`, la misma medición que usa `check-filtros.mjs` para categoría y línea.
+
+---
+
+### 2026-10-21 · Favicon: el logo real sobre un círculo negro (Fedev)
+
+**Qué se eligió.** La pestaña muestra el **asterisco real de la marca** (`public/assets/logo_minimal.png`, 248×232, amarillo sin fondo) centrado y a **~66 % del diámetro**, sobre un **círculo `#050505` que llena el lienzo**; afuera del círculo es transparente. Salidas: `favicon.png` (512), `favicon-48.png`, `favicon-32.png` y `apple-touch-icon.png` (180), todas generadas por `scripts/generar-favicon.mjs` (canvas dentro de puppeteer, sin dependencias nuevas). `index.html` declara los 32 y 48 con `sizes`, el 512 como ícono general y el de 180 como `apple-touch-icon`.
+- **Motivo.** Fedev: «el asterisco de la pestaña quiero que esté dentro de un círculo de fondo negro como estaba antes, sólo que ahora respetamos realmente el logo». Se vuelve al círculo negro que ya tenía la pestaña, pero con el PNG real del logo compuesto encima (no una réplica): el trazo es el de la marca. El `apple-touch-icon` dejó de apuntar a `logo_minimal.png` suelto (amarillo sin fondo) y usa el mismo círculo.
+- **Regla.** No se vuelve a dibujar el asterisco con un polígono: si cambia el logo, se cambia `logo_minimal.png` y se corre `node scripts/generar-favicon.mjs`.
+
+---
+
+### 2026-10-19 · Margen del blog: la misma escalera que el header — elegida: B (Fedev)
+
+**Qué se eligió.** El blog (índice, nota, estado cargando y «nota no encontrada») usa la **escalera de margen del header**: **24 px · `lg` 40 · `xl` 80 · `2xl` 160**. A 1440 son **80 px por lado** (antes 160). El resto del sitio no cambia. Implementado en el commit `02db642`.
+- **Texto de la nota:** desde `xl` pasa a **20 px** y llena su columna hasta 52 rem (~87 caracteres a 1440); debajo de `xl` sigue en 1 rem con 52 ch.
+- **«Seguí leyendo»** usa `GuideCard` (foto + título + extracto), la misma tarjeta del índice.
+- **Descartada: A** (80 px por lado en todo el sitio: secciones, contenedor de producto y footer), por tocar páginas que nadie pidió. Mockup A/B congelado en `docs/diseno/mockups/2026-10-19-blog-margen/`.
+- **Deuda declarada en el commit:** no hay un contenedor único de margen (24 archivos lo repiten a mano) y el footer sigue a 160 px.
+
+---
+
 ### 2026-10-21 · Innovaciones: imagen + nombre, detalle en un recuadro arriba — elegida: C1 (Fedev)
 
 **Qué se eligió.** En la ficha de producto con 5 o más innovaciones, la grilla muestra cada una como **imagen (44 px) + nombre**, y **arriba de la grilla** hay un **recuadro de detalle fijo** con la innovación señalada: imagen grande (84×84, `object-fit: contain`), título en mayúsculas y descripción. Reemplaza al globo flotante de la opción B del 20-oct.

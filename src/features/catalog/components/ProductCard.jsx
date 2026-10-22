@@ -95,8 +95,12 @@ function useCategoryName(slug) {
  * con el mouse (son la mitad de lo que se ve girando) pero salen del orden de
  * tabulación, que es lo que permite marcarlas aria-hidden sin dejar foco atrapado
  * adentro de contenido oculto para el lector de pantalla.
+ *
+ * `origen`: el `state` que lleva el link a la ficha (ver `estadoOrigen` en helpers/origenFicha). Sólo
+ * lo pasa CategoryPage (`{ desde: 'categoria', categoria }`): la flecha «volver» de la ficha lo usa
+ * para saber si puede volver por el historial a esa categoría.
  */
-function ProductCard({ item, className = '', style, showDetailLink = true, detailHref, focusable = true }) {
+function ProductCard({ item, className = '', style, showDetailLink = true, detailHref, focusable = true, origen }) {
   const { t } = useLanguage()
   const [imgFailed, setImgFailed] = useState(false)
   // La categoría viene de la DB de tiendita, siempre en castellano — el i18n
@@ -136,6 +140,7 @@ function ProductCard({ item, className = '', style, showDetailLink = true, detai
       {showDetailLink ? (
         <Link
           to={resolvedDetailHref}
+          state={origen}
           className="absolute inset-0 z-10 block"
           aria-label={`Ver detalle de ${item.name}`}
           tabIndex={focusable ? undefined : -1}

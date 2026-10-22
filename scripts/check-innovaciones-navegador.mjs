@@ -57,11 +57,15 @@
  *   · Medidas del mockup: recuadro con borde 1px --primary, fondo --innov-detalle-bg, padding 16, gap 16, imagen
  *     84×84 (object-fit contain), título 15px en mayúsculas, texto 13.5px/1.55 en --soft; ficha con imagen de 44px.
  *   · Silabeo (conGuiones, lang="es") en los títulos de las fichas y del recuadro; nada desborda ni se corta en seco.
+ *   · Nada tapa (21-oct): a 1440×900 y 1024×768, con la galería presente y el recuadro visible, `elementsFromPoint` en el centro del recuadro y
+ *     de las 9 fichas da primero a ese mismo elemento (nada de la galería ni de otra sección por encima). En producción el globo viejo
+ *     quedaba debajo de las imágenes de la galería; el diseño nuevo no tiene globo.
  *   · Tablet táctil ≥768px: el texto no dice «mouse». Idioma EN: textos en inglés.
  *
  * Usa `puppeteer` (ya devDependency del repo, como check-media / check-volver-categoria) con el Chrome instalado.
  * Levanta su propio `vite` en KT_PORT (por defecto 5192) salvo que se pase KT_BASE con uno ya corriendo.
- * Necesita VITE_API_BASE_URL y VITE_TIENDITA_ACCOUNT_HOST en el entorno (los de .env.development de kolortec).
+ * Necesita VITE_API_BASE_URL y VITE_TIENDITA_ACCOUNT_HOST en el entorno, con el hostname de QA (REG-005), NO los de producción:
+ *   VITE_API_BASE_URL=http://api.qa.invalid/api VITE_TIENDITA_ACCOUNT_HOST=kolortec.qa.invalid node scripts/check-innovaciones-navegador.mjs
  * Sale con código ≠ 0 si algo falla.
  *
  *   node scripts/check-innovaciones-navegador.mjs
@@ -100,7 +104,10 @@ const productoSinDesc = { ...producto(13), id: 'sd13', slug: 'sd13', innovacione
 // Los 9 nombres REALES de Kolortec (los del mockup): lo que de verdad se ve en el celular
 const NOMBRES_REALES = ['APERTURA', 'PROTECCIÓN Y CONSTRUCCIÓN', 'TEMPERATURA DE COLOR', 'ALIMENTACIÓN', 'SALIDA DE LUZ', 'CAUDAL Y ALCANCE', 'FLUIDO', 'CONEXIONES', 'COMPATIBILIDAD']
 const productoReal = { ...producto(9), id: 'real9', slug: 'real9', innovaciones: NOMBRES_REALES.map((nombre) => ({ nombre, descripcion: `Descripción de ${nombre}.`, media_url: null })) }
-const PRODUCTOS = [...[4, 5, 13, 20].map(producto), productoRoto, productoSinDesc, productoReal]
+// Las 9 reales + 5 fotos: arma la galería (#gallery, las miniaturas debajo de la imagen principal), que es lo que en producción
+// quedaba POR ENCIMA del globo viejo (21-oct). Todas con la misma URL de prueba, que el interceptor contesta con un PNG.
+const productoGaleria = { ...productoReal, id: 'gal9', slug: 'gal9', img_url: IMG_URL, media: Array.from({ length: 5 }, (_, i) => ({ id: `m${i}`, kind: 'image', tipo: 'imagen', url: IMG_URL })) }
+const PRODUCTOS = [...[4, 5, 13, 20].map(producto), productoRoto, productoSinDesc, productoReal, productoGaleria]
 // ficha n-ésima de las que son botón (las innovaciones 3.ª y 4.ª no lo son) → número de innovación (1-based)
 const numeroDeBoton = (k) => (k < 2 ? k + 1 : k + 3)
 const descEsperada = (k) => (numeroDeBoton(k) === 9 ? DESC_LARGA.trim() : `Descripción de la innovación ${numeroDeBoton(k)}.`)
@@ -820,6 +827,42 @@ async function main() {
       ok((await senaladas(page)).join() === '1', 'tablet: tocar señala')
     }
     await page.close()
+
+    // Nada tapa al recuadro ni a las fichas (21-oct). En producción el globo viejo quedaba DEBAJO de las imágenes de la galería;
+    // el diseño nuevo no tiene globo, pero queda probado que, con el recuadro visible, lo que hay en el centro del recuadro y de
+    // cada ficha (elementsFromPoint, de arriba hacia abajo) es de la sección de innovaciones y no de la galería ni de otra sección.
+    for (const vp of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }]) {
+      console.log(`Nada tapa al recuadro ni a las fichas (${vp.width}×${vp.height})`)
+      page = await abrir(browser, { slug: 'gal9', viewport: vp })
+      ok(await page.$('#gallery') !== null, `${vp.width}: la galería (#gallery) está en la página: hay algo que podría tapar`)
+      const objetivos = await page.$$eval('.kt-innov-ficha', (fs) => fs.length)
+      ok(objetivos === 9 && await page.$('.kt-innov-detalle') !== null, `${vp.width}: hay recuadro y 9 fichas que mirar`, String(objetivos))
+      const pila = (selector, k) => page.evaluate((sel, i) => {
+        const el = document.querySelectorAll(sel)[i]
+        el.scrollIntoView({ block: 'center', behavior: 'instant' })
+        const r = el.getBoundingClientRect()
+        const x = r.left + r.width / 2
+        const y = r.top + r.height / 2
+        const visible = r.width > 0 && r.height > 0 && y >= 0 && y <= innerHeight && x >= 0 && x <= innerWidth
+        const pila = document.elementsFromPoint(x, y)
+        const duena = (e) => (e.closest('.kt-innov-detalle') ? 'detalle' : e.closest('.kt-innov-ficha') ? 'ficha' : e.closest('.kt-innov') ? 'innov' : e.closest('#gallery') ? 'GALERIA' : e.closest('section[id]') ? 'seccion:' + e.closest('section[id]').id : e.tagName.toLowerCase())
+        const primero = pila[0]
+        const propio = primero && (el === primero || el.contains(primero))
+        // lo que queda por encima del elemento propio en la pila: nada que no sea de la sección de innovaciones
+        const encima = []
+        for (const e of pila) { if (e === el || el.contains(e)) break; encima.push(duena(e)) }
+        return { visible, primero: primero ? duena(primero) : null, propio, encima, hayGaleriaEnLaPila: pila.some((e) => e.closest('#gallery')) }
+      }, selector, k)
+      const detalle = await pila('.kt-innov-detalle', 0)
+      ok(detalle.visible && detalle.propio && detalle.encima.length === 0, `${vp.width}: en el centro del recuadro lo de arriba de todo es el recuadro (no la galería ni otra sección)`, JSON.stringify(detalle))
+      const malas = []
+      for (let k = 0; k < 9; k += 1) {
+        const p = await pila('.kt-innov-ficha', k)
+        if (!(p.visible && p.propio && p.encima.length === 0)) malas.push({ ficha: k, ...p })
+      }
+      ok(malas.length === 0, `${vp.width}: en el centro de las 9 fichas lo de arriba de todo es la ficha (no la galería ni otra sección)`, JSON.stringify(malas.slice(0, 2)))
+      await page.close()
+    }
 
     console.log('Idioma EN')
     page = await abrir(browser, { slug: 'p13', viewport: COMPU, lang: 'en' })
