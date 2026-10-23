@@ -126,6 +126,10 @@ export const SNAP_MS_POR_DEFECTO = 700
 export const SNAP_RETARDO_MAX_MS = 5000
 // REG-203 · UNA función para todo retardo de entrada (por pasos, carrusel, escalonado): entre 0 y el tope.
 export const retardoAcotado = (ms) => Math.min(SNAP_RETARDO_MAX_MS, Math.max(0, cssNumber(ms ?? 0, 0)))
+// SEC-203 · la DURACIÓN de la entrada, hermana de `retardoAcotado`: entre 0 y el máximo que el back deja guardar (catalogo.json, animacion.rangos.durationMs.max = 5000). Sin tope, 3.600.000 ms
+// dejaba el elemento invisible una hora. `porDefecto` es lo que rige cuando el diseño no fijó duración.
+export const SNAP_DURACION_MAX_MS = 5000
+export const duracionAcotada = (ms, porDefecto) => Math.min(SNAP_DURACION_MAX_MS, Math.max(0, cssNumber(ms ?? porDefecto, porDefecto)))
 export const SNAP_CURVA_POR_DEFECTO = 'cubic-bezier(.22,.61,.36,1)'
 // El paso saliente se desmonta cuando termina su salida más lenta, entre estos dos topes: el piso es lo que dura la entrada de Kolortec,
 // el techo evita que un diseño con 5 s deje montado el paso viejo.
@@ -152,7 +156,7 @@ export function entradaSnap(animation, tiposValidos) {
   const elegido = a.type !== undefined && a.type !== null && a.type !== 'none'
   return {
     tipo: elegido ? (tiposValidos.includes(a.type) ? a.type : 'fade') : 'kolortec',
-    ms: elegido ? cssNumber(a.durationMs ?? SNAP_MS_POR_DEFECTO, SNAP_MS_POR_DEFECTO) : SNAP_MS_POR_DEFECTO,
+    ms: elegido ? duracionAcotada(a.durationMs, SNAP_MS_POR_DEFECTO) : SNAP_MS_POR_DEFECTO,
     retardo: retardoAcotado(a.delayMs),
     easing: a.easing,
   }

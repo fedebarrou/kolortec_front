@@ -41,7 +41,9 @@ export function animProps(bg) {
 
   const k = typeof a.intensity === 'number' ? clamp01(a.intensity) : 0.5
   const style = {}
-  if (typeof a.durationMs === 'number' && a.durationMs > 0) style['--kt-bg-dur'] = `${a.durationMs}ms`
+  // Fondo animado: 2-60 s (sekh, 23-oct-2026). Con 1 ms ken-burns y drift alternan escala o posición en cada cuadro y se ve
+  // como un parpadeo; los valores por defecto (9-18 s) quedan adentro, así que lo publicado no cambia.
+  if (typeof a.durationMs === 'number' && Number.isFinite(a.durationMs) && a.durationMs > 0) style['--kt-bg-dur'] = `${Math.min(60000, Math.max(2000, a.durationMs))}ms`
 
   if (a.type === 'ken-burns') {
     style['--kt-bg-scale'] = String(1 + 0.14 * k)
