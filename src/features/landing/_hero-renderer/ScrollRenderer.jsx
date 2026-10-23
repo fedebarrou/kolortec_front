@@ -232,7 +232,7 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
   const pintar = (el) => { const box = boxAt(el, breakpoint); return <div key={el.id} style={{ position: "absolute", left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}><ElementView el={el} bp={breakpoint} tabletComoEscritorio reveal={reveal(el)} accentColor={cssColor(config.theme?.colors?.primary)} themePreset={themePreset} /></div>; };
   // isolation: los zIndex altos de las capas (./layers.js, hasta 1002+) quedan ADENTRO del escenario y no tapan
   // el chrome de afuera (Saltar, flechas: zIndex 5). Sin esto «Saltar» quedó sin clic (Kolortec, 12-oct-2026).
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), color: cssColor(config.theme?.colors?.text, "#ffffff"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), color: cssColor(config.theme?.colors?.text, "#ffffff"), lineHeight: "var(--hero-line-height, 1.55)", fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} />
     {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} /> : null}
     {fondo.map(pintar)}
@@ -330,7 +330,7 @@ function SnapStage({ config, slide, breakpoint, progress, arrived, leavingSlide 
         pointerEvents: bgLayer ? "none" : (arrived ? "auto" : "none"),
       }}><ElementView el={el} bp={breakpoint} tabletComoEscritorio snapState={snapState} accentColor={accentColor} themePreset={themePreset} /></div> };
     });
-  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), color: cssColor(config.theme?.colors?.text, "#ffffff"), fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
+  return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), color: cssColor(config.theme?.colors?.text, "#ffffff"), lineHeight: "var(--hero-line-height, 1.55)", fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     {/* Breathing (idle, kolortec): el fondo pulsa a grayscale y vuelve al color. */}
     <div style={{ position: "absolute", inset: 0, filter: breatheG > 0.01 ? `grayscale(${breatheG.toFixed(3)})` : undefined }}>
       <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} scrubAlways />
@@ -792,7 +792,7 @@ function SnapScrollRenderer({ config, breakpoint, logoUrl = null, brandLabel = n
       // aire. `--story-gap` para ajustar el margen por sitio.
       marginBottom: `calc(var(--site-header-h, 0px) + var(--story-gap, 2rem))`,
     }}>
-    <div style={{ position: "sticky", top: 0, height: stepH, fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
+    <div style={{ position: "sticky", top: 0, height: stepH, fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), lineHeight: "var(--hero-line-height, 1.55)", containerType: "inline-size", containerName: "hc-stage" }}>
       <SnapStage config={config} slide={slide} breakpoint={breakpoint} progress={progress} arrived={arrived && !pastEnd} leavingSlide={leavingSlide} breatheG={snap.breathing ? breatheG : 0} parallaxY={snap.parallax ? parallaxY : 0} />
       <SnapChrome
         snap={snap}

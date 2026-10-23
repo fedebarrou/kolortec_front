@@ -91,7 +91,7 @@
 @container hc-stage (min-width: 1024px) { .scrolly-topbar { padding: 16px 40px; } }
 @container hc-stage (min-width: 1280px) { .scrolly-topbar { padding: 16px 80px; } }
 
-.scrolly-skip { pointer-events: auto; background: none; border: none; padding: 0; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: #f1f5f9; transition: all .15s cubic-bezier(.4,0,.2,1); }
+.scrolly-skip { pointer-events: auto; background: none; border: none; padding: 0; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-family: inherit; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: #f1f5f9; transition: all .15s cubic-bezier(.4,0,.2,1); }
 .scrolly-skip:hover { color: var(--scrolly-accent, #fff); }
 @container hc-stage (min-width: 1280px) { .scrolly-skip { font-size: 14px; } }
 

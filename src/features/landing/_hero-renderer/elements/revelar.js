@@ -121,6 +121,11 @@ export function estadoSnap(tipo, visto) {
 
 // ── Modo por pasos: qué anima cada elemento, cuánto dura y cuánto tiene que seguir montado el paso que sale ──
 export const SNAP_MS_POR_DEFECTO = 700
+// SEC-202 · tope del retardo de entrada = el máximo que el back deja guardar (tiendita-back/resources/hero/catalogo.json, animacion.rangos.delayMs.max = 5000), para no cambiar lo ya publicado.
+// Sin tope, un `delayMs` enorme (o Infinity) guardado en el diseño dejaba el elemento invisible por horas.
+export const SNAP_RETARDO_MAX_MS = 5000
+// REG-203 · UNA función para todo retardo de entrada (por pasos, carrusel, escalonado): entre 0 y el tope.
+export const retardoAcotado = (ms) => Math.min(SNAP_RETARDO_MAX_MS, Math.max(0, cssNumber(ms ?? 0, 0)))
 export const SNAP_CURVA_POR_DEFECTO = 'cubic-bezier(.22,.61,.36,1)'
 // El paso saliente se desmonta cuando termina su salida más lenta, entre estos dos topes: el piso es lo que dura la entrada de Kolortec,
 // el techo evita que un diseño con 5 s deje montado el paso viejo.
@@ -148,7 +153,7 @@ export function entradaSnap(animation, tiposValidos) {
   return {
     tipo: elegido ? (tiposValidos.includes(a.type) ? a.type : 'fade') : 'kolortec',
     ms: elegido ? cssNumber(a.durationMs ?? SNAP_MS_POR_DEFECTO, SNAP_MS_POR_DEFECTO) : SNAP_MS_POR_DEFECTO,
-    retardo: cssNumber(a.delayMs ?? 0, 0),
+    retardo: retardoAcotado(a.delayMs),
     easing: a.easing,
   }
 }

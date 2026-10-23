@@ -98,8 +98,15 @@ Decisión del dueño: en el celular el Hero de Kolortec va a **pantalla completa
 - **VIS-019** · este documento: corregido el «Límite conocido» y sumados VIS-012 a VIS-020 y la regla de Kolortec.
 - **VIS-020** · los cortes de los container queries del hero (640 / 768 / 1024 / 1280) se nombran en `responsive.js` (`CQ_*`) y check-hero-paridad exige que todo corte de las hojas de las tres sedes sea uno de ellos.
 
-## Límite conocido VIS-026 (22-oct-2026) — se resuelve después del deploy
+## VIS-026 · el interlineado del texto suelto, fijado en la raíz del renderer (23-oct-2026)
 
-El texto suelto (`text`) sin `lineHeight` propio hereda el `line-height` de la página: en el Lab da `normal`, en la tienda 24,8px (1,55 × 16 de `globals.css`) y en Kolortec 24px (1,5 × 16). Es el mismo mecanismo que VIS-012 (antes `normalizeElement` escribía `lineHeight: 1.1`). Medido en el banco: font-family, letter-spacing, peso, align y estilo ya coinciden en las tres sedes; sólo difiere el line-height del texto suelto.
-- **NO se arregla en esta rama.** Propuesta de ra: el lienzo del Lab declara lo que el sitio hereda (line-height 1,55 en la tienda / 1,5 en Kolortec) y lo mismo para `font-weight`, `letter-spacing`, el align y el transform, de modo que lo heredado se vea igual en el editor y en la web.
-- Se hace después del deploy.
+El texto suelto (`text`) sin `lineHeight` propio hereda el `line-height` de la página: en el Lab daba `normal`, en la tienda 24,8px (1,55 × 16) y en Kolortec 24px (1,5 × 16). Ahora la raíz de cada renderer (CarouselRenderer y los stages del scroll) declara `lineHeight: var(--hero-line-height, 1.55)` y cada sede define la variable con el valor que YA veía lo publicado, así que lo publicado no cambia:
+- Kolortec: `--hero-line-height: 1.5` en `index.css` (el 1,5 que Tailwind le pone al `html`).
+- Lab: `marcoDelSitio.js` → `lineHeightDelSitio(heroFrame)` (1,55 la tienda estándar, 1,5 una cuenta con marco declarado = Kolortec), puesto como `--hero-line-height` en el lienzo (`varsDelSitio`) y en las pruebas «Probar».
+- VIS-028: el contenedor sticky del scroll (donde vive el chrome del modo «Por pasos») también fija `lineHeight: var(--hero-line-height, 1.55)`; en el Lab, el contenedor del lienzo y el de «Probar».
+- El Lab, las miniaturas y Mi web dan las variables del sitio con un solo helper (`vistaDelSitio` de `marcoDelSitio.js`: `--hero-line-height`, `--hero-hint-size` y `--hero-skip-size`).
+- VIS-032/033/034: el «Scrolleá» del snap mide .62rem en la tienda y .75rem en Kolortec; el «Saltar», .72rem y .75rem (piso de 12 px). El Lab y Mi web con marco declarado usan los de Kolortec (`--hero-hint-size` / `--hero-skip-size`), leídos por las reglas BASE de `hero-anim.css` del admin (la hoja que cargan los dos; la copia de `hero-lab.css` dice lo mismo). Los overrides responsive del «Saltar» (14 px en escritorio) siguen mandando. La tienda no cambia.
+- Pendiente del back (no hecho acá): que `appearance.hero_frame` traiga un `line_height` opcional; hoy `sanitizeHeroFrame` descarta las claves que no conoce, así que el Lab deduce 1,5 de «la cuenta declara marco».
+- `check-hero-paridad` exige el mismo texto en las tres raíces y el valor de cada sede.
+- Quedan fuera (no se midieron diferentes): `font-family`, `letter-spacing`, peso, align y estilo ya coinciden en las tres sedes.
+

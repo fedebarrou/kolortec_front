@@ -12,7 +12,7 @@ import { ShapeView } from './ShapeView'
 import { IconView } from './IconView'
 import { RatingView } from './RatingView'
 import { LogoView } from './LogoView'
-import { curvaDe, entradaSnap, estadoSnap, estiloDeReveal, msSalidaSnap, SNAP_CON_KEYFRAMES, SNAP_CURVA_POR_DEFECTO } from './revelar'
+import { curvaDe, entradaSnap, estadoSnap, estiloDeReveal, msSalidaSnap, retardoAcotado, SNAP_CON_KEYFRAMES, SNAP_CURVA_POR_DEFECTO } from './revelar'
 
 // eslint-disable-next-line react-refresh/only-export-components -- helper puro que usa el renderer; el archivo se copia byte-idéntico a la store, no se parte. Sólo afecta al Fast Refresh en dev.
 export function effectiveProps(el, bp) {
@@ -159,7 +159,7 @@ export function ElementView({ el, bp, reveal, accentColor, themePreset, snapStat
   } else if (reveal === undefined) {
     // Optional chaining: elementos legacy pueden venir sin objeto animation.
     const durMs = cssNumber(el.animation?.durationMs ?? 500, 500)
-    const delayMs = cssNumber(el.animation?.delayMs ?? 0, 0)
+    const delayMs = retardoAcotado(el.animation?.delayMs)
     if (saliendo) {
       anim = `hc-out-${exitType} ${Math.min(durMs, EXIT_MAX_MS)}ms ${easing} 0ms both`
     } else if (animType !== 'none' && staggerMs > 0) {

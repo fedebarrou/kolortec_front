@@ -155,7 +155,7 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // layout mobile (centrado abajo) en vez del desktop (derecha, centrado).
   // Faltaba en las 3 copias del renderer, no solo acá.
   return (
-    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), color: cssColor(theme.colors?.text, '#ffffff'), containerType: 'inline-size', containerName: 'hc-stage' }}>
+    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), color: cssColor(theme.colors?.text, '#ffffff'), lineHeight: 'var(--hero-line-height, 1.55)', containerType: 'inline-size', containerName: 'hc-stage' }}>
       {config.background && config.background.type !== 'none' && (
         <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} /></div>
       )}
