@@ -17,6 +17,8 @@
     "check:hero-altura": "node scripts/check-hero-altura.mjs",
     "check:capas-hero": "node scripts/check-capas-hero.mjs",
     "check:marcas-nombre": "node scripts/check-marcas-nombre.mjs",
+    "check:menu-ajustes": "node scripts/check-menu-ajustes.mjs",
+    "check:stock-barra": "node scripts/check-stock-barra.mjs",
     "check:innovaciones": "node scripts/check-innovaciones-grilla.mjs",
     "check:innovaciones-navegador": "node scripts/check-innovaciones-navegador.mjs",
     "check:media": "node scripts/check-media.mjs",

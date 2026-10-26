@@ -31,6 +31,7 @@ import { useRevealSections } from '../../../shared/hooks/useRevealSections'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
 import { vienesDeSuCategoria } from '../helpers/origenFicha.js'
+import StockBarra from '../../../shared/components/StockBarra'
 import { SITE } from '../../../shared/seo/Seo'
 import { productJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
@@ -915,6 +916,9 @@ function ProductDetailPage() {
                     </div>
                   </>
                 ) : null}
+                {/* Nivel de stock (ajuste stock.indicador), pegado al precio y a las presentaciones: con lengüetas, el de la
+                    presentación ELEGIDA; sin ellas, el del producto. null → no dibuja nada. */}
+                <StockBarra nivel={presentacionElegida ? presentacionElegida.stockNivel : product.stockNivel} className="mt-4" />
                 {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
                     Si no hay innovaciones cargadas, no se muestra nada acá. */}
                 {product.innovations.length > 0 ? (

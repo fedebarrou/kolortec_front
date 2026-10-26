@@ -200,6 +200,8 @@ function mapPresentaciones(p) {
       label: presentacion ? presentacion.texto : null,
       price: v.precio,
       moneda: v.moneda || p.moneda,
+      // Nivel de stock de ESTA presentación: la ficha muestra el de la elegida.
+      stockNivel: v.stock_nivel ?? null,
     }
   })
   if (!opciones.some((o) => o.presentacion)) return []
@@ -227,6 +229,8 @@ function mapProducto(p) {
     price: p.precio,
     moneda: p.moneda,
     stock: p.stock_disponible,
+    // stock_nivel (ajuste stock.indicador): 'sin'|'bajo'|'medio'|'alto'|null. null = indicador apagado o back viejo → la card no dibuja nada.
+    stockNivel: p.stock_nivel ?? null,
     slug: p.slug || String(p.id),
   }
 }
@@ -266,6 +270,8 @@ function mapProductoDetail(p) {
     gallery: gallery.length > 0 ? gallery : (heroImage ? [heroImage] : []),
     price: p.precio,
     moneda: p.moneda,
+    // stock_nivel del producto (= el de la variante principal); null = indicador apagado o back viejo.
+    stockNivel: p.stock_nivel ?? null,
     // Kit único (sin lengüetas): la ficha lo dice con una etiqueta junto al precio.
     presentacion: mapPresentacion(p.presentacion),
     presentaciones: mapPresentaciones(p),
@@ -300,7 +306,7 @@ function mapProductoDetail(p) {
       .filter((l) => l && l.url)
       .map((l) => ({ label: l.label || l.url, url: l.url })),
     variants: (Array.isArray(p.variantes) ? p.variantes : [])
-      .map((v) => ({ id: v.id, sku: v.sku, price: v.precio, image: heroImage })),
+      .map((v) => ({ id: v.id, sku: v.sku, price: v.precio, image: heroImage, stockNivel: v.stock_nivel ?? null })),
     // La API no guarda un poster del video, así que `thumbnail` es la foto del
     // producto: sirve de tapa provisoria, pero es un retrato y la ficha la recorta
     // a 16:9. `null` cuando no hay foto — antes caía en `heroImage`, que en un
@@ -1086,6 +1092,17 @@ export async function getDatosResponsable() {
     email: empresa.email || null,
     telefono: empresa.telefono || null,
   }
+}
+
+/**
+ * getAjustes()
+ * `ajustes` ({version, valores}) del MISMO /public/web-config que getSiteConfig(): pega en la promesa cacheada, no cuesta una request.
+ * null = sin ajustes (back viejo o API caída) → cada llamador se queda con el comportamiento de siempre.
+ */
+export async function getAjustes() {
+  const cfg = await fetchWithFallback(webConfigPath(), null)
+  const ajustes = cfg?.ajustes
+  return ajustes && typeof ajustes === 'object' && !Array.isArray(ajustes) ? ajustes : null
 }
 
 export async function getSiteConfig() {

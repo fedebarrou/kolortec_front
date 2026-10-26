@@ -70,7 +70,28 @@ Lo más nuevo arriba. Mockups congelados en `docs/diseno/mockups/`.
 
 **Desvíos respecto del mockup:** en la ficha real la columna es angosta (382 px a 1440, 2 columnas de fichas), no los 620 px del mockup; el recuadro queda más alto por eso. Las imágenes de la grilla son cuadradas y enteras (como el mockup), no los círculos recortados de la lista de 4 o menos, que no se tocó.
 
-### 2026-10-20 · Ficha de producto: muchas innovaciones — elegida: B «grilla de íconos» + carrusel en celular (Fedev)
+---
+
+### 2026-10-20 · Indicador de stock — elegida: B «barra de 3 segmentos» (Fedev)
+
+**Qué se eligió.** Una barra de 3 segmentos más el estado en palabras, en la tarjeta del listado y en la ficha del producto (junto al precio y las presentaciones; con presentaciones, la de la elegida).
+- Verde con 3 segmentos y «En stock»; naranja con 2 y «Pocas unidades»; rojo con 1 y «Últimas unidades»; sin stock con 0 segmentos y el texto apagado «Sin stock».
+- Medidas del mockup: segmentos de 18×6, gap de 3, separación barra-texto 10 px (mockup .stB), texto de 13px a 600. Los colores viven como variables en `:root` (`--kt-stock-alto`, `-medio`, `-bajo`, `-apagado`).
+- Se activa y se afinan los umbrales desde el panel (`stock.indicador`). Con el indicador apagado, o con un back viejo, `stock_nivel` es null y no se dibuja nada.
+
+**Qué se descartó y por qué.**
+- **A (punto + texto)**: es la convención, pero obliga a distinguir el color del punto para saber el nivel.
+- **C (barra continua)**: el porcentaje de llenado es una escala sin cortes; no dice dónde empieza lo «poco».
+
+**Por qué B.** Es lo que pidió el cliente (rojo llena uno, naranja dos, verde tres) y se lee de un vistazo, también sin distinguir colores: la cantidad de segmentos dice el nivel por sí sola.
+
+**Desvío menor del mockup.** El texto usa los tokens del sitio `--ink` (#f5f5f5) y `--soft` (#aeb2ba) en vez de los #f0f2f5 / #aeb4bf del mockup. En la tarjeta del listado la barra va debajo del nombre y de la categoría, fuera de la fila del «Ver producto».
+
+**Mockup congelado:** `docs/diseno/mockups/2026-10-20-stock/index.html` (capturas `stock-A/B/C.png`).
+
+---
+
+### (REEMPLAZADA por C1, 21-oct) 2026-10-20 · Ficha de producto: muchas innovaciones — elegida: B «grilla de íconos» + carrusel en celular (Fedev)
 
 **Qué se eligió.** Con 5 o más innovaciones, grilla de fichas compactas (ícono redondo + título); la explicación aparece al pasar el mouse o con el foco, en un globo que no mueve el layout. En celular, la misma grilla en **carrusel de 6 por página** (Fedev: «grilla con carrusel, sino chorizo»), con puntos y «n / N». Con 4 o menos queda la lista completa de siempre.
 

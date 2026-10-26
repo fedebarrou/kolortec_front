@@ -19,6 +19,8 @@
  *
  *   node scripts/check-media.mjs                         (todo; el E2E necesita el vite)
  *   KT_BASE=http://127.0.0.1:5288 node scripts/check-media.mjs
+ *   Cómo levantar el vite (el mismo de los demás checks, REG-005): con el hostname de QA, NO con el .env de producción:
+ *     VITE_API_BASE_URL=http://api.qa.invalid/api VITE_TIENDITA_ACCOUNT_HOST=kolortec.qa.invalid npx vite --host 127.0.0.1 --port 5288 --strictPort
  *   node scripts/check-media.mjs --sin-e2e               (sólo 1-3; no toca la red)
  */
 import assert from 'node:assert/strict'
@@ -251,7 +253,8 @@ async function e2e() {
   const { default: puppeteer } = await import('puppeteer')
   const BASE = (process.env.KT_BASE || 'http://127.0.0.1:5173').replace(/\/$/, '')
   const MOCK = 'http://mock.local'
-  const API_PROD = /^https:\/\/api\.(soytiendita\.store|dev\.tiendita\.com\.ar)\/api(\/.*)$/
+  // La receta documentada (REG-005) levanta el vite con `VITE_API_BASE_URL=http://api.qa.invalid/api`: http y host de QA. Se interceptan también.
+  const API_PROD = /^https?:\/\/api\.(soytiendita\.store|dev\.tiendita\.com\.ar|qa\.invalid)\/api(\/.*)$/
   const HOST_PROD = /soytiendita\.store|tiendita\.com\.ar/
   const VIDEO = resolve(raiz, 'public/assets/shop-section-bg.mp4')
   const cors = {

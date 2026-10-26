@@ -151,6 +151,11 @@ html {
     --innov-texto-lh: 1.55;
     --innov-texto-color: var(--soft);
     --innov-punto: var(--line-control);
+    /* Barra de stock (StockBarra, mockup 2026-10-20-stock opción B): un color por nivel + el segmento apagado. */
+    --kt-stock-alto: #3ecf6e;
+    --kt-stock-medio: #f5a524;
+    --kt-stock-bajo: #ef4444;
+    --kt-stock-apagado: #3a3a3a;
     --border-width: 1px;
     --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -4092,5 +4097,39 @@ body.scrolly-nav-reveal .site-header .kt-nav-line {
 
   .kt-fab-safe-right {
     padding-right: var(--kt-fab-safe-canvas, 0px);
+  }
+}
+
+/* Barra de stock de 3 segmentos (StockBarra). Medidas del mockup 2026-10-20-stock/index.html (.stB):
+   segmentos 18x6, gap 3, texto 13px/600, separación de 10px entre barra y texto. */
+@layer components {
+  .kt-stock {
+    --c: var(--kt-stock-alto);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .kt-stock--medio { --c: var(--kt-stock-medio); }
+  .kt-stock--bajo { --c: var(--kt-stock-bajo); }
+  .kt-stock-segs {
+    display: flex;
+    gap: 3px;
+  }
+  .kt-stock-segs i {
+    display: block;
+    width: 18px;
+    height: 6px;
+    background: var(--kt-stock-apagado);
+  }
+  .kt-stock-segs i.is-on {
+    background: var(--c);
+  }
+  .kt-stock-tx {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .kt-stock--sin .kt-stock-tx {
+    color: var(--soft);
   }
 }
