@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { trackEvent } from '../../../shared/services/tracking'
-import { getProductBlogs, getProductDetail, getProductMedia, getSiteConfig } from '../../../shared/services/contentService'
+import { loadCategories } from '../../../data/categories.js'
+import { getProductBlogs, getProductMedia, getSiteConfig, loadProductDetail } from '../../../shared/services/contentService'
 import {
   abrirArchivo,
   familiaDoc,
@@ -16,6 +17,7 @@ import ImageLightbox from '../../../shared/components/ImageLightbox'
 import { WHATSAPP_URL } from '../../../shared/components/SocialLinks'
 import LoginRequiredDialog from '../../../shared/components/LoginRequiredDialog'
 import ProductCard from '../../catalog/components/ProductCard'
+import CatalogUnavailablePage from '../../catalog/components/CatalogUnavailablePage'
 import ProductBlogs from '../components/ProductBlogs'
 import ProductMedia from '../components/ProductMedia'
 import ProductReviews from '../components/ProductReviews'
@@ -28,6 +30,7 @@ import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { useRevealSections } from '../../../shared/hooks/useRevealSections'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
+import { vienesDeSuCategoria } from '../helpers/origenFicha.js'
 import { SITE } from '../../../shared/seo/Seo'
 import { productJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
@@ -100,29 +103,75 @@ function ListaDescargas({ items, downloadCta, onGated, vacio }) {
   )
 }
 
+// Tope de espera de «volver» a la lista de categorías si todavía no llegó.
+const CATEGORIAS_ESPERA_MS = 1500
+
 function ProductDetailPage() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const { slug } = useParams()
   // Data-driven: cargamos el producto REAL desde la API de tiendita por su id/slug.
   const [product, setProduct] = useState(null)
-  // «Volver» de la ficha. Antes iba SIEMPRE a /products: desde una categoría te
-  // tiraba un nivel más atrás (al listado de categorías) y perdías la categoría, el
-  // filtro y el lugar en la grilla. Ahora:
-  //  - si llegaste navegando DENTRO del sitio (hay una entrada anterior de la app,
-  //    `history.state.idx > 0` del router), vuelve por el historial: la categoría con
-  //    su ?etiqueta= y su scroll, el buscador, o la ficha anterior — donde estabas;
-  //  - si entraste directo (link compartido, Google, pestaña nueva), no hay a dónde
-  //    «volver» dentro del sitio y history.back() te sacaría afuera: cae a la
-  //    categoría del producto, o al catálogo si no tiene.
-  const volver = () => {
+  // false = la API de productos no contestó (500, red, un 200 que no es lista). Con `product === null` y `disponible` true el producto
+  // de verdad no existe: «Producto no encontrado» (la misma página que categoría y línea). Con false: «No pudimos mostrar» + Reintentar.
+  const [disponible, setDisponible] = useState(true)
+  // «Volver» de la ficha: SIEMPRE lleva a la categoría del producto (`/products/<category>`, o
+  // `/products` si no tiene), entres por donde entres (landing, destacados, buscador, catálogo,
+  // otra ficha, link directo). Decisión de Fedev, 21-oct: «estamos en un cabezal móvil, quiero
+  // que al volver vaya a Cabezales móviles».
+  // Una sola excepción de MECÁNICA, no de destino: si la página anterior es justo ESA categoría
+  // (CategoryPage marca `state.desde === 'categoria'` y su slug, helpers/origenFicha.js) y hay una
+  // entrada anterior de la app (`history.state.idx > 0`), se hace `navigate(-1)`: así conserva el
+  // ?etiqueta= elegido y el scroll. En cualquier otro caso se navega a la categoría.
+  // El botón atrás del NAVEGADOR no pasa por acá: sigue siendo el historial.
+  // Las categorías que EXISTEN (/public/categorias). Un producto cuya categoría no está ahí (borrada, o nunca publicada) no
+  // puede mandar a una página «Categoría no encontrada»: «volver» va a /products. Se cargan al entrar (la referencia guarda
+  // { estado: 'cargando' | 'ok' | 'caida', slugs }): con la API caída no se puede afirmar que una categoría no exista, así que
+  // «volver» sigue yendo a la del producto (su página dice «no pudimos cargar»).
+  // Si tocan la flecha ANTES de que lleguen, se espera la lista con un tope corto (CATEGORIAS_ESPERA_MS) y, si no llegó a
+  // tiempo, se sigue con la categoría del producto: sin la espera, un producto huérfano mandaba a /products/<inexistente>.
+  const categoriasRef = useRef({ estado: 'cargando', slugs: null, promesa: null })
+  useEffect(() => {
+    let mounted = true
+    categoriasRef.current.promesa = loadCategories().then(({ list, available }) => {
+      if (!mounted) return
+      categoriasRef.current = { ...categoriasRef.current, estado: available ? 'ok' : 'caida', slugs: available ? new Set(list.map((c) => c.slug)) : null }
+    })
+    return () => { mounted = false }
+  }, [])
+  // «Volver» en curso (sólo mientras ESPERA la lista de categorías): la guarda impide el doble toque (dos navegaciones, idx 0 → 2) y
+  // deshabilita las dos flechas (la de escritorio y la de `nav.sticky` de celular) con `aria-busy`. `turno` cancela la
+  // espera si el usuario se fue antes de que resolviera (cambió la ruta —el pathname, no el hash— o se desmontó la ficha): sin esto el navigate corría igual
+  // después del await y lo mandaba a una categoría que ya no era la suya.
+  const [volviendo, setVolviendo] = useState(false)
+  const volviendoRef = useRef(false)
+  const turno = useRef(0)
+  useEffect(() => () => {
+    turno.current += 1
+    volviendoRef.current = false
+    setVolviendo(false)
+  }, [location.pathname]) // la ruta, no location.key: el spy de secciones reemplaza el hash de la ficha y eso no es irse
+  const volver = async () => {
+    if (volviendoRef.current) return
+    const declarada = product?.category ? String(product.category) : ''
+    if (declarada && categoriasRef.current.estado === 'cargando') {
+      const mio = turno.current
+      volviendoRef.current = true
+      setVolviendo(true)
+      await Promise.race([categoriasRef.current.promesa, new Promise((resolve) => setTimeout(resolve, CATEGORIAS_ESPERA_MS))])
+      if (turno.current !== mio) return
+      volviendoRef.current = false
+      setVolviendo(false)
+    }
+    const { slugs } = categoriasRef.current
+    const cat = declarada && slugs && !slugs.has(declarada) ? '' : declarada
     const idx = typeof window !== 'undefined' ? window.history.state?.idx : 0
-    if (typeof idx === 'number' && idx > 0) {
+    if (typeof idx === 'number' && idx > 0 && vienesDeSuCategoria(location.state, cat)) {
       navigate(-1)
       return
     }
-    const cat = product?.category ? String(product.category) : ''
     navigate(cat ? `/products/${encodeURIComponent(cat)}` : '/products')
   }
   // Clave (slug + reintento) de la última carga terminada: "cargando" se DERIVA
@@ -139,7 +188,12 @@ function ProductDetailPage() {
   const loading = loadedKey !== fetchKey
   useEffect(() => {
     let mounted = true
-    getProductDetail(slug).then((p) => { if (mounted) { setProduct(p); setLoadedKey(`${slug}|${reintento}`) } })
+    loadProductDetail(slug).then(({ product: p, available }) => {
+      if (!mounted) return
+      setProduct(p)
+      setDisponible(available)
+      setLoadedKey(`${slug}|${reintento}`)
+    })
     return () => { mounted = false }
   }, [slug, reintento])
   useEffect(() => {
@@ -327,6 +381,9 @@ function ProductDetailPage() {
   // Medido y no hardcodeado porque el navbar cambia de alto con el idioma y el
   // ancho, y una barra 4px corrida se lee como un error de maquetado.
   const [navTop, setNavTop] = useState(68)
+  // Dónde se clava el recuadro de detalle de las innovaciones (compu): debajo del navbar del sitio MÁS la barra de
+  // secciones de la ficha (la que esté visible: la de escritorio o la de móvil, la otra mide 0), más 12px de aire.
+  const [stickyTop, setStickyTop] = useState(132)
   // Traducción de la descripción corta: el texto inmediato (normalizado, o '' si no
   // hay) se DERIVA en el render; el estado sólo guarda el resultado asíncrono del
   // traductor, atado a la clave (idioma + texto) para el que se pidió.
@@ -380,11 +437,20 @@ function ProductDetailPage() {
     const medir = () => {
       const h = document.querySelector('.site-header')?.getBoundingClientRect().height
       if (h) setNavTop(Math.round(h))
+      const barras = Array.from(document.querySelectorAll('[data-kt-detail-nav]')).reduce((a, el) => a + el.getBoundingClientRect().height, 0)
+      if (h) setStickyTop(Math.round(h + barras + 12))
     }
     medir()
     window.addEventListener('resize', medir)
-    return () => window.removeEventListener('resize', medir)
-  }, [])
+    // La barra de secciones de la ficha no existe mientras carga el producto, y las barras cambian de alto con las
+    // fuentes y el idioma: se vuelve a medir cuando aparece (`loading`) y cuando cambia el tamaño de cualquiera.
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(medir)
+    document.querySelectorAll('.site-header, [data-kt-detail-nav]').forEach((el) => ro?.observe(el))
+    return () => {
+      window.removeEventListener('resize', medir)
+      ro?.disconnect()
+    }
+  }, [loading])
 
   // Vuelta del login: si quedó un archivo pedido para ESTA ficha y ahora hay
   // sesión, se lo ofrecemos en un aviso arriba de Descargas. No se dispara solo
@@ -562,30 +628,34 @@ function ProductDetailPage() {
 
   if (loading) {
     return (
-      <section className="flex min-h-screen items-center justify-center bg-[#050505] px-6">
-        <p className="animate-pulse text-[#a0a0a0]">Cargando producto…</p>
+      <section className="flex min-h-screen items-center justify-center bg-[color:var(--bg)] px-6">
+        <p className="animate-pulse text-[color:var(--muted)]">Cargando producto…</p>
       </section>
     )
   }
 
+  // La lista llegó y el producto no está: un 404 REAL. Sólo acá se afirma «no encontrado».
+  if (!product && disponible) {
+    return <CatalogUnavailablePage path={`/producto/${slug || ''}`} variant="product-not-found" />
+  }
+
   if (!product) {
-    // No afirmamos "no existe": el adapter devuelve null tanto cuando el
-    // producto no está publicado como cuando la API no contestó, y decirle a
-    // alguien que su producto no existe porque se le cayó el wifi es mentirle.
-    // Se nombran las dos causas posibles y se ofrece la acción de cada una.
+    // La API no contestó: NO afirmamos "no existe" (decirle a alguien que su producto no existe porque se le cayó el wifi es
+    // mentirle). Se nombran las dos causas posibles y se ofrece la acción de cada una.
     return (
-      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
+      <section className="min-h-screen bg-[color:var(--bg)] px-6 py-[42px] lg:px-40">
         <Seo
-          title={t('seo.productNotFound', 'Producto no encontrado · Kolortec')}
-          description={t('seo.productNotFoundDesc', 'Este producto no está publicado o el enlace cambió. Volvé al catálogo para ver toda la línea Kolortec.')}
+          title={t('seo.productUnavailable', 'Producto no disponible · Kolortec')}
+          description={t('seo.productUnavailableDesc', 'No pudimos cargar este producto en este momento. Volvé a intentar en unos minutos.')}
           path={`/producto/${slug || ''}`}
           noindex
         />
         <div>
-          <h1 className="title-font m-0 mb-2 text-[clamp(3.2rem,8vw,5.6rem)] leading-[1.02]">
+          {/* Misma escala de h1 que «Producto no encontrado» (CatalogUnavailablePage): en la ficha no hay dos tamaños de título de error. */}
+          <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
             {t('productDetail.unavailableTitle', 'No pudimos mostrar este producto')}
           </h1>
-          <p className="mb-6 max-w-[62ch] text-[#a0a0a0]">
+          <p className="mb-6 max-w-[62ch] text-[color:var(--muted)]">
             {t('productDetail.unavailableSubtitle', 'Puede que ya no esté publicado, o que la conexión se haya cortado justo ahora. Probá de nuevo; si sigue igual, mirá el catálogo completo.')}
           </p>
           <div className="flex flex-wrap items-center gap-3">
@@ -629,7 +699,7 @@ function ProductDetailPage() {
   ])
 
   return (
-    <section className="kt-detail-page">
+    <section className="kt-detail-page" style={{ '--kt-detail-top': `${stickyTop}px` }}>
       <Seo
         title={product.seoTitle}
         description={product.seoDescription}
@@ -644,7 +714,7 @@ function ProductDetailPage() {
         <header className="kt-detail-fixed-header" data-kt-detail-nav>
           <nav className="kt-detail-tabs" aria-label={t('a11y.sections', 'Secciones del producto')}>
             <div className="kt-detail-tabs-name">
-              <button type="button" className="kt-detail-back" onClick={volver} aria-label={t('a11y.back', 'Volver')} title={t('a11y.back', 'Volver')}>
+              <button type="button" className="kt-detail-back" onClick={volver} disabled={volviendo} aria-busy={volviendo} aria-label={t('a11y.back', 'Volver')} title={t('a11y.back', 'Volver')}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M15 5l-7 7 7 7" />
                 </svg>
@@ -711,9 +781,11 @@ function ProductDetailPage() {
           <button
             type="button"
             onClick={volver}
+            disabled={volviendo}
+            aria-busy={volviendo}
             aria-label={t('a11y.back', 'Volver')}
             title={t('a11y.back', 'Volver')}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/20 text-white/75 transition active:scale-95"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/20 text-white/75 transition active:scale-95 disabled:cursor-progress disabled:opacity-50"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[15px] w-[15px] fill-none stroke-current [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2.2]">
               <path d="M15 5l-7 7 7 7" />
@@ -852,7 +924,7 @@ function ProductDetailPage() {
                         cargado son 4, así que el corte no se veía —pero cuando
                         el tenant cargue la quinta, desaparecía en silencio. */}
                     {usaGrilla(product.innovations.length) ? (
-                      <InnovacionesGrilla items={product.innovations} />
+                      <InnovacionesGrilla items={product.innovations} arriba={stickyTop} />
                     ) : product.innovations.map((inn) => (
                       <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
                         {/* REDONDAS (pedido del cliente, oct-2026) y como ÍCONO: entera,
@@ -864,9 +936,9 @@ function ProductDetailPage() {
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
                         )}
                         <div className="grid gap-0.5">
-                          <span className="text-[0.95rem] font-bold leading-tight text-[#f0f2f5]">{inn.title}</span>
+                          <span className="text-[length:var(--innov-titulo-size)] font-[weight:var(--innov-titulo-peso)] leading-[var(--innov-titulo-lh)] text-[color:var(--innov-titulo-color)]">{inn.title}</span>
                           {inn.description ? (
-                            <span className="text-[0.85rem] leading-[1.5] text-[#aeb4bf]">{inn.description}</span>
+                            <span className="text-[length:var(--innov-texto-size)] leading-[var(--innov-texto-lh)] text-[color:var(--innov-texto-color)]">{inn.description}</span>
                           ) : null}
                         </div>
                       </article>

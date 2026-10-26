@@ -2,11 +2,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { defaultLandingContent } from '../data/landingData'
-import { getShopProducts } from '../../../shared/services/contentService'
+import { loadShopProducts } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { irASeccionCuandoAparezca } from '../../../shared/utils/irASeccion'
 import { SOCIAL_LINKS } from '../../../shared/components/SocialLinks'
+import { origenDesdeRuta } from '../../product/helpers/origenFicha.js'
 
 const normalizeText = (value) =>
   value
@@ -75,6 +76,10 @@ function HeaderSection() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [products, setProducts] = useState(defaultLandingContent.products.items)
+  // false = la API de productos falló: sin lista no se puede buscar, y «Sin coincidencias» sería mentira (había
+  // coincidencias; lo que faltó fue la lista). `intentoBusqueda` vuelve a pedirla al enfocar el buscador.
+  const [searchAvailable, setSearchAvailable] = useState(true)
+  const [intentoBusqueda, setIntentoBusqueda] = useState(0)
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1)
   const mobileMenuRef = useRef(null)
   const mobileMenuBtnRef = useRef(null)
@@ -240,6 +245,8 @@ function HeaderSection() {
   }
 
   const openPredict = () => {
+    // Con la API caída, volver al buscador es volver a intentarlo (una vez por foco, no por tecla).
+    if (!searchAvailable) setIntentoBusqueda((n) => n + 1)
     setIsSearchFocused(searchTerm.trim().length > 0)
     setActiveSuggestionIndex(-1)
   }
@@ -248,7 +255,10 @@ function HeaderSection() {
     setSearchTerm(item.name)
     cerrarPredict()
     setIsMobileOpen(false)
-    navigate(productHref(item))
+    // El buscador del header vive en todas las páginas: sólo si se usó parado en una categoría
+    // (/products/<slug>) la ficha lo sabe y «volver» puede ir por el historial; desde cualquier
+    // otra página la flecha va a la categoría del producto.
+    navigate(productHref(item), { state: origenDesdeRuta(pathname) })
   }
 
   const handleSearchKeyDown = (event) => {
@@ -350,15 +360,16 @@ function HeaderSection() {
 
   useEffect(() => {
     let mounted = true
-    getShopProducts().then((response) => {
+    loadShopProducts().then(({ list, available }) => {
       if (mounted) {
-        setProducts(response)
+        setProducts(list)
+        setSearchAvailable(available)
       }
     })
     return () => {
       mounted = false
     }
-  }, [])
+  }, [intentoBusqueda])
 
   useEffect(() => {
     const onClickOutside = (event) => {
@@ -624,8 +635,10 @@ function HeaderSection() {
                         {item.badge ? <em className="rounded-full bg-primary px-2 py-[3px] text-[0.75rem] font-black uppercase tracking-[0.09em] not-italic text-[#0b0b0b]">{item.badge}</em> : null}
                       </button>
                     ))
+                  ) : !searchAvailable ? (
+                    <p className="m-0 px-[10px] py-[11px] text-[0.75rem] leading-[1.35] text-[color:var(--header-ink)]" role="status">{t('header.searchUnavailable', 'No pudimos buscar ahora. Probá de nuevo en un momento.')}</p>
                   ) : (
-                    <p className="m-0 px-[10px] py-[11px] text-[0.75rem] leading-[1.35] text-[#b6bec9]">{t('header.searchEmpty', 'Sin coincidencias directas. Probá en productos completos.')}</p>
+                    <p className="m-0 px-[10px] py-[11px] text-[0.75rem] leading-[1.35] text-[color:var(--header-ink)]">{t('header.searchEmpty', 'Sin coincidencias directas. Probá en productos completos.')}</p>
                   )}
                 </div>
                 <button

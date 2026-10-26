@@ -10,20 +10,26 @@
  * redondeadas (cards, etiquetas, chips y badges son todos rectos). El borde
  * punteado es lo que distingue "vacío" de "contenido".
  *
+ * `level` es el nivel del título (h2 por defecto: el estado vive dentro de una página que ya tiene su h1, así no hay saltos de nivel). Una página entera que
+ * sólo muestra este estado (catálogo caído) pasa `level={1}` para no quedarse sin h1; el aspecto no cambia.
+ *
+ * Superficie, borde y tinta salen de tokens (--state-bg, --line2, --state-ink): los comparte CatalogInlineNotice.
+ *
  * `action` recibe un nodo (normalmente un <Link>) en vez de un href para que cada
  * página decida a dónde vuelve sin que este componente conozca las rutas.
  */
-function CatalogEmptyState({ title, body, action, className = '' }) {
+function CatalogEmptyState({ title, body, action, level = 2, className = '' }) {
+  const Heading = `h${level}`
   return (
     <div
-      className={`border border-dashed border-[#2a2a2a] bg-[#0f0f10] px-6 py-12 text-center ${className}`.trim()}
+      className={`border border-dashed border-[color:var(--line2)] bg-[color:var(--state-bg)] px-6 py-12 text-center ${className}`.trim()}
     >
-      <h3 className="title-font m-0 text-[1.4rem] text-white">
+      <Heading className="title-font m-0 text-[1.4rem] text-white">
         {title}
         <span className="text-primary">.</span>
-      </h3>
+      </Heading>
       {body ? (
-        <p className="mx-auto mt-2 max-w-[48ch] text-[0.9rem] leading-[1.55] text-[#aeb5bf]">{body}</p>
+        <p className="mx-auto mt-2 max-w-[48ch] text-[0.9rem] leading-[1.55] text-[color:var(--state-ink)]">{body}</p>
       ) : null}
       {action ? <div className="mt-4">{action}</div> : null}
     </div>

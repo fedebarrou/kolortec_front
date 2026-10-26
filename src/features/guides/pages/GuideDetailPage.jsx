@@ -5,13 +5,15 @@ import { articleJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
 import { getGuideBySlug, getGuides } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import GuideCard from '../components/GuideCard'
+import { parseInline } from '../helpers/inlineMarks'
 
 // El adapter (contentService.parseBlogContent) aplana el contenido del blog a
-// texto plano: prefija "•  " a cada <li> y "⚠  " a cada <warn>. Renderizar eso
-// como un solo <p whitespace-pre-line> deja VIÑETAS FALSAS —bolitas tipografiadas
-// a mano en vez de una lista— y advertencias que no se distinguen del cuerpo.
-// Acá se vuelve a agrupar en <ul> y en callouts, igual que ya se ve la MISMA
-// guía en /garantias.
+// texto con un renglón por bloque: prefija "•  " a cada <li> y "⚠  " a cada <warn>.
+// Renderizar eso como un solo <p whitespace-pre-line> deja VIÑETAS FALSAS —bolitas
+// tipografiadas a mano en vez de una lista— y advertencias que no se distinguen del
+// cuerpo. Acá se vuelve a agrupar en <ul> y en callouts, igual que ya se ve la MISMA
+// guía en /garantias. El texto conserva las marcas *negrita* y _cursiva_: se dibujan
+// con <strong>/<em> (InlineText); lo demás es texto, nunca HTML.
 const BULLET_RE = /^[•·]\s*/
 const WARN_RE = /^⚠\s*/
 
@@ -37,6 +39,25 @@ function toBlocks(body) {
   return blocks
 }
 
+/**
+ * Texto de un bloque con sus marcas: *negrita* → <strong>, _cursiva_ → <em>. Son elementos de React
+ * (React escapa el texto): un `<b>` o un `<img onerror>` escrito en la nota se ve como texto, no se ejecuta.
+ */
+function InlineText({ text }) {
+  const tokens = useMemo(() => parseInline(text), [text])
+  const dibujar = (tokens2, prefijo) => tokens2.map((tok, i) => {
+    const key = `${prefijo}${i}`
+    if (tok.type === 'strong') {
+      return <strong key={key} className="font-bold text-white">{tok.children ? dibujar(tok.children, `${key}-`) : tok.text}</strong>
+    }
+    // Manrope no trae cursiva: el navegador inclina la normal y la inclinación se come el espacio que
+    // sigue («poco aceite» se leía «pocoaceite»). El margen derecho devuelve ese aire.
+    if (tok.type === 'em') return <em key={key} className="mr-[0.08em] italic">{tok.children ? dibujar(tok.children, `${key}-`) : tok.text}</em>
+    return tok.text
+  })
+  return <>{dibujar(tokens, '')}</>
+}
+
 function GuideBody({ body }) {
   const blocks = useMemo(() => toBlocks(body), [body])
   if (blocks.length === 0) return null
@@ -50,7 +71,7 @@ function GuideBody({ body }) {
               {block.items.map((item, j) => (
                 <li key={`${i}-${j}`} className="flex items-start gap-2.5">
                   <span aria-hidden="true" className="mt-[0.55em] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>{item}</span>
+                  <span><InlineText text={item} /></span>
                 </li>
               ))}
             </ul>
@@ -65,13 +86,13 @@ function GuideBody({ body }) {
               <span className="material-symbols-outlined text-[18px] leading-none text-primary" aria-hidden="true">
                 warning
               </span>
-              <span>{block.text}</span>
+              <span><InlineText text={block.text} /></span>
             </p>
           )
         }
         return (
           <p key={`p-${i}`} className="m-0 max-w-[52ch] text-[1rem] leading-[1.65] text-[#b7bbc4] xl:max-w-[52rem] xl:text-[1.25rem] xl:leading-[1.7]">
-            {block.text}
+            <InlineText text={block.text} />
           </p>
         )
       })}
@@ -123,7 +144,7 @@ function GuideDetailPage() {
 
   if (loading) {
     return (
-      <section className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-10 xl:px-20 2xl:px-40">
+      <section className="min-h-screen bg-[color:var(--bg)] px-6 py-[clamp(56px,8vw,96px)] lg:px-10 xl:px-20 2xl:px-40">
         <div className="h-4 w-24 animate-pulse rounded bg-[#1a1a1a]" />
         <div className="mt-6 h-12 w-3/4 max-w-[60ch] animate-pulse rounded bg-[#141414]" />
         <div className="mt-4 h-4 w-2/3 max-w-[50ch] animate-pulse rounded bg-[#111]" />
@@ -133,7 +154,7 @@ function GuideDetailPage() {
 
   if (!guide) {
     return (
-      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-10 xl:px-20 2xl:px-40">
+      <section className="min-h-screen bg-[color:var(--bg)] px-6 py-[42px] lg:px-10 xl:px-20 2xl:px-40">
         <Seo
           title={t('seo.guideNotFound', 'Guía no encontrada · Kolortec')}
           description={t('seo.guideNotFoundDesc', 'Esta guía no existe o se cambió de URL. Volvé al índice de soporte para ver todas las guías técnicas.')}
@@ -143,7 +164,7 @@ function GuideDetailPage() {
         <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
           {t('pages.guides.notFoundTitle', 'Guía no encontrada')}<span className="text-primary">.</span>
         </h1>
-        <p className="mb-3 text-[#a0a0a0]">{t('pages.guides.notFoundBody', 'No encontramos esta guía en el cluster de soporte.')}</p>
+        <p className="mb-3 text-[color:var(--muted)]">{t('pages.guides.notFoundBody', 'No encontramos esta guía en el cluster de soporte.')}</p>
         <Link to="/soporte/guias" className="font-bold text-primary">{t('pages.guides.back', 'Volver a guías')}</Link>
       </section>
     )
@@ -168,7 +189,7 @@ function GuideDetailPage() {
   ])
 
   return (
-    <article className="min-h-screen bg-[#050505] px-6 py-[clamp(56px,8vw,96px)] lg:px-10 xl:px-20 2xl:px-40">
+    <article className="min-h-screen bg-[color:var(--bg)] px-6 py-[clamp(56px,8vw,96px)] lg:px-10 xl:px-20 2xl:px-40">
       <Seo
         title={guide.seoTitle || `${guide.title} · Kolortec`}
         description={guide.seoDescription || guide.excerpt}

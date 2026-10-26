@@ -22,6 +22,7 @@ import { safeSrc } from '../../features/landing/_hero-renderer/cssSafe.js'
 import { setProtectedTermsLoader } from './dynamicTranslationService.js'
 import { normalizarEscala } from '../utils/marcas-tamano.js'
 import { normalizarNamePosition } from '../utils/marcas-nombre.js'
+import { textoSinMarcas } from '../../features/guides/helpers/inlineMarks.js'
 
 // Valores admitidos de `slide.scrim`. 'kolortec' = 4 capas NEGRAS (look original);
 // 'kolortec-light' = las mismas capas en crema, para escenas sobre fondo claro.
@@ -99,6 +100,20 @@ async function fetchWithFallback(path, fallbackValue) {
   } catch {
     return fallbackValue
   }
+}
+
+/**
+ * Igual que fetchWithFallback, pero para endpoints que deben devolver una LISTA: devuelve el array, o `null`
+ * si el pedido falló o la API contestó 200 con otra cosa (un objeto, un HTML de proxy, un error con forma de
+ * JSON). En ese caso además SE OLVIDA la promesa cacheada: fetchWithFallback sólo la borra cuando el pedido
+ * falla, y un 200 con basura quedaba pegado toda la sesión, así que «Reintentar» devolvía la misma basura sin
+ * volver a pedir nada.
+ */
+async function fetchPublicList(path) {
+  const raw = await fetchWithFallback(path, null)
+  if (Array.isArray(raw)) return raw
+  _publicFetchCache.delete(path)
+  return null
 }
 
 // Los nombres de producto no se traducen nunca (ver dynamicTranslationService).
@@ -468,27 +483,28 @@ function mapMarcasToClientLogos(raw, namePosition = null) {
 }
 
 /**
- * /public/blog?tipo=guia → guides[]
- * Maps to the shape used by GuidesIndexPage and GuideDetailPage:
- * { slug, title, excerpt, publishedAt, sections[], cta, seoTitle, seoDescription }
- *
- * `contenido` from the API is expected to be one of:
- *  - Array of { heading, body } objects (ideal)
- *  - A markdown/HTML string (we wrap it as a single section)
- *  - undefined/null (sections will be empty)
+ * Marcas de texto de la mini-sintaxis del blog. Hay dos limpiezas distintas a propósito:
+ *  - `quitarLlaves`: `{texto}` → `texto`. Se aplica a TODO. Las llaves no tienen dibujo propio.
+ *  - `stripInlineMarks`: además saca *negrita* y _cursiva_. Sólo para los TÍTULOS (<h1>-<h4>), que ya
+ *    van en negrita por estilo y no llevan énfasis adentro.
+ * El CUERPO conserva `*` y `_` tal cual: GuideDetailPage los dibuja con <strong>/<em> (helpers/inlineMarks.js).
+ * Antes se borraban acá y la negrita de las guías nunca se veía.
  */
+function quitarLlaves(s) {
+  return String(s || '').replace(/\{([^}]*)\}/g, '$1').trim()
+}
+
+// Las MISMAS reglas que dibuja el cuerpo (parseInline): antes eran regex propias y más sueltas, y «cable_dmx_1» o
+// «2 * 3 * 4» perdían caracteres en un título mientras en el cuerpo se veían bien.
 function stripInlineMarks(s) {
-  return String(s || '')
-    .replace(/\{([^}]*)\}/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/_([^_]+)_/g, '$1')
-    .trim()
+  return textoSinMarcas(quitarLlaves(s)).trim()
 }
 
 /**
  * Parsea el `contenido` de un blog de tiendita (mini-sintaxis por línea: <h2>/<p>/<li>/<warn>/<spec>/...)
- * a secciones [{ heading, body }] que renderiza GuideDetailPage. Los <li> se vuelven viñetas y el body
- * conserva saltos de línea (se renderiza con whitespace-pre-line).
+ * a secciones [{ heading, body }] que renderiza GuideDetailPage. El body es texto con un renglón por bloque:
+ * los <li> llevan el prefijo «•  » y los <warn>/<note> el «⚠  » (la página los vuelve a agrupar en lista y
+ * aviso), y conserva las marcas *negrita* y _cursiva_ del texto para que la página las dibuje.
  */
 function parseBlogContent(str) {
   const sections = []
@@ -502,9 +518,9 @@ function parseBlogContent(str) {
     const line = rawLine.trim()
     if (!line) continue
     const m = line.match(/^<(h[1-4]|p|li|oli|warn|note|hr|spec)>\s*(.*)$/i)
-    if (!m) { cur.body.push(stripInlineMarks(line)); continue }
+    if (!m) { cur.body.push(quitarLlaves(line)); continue }
     const tag = m[1].toLowerCase()
-    const text = stripInlineMarks(m[2])
+    const text = tag[0] === 'h' ? stripInlineMarks(m[2]) : quitarLlaves(m[2])
     if (tag[0] === 'h') { flush(); cur.heading = text }
     else if (tag === 'li') cur.body.push('•  ' + text)
     else if (tag === 'oli') cur.body.push(text)
@@ -517,6 +533,16 @@ function parseBlogContent(str) {
   return sections.filter((s) => s.heading || s.body)
 }
 
+/**
+ * /public/blog → guides[] (forma que usan GuidesIndexPage, GuideDetailPage y las notas de la ficha):
+ * { slug, title, image, video, excerpt, publishedAt, sections[], cta, seoTitle, seoDescription }.
+ *
+ * `contenido` llega como:
+ *  - un string con la mini-sintaxis por línea (el caso real) → parseBlogContent;
+ *  - un array de { heading, body } (o titulo/cuerpo): pasa tal cual;
+ *  - nada → sections vacías.
+ * `video` es la URL del primer video de `media`; hoy ninguna página lo dibuja.
+ */
 function mapBlogToGuides(raw) {
   if (!Array.isArray(raw) || raw.length === 0) return null
 
@@ -744,18 +770,14 @@ export function slugifyLinea(value) {
 }
 
 /**
- * getLines() — las lineas de producto de la cuenta, con su slug y cuantos productos
- * tiene cada una. Es lo que hace falta para armar /linea/:slug y para saber que URL
- * pegar en el acceso de un hero.
- *
- * Devuelve [] si ningun producto tiene `linea` cargada: no se inventan lineas.
+ * linesFromProducts(list) — las líneas que salen de una lista de productos YA MAPEADOS (campo `line`):
+ * { name, slug, count }, ordenadas por nombre. Es lo que usa LinePage sobre `loadShopProducts()`, que sí
+ * distingue «la API falló» de «la cuenta no tiene líneas».
  */
-export async function getLines() {
-  const raw = await fetchWithFallback('/public/productos', null)
-  if (!Array.isArray(raw)) return []
+export function linesFromProducts(list) {
   const porSlug = new Map()
-  for (const p of raw) {
-    const nombre = (p?.linea ?? '').trim()
+  for (const p of Array.isArray(list) ? list : []) {
+    const nombre = String(p?.line ?? '').trim()
     if (!nombre) continue
     const slug = slugifyLinea(nombre)
     if (!slug) continue
@@ -764,6 +786,20 @@ export async function getLines() {
     else porSlug.set(slug, { name: nombre, slug, count: 1 })
   }
   return [...porSlug.values()].sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/**
+ * getLines() — las lineas de producto de la cuenta, con su slug y cuantos productos
+ * tiene cada una. Es lo que hace falta para armar /linea/:slug y para saber que URL
+ * pegar en el acceso de un hero.
+ *
+ * Devuelve [] si ningun producto tiene `linea` cargada: no se inventan lineas. TAMBIÉN devuelve [] si la API
+ * falló: para decidir «esta línea no existe» no sirve (usar `loadShopProducts()` + `linesFromProducts()`).
+ */
+export async function getLines() {
+  const raw = await fetchPublicList('/public/productos')
+  if (!raw) return []
+  return linesFromProducts(raw.map((p) => ({ line: p?.linea })))
 }
 
 function deriveLines(raw) {
@@ -879,12 +915,24 @@ export async function getLandingContent() {
  * Shape: same as mapProducto() output.
  */
 export async function getShopProducts() {
+  const { list } = await loadShopProducts()
+  return list
+}
+
+/**
+ * loadShopProducts() — la lista + si se pudo cargar.
+ *
+ * `getShopProducts()` devuelve [] tanto si la cuenta no tiene productos como si la API falló, y
+ * "Sin resultados" no es lo que hay que decirle a quien buscó mientras el endpoint estaba caído.
+ * `fetchPublicList` devuelve `null` si el pedido falla o no vuelve un array (y en ese caso no deja nada
+ * cacheado: Reintentar vuelve a pedir de verdad), y [] si la cuenta de verdad no tiene productos: ésa es la
+ * diferencia, sin heurísticas.
+ */
+export async function loadShopProducts() {
   // Data-driven: sin productos en tiendita → lista vacía (las páginas muestran su empty state).
-  const raw = await fetchWithFallback('/public/productos', null)
-  if (!Array.isArray(raw) || raw.length === 0) {
-    return []
-  }
-  return raw.map(mapProducto)
+  const raw = await fetchPublicList('/public/productos')
+  if (!raw) return { list: [], available: false }
+  return { list: raw.map(mapProducto), available: true }
 }
 
 /**
@@ -895,7 +943,11 @@ export async function getShopProducts() {
  */
 export async function getCategorias() {
   const raw = await fetchWithFallback('/public/categorias', [])
-  return Array.isArray(raw) ? raw : []
+  if (Array.isArray(raw) && raw.length) return raw
+  // Falló, no era una lista o vino vacía: loadCategories() lo lee como «no disponible», así que no se deja
+  // cacheado (si no, Reintentar devolvería lo mismo sin volver a pedir).
+  _publicFetchCache.delete('/public/categorias')
+  return []
 }
 
 /**
@@ -916,13 +968,24 @@ export async function getServicios() {
  * Falls back to null if not found (caller should handle 404 state).
  */
 export async function getProductDetail(slug) {
-  if (!slug) return null
-  const raw = await fetchWithFallback('/public/productos', null)
-  if (!Array.isArray(raw)) return null
+  return (await loadProductDetail(slug)).product
+}
+
+/**
+ * loadProductDetail(slug) — el producto + si se pudo cargar: `{ product, available }`.
+ *
+ * `getProductDetail` devuelve null tanto si la lista llegó y el slug no está (un 404 REAL: «Producto no encontrado») como si la API no
+ * contestó (500, red caída, un 200 que no es lista): decirle «no existe» a quien sólo perdió la conexión es mentirle. Acá `available`
+ * es false sólo en el segundo caso; con `available: true` y `product: null` el producto de verdad no existe.
+ */
+export async function loadProductDetail(slug) {
+  if (!slug) return { product: null, available: true }
+  const raw = await fetchPublicList('/public/productos')
+  if (!raw) return { product: null, available: false }
   const match = raw.find(
     (p) => (p.slug && p.slug === slug) || String(p.id) === String(slug),
   )
-  if (!match) return null
+  if (!match) return { product: null, available: true }
   const detail = mapProductoDetail(match)
   // Relacionados: misma categoría (excluye el actual), completa con otros hasta 4.
   const others = raw.filter((p) => String(p.id) !== String(match.id))
@@ -931,14 +994,9 @@ export async function getProductDetail(slug) {
   // 10 y no 4: los relacionados pasaron de ser una grilla fija de 4 a un carrusel.
   // Con 4 items el track no llena la pantalla y la tira gira medio vacía.
   detail.related = [...sameCat, ...rest].slice(0, 10).map(mapProducto)
-  return detail
+  return { product: detail, available: true }
 }
 
-/**
- * getGuides()
- * Fetches /public/blog?tipo=guia and maps to the guide shape.
- * Falls back to the hardcoded guides from features/guides/data/guides.js.
- */
 /**
  * getSiteConfig()
  * Config pública de la web (flags): showPrices, showReviews, published. Los flags que
@@ -1044,6 +1102,13 @@ export async function getSiteConfig() {
   }
 }
 
+/**
+ * getGuides()
+ * Trae /public/blog?tipo=guia y lo mapea a la forma de la guía (mapBlogToGuides):
+ * { slug, title, image, video, excerpt, publishedAt, sections[], cta, seoTitle, seoDescription }.
+ * Data-driven: sin guías cargadas en tiendita (o si la API no contesta) devuelve [] y las páginas
+ * muestran su estado vacío; ya NO cae a las guías hardcodeadas de features/guides/data/guides.js.
+ */
 export async function getGuides() {
   // Data-driven: sin guías cargadas en tiendita → lista vacía (la página muestra empty state),
   // en vez de las guías hardcodeadas.

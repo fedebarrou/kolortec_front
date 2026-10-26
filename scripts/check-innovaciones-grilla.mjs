@@ -1,12 +1,14 @@
 /**
- * check-innovaciones-grilla.mjs — la grilla de innovaciones de la ficha (20-oct-2026, opción B).
+ * check-innovaciones-grilla.mjs — la grilla de innovaciones de la ficha (20-oct-2026, opción B; 21-oct-2026, detalle
+ * en un recuadro arriba, opción C1).
  * Prueba src/shared/utils/innovaciones-grilla.js: la grilla aparece desde la 5.ª (4 o menos = lista de siempre),
- * páginas de 6 (2×3) en celular y la página visible según el scroll.
+ * páginas de 6 (2×3) en celular, la página visible según el scroll y cuál innovación muestra el recuadro al cargar.
  * Uso: node scripts/check-innovaciones-grilla.mjs
  */
 import assert from 'node:assert/strict'
-import { UMBRAL_LISTA, POR_PAGINA, usaGrilla, paginar, paginaDesdeScroll } from '../src/shared/utils/innovaciones-grilla.js'
+import { UMBRAL_LISTA, POR_PAGINA, usaGrilla, paginar, paginaDesdeScroll, conGuiones, tieneDescripcion, primeraConDescripcion } from '../src/shared/utils/innovaciones-grilla.js'
 
+const GS = '­'
 let ok = 0
 const caso = (nombre, fn) => { fn(); ok += 1; console.log(`  ✔ ${nombre}`) }
 const lista = (n) => Array.from({ length: n }, (_, i) => ({ title: `I${i + 1}` }))
@@ -64,6 +66,41 @@ caso('paginaDesdeScroll: una sola página, o datos inválidos → 0; nunca se pa
   assert.equal(paginaDesdeScroll(sc(500, { paso: 0 })), 0)
   assert.equal(paginaDesdeScroll(sc(-50)), 0)
   assert.equal(paginaDesdeScroll(sc(5000, { scrollWidth: 99999 })), 3)
+})
+
+caso('tieneDescripcion: texto sí; vacío, sólo espacios, ausente o no-texto no', () => {
+  assert.equal(tieneDescripcion({ description: 'Algo.' }), true)
+  assert.equal(tieneDescripcion({ description: '' }), false)
+  assert.equal(tieneDescripcion({ description: '   ' }), false)
+  assert.equal(tieneDescripcion({}), false)
+  assert.equal(tieneDescripcion({ description: 5 }), false)
+  assert.equal(tieneDescripcion(undefined), false)
+})
+caso('primeraConDescripcion: al cargar el recuadro muestra la primera (con descripción)', () => {
+  assert.equal(primeraConDescripcion([{ description: 'a' }, { description: 'b' }]), 0)
+  assert.equal(primeraConDescripcion([{ description: '' }, { description: '  ' }, { description: 'c' }]), 2)
+})
+caso('primeraConDescripcion: ninguna con descripción, vacío o inválido → -1 (sin recuadro)', () => {
+  assert.equal(primeraConDescripcion([{ description: '' }, {}]), -1)
+  assert.equal(primeraConDescripcion([]), -1)
+  assert.equal(primeraConDescripcion(undefined), -1)
+  assert.equal(primeraConDescripcion(null), -1)
+})
+
+const sil = (t) => conGuiones(t).split(GS).join('-')
+caso('conGuiones: silabea palabras largas (REFRIGERACIÓN, MONOBLOQUE, ANTIRREFLEJANTE)', () => {
+  assert.equal(sil('REFRIGERACIÓN'), 'RE-FRI-GE-RA-CIÓN')
+  assert.equal(sil('MONOBLOQUE'), 'MO-NO-BLO-QUE')
+  assert.equal(sil('ANTIRREFLEJANTE'), 'AN-TI-RRE-FLE-JANTE')
+})
+caso('conGuiones: palabras cortas, números y texto sin letras no se tocan; sólo suma guiones suaves', () => {
+  assert.equal(conGuiones('CHASIS'), 'CHASIS')
+  assert.equal(conGuiones('12345678901'), '12345678901')
+  assert.equal(conGuiones(undefined), undefined)
+  for (const t of ['SISTEMA DE REFRIGERACIÓN ACTIVA', 'Batería de larga duración', 'ELECTROMAGNETISMO']) assert.equal(conGuiones(t).split(GS).join(''), t)
+})
+caso('conGuiones: nunca deja una sílaba suelta de menos de 2 letras (la última, 3)', () => {
+  for (const f of conGuiones('AUTOMATIZACIÓN EXTRAORDINARIA ESCUELA TEATRALIDAD ÍÍÍÍÍÍÍÍÍ').split(/\s+/)) { const ps = f.split(GS); ps.forEach((parte, i) => assert.ok(parte.length >= (i === ps.length - 1 && ps.length > 1 ? 3 : 2), parte)) }
 })
 
 console.log(`\n${ok} casos OK`)

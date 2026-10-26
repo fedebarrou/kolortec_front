@@ -115,14 +115,41 @@ html {
        (1,2:1 sobre --bg) y un control cuyo único contorno es ése no se ve (WCAG 1.4.11 pide 3:1).
        #6b6b6b = 3,8:1 sobre #050505. scripts/check-media.mjs lo mide. */
     --line-control: #6b6b6b;
+    /* Relleno del ESQUELETO de carga (celdas y texto fantasma de GridSkeleton): #242426 = 1,3:1 sobre --bg. El
+       #101012 de antes daba 1,07:1 y la página cargando parecía vacía. scripts/check-filtros.mjs lo mide. */
+    --skeleton: #242426;
+    /* Superficie y tinta del estado de catálogo (vacío / «no pudimos cargar» / aviso de una línea): una sola definición
+       para CatalogEmptyState y CatalogInlineNotice. El borde es --line2. */
+    --state-bg: #0f0f10;
+    --state-ink: #aeb5bf;
+    /* Superficie de un CONTROL de formulario del catálogo (la barra de filtros y su fantasma de carga). */
+    --control-bg: #0b0b0b;
+    /* Tinta de los mensajes del desplegable del buscador del header («Sin coincidencias directas…», «No pudimos buscar…»):
+       el valor EXACTO que ya estaba publicado en HeaderSection (#b6bec9). No es --state-ink (#aeb5bf): ése es de las cajas del catálogo. */
+    --header-ink: #b6bec9;
     --ink: #f5f5f5;
     --muted: #a0a0a0;
     --soft: #aeb2ba;
     --panel: #0d0d0e;
     --on-primary: #0b0b0b;
-    /* Innovaciones de la ficha (InnovacionesGrilla): fondo del globo de explicación y punto
-       inactivo del carrusel (= --line-control, 3,8:1 sobre --bg: un control no puede quedar en 1,6:1). */
-    --innov-globo-bg: #1b1b1b;
+    /* Innovaciones de la ficha (InnovacionesGrilla), opción C1 del mockup 2026-10-21-innovaciones-imagen:
+       fondo (panel2) y borde (--primary) del recuadro de detalle, imagen de la ficha (44) y del recuadro (84),
+       piso del alto del recuadro y punto inactivo del carrusel (= --line-control, 3,8:1 sobre --bg: un control
+       no puede quedar en 1,6:1). El sitio es de esquinas rectas: --innov-radio compartido. */
+    --innov-detalle-bg: #1b1b1b;
+    --innov-radio: 0;
+    --innov-img-ficha: 44px;
+    --innov-img-detalle: 84px;
+    --innov-detalle-alto: 118px; /* piso estructural del recuadro: 84 de imagen + 2×16 de padding + 2 de borde (el mockup); lo que pase de ahí lo cubre la capa de medida */
+    /* Título y descripción de una innovación: UN solo lugar para el recuadro (.kt-innov-detalle-*) y para la
+       lista de 4 o menos (ProductDetailPage). Valores del mockup 2026-10-21-innovaciones-imagen. */
+    --innov-titulo-size: 15px;
+    --innov-titulo-lh: 1.5;
+    --innov-titulo-peso: 700;
+    --innov-titulo-color: var(--ink);
+    --innov-texto-size: 13.5px;
+    --innov-texto-lh: 1.55;
+    --innov-texto-color: var(--soft);
     --innov-punto: var(--line-control);
     --border-width: 1px;
     --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
@@ -931,10 +958,16 @@ html {
     stroke-linejoin: round;
   }
 
-  .kt-detail-back:hover {
+  .kt-detail-back:hover:not(:disabled) {
     color: var(--primary, #f4df33);
     border-color: rgba(244, 223, 51, 0.55);
     transform: translateX(-2px);
+  }
+
+  /* «Volver» esperando la lista de categorías (ProductDetailPage): deshabilitada, con cursor de espera. */
+  .kt-detail-back:disabled {
+    opacity: 0.5;
+    cursor: progress;
   }
 
   .kt-detail-back:focus-visible {
@@ -1189,12 +1222,16 @@ html {
   }
 
   /* Innovaciones de la ficha con MUCHAS (5 o más): grilla de fichas compactas en compu, carrusel de
-     páginas de 6 (2 columnas × 3 filas) en celular. Mockup congelado
-     docs/diseno/mockups/2026-10-20-innovaciones (opción B, 20-oct-2026). Un solo DOM: en compu la
+     páginas de 6 (2 columnas × 3 filas) en celular, y arriba un recuadro de detalle con la señalada. Mockups
+     congelados docs/diseno/mockups/2026-10-20-innovaciones (opción B) y 2026-10-21-innovaciones-imagen
+     (opción C1, 21-oct-2026). Un solo DOM: en compu la
      «página» es `display: contents` y las fichas fluyen en la grilla; en celular es una diapositiva
      con scroll-snap nativo. Hasta 4 innovaciones no se usa nada de esto (lista de siempre). */
+  /* container-type: el recuadro de detalle se acomoda según el ancho de la COLUMNA (no el de la ventana): ver el
+     @container de N2 más abajo (ra VIS-001, elegida por Fedev el 21-oct-2026). */
   .kt-innov {
     position: relative;
+    container-type: inline-size;
   }
 
   .kt-innov-hint {
@@ -1239,27 +1276,64 @@ html {
 
   .kt-innov-ficha {
     min-width: 0;
-    min-height: 56px;
+    min-height: 64px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
+    gap: 12px;
+    padding: 10px 12px;
     border: 1px solid var(--line2);
+    border-radius: var(--innov-radio);
     background: var(--panel);
-    color: #f0f2f5;
+    color: var(--ink);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.25;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     text-align: left;
-    overflow-wrap: anywhere;
+    /* Una palabra larga se parte con guion (según el idioma de la página); `break-word` es sólo el resguardo
+       para códigos sin sílabas (RGBWA+UV, 1200W-XPRO2026) que, si no, desbordarían la ficha. */
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  /* Celular: la ficha mide ~150px y «REFRIGERACIÓN» no entra a 13px; menos aire y 12px (el piso). */
+  @media (max-width: 480px) {
+    .kt-innov-ficha {
+      gap: 8px;
+      padding: 8px;
+      font-size: 12px;
+    }
+  }
+
+  /* Celular angosto: la ficha mide ~117px a 320 (la columna de la ficha, 272px, menos los 28 de la página siguiente
+     que asoma y el gap, dividido en dos) y, con la imagen de 44 al lado, al texto le quedan ~47px: «CAUDAL» se partía
+     sin guion y «PROTECCIÓN Y CONSTRUCCIÓN» ocupaba 6 renglones. Cuando la columna mide 338px o menos (la ficha, ~150px
+     o menos; a 390 mide 342 y la ficha ~152, queda como siempre) la imagen va ARRIBA, centrada, y el nombre debajo,
+     centrado y a todo el ancho de la ficha; la imagen sigue en 44 y entre las dos hay 8. Sólo en celular: en compu las
+     fichas miden 160 o más. */
+  @container (max-width: 338px) {
+    @media (max-width: 767px) {
+      .kt-innov-ficha {
+        flex-direction: column;
+        justify-content: flex-start; /* las imágenes de una misma fila quedan a la misma altura aunque un nombre ocupe más renglones */
+        gap: 8px;
+        text-align: center;
+      }
+
+      .kt-innov-ficha > .kt-innov-nombre {
+        width: 100%;
+      }
+    }
   }
 
   button.kt-innov-ficha {
     cursor: pointer;
   }
 
-  .kt-innov-ficha:hover,
-  .kt-innov-ficha[aria-expanded='true'] {
+  /* La señalada (la que muestra el recuadro) y la que está bajo el puntero llevan el borde en --primary. */
+  button.kt-innov-ficha:hover,
+  .kt-innov-ficha[aria-current='true'] {
     border-color: var(--primary);
   }
 
@@ -1268,40 +1342,179 @@ html {
     outline-offset: 2px;
   }
 
-  /* Sin imagen: la inicial en amarillo sobre un círculo (igual de grande que el ícono). */
-  .kt-innov-inicial {
+  /* Imagen de la ficha (44×44) y del recuadro (84×84): cuadradas, enteras (object-fit: contain, lo pone
+     InnovacionIcono) sobre negro. */
+  .kt-innov-img {
     flex: none;
-    width: 34px;
-    height: 34px;
+    width: var(--innov-img-ficha);
+    height: var(--innov-img-ficha);
+  }
+
+  .kt-innov-detalle-img {
+    flex: none;
+    width: var(--innov-img-detalle);
+    height: var(--innov-img-detalle);
+  }
+
+  /* Sin imagen: la inicial en amarillo sobre un cuadrado (del mismo tamaño que la imagen que reemplaza). */
+  .kt-innov-inicial {
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--line2);
-    border-radius: 9999px;
+    border-radius: var(--innov-radio);
     background: var(--bg);
     color: var(--primary);
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 800;
+    letter-spacing: 0;
   }
 
-  /* El globo flota sobre lo que está debajo y no mueve el layout; no atrapa el mouse
-     (pasar de una ficha a la de abajo cambia la explicación sin quedar trabado). */
-  .kt-innov-globo {
-    position: absolute;
-    z-index: 5;
-    padding: 10px 12px;
+  .kt-innov-detalle-img.kt-innov-inicial {
+    font-size: 32px;
+  }
+
+  /* El recuadro de detalle: FIJO arriba de la grilla, con la innovación señalada. Borde de 1px en --primary,
+     fondo panel2, padding 16, gap 16. ALTO ESTABLE: es un grid de una sola celda donde caben, apilados, el
+     contenido visible (.kt-innov-detalle-item) y una capa invisible con el de TODAS las innovaciones
+     (.kt-innov-detalle-medida): el alto es el de la descripción más larga, siempre; cambiar de ficha no lo mueve.
+     Piso: --innov-detalle-alto = 118 (84 + 32 + 2, el mockup), el mismo en todos los anchos: es sólo el piso
+     estructural. Lo que pase de ahí (en celular la descripción más larga da ~164, en 320 ~227) lo cubre la capa de
+     medida, nunca el mouse. */
+
+  /* Compu (≥768px, la grilla queda DEBAJO del recuadro): el recuadro se clava bajo el navbar y la barra de secciones
+     (--kt-detail-top, la mide ProductDetailPage: navbar + barra + 12px), así que al recorrer fichas lejanas —a 1024 la
+     grilla es de 1 columna y mide más que la pantalla— no se va de la vista. Siempre queda por debajo de las dos barras
+     (z-index 30). En celular no aplica: ahí el recuadro va arriba del carrusel, que es corto. Y sólo cuando HACE FALTA:
+     InnovacionesGrilla pone .kt-innov--clavable cuando la grilla más el recuadro no entran en el alto de la ventana;
+     si entran (1440 con 9 innovaciones) todo esto queda apagado: recuadro en flujo normal y sin espacio de apoyo. */
+  @media (min-width: 768px) {
+    .kt-innov--clavable .kt-innov-detalle {
+      position: sticky;
+      top: var(--kt-detail-top, 132px);
+      z-index: 2;
+    }
+
+    /* La franja de 12px entre la barra de secciones y el recuadro clavado: sin esto se ven pedazos de fichas pasar por
+       ahí (ra VIS-013). Se tapa con el color de la tarjeta de la ficha (.kt-detail-summary: un degradé de 6 a 11 sobre
+       el fondo, de izquierda a derecha; acá el mismo, sin transparencia). */
+    .kt-innov--clavable .kt-innov-detalle::before {
+      content: '';
+      position: absolute;
+      left: -1px;
+      right: -1px;
+      top: -13px;
+      height: 12px;
+      background: linear-gradient(90deg, rgb(6, 6, 6), rgb(11, 11, 11));
+    }
+
+    /* Al final de la grilla el recuadro se suelta del scroll apoyándose en el fondo de su contenedor: este espacio (su
+       alto + 12) es donde se apoya, así que NO pisa la última fila de fichas (ra VIS-014). */
+    .kt-innov--clavable .kt-innov-pista {
+      padding-bottom: calc(var(--innov-detalle-h, 0px) + 12px);
+    }
+
+    /* Una ficha enfocada o llevada a la vista por scroll no queda tapada por el recuadro clavado
+       (--innov-detalle-h lo publica InnovacionesGrilla con el alto real del recuadro). */
+    .kt-innov--clavable .kt-innov-ficha {
+      scroll-margin-top: calc(var(--kt-detail-top, 132px) + var(--innov-detalle-h, 0px) + 12px);
+    }
+  }
+
+  .kt-innov-detalle {
+    display: grid;
+    margin: 0 0 12px;
+    padding: 16px;
     border: 1px solid var(--primary);
-    background: var(--innov-globo-bg);
-    color: var(--soft);
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.45;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    background: var(--innov-detalle-bg);
+    min-height: var(--innov-detalle-alto);
+  }
+
+  .kt-innov-detalle > * {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  .kt-innov-detalle-medida {
+    display: grid;
+    visibility: hidden;
     pointer-events: none;
   }
 
-  .kt-innov-globo[hidden] {
-    display: none;
+  .kt-innov-detalle-medida > * {
+    grid-area: 1 / 1;
+  }
+
+  .kt-innov-detalle-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .kt-innov-detalle-cuerpo {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .kt-innov-detalle-titulo {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--innov-titulo-color);
+    font-size: var(--innov-titulo-size);
+    font-weight: var(--innov-titulo-peso);
+    line-height: var(--innov-titulo-lh);
+    text-transform: uppercase;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .kt-innov-detalle-texto {
+    display: block;
+    color: var(--innov-texto-color);
+    font-size: var(--innov-texto-size);
+    font-weight: 400;
+    line-height: var(--innov-texto-lh);
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  /* N2 — recuadro angosto (mockup 2026-10-21-innovaciones-imagen, «En una pantalla de notebook», variante N2):
+     cuando la columna de la ficha mide 250px o menos (notebook de 1024: 232px; el celular de 320 tiene 272 y queda en C1) el texto no entra al lado de una
+     imagen de 84px. La imagen pasa a 48×48 al lado del título (gap 12, centrados en vertical) y la descripción baja a
+     todo el ancho del recuadro (margin-top 6). El cuerpo es `display: contents` para que título y descripción sean
+     celdas de la misma grilla que la imagen. A 1440 (382px) y en celular (~358px) queda C1 sin cambios. El piso
+     estructural baja a 48 + 2×16 de padding + 2 de borde. */
+  @container (max-width: 250px) {
+    .kt-innov-detalle {
+      --innov-img-detalle: 48px;
+      --innov-detalle-alto: 82px;
+    }
+
+    .kt-innov-detalle-item {
+      display: grid;
+      grid-template-columns: var(--innov-img-detalle) minmax(0, 1fr);
+      gap: 0 12px;
+      align-items: center;
+      align-content: start; /* el recuadro mide lo de la descripción más larga: las filas no se estiran para llenarlo */
+    }
+
+    .kt-innov-detalle-cuerpo {
+      display: contents;
+    }
+
+    .kt-innov-detalle-titulo {
+      margin-bottom: 0;
+    }
+
+    .kt-innov-detalle-texto {
+      grid-column: 1 / -1;
+      margin-top: 6px;
+    }
+
+    .kt-innov-detalle-img.kt-innov-inicial {
+      font-size: 20px;
+    }
   }
 
   .kt-innov-nav {

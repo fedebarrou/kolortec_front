@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigationType, useParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import CatalogEmptyState from '../components/CatalogEmptyState'
-import { getShopProducts, getLines, slugifyLinea } from '../../../shared/services/contentService'
+import CatalogUnavailablePage from '../components/CatalogUnavailablePage'
+import GridSkeleton, { CATALOG_GRID as GRID } from '../components/GridSkeleton'
+import { linesFromProducts, slugifyLinea } from '../../../shared/services/contentService'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import Seo from '../../../shared/seo/Seo'
-import { getCategories } from '../../../data/categories.js'
-
-// Misma densidad que el resto del catálogo.
-const GRID = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4'
+import { loadCategories } from '../../../data/categories.js'
+import { useScrollRestoration } from '../../../shared/hooks/useScrollRestoration'
+import { useShopProducts } from '../../../shared/hooks/useShopProducts'
 
 /**
  * LinePage — todos los productos de UNA línea, en su propia URL.
@@ -39,68 +40,79 @@ const GRID = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4'
 function LinePage() {
   const { lineSlug } = useParams()
   const { t } = useLanguage()
-  const [products, setProducts] = useState([])
-  // lines: undefined = cargando, [] = no hay ninguna línea cargada en el catálogo.
-  const [lines, setLines] = useState(undefined)
-  // categorySlugs: undefined = cargando (hace falta ANTES de decir "no existe").
-  const [categorySlugs, setCategorySlugs] = useState(undefined)
+  // `products === null` = cargando (no []: con [] se anunciaba «0 items · Próximamente» durante toda la carga).
+  // `available === false` = la API de productos falló: NO es «esta línea no existe» (con getShopProducts() un 500 y una
+  // cuenta vacía daban lo mismo, y /linea/x decía «Línea no encontrada» con el servidor caído).
+  const { products, available, retry, intento } = useShopProducts()
+  // cats: undefined = cargando (hace falta ANTES de decir «no existe»: un slug puede ser una categoría).
+  // { slugs, available }: available=false = no se pudo traer la lista de categorías.
+  const [cats, setCats] = useState(undefined)
 
   useEffect(() => {
     let mounted = true
-    getShopProducts().then((r) => { if (mounted) setProducts(Array.isArray(r) ? r : []) })
-    getLines().then((l) => { if (mounted) setLines(Array.isArray(l) ? l : []) })
-    getCategories().then((list) => {
-      if (mounted) setCategorySlugs(new Set((Array.isArray(list) ? list : []).map((c) => c.slug)))
+    loadCategories().then(({ list, available: catsAvailable }) => {
+      if (mounted) setCats({ slugs: new Set(list.map((c) => c.slug)), available: catsAvailable })
     })
     return () => { mounted = false }
-  }, [])
+  }, [intento])
 
+  const reintentar = () => {
+    setCats(undefined)
+    retry()
+  }
+
+  // Arriba de todo al ENTRAR a una línea; al volver atrás (POP) no: ahí manda el scroll guardado de
+  // esa entrada (useScrollRestoration, más abajo). Mismo criterio que CategoryPage.
+  const navigationType = useNavigationType()
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' })
+    if (navigationType !== 'POP') window.scrollTo({ top: 0, behavior: 'auto' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sólo al cambiar de línea
   }, [lineSlug])
+  const cargando = products === null || cats === undefined
+  useScrollRestoration(!cargando, lineSlug)
 
+  // Las líneas salen de los MISMOS productos que se listan: una sola fuente, un solo estado de carga.
+  const lines = useMemo(() => linesFromProducts(products), [products])
   const line = useMemo(
-    () => (lines ?? []).find((l) => l.slug === lineSlug) ?? null,
+    () => lines.find((l) => l.slug === lineSlug) ?? null,
     [lines, lineSlug],
   )
 
   const lineProducts = useMemo(
-    () => products.filter((p) => p.line && slugifyLinea(p.line) === lineSlug),
+    () => (products ?? []).filter((p) => p.line && slugifyLinea(p.line) === lineSlug),
     [products, lineSlug],
   )
 
-  // Cargando: seccion vacia para no parpadear "no encontrada" antes de tener datos.
-  if (lines === undefined || categorySlugs === undefined) {
-    return <section className="min-h-screen bg-[#050505]" aria-busy="true" />
-  }
-
-  if (!line && lineSlug && categorySlugs.has(lineSlug)) {
-    return <Navigate to={`/products/${lineSlug}`} replace />
-  }
-
-  if (!line) {
+  // Cargando: no se sabe todavía si la línea existe (ni cómo se llama), así que no se dibuja ni «no encontrada» ni el
+  // título; sí el esqueleto con el encabezado fantasma (el mismo alto que el real: la grilla no salta al llegar los
+  // datos). Una sección vacía dejaba la pantalla negra todo el tiempo que tardaba la API.
+  if (cargando) {
     return (
-      <section className="min-h-screen bg-[#050505] px-6 py-[42px] lg:px-40">
-        <Seo
-          title={t('seo.lineNotFound', 'Línea no encontrada · Kolortec')}
-          description={t('seo.lineNotFoundDesc', 'Esta línea no existe en el catálogo. Volvé a productos para ver la línea completa.')}
-          path={`/linea/${lineSlug || ''}`}
-          noindex
-        />
-        <h1 className="title-font m-0 mb-2 text-[clamp(2.4rem,6vw,4.6rem)] leading-[1.02]">
-          {t('pages.line.notFoundTitle', 'Línea no encontrada')}
-          <span className="text-primary">.</span>
-        </h1>
-        <p className="mb-3 text-[#a0a0a0]">{t('pages.line.notFoundBody', 'Esta línea no existe en el catálogo.')}</p>
-        <Link to="/products" className="font-bold text-primary">{t('pages.line.back', 'Volver a productos')}</Link>
+      <section className="min-h-screen bg-[color:var(--bg)]" aria-busy="true">
+        <GridSkeleton header="line" />
       </section>
     )
   }
 
-  const otras = (lines ?? []).filter((l) => l.slug !== line.slug)
+  // La API falló (productos), o no se pudo traer la lista de categorías y la línea no está entre los productos (podría
+  // ser una categoría): no se puede afirmar que no exista. Mismo estado que /products: «No pudimos cargar» + Reintentar.
+  if (!available || (!line && !cats.available)) {
+    // La misma página que CategoryPage (CatalogUnavailablePage): fallaron los productos, o (con productos bien) la lista de categorías.
+    return <CatalogUnavailablePage path={`/linea/${lineSlug || ''}`} kind={available ? 'categories' : 'products'} onRetry={reintentar} />
+  }
+
+  if (!line && lineSlug && cats.slugs.has(lineSlug)) {
+    return <Navigate to={`/products/${lineSlug}`} replace />
+  }
+
+  if (!line) {
+    return <CatalogUnavailablePage path={`/linea/${lineSlug || ''}`} variant="line-not-found" />
+  }
+
+  const otras = lines.filter((l) => l.slug !== line.slug)
 
   return (
-    <section className="min-h-screen bg-[#050505]">
+    <section className="min-h-screen bg-[color:var(--bg)]">
       <Seo
         title={`${line.name} · Kolortec`}
         description={t('seo.lineDesc', 'Todos los productos de la línea, con ficha técnica y acceso al detalle de cada equipo.')}
@@ -135,7 +147,7 @@ function LinePage() {
         {lineProducts.length === 0 ? (
           <CatalogEmptyState
             className="kt-reveal"
-            title={t('catalog.emptyTitle', 'Proximamente')}
+            title={t('catalog.emptyTitle', 'Próximamente')}
             body={t('pages.line.emptyBody', 'Todavía no hay productos asignados a esta línea.')}
             action={
               <Link to="/products" className="font-bold text-primary hover:underline">
