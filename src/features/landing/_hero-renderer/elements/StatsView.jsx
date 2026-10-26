@@ -69,7 +69,7 @@ export function StatsView({ p, reveal, escalonado }) {
           <span aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '128%', height: '210%', background: BACKDROP, filter: 'blur(9px)', zIndex: 0, pointerEvents: 'none' }} />
         )}
         {p.items.map((it, i) => (
-          <div key={i} data-hero-anim={escalonado ? '' : undefined} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? (cssColorAlpha(p.color, '59') ? `1px solid ${cssColorAlpha(p.color, '59')}` : undefined) : undefined, ...estiloEscalonado(escalonado, i) }}>
+          <div key={i} data-hero-anim={escalonado ? '' : undefined} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? (cssColorAlpha(p.color, '59') ? `1px solid ${cssColorAlpha(p.color, '59')}` : undefined) : undefined, ...estiloEscalonado(escalonado, i, p.items.length) }}>
             <span style={{ ...numTypo, textShadow: p.glow ? NUM_GLOW : '0 2px 18px rgba(0,0,0,.45)' }}>
               {shown(it.value)}
             </span>

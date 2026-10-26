@@ -8,7 +8,7 @@
  */
 
 const SKIP = new Set([
-  "inter", "sans-serif", "serif", "monospace", "system-ui", "arial", "helvetica",
+  "sans-serif", "serif", "monospace", "system-ui", "arial", "helvetica",
   "impact", "georgia", "times new roman", "courier new", "verdana", "tahoma",
   // Futura Extra Black Condensed (look "Kolortec"): self-hosted vía @font-face
   // propio (fonts.css del admin / globals.css de la store), NO es Google Font
@@ -36,21 +36,21 @@ function familiesOf(config) {
     if (CUSTOM_FONT_ID_RE.test(first)) return;
     out.add(first);
   };
-  add(config?.theme?.fontFamily);
+  // «Si no elegiste nada se ve como ya está publicado»: el theme por defecto ('Inter, sans-serif', lo que se publica sin theme) no es una
+  // elección y no pide nada, como antes. Cualquier otra tipografía del theme, o Inter elegida en un elemento, sí se pide.
+  if (!/^\s*inter\s*,\s*sans-serif\s*$/i.test(config?.theme?.fontFamily ?? "")) add(config?.theme?.fontFamily);
   for (const slide of config?.slides || []) {
     for (const el of slide?.elements || []) {
-      add(el?.props?.fontFamily);
-      add(el?.props?.subFontFamily);
-      add(el?.props?.labelFontFamily);
-      add(el?.propsMobile?.fontFamily);
-      add(el?.propsMobile?.subFontFamily);
-      add(el?.propsMobile?.labelFontFamily);
-      add(el?.propsTablet?.fontFamily);
-      add(el?.propsTablet?.subFontFamily);
-      add(el?.propsTablet?.labelFontFamily);
+      for (const p of [el?.props, el?.propsMobile, el?.propsTablet]) for (const fam of familiasElegidas(p)) add(fam);
     }
   }
   return [...out];
+}
+
+// Las familias que el diseño ELIGIÓ en un elemento (título/texto, subtítulo, etiqueta, eyebrow, botón). Un elemento que no fija ninguna no pide
+// nada: los Views usan su tipografía por defecto sin cargarla, como se publicaba (nada elegido = lo ya publicado).
+function familiasElegidas(p) {
+  return p && typeof p === "object" ? [p.fontFamily, p.subFontFamily, p.labelFontFamily, p.eyebrowFontFamily, p.ctaFontFamily] : [];
 }
 
 /**

@@ -6,6 +6,7 @@ import { ScrollRenderer } from '../_hero-renderer/ScrollRenderer'
 // pintan. Va FUERA de @layer a propósito — ver el header de hero-anim.css.
 import '../_hero-renderer/hero-anim.css'
 import { ensureHeroFonts } from '../_hero-renderer/heroFonts'
+import { breakpointDeAncho } from '../_hero-renderer/responsive'
 import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
@@ -23,7 +24,8 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
  * única fuente de verdad; no hay fallback hardcodeado).
  */
 
-const MOBILE_BELOW = 768
+// Entre 768 y 1023 la historia usa el breakpoint «tablet», igual que el Lab (LiveScrollPreview) y el HeroSection (cortes en responsive.js). Sin valor de tablet
+// (propsTablet / pos.tablet) cada elemento cae al de escritorio, que es lo que se veía antes (REG-001).
 
 function ScrolltellingSection({ config, logoUrl = null, isFirst = false }) {
   const { t } = useLanguage()
@@ -36,7 +38,7 @@ function ScrolltellingSection({ config, logoUrl = null, isFirst = false }) {
   useEffect(() => { ensureHeroFonts(config) }, [config])
 
   useEffect(() => {
-    const update = () => setBp(window.innerWidth < MOBILE_BELOW ? 'mobile' : 'desktop')
+    const update = () => setBp(breakpointDeAncho(window.innerWidth))
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)

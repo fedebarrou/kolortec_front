@@ -58,6 +58,67 @@ export function heroSizeMode(settings) {
 }
 
 /**
+ * VIS-003 · ¿ELEGISTE «Pantalla completa»? true SOLO si el diseño trae las dos claves explícitas (fullHeight === true y heroWidth === 'full').
+ * Un diseño sin esas claves tiene el alto de pantalla completa por COMPAT (heroSizeMode), pero eso no es una elección: se publica con su
+ * radio y su sombra como siempre. Lo usa el HeroSection de la tienda para pasar `bleed` (radio 0 y sombra none).
+ */
+export function heroPantallaCompletaElegida(settings) {
+  const s = settings && typeof settings === 'object' ? settings : {};
+  return s.fullHeight === true && s.heroWidth === 'full';
+}
+
+/**
+ * DEFAULTS DE UN ENCABEZADO (carrusel) QUE LLEGA SIN `settings` O SIN `theme` (o con algunas claves ausentes).
+ * Espejo de newConfig() del admin (_schema/defaults.js): ahí normalizeConfig() completa lo ausente con estos valores antes de
+ * mostrar el diseño, así que la web publicada tiene que completar lo mismo — si no, el Lab y la web difieren justo en lo que el
+ * diseñador nunca tocó. check-hero-roundtrip.mjs compara estas dos tablas con newConfig() del admin.
+ *   · theme.fontFamily '' = hereda la tipografía del sitio (--site-font), NO Inter a secas.
+ *   · Las claves de tamaño NO van acá: las completa SIZE_COMPAT_DEFAULTS (arriba), igual que en el admin.
+ */
+export const CAROUSEL_SETTINGS_DEFAULTS = { mode: "carousel", autoplay: true, intervalMs: 5000, transition: "fade", loop: true, arrows: true, dots: true };
+export const THEME_DEFAULTS = {
+  colors: { primary: "#5b6cff", secondary: "#9c4dff", text: "#ffffff", bg: "#111111", accent: "#ffd54a" },
+  fontFamily: "",
+  radius: 12,
+  shadow: "md",
+};
+
+/**
+ * VIS-001 · LO QUE SE PUBLICABA cuando un encabezado llegaba SIN `settings` o SIN `theme` (regla del dueño: «si lo elegiste en los Labs
+ * se ve eso; si no elegiste nada se ve como ya está publicado»). Salen de HEAD de Kolortec (DEFAULT_SETTINGS de HeroSection y el
+ * theme por defecto de contentService); la tienda ni siquiera tenía valor (settings ausente = error), y toma los mismos para que los
+ * dos sitios se vean igual. NO son los defaults del Lab (arriba: CAROUSEL_SETTINGS_DEFAULTS / THEME_DEFAULTS = newConfig()): el Lab
+ * completa un diseño ausente con ESTOS valores (normalizeConfig, defaults.js) para que la vista previa coincida con el sitio.
+ *   · sin settings: autoplay a 7000 ms, sin flechas, con puntos.
+ *   · sin theme: tipografía Inter (no la del sitio).
+ *   · theme PRESENTE sin colors.primary: no se completa; el renderer usa su acento de siempre (#fff).
+ */
+export const SETTINGS_PUBLICADOS = { mode: "carousel", autoplay: true, intervalMs: 7000, loop: true, arrows: false, dots: true };
+export const THEME_PUBLICADO = {
+  colors: { primary: "#5b6cff", secondary: "#9c4dff", text: "#ffffff", bg: "#111111", accent: "#ffd54a" },
+  fontFamily: "Inter, sans-serif",
+  radius: 12,
+  shadow: "md",
+};
+
+/**
+ * completarAjustes(settings, theme) -> { settings, theme }
+ * SOLO rellena lo que falta POR COMPLETO (settings o theme ausentes) y con lo que se publicaba. Un settings o theme que el diseño trae,
+ * aunque incompleto, pasa tal cual: completarle claves cambiaría lo ya publicado (flechas, autoplay, acento).
+ */
+export function completarAjustes(settings, theme) {
+  const hay = (v) => v && typeof v === "object";
+  const scroll = hay(settings) && settings.mode === "scroll";
+  return {
+    settings: hay(settings) ? settings : { ...SETTINGS_PUBLICADOS },
+    // Sin theme: el publicado. Con theme pero SIN `colors` (REG-003: la tienda caía con 500 en `theme.colors.bg`): sus claves más la paleta publicada.
+    // Un theme que trae `colors` pasa tal cual, aunque le falten claves (primary / accent / bg no se completan: es lo que se publicaba). Un scrolltelling
+    // con theme sin `colors` tampoco se completa: nunca cayó (su renderer usa #fff de respaldo) y su acento publicado es ese.
+    theme: hay(theme) ? (hay(theme.colors) || scroll ? theme : { ...theme, colors: { ...THEME_PUBLICADO.colors } }) : { ...THEME_PUBLICADO, colors: { ...THEME_PUBLICADO.colors } },
+  };
+}
+
+/**
  * TAMAÑO del escenario (modo SCROLLTELLING). Dos ajustes INDEPENDIENTES —
  * espejo de SCROLL_SIZE_COMPAT_DEFAULTS en el admin (_schema/defaults.js).
  * Si se edita allá, editar acá.
@@ -109,7 +170,7 @@ export function scrollStepHeight(settings, breakpoint) {
   // Dato guardado que termina en `height:` del escenario: se fuerza a número finito. SIN importar
   // cssSafe a propósito: check-hero-roundtrip carga este archivo suelto (data: URL), sin imports.
   const n = Number(px);
-  return `${Number.isFinite(n) && px !== "" && px !== null ? n : SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightDesktop}px`;
+  return `${Number.isFinite(n) && px !== "" && px !== null ? n : (breakpoint === "mobile" ? SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightMobile : SCROLL_SIZE_COMPAT_DEFAULTS.scrollHeightDesktop)}px`;
 }
 
 /**

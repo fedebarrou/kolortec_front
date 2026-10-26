@@ -105,6 +105,7 @@ export function cssFit(f) {
  * del propio sitio. Sin `;`, llaves, `url(`, `\` ni otros paréntesis → `fallback`.
  */
 const FONT_OK = /^[\p{L}\p{N}\s,'"\-._]+$/u
+const FONT_PROPIA = /^["']?(cf[0-9a-f]{8})["']?(?:\s*,\s*(?:sans-serif|serif|system-ui|monospace))?$/i
 const FONT_VAR = /^var\(--[\w-]+(?:\s*,\s*[\p{L}\p{N}\s,'"\-._]+)?\)$/u
 export function cssFontFamily(f, fallback) {
   if (typeof f !== 'string') return fallback
@@ -113,6 +114,10 @@ export function cssFontFamily(f, fallback) {
   if (!(FONT_OK.test(s) || FONT_VAR.test(s))) return fallback
   // comillas BALANCEADAS: una sin cerrar se come lo que venga después en la declaración
   if (/["']/.test(s.replace(/"[^"]*"|'[^']*'/g, ''))) return fallback
+  // Fuente PROPIA (id `cf` + 8 hex, lib/custom-fonts): si el @font-face ya no existe (la borraron de Apariencia), un nombre suelto caía al
+  // serif del navegador. Se pide siempre con la tipografía del sitio detrás. Sólo se reescribe el id solo o seguido de un genérico.
+  const propia = FONT_PROPIA.exec(s)
+  if (propia) return `"${propia[1].toLowerCase()}", var(--site-font, Inter, sans-serif)`
   return s
 }
 

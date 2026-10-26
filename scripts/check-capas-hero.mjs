@@ -20,11 +20,28 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+// Dónde están las otras dos copias: checkout normal (tiendita/tiendita-front, tiendita/tiendita-store), worktrees de paridad
+// (tiendita/_wt/front-paridad, tiendita/_wt/store-paridad) o por variable de entorno (HERO_ADMIN_DIR —alias HERO_FRONT_DIR— / HERO_STORE_DIR
+// = raíz del repo). Misma regla que scripts/_hermanos.mjs del admin:
+//   · si la variable está puesta, MANDA ELLA SOLA: apuntada a una ruta que no sirve da null, NO cae a los hermanos de siempre (un override
+//     roto que se ignora en silencio compara contra OTRO código y da verde);
+//   · HERO_PARIDAD_ESTRICTA=1: una copia ausente es un FALLO (exit 1), no un salto. Sin eso se avisa fuerte y no cuenta como verificada.
+const ESTRICTO = process.env.HERO_PARIDAD_ESTRICTA === "1";
+const primero = (cands, prueba) => {
+  const [explicito, ...porDefecto] = cands;
+  const lista = explicito ? [explicito] : porDefecto;
+  return lista.filter(Boolean).map((c) => resolve(c)).find((c) => existsSync(resolve(c, prueba))) || null;
+};
+const ADMIN_DIR = process.env.HERO_ADMIN_DIR || process.env.HERO_FRONT_DIR;
+const VARIABLE = { admin: process.env.HERO_ADMIN_DIR ? "HERO_ADMIN_DIR" : "HERO_FRONT_DIR", store: "HERO_STORE_DIR" };
+const adminRepo = primero([ADMIN_DIR, `${raiz}/../tiendita/_wt/front-paridad`, `${raiz}/../tiendita/tiendita-front`], "app/(admin)/admin/hero-lab/_renderer");
+const storeRepo = primero([process.env.HERO_STORE_DIR, `${raiz}/../tiendita/_wt/store-paridad`, `${raiz}/../tiendita/tiendita-store`], "components/hero-renderer");
 const COPIAS = [
   { n: "kolortec", dir: `${raiz}/src/features/landing/_hero-renderer`, obligatoria: true, archivos: ["CarouselRenderer.jsx", "ScrollRenderer.jsx"] },
-  { n: "admin", dir: `${raiz}/../tiendita/tiendita-front/app/(admin)/admin/hero-lab/_renderer`, archivos: ["CarouselRenderer.jsx", "ScrollStage.jsx"] },
-  { n: "store", dir: `${raiz}/../tiendita/tiendita-store/components/hero-renderer`, archivos: ["CarouselRenderer.jsx", "ScrollRenderer.jsx"] },
+  { n: "admin", dir: adminRepo && `${adminRepo}/app/(admin)/admin/hero-lab/_renderer`, archivos: ["CarouselRenderer.jsx", "ScrollStage.jsx"] },
+  { n: "store", dir: storeRepo && `${storeRepo}/components/hero-renderer`, archivos: ["CarouselRenderer.jsx", "ScrollRenderer.jsx"] },
 ];
+console.log(`  copias: admin=${adminRepo} store=${storeRepo}${ESTRICTO ? " (HERO_PARIDAD_ESTRICTA=1)" : ""}`);
 
 let fallas = 0;
 const falla = (m) => { fallas++; console.log("  FALLA " + m); };
@@ -52,7 +69,13 @@ L.estiloCapaEscena().pointerEvents === "none" && L.estiloCapaEscena(true).pointe
 // ── (b) el JSX monta las capas en orden ──────────────────────────────────────
 const pos = (txt, re) => { const m = re.exec(txt); return m ? m.index : -1; };
 for (const c of COPIAS) {
-  if (!existsSync(c.dir + "/layers.js")) { if (c.obligatoria) falla(`${c.n}: falta layers.js`); else console.log(`  salto  ${c.n}: no está al lado`); continue; }
+  if (!c.dir || !existsSync(c.dir + "/layers.js")) {
+    const roto = c.n !== "kolortec" && process.env[VARIABLE[c.n]] ? ` (${VARIABLE[c.n]}=${process.env[VARIABLE[c.n]]} no tiene el renderer)` : "";
+    if (c.obligatoria) falla(`${c.n}: falta layers.js`);
+    else if (ESTRICTO) falla(`falta la copia ${c.n}${roto} (HERO_PARIDAD_ESTRICTA=1)`);
+    else console.log(`  salto  ${c.n}: no está al lado${roto} — NO se comparó, esto no cuenta como verde`);
+    continue;
+  }
   for (const a of c.archivos) {
     const txt = lee(`${c.dir}/${a}`);
     const iFondo = pos(txt, /fondo\.map\(pintar\)|n\.fondo\)\.map/);
@@ -75,7 +98,7 @@ for (const c of COPIAS) {
 // ── (c) copias idénticas ─────────────────────────────────────────────────────
 const base = lee(`${COPIAS[0].dir}/layers.js`);
 for (const c of COPIAS.slice(1)) {
-  if (!existsSync(c.dir + "/layers.js")) continue;
+  if (!c.dir || !existsSync(c.dir + "/layers.js")) continue; // la ausencia ya se informó en (b)
   lee(`${c.dir}/layers.js`) === base ? ok(`layers.js ${c.n} idéntico al de kolortec`) : falla(`layers.js ${c.n} DIFIERE de kolortec`);
 }
 

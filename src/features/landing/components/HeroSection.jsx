@@ -4,7 +4,9 @@ import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { useHeroExitZoom } from '../../../shared/hooks/useHeroExitZoom'
 import { useHeroTranslation } from '../../../shared/services/useHeroTranslation'
 import { CarouselRenderer } from '../_hero-renderer/CarouselRenderer'
-import { heroSizeMode } from '../_hero-renderer/scroll-contract'
+import { ensureHeroFonts } from '../_hero-renderer/heroFonts'
+import { MQ_MOVIL, MQ_TABLET } from '../_hero-renderer/responsive'
+import { alturaDelHero } from '../heroAltura'
 
 /** El hero se agranda al salir de pantalla (useHeroExitZoom). Apagado a pedido del cliente (oct-2026). */
 const ZOOM_AL_SALIR = false
@@ -13,13 +15,13 @@ const ZOOM_AL_SALIR = false
 function useBreakpoint() {
   const [bp, setBp] = useState(() => {
     if (typeof window === 'undefined') return 'desktop'
-    if (window.matchMedia('(max-width: 767px)').matches) return 'mobile'
-    if (window.matchMedia('(max-width: 1023px)').matches) return 'tablet'
+    if (window.matchMedia(MQ_MOVIL).matches) return 'mobile'
+    if (window.matchMedia(MQ_TABLET).matches) return 'tablet'
     return 'desktop'
   })
   useEffect(() => {
-    const mql = window.matchMedia('(max-width: 767px)')
-    const mql2 = window.matchMedia('(max-width: 1023px)')
+    const mql = window.matchMedia(MQ_MOVIL)
+    const mql2 = window.matchMedia(MQ_TABLET)
     const update = () => {
       if (mql.matches) setBp('mobile')
       else if (mql2.matches) setBp('tablet')
@@ -30,18 +32,6 @@ function useBreakpoint() {
     return () => { mql.removeEventListener('change', update); mql2.removeEventListener('change', update) }
   }, [])
   return bp
-}
-
-// Default settings fallback so CarouselRenderer never receives settings=null.
-const DEFAULT_SETTINGS = {
-  autoplay: true,
-  intervalMs: 7000,
-  loop: true,
-  arrows: false,
-  dots: true,
-  fullHeight: true,
-  heightDesktop: '100vh',
-  heightMobile: '100svh',
 }
 
 function HeroSection({ hero }) {
@@ -65,6 +55,8 @@ function HeroSection({ hero }) {
   // así aunque el sitio estuviera en inglés. Mismo camino que el scrolltelling.
   // Va acá arriba por la regla de hooks del comentario de más arriba.
   const labConfigTranslated = useHeroTranslation(hero?.labConfig)
+  // Las Google Fonts del diseño (las que no son del sistema ni propias de la cuenta). Antes el Encabezado no pedía ninguna.
+  useEffect(() => { ensureHeroFonts(labConfigTranslated) }, [labConfigTranslated])
 
   // Escalado del hero al salir de pantalla (ver useHeroExitZoom). El ref se
   // engancha sólo en el camino lab —que es el que renderiza kolortec— pero el
@@ -94,7 +86,8 @@ function HeroSection({ hero }) {
   if (hero?.labConfig) {
     const config = {
       ...labConfigTranslated,
-      settings: hero.labConfig.settings ?? DEFAULT_SETTINGS,
+      // labConfig.settings nunca llega vacío: contentService#labConfigFromCarousel lo completa (completarAjustes) y lo normaliza.
+      settings: hero.labConfig.settings,
     }
     // Alto SÓLO en modo Pantalla completa. `containerHeight` le gana al alto del
     // diseño dentro del CarouselRenderer, así que pasarlo siempre hacía que el
@@ -109,27 +102,16 @@ function HeroSection({ hero }) {
     // del documento, así que flota por encima. Restarle su alto sólo dejaba al
     // hero más corto que la pantalla (783px en un viewport de 863). Dividido por
     // la escala del canvas (.kt-zoom-canvas usa zoom).
-    // En MÓVIL el hero va a pantalla completa SIEMPRE, aunque el diseño esté en
-    // modo Encabezado. Ese modo fija un alto en píxeles (280/320) pensado para
-    // una banda arriba de una página ancha; en un teléfono eso es una franja de
-    // dos dedos con una foto recortada adentro, y lo primero que se ve del sitio
-    // queda pareciendo un banner publicitario. A pantalla completa la foto se
-    // lee, que es para lo que está.
+    // ALTO DEL HERO (ver heroAltura.js, que tiene la regla y los casos):
+    //   · «Pantalla completa»: el viewport COMPLETO, sin restarle el navbar (es `sticky top-0` y flota por encima), dividido por la
+    //     escala del lienzo (.kt-zoom-canvas usa zoom). También en el celular.
+    //   · modo Encabezado: nada — manda el alto del diseño (aspectMobile / heightMobile…) dentro del CarouselRenderer.
+    //   · celular: lo que el diseño ELIGIÓ (heightMobile o aspectMobile) se ve; si no, PANTALLA COMPLETA (decisión de Fedev, 22-oct; ya no el 65%).
     //
-    // Oct-2026 (pedido del cliente): en MÓVIL ya no es pantalla completa sino
-    // el 65% del alto. Sigue sin usar el alto fijo del modo Encabezado (la
-    // franja de dos dedos de arriba), pero deja ver que hay más página abajo.
-    //
-    // ⚠ ESTE MARCO ESTÁ DECLARADO EN TIENDITA: appearance.hero_frame de la cuenta
-    // ({ gutter: 24, gutter_wide: 160, wide_from: 1024, max_width: null, mobile_height_vh: 65 })
-    // para que el editor del Hero Labs encuadre sobre esta misma caja. Si cambia el 65,
-    // o el --hero-gutter de index.css, cambia también ese dato; lo mide
-    // tiendita-front/scripts/check-hero-encuadre-publicado.mjs.
-    const containerHeight = bp === 'mobile'
-      ? 'calc(65svh / var(--kt-canvas-scale, 1))'
-      : heroSizeMode(config.settings) === 'full'
-        ? 'calc(100dvh / var(--kt-canvas-scale, 1))'
-        : undefined
+    // ⚠ El 65% del celular YA NO existe (decisión de Fedev, 22-oct): sin elegir nada el celular es pantalla completa, y el `mobile_height_vh` que la cuenta
+    // pueda seguir declarando en appearance.hero_frame se ignora. Antes el 65svh estaba clavado y se llevaba puestos el aspecto, el alto y el modo que el
+    // diseñador había fijado para el celular. Lo mide tiendita-front/scripts/check-hero-encuadre-publicado.mjs.
+    const containerHeight = alturaDelHero({ breakpoint: bp, settings: config.settings, heroFrame: hero.heroFrame })
     return (
       <section
         ref={heroRef}

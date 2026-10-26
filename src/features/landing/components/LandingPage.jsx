@@ -14,11 +14,12 @@ import SectionErrorBoundary from './SectionErrorBoundary'
 import { useLandingContent } from '../hooks/useLandingContent'
 import { useHideBootScreen } from '../../../shared/hooks/useHideBootScreen'
 import { useStickyBottom } from '../../../shared/hooks/useStickyBottom'
+import { useCustomFonts } from '../../../shared/hooks/useCustomFonts'
 
-// Logo de la barra superior del scrolltelling (SnapChrome). Mismo asset que usaba
-// el ScrollytellingSection hardcodeado. OJO: el archivo tiene extensión .jpeg pero
-// en realidad es WebP — no cambiar el nombre sin re-exportarlo.
-const KOLORTEC_LOGO = '/assets/Grupo-Kolortec-1024x150.jpeg'
+// RESPALDO del logo de la barra superior del scrolltelling (SnapChrome): se usa SÓLO si la cuenta no cargó su logo (web-config.logo). Es el asset
+// que iba fijo antes de H7; sin este respaldo un sitio ya publicado que no tiene logo cargado perdería el de la barra. OJO: el archivo tiene
+// extensión .jpeg pero en realidad es WebP — no cambiar el nombre sin re-exportarlo.
+const KOLORTEC_LOGO_RESPALDO = '/assets/Grupo-Kolortec-1024x150.jpeg'
 
 // Foto de cierre: el frame f150 del scrolltelling (estadio con los haces
 // cruzados) recoloreado a amarillo kolortec con núcleos blancos — pedido del
@@ -42,6 +43,11 @@ const FOTO_CIERRE = '/assets/cierre-haces-amarillos.jpg'
  */
 function LandingPage() {
   const { content, loading } = useLandingContent()
+  // Fuentes propias de la cuenta (cf…): sin su @font-face el hero cae al fallback y no se ve como en el Lab.
+  useCustomFonts(content.site?.customFonts)
+  // Logo de la barra superior del scrolltelling (SnapChrome): el de la CUENTA (web-config.logo), igual que la tienda. Si la cuenta no tiene
+  // logo, el de siempre como respaldo (KOLORTEC_LOGO_RESPALDO) — el de la cuenta manda, siempre.
+  const logoUrl = content.site?.logo || KOLORTEC_LOGO_RESPALDO
 
   // La pantalla de carga (index.html) se baja recien con el contenido resuelto:
   // hasta ese momento el documento no tiene ni scrolltelling ni hero, y cambia de
@@ -62,7 +68,7 @@ function LandingPage() {
           isFirst: es lo primero de la página (takeover + navbar oculto hasta
           que termina). */}
       <SectionErrorBoundary name="Scrolltelling">
-        <ScrolltellingSection config={content.hero?.scrollLabConfig} logoUrl={KOLORTEC_LOGO} isFirst />
+        <ScrolltellingSection config={content.hero?.scrollLabConfig} logoUrl={logoUrl} isFirst />
       </SectionErrorBoundary>
       {/* SIN spacer propio entre la historia y lo que sigue: el ScrollRenderer ya
           se deja un margin-bottom de `--site-header-h + --story-gap`, o sea el alto

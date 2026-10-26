@@ -829,6 +829,8 @@ html {
   :root {
     --hero-gutter: 1.5rem;
     --hero-maxw: none;
+    /* VIS-026: el interlineado que Tailwind le da al html (1.5), fijado en la raíz del renderer del hero. */
+    --hero-line-height: 1.5;
     /* Aire entre el final del scrolltelling y la seccion que sigue. El
        ScrollRenderer se reserva `--site-header-h + --story-gap` como margin-bottom
        (alto REAL del navbar medido en vivo + este colchon). El default del renderer
