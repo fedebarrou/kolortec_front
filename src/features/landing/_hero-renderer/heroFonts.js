@@ -42,9 +42,28 @@ function familiesOf(config) {
   for (const slide of config?.slides || []) {
     for (const el of slide?.elements || []) {
       for (const p of [el?.props, el?.propsMobile, el?.propsTablet]) for (const fam of familiasElegidas(p)) add(fam);
+      for (const fam of familiasPorDefecto(el)) add(fam);
     }
   }
   return [...out];
+}
+
+// Las tipografías POR DEFECTO de los Views (MessageView/StatsView: `"Schibsted Grotesk"`, `"Hanken Grotesk"`, `"Archivo"`). Un título que no fija
+// `fontFamily` —es lo que dejan la IA y el MCP— se pinta con "Schibsted Grotesk", y NADIE la cargaba (ni next/font, ni fonts.css, ni este
+// archivo: medido en el editor, el ancho de un texto en "Schibsted Grotesk" era idéntico al de sans-serif y no había @font-face): caía a la
+// genérica sin avisar (QA 32). Se piden SÓLO si el elemento tiene ese texto y no eligió otra, para no sumar pedidos de balde.
+function familiasPorDefecto(el) {
+  const p = el?.props;
+  if (!p || typeof p !== "object") return [];
+  const out = [];
+  if (el.type === "message") {
+    if (p.title && !p.fontFamily) out.push("Schibsted Grotesk");
+    if (p.sub && !p.fontFamily && !p.subFontFamily) out.push("Hanken Grotesk");
+    if (p.eyebrow && !p.subFontFamily) out.push("Archivo");
+  } else if (el.type === "stats" && !p.fontFamily) {
+    out.push("Schibsted Grotesk");
+  }
+  return out;
 }
 
 // Las familias que el diseño ELIGIÓ en un elemento (título/texto, subtítulo, etiqueta, eyebrow, botón). Un elemento que no fija ninguna no pide
@@ -68,9 +87,12 @@ export function ensureHeroFonts(config) {
     const link = document.createElement("link");
     link.id = id;
     link.rel = "stylesheet";
+    // Cadena de pedidos: 300..900 → 400..900 (Schibsted Grotesk empieza en 400: con 300 Google da HTTP 400 y caía a la genérica) → familia pelada.
+    const pasos = [`:wght@400..900`, ``];
     link.onerror = () => {
-      link.onerror = null;
-      link.href = `https://fonts.googleapis.com/css2?family=${fam}&display=swap`;
+      const paso = pasos.shift();
+      if (paso === undefined) { link.onerror = null; return; }
+      link.href = `https://fonts.googleapis.com/css2?family=${fam}${paso}&display=swap`;
     };
     link.href = `https://fonts.googleapis.com/css2?family=${fam}:wght@300..900&display=swap`;
     document.head.appendChild(link);

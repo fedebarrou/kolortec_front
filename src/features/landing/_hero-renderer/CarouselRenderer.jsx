@@ -86,7 +86,7 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
   )
 }
 
-export function CarouselRenderer({ config, breakpoint, activeIndex, containerHeight, bleed, fillWidth }) {
+export function CarouselRenderer({ config, breakpoint, activeIndex, containerHeight, bleed, fillWidth, alturaPorMedia }) {
   const { settings, slides, theme } = config
   // Duración de autoplay por-slide (settings.slideDurations[slideId], ms) — sin
   // valor propio cae a settings.intervalMs. Memoizado por firma de contenido (no
@@ -150,12 +150,26 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   const shadow = contained ? shadowOf(theme.shadow) : (bleed ? 'none' : shadowOf(theme.shadow))
   const isSlide = settings.transition === 'slide'
   const accent = cssColor(theme.colors?.accent, '#fff')
+  // ALTO RESERVADO (pilares 22): `breakpoint` viene de un useState que arranca en 'desktop' y pasa a 'mobile' recién al montar, así que el HTML del
+  // servidor reservaba el alto de ESCRITORIO (aspecto 4/1) y en el celular saltaba a 1/1 al hidratar: CLS 0,28 con la portada publicada. El alto y el
+  // aspecto de los dos cortes viajan como variables CSS y los elige una media query (el corte es MOBILE_BELOW = 768): el primer pintado ya es el correcto.
+  // Con `containerHeight` (el host fuerza un alto: editor/preview) no se usa nada de esto.
+  const hOf = (bpX) => ((fullHeight && !(bpX === 'mobile' && Number.isFinite(settings.heightMobile) && !heroPantallaCompletaElegida(settings))) ? 'var(--vh-full, 100vh)' : (bpX === 'mobile' ? heightMobile : heightDesktop))
+  const aOf = (bpX) => (contained ? cssAspect(bpX === 'mobile' ? (settings.aspectMobile ?? SIZE_COMPAT_DEFAULTS.aspectMobile) : (settings.aspectDesktop ?? SIZE_COMPAT_DEFAULTS.aspectDesktop)) : undefined)
+  // Sólo la página real: un editor o una vista previa simula el celular dentro de una ventana ancha, y ahí la media query mira la ventana, no el marco.
+  const reservaPorMedia = alturaPorMedia === true && containerHeight == null
+  const conUnidad = (v) => (typeof v === 'number' ? `${v}px` : v) // una variable CSS con un número pelado no vale como alto
+  const medidaCss = {
+    '--hc-h-d': aOf('desktop') ? 'auto' : conUnidad(hOf('desktop')), '--hc-a-d': aOf('desktop') ?? 'auto',
+    '--hc-h-m': aOf('mobile') ? 'auto' : conUnidad(hOf('mobile')), '--hc-a-m': aOf('mobile') ?? 'auto',
+  }
   // containerName 'hc-stage': SIN el nombre, las reglas `@container hc-stage`
   // (hero-anim.css) no matchean y el widget `message` preset kolortec cae al
   // layout mobile (centrado abajo) en vez del desktop (derecha, centrado).
   // Faltaba en las 3 copias del renderer, no solo acá.
   return (
-    <div style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, height, aspectRatio: usaAspecto ? aspecto : undefined, overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), color: cssColor(theme.colors?.text, '#ffffff'), lineHeight: 'var(--hero-line-height, 1.55)', containerType: 'inline-size', containerName: 'hc-stage' }}>
+    <div className={reservaPorMedia ? 'hc-carousel-box' : undefined} style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, ...(reservaPorMedia ? medidaCss : { height, aspectRatio: usaAspecto ? aspecto : undefined }), overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), color: cssColor(theme.colors?.text, '#ffffff'), lineHeight: 'var(--hero-line-height, 1.55)', containerType: 'inline-size', containerName: 'hc-stage' }}>
+      {reservaPorMedia ? <style>{`.hc-carousel-box{height:var(--hc-h-d);aspect-ratio:var(--hc-a-d)}@media (max-width:767px){.hc-carousel-box{height:var(--hc-h-m);aspect-ratio:var(--hc-a-m)}}`}</style> : null}
       {config.background && config.background.type !== 'none' && (
         <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} /></div>
       )}
