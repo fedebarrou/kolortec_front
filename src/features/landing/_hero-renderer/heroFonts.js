@@ -26,7 +26,7 @@ const SKIP = new Set([
 // (se sirven por @font-face propio) → nunca deben pedirse a fonts.googleapis.
 const CUSTOM_FONT_ID_RE = /^cf[0-9a-f]{8}$/i;
 
-function familiesOf(config) {
+function familiesOf(config, corte = null) {
   const out = new Set();
   const add = (fam) => {
     if (typeof fam !== "string") return;
@@ -41,6 +41,14 @@ function familiesOf(config) {
   if (!/^\s*inter\s*,\s*sans-serif\s*$/i.test(config?.theme?.fontFamily ?? "")) add(config?.theme?.fontFamily);
   for (const slide of config?.slides || []) {
     for (const el of slide?.elements || []) {
+      if (corte) {
+        // Sólo lo que ESTA pantalla pinta: lo escondido en este corte no pide nada, y las tipografías propias del celular no se piden en la compu (ni al revés).
+        if (el?.hidden?.[corte]) continue;
+        const efectivas = { ...(el?.props || {}), ...((corte === "mobile" ? el?.propsMobile : null) || {}) };
+        for (const fam of familiasElegidas(efectivas)) add(fam);
+        for (const fam of familiasPorDefecto({ ...el, props: efectivas })) add(fam);
+        continue;
+      }
       for (const p of [el?.props, el?.propsMobile, el?.propsTablet]) for (const fam of familiasElegidas(p)) add(fam);
       for (const fam of familiasPorDefecto(el)) add(fam);
     }
@@ -78,9 +86,14 @@ function familiasElegidas(p) {
  * fuentes estáticas de un solo peso (Anton, Bebas Neue…), así que onerror
  * reintenta con la familia pelada (default 400).
  */
-export function ensureHeroFonts(config) {
+/**
+ * `opciones.ancho` (px de la ventana): la tienda lo pasa y se piden SÓLO las tipografías de ese corte (celular o escritorio; la tablet pide todas).
+ * Sin él (el editor, que simula el celular dentro de una ventana ancha) se pide todo, como siempre.
+ */
+export function ensureHeroFonts(config, opciones = {}) {
   if (typeof document === "undefined" || !config) return;
-  for (const family of familiesOf(config)) {
+  const corte = Number.isFinite(opciones?.ancho) ? (opciones.ancho < 768 ? "mobile" : opciones.ancho >= 1024 ? "desktop" : null) : null;
+  for (const family of familiesOf(config, corte)) {
     const id = `hero-font-${family.toLowerCase().replace(/\s+/g, "-")}`;
     if (document.getElementById(id)) continue;
     const fam = encodeURIComponent(family).replace(/%20/g, "+");

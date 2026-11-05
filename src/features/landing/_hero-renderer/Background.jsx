@@ -16,6 +16,7 @@
  * globals.css del store).
  */
 
+import { useEffect, useState } from 'react'
 import { cssAngle, cssColor, cssFit, cssPosition, cssUrl, safeSrc } from './cssSafe'
 
 const ANIM_TYPES = ['ken-burns', 'drift', 'zoom-out', 'light-sweep']
@@ -63,7 +64,7 @@ export function animProps(bg) {
   return { className: `kt-bg-anim kt-bg-anim--${a.type}`, style }
 }
 
-export function Background({ bg }) {
+export function Background({ bg, breakpoint }) {
   const anim = animProps(bg)
   const cls = anim ? anim.className : undefined
   const base = { position: 'absolute', inset: 0, ...(anim ? anim.style : null) }
@@ -77,7 +78,37 @@ export function Background({ bg }) {
     const src = bg.poster || bg.urls[0] || ''
     return src ? <div className={cls} style={{ ...base, backgroundImage: cssUrl(src), backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} /> : null
   }
+  return <VideoDeFondo bg={bg} cls={cls} base={base} breakpoint={breakpoint} />
+}
+
+/**
+ * Fondo de VIDEO (el que no es scrub). Tres cosas que el `<video src={bg.url}>` pelado no hacía:
+ *  1. En celular usa `bg.urlMobile` si lo hay (antes se guardaba y la tienda reproducía siempre el de PC: informe 04-nov, ALTA).
+ *  2. Con `urlMobile` NO pone ninguna fuente en el primer pintado: el `breakpoint` de la tienda nace 'desktop' y pasa a 'mobile' al montar, y el
+ *     servidor mandaba el video de PC, que el celular empezaba a bajar (14 MB) antes de cambiar al suyo.
+ *  3. La descarga espera a que la pantalla termine de cargar (`load` + un respiro): el video no compite con el texto y las fotos por el LCP.
+ *     `preload="metadata"` y el `poster` cubren el hueco.
+ */
+function VideoDeFondo({ bg, cls, base, breakpoint }) {
+  const [puede, setPuede] = useState(false)
+  useEffect(() => {
+    let tId = 0
+    let idle = 0
+    const arrancar = () => {
+      const ir = () => setPuede(true)
+      if (typeof window.requestIdleCallback === 'function') idle = window.requestIdleCallback(ir, { timeout: 1200 })
+      else tId = window.setTimeout(ir, 200)
+    }
+    if (document.readyState === 'complete') arrancar()
+    else window.addEventListener('load', arrancar, { once: true })
+    return () => {
+      window.removeEventListener('load', arrancar)
+      if (idle && typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(idle)
+      if (tId) window.clearTimeout(tId)
+    }
+  }, [])
+  const fuente = breakpoint === 'mobile' && bg.urlMobile ? bg.urlMobile : bg.url
   return (
-    <video className={cls} style={{ ...base, width: '100%', height: '100%', objectFit: 'cover' }} src={safeSrc(bg.url)} poster={safeSrc(bg.poster)} autoPlay loop muted playsInline />
+    <video className={cls} style={{ ...base, width: '100%', height: '100%', objectFit: 'cover' }} src={puede ? safeSrc(fuente) : undefined} poster={safeSrc(bg.poster)} preload="metadata" autoPlay loop muted playsInline />
   )
 }

@@ -35,7 +35,7 @@ function ScrolltellingSection({ config, logoUrl = null, isFirst = false }) {
   // exactamente el mismo camino — antes estaba acá y cubría 2 widgets de 12.
   const translated = useHeroTranslation(config)
 
-  useEffect(() => { ensureHeroFonts(config) }, [config])
+  useEffect(() => { ensureHeroFonts(config, { ancho: window.innerWidth }) }, [config])
 
   useEffect(() => {
     const update = () => setBp(breakpointDeAncho(window.innerWidth))

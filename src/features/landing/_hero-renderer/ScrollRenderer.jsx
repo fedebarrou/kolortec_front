@@ -200,7 +200,7 @@ function ScrollBackdrop({ config, progress, breakpoint, scrubAlways = false }) {
     return conAnim(<ScrubVideo url={videoUrlFor(globalBg, breakpoint)} poster={globalBg.poster} progress={progress} trim={config.settings.videoTrim} reverse={config.settings.reverseVideo} />);
   }
   // Este camino SI pasa por Background, que ya se pone la clase solo.
-  return <Background bg={globalBg} />;
+  return <Background bg={globalBg} breakpoint={breakpoint} />;
 }
 
 /* ── Modo CONTINUO (histórico) ─────────────────────────────────────────────── */
@@ -234,7 +234,7 @@ function ScrollStage({ config, slide, breakpoint, time, duration, videoProgress 
   // el chrome de afuera (Saltar, flechas: zIndex 5). Sin esto «Saltar» quedó sin clic (Kolortec, 12-oct-2026).
   return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", isolation: "isolate", background: cssColor(config.theme?.colors?.bg, "#111"), color: cssColor(config.theme?.colors?.text, "#ffffff"), lineHeight: "var(--hero-line-height, 1.55)", fontFamily: cssFontFamily(config.theme?.fontFamily, "var(--site-font, Inter, sans-serif)"), containerType: "inline-size", containerName: "hc-stage" }}>
     <ScrollBackdrop config={config} progress={progress} breakpoint={breakpoint} />
-    {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} /> : null}
+    {slide.background?.type !== "none" && (!globalBg || globalBg.type === "none") ? <Background bg={slide.background} breakpoint={breakpoint} /> : null}
     {fondo.map(pintar)}
     {slide.overlay > 0 ? <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${cssNumber(slide.overlay)})`, ...estiloCapaEscena() }} /> : null}
     {/* El scrim es una propiedad del SLIDE, no del modo: hasta ahora el modo

@@ -56,7 +56,7 @@ function HeroSection({ hero }) {
   // Va acá arriba por la regla de hooks del comentario de más arriba.
   const labConfigTranslated = useHeroTranslation(hero?.labConfig)
   // Las Google Fonts del diseño (las que no son del sistema ni propias de la cuenta). Antes el Encabezado no pedía ninguna.
-  useEffect(() => { ensureHeroFonts(labConfigTranslated) }, [labConfigTranslated])
+  useEffect(() => { ensureHeroFonts(labConfigTranslated, { ancho: window.innerWidth }) }, [labConfigTranslated, bp])
 
   // Escalado del hero al salir de pantalla (ver useHeroExitZoom). El ref se
   // engancha sólo en el camino lab —que es el que renderiza kolortec— pero el

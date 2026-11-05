@@ -35,7 +35,19 @@ function slideStyle(visible, i, activeIndex, isSlide) {
 const tieneAnimacion = (e) => typeof e.animation === 'object' && !!e.animation
 const repiteEntrada = (el) => el.type !== 'media' && tieneAnimacion(el)
 
-function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accentColor }) {
+// Las cajas de los tres cortes como variables CSS (--ex-d/t/m = x, --ey = y, --ew = ancho, --eh = alto). Tablet cae al escritorio, como `boxAt`.
+const cajaPorMedia = (el) => {
+  const d = boxAt(el, 'desktop'), t = boxAt(el, 'tablet') ?? d, m = boxAt(el, 'mobile') ?? d
+  const out = {}
+  for (const [k, b] of [['d', d], ['t', t], ['m', m]]) {
+    if (!b) continue
+    out[`--ex-${k}`] = `${b.x}%`; out[`--ey-${k}`] = `${b.y}%`; out[`--ew-${k}`] = `${b.w}%`; out[`--eh-${k}`] = `${b.h}%`
+  }
+  return out
+}
+const CSS_CAJAS_POR_MEDIA = '.hc-el{left:var(--ex-d);top:var(--ey-d);width:var(--ew-d);height:var(--eh-d)}@media (max-width:1023px){.hc-el{left:var(--ex-t);top:var(--ey-t);width:var(--ew-t);height:var(--eh-t)}}@media (max-width:767px){.hc-el{left:var(--ex-m);top:var(--ey-m);width:var(--ew-m);height:var(--eh-m)}}'
+
+function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accentColor, porMedia }) {
   // Todas las escenas están montadas desde el principio, así que la animación de entrada de las escenas 2..N corría al montar (con la
   // escena invisible) y al activarse ya había terminado: CSS no reinicia una animación que no cambia. Cada vez que la escena PASA a
   // visible se renueva `gen` y con él la key de sus elementos → se remontan y la entrada corre de nuevo (igual que `replayNonce` en
@@ -62,17 +74,21 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
   // (z >= 1). La oscuridad va arriba de la foto y abajo del texto. zIndex explicitos.
   const { fondo, contenido } = partirCapas(slide.elements)
   const pintar = (el) => {
+    // CLS (informe 04-nov): `bp` nace 'desktop' en el servidor y pasa a 'mobile' al montar, así que el HTML traía la caja de ESCRITORIO de cada
+    // elemento (una forma de 84% de alto) y al hidratar saltaba a la del celular (38%): 301 -> 136 px a 390, CLS 0,066 en ~1 de cada 4 cargas.
+    // En la página real (`porMedia`) la caja de cada corte viaja como variables CSS y la elige una media query, igual que el alto de la portada.
     const box = boxAt(el, bp)
+    const geom = porMedia ? cajaPorMedia(el) : { left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%` }
     return (
-      <div key={repiteEntrada(el) ? `${el.id}:${gen.current}` : el.id} data-el data-id={el.id}
-        style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, zIndex: zIndexCapa(el) }}>
+      <div key={repiteEntrada(el) ? `${el.id}:${gen.current}` : el.id} data-el data-id={el.id} className={porMedia ? 'hc-el' : undefined}
+        style={{ position: 'absolute', ...geom, zIndex: zIndexCapa(el) }}>
         <ElementView el={el} bp={bp} accentColor={accentColor} active={visible} />
       </div>
     )
   }
   return (
     <div ref={caja} style={slideStyle(visible, slideIndex, activeIndex, isSlide)} data-slide>
-      <Background bg={slide.background} />
+      <Background bg={slide.background} breakpoint={bp} />
       {fondo.map(pintar)}
       {/* Scrim de escena: el mismo campo `slide.scrim` del modo scroll. Antes
           el carrusel lo IGNORABA, asi que una escena con scrim se veia sin el.
@@ -169,11 +185,11 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   // Faltaba en las 3 copias del renderer, no solo acá.
   return (
     <div className={reservaPorMedia ? 'hc-carousel-box' : undefined} style={{ position: 'relative', width: contained ? 'calc(100% - var(--hero-gutter, 1.5rem) * 2)' : '100%', maxWidth: contained ? 'var(--hero-maxw, none)' : undefined, marginInline: contained ? 'auto' : undefined, ...(reservaPorMedia ? medidaCss : { height, aspectRatio: usaAspecto ? aspecto : undefined }), overflow: 'hidden', borderRadius: radius, boxShadow: shadow, fontFamily: cssFontFamily(theme.fontFamily, 'var(--site-font, Inter, sans-serif)'), background: cssColor(theme.colors.bg), color: cssColor(theme.colors?.text, '#ffffff'), lineHeight: 'var(--hero-line-height, 1.55)', containerType: 'inline-size', containerName: 'hc-stage' }}>
-      {reservaPorMedia ? <style>{`.hc-carousel-box{height:var(--hc-h-d);aspect-ratio:var(--hc-a-d)}@media (max-width:767px){.hc-carousel-box{height:var(--hc-h-m);aspect-ratio:var(--hc-a-m)}}`}</style> : null}
+      {reservaPorMedia ? <style>{`${CSS_CAJAS_POR_MEDIA}.hc-carousel-box{height:var(--hc-h-d);aspect-ratio:var(--hc-a-d)}@media (max-width:767px){.hc-carousel-box{height:var(--hc-h-m);aspect-ratio:var(--hc-a-m)}}`}</style> : null}
       {config.background && config.background.type !== 'none' && (
-        <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} /></div>
+        <div style={{ position: 'absolute', inset: 0 }}><Background bg={config.background} breakpoint={breakpoint} /></div>
       )}
-      {slides.map((s, i) => <SlideView key={s.id} slide={s} bp={breakpoint} visible={i === index} slideIndex={i} activeIndex={index} isSlide={isSlide} accentColor={cssColor(theme.colors?.primary)} />)}
+      {slides.map((s, i) => <SlideView key={s.id} slide={s} bp={breakpoint} visible={i === index} slideIndex={i} activeIndex={index} isSlide={isSlide} accentColor={cssColor(theme.colors?.primary)} porMedia={reservaPorMedia} />)}
       {settings.arrows && slides.length > 1 && (
         <>
           <button aria-label="anterior" onClick={auto.prev} style={arrow('left', accent)}>&#8249;</button>
