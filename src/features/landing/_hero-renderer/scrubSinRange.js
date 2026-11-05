@@ -3,7 +3,9 @@
  * configurado: ver docs/PENDIENTES-VPS.md del back) el navegador no deja saltar y el video queda quieto en su primer cuadro.
  *
  * Qué hace entonces, sin avisarle nada a quien mira la web: lo baja entero UNA vez a la memoria, con tope, porque un blob sí deja saltar. Si pesa
- * más que el tope o el servidor no lo deja leer (CORS), se reproduce solo y en bucle: se ve en movimiento en vez de congelado.
+ * más que el tope o el servidor no lo deja leer (CORS), el video NO corre solo (V1, 06-nov-2026: en bucle ignoraba «con el scroll» y el recorte):
+ * `seguirSinSaltar` lo hace avanzar reproduciendo hasta donde va el scroll, dentro del recorte, y lo frena ahí. Lo único que no puede es volver
+ * para atrás: al subir, queda quieto en el último cuadro al que llegó.
  */
 import { useEffect, useState } from "react";
 
@@ -46,6 +48,32 @@ export async function bajarConTope(url, tope = TOPE_EN_MEMORIA_BYTES, { signal, 
   return new Blob(partes, { type: tipo });
 }
 
+/** Velocidad máxima para alcanzar el scroll sin saltar (Chrome admite hasta 16; a 8 se pasa como mucho ~0,13 s por cuadro). */
+export const VELOCIDAD_MAXIMA = 8;
+/** Margen para darlo por alcanzado. */
+const LLEGO_S = 0.04;
+
+/**
+ * Sin `Range` ni copia en memoria: avanza el video reproduciéndolo hasta `objetivo()` (en segundos, ya dentro del recorte) y lo pausa al llegar.
+ * Mientras se pueda saltar no hace nada: el seek normal manda. Devuelve la función que lo apaga.
+ */
+export function seguirSinSaltar(video, objetivo, { cuadro = (f) => requestAnimationFrame(f), cancelar = (id) => cancelAnimationFrame(id) } = {}) {
+  if (!video) return () => {};
+  let id = 0;
+  const paso = () => {
+    id = cuadro(paso);
+    if (!noDejaSaltar(video) || !video.duration || !Number.isFinite(video.duration)) return;
+    const falta = objetivo() - video.currentTime;
+    if (falta > LLEGO_S) {
+      const velocidad = Math.min(VELOCIDAD_MAXIMA, Math.max(1, Math.round(falta * 2)));
+      if (video.playbackRate !== velocidad) video.playbackRate = velocidad;
+      if (video.paused) video.play?.()?.catch?.(() => {});
+    } else if (!video.paused) video.pause?.();
+  };
+  id = cuadro(paso);
+  return () => { cancelar(id); video.pause?.(); };
+}
+
 /** La fuente para el <video>: la misma `url`, o su copia en memoria si el servidor no deja saltar. Baja una sola vez por url. */
 export function useFuenteQueDejaSaltar(ref, url) {
   const [copia, setCopia] = useState({ url: null, blob: null });
@@ -54,7 +82,6 @@ export function useFuenteQueDejaSaltar(ref, url) {
     const video = ref.current;
     if (!video || !url) return undefined;
     let vivo = true;
-    let enBucle = false;
     let creada = null;
     let espera = 0;
     const corte = new AbortController();
@@ -67,11 +94,8 @@ export function useFuenteQueDejaSaltar(ref, url) {
         if (blob) {
           creada = URL.createObjectURL(blob);
           setCopia({ url, blob: creada });
-          return;
         }
-        enBucle = true;
-        video.loop = true;
-        video.play?.()?.catch?.(() => {});
+        // Sin copia: no se pone en bucle ni corre solo. ScrubVideo lo sigue con `seguirSinSaltar`.
       }, ESPERA_MS);
     };
 
@@ -83,7 +107,6 @@ export function useFuenteQueDejaSaltar(ref, url) {
       clearTimeout(espera);
       corte.abort();
       video.removeEventListener("loadedmetadata", revisar);
-      if (enBucle) { video.loop = false; video.pause?.(); }
       if (creada) URL.revokeObjectURL(creada);
     };
   }, [ref, url]);

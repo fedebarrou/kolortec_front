@@ -18,7 +18,7 @@ import { SnapChrome } from "./SnapChrome";
 import { esFondo, estiloCapaEscena, partirCapas, porZ, zIndexCapa } from "./layers";
 import { createBreathing, parallaxFor } from "./snapIdle";
 import { SNAP_DEFAULTS, scrollStepHeight, scrollStepPx, scrollBleedWidth, viewportScale } from "./scroll-contract";
-import { noDejaSaltar, useFuenteQueDejaSaltar } from "./scrubSinRange";
+import { noDejaSaltar, seguirSinSaltar, useFuenteQueDejaSaltar } from "./scrubSinRange";
 
 /**
  * Full-bleed del escenario: lo saca del contenedor y lo lleva al ancho real de
@@ -111,6 +111,8 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
   // y se cambia al urlMobile) el seek en vuelo se cancela y 'seeked' nunca llega: sin esto
   // `seeking` queda trabado en true y el video no se mueve mas.
   useEffect(() => { seeking.current = false; }, [src]);
+  // Sin Range ni copia en memoria: avanza reproduciendo hasta el objetivo del scroll (nunca solo ni en bucle). Con seek, no hace nada.
+  useEffect(() => seguirSinSaltar(ref.current, () => target.current), [src]);
 
   useEffect(() => {
     const video = ref.current;
@@ -128,9 +130,10 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
     const video = ref.current;
     if (!video) return;
     const apply = () => {
-      if (!video.duration || !Number.isFinite(video.duration) || noDejaSaltar(video)) return;
+      if (!video.duration || !Number.isFinite(video.duration)) return;
       const p = reverse ? 1 - progress : progress;
       target.current = clamp((range.start + p * Math.max(0, range.end - range.start)) * video.duration, 0, Math.max(0, video.duration - 0.05));
+      if (noDejaSaltar(video)) return; // lo sigue seguirSinSaltar con este mismo objetivo
       if (!seeking.current) {
         seeking.current = true;
         try { video.currentTime = target.current; } catch { /* seek rechazado (video aún no listo): el próximo "seeked"/apply reintenta */ }
