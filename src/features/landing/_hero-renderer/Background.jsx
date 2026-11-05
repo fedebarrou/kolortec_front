@@ -109,6 +109,6 @@ function VideoDeFondo({ bg, cls, base, breakpoint }) {
   }, [])
   const fuente = breakpoint === 'mobile' && bg.urlMobile ? bg.urlMobile : bg.url
   return (
-    <video className={cls} style={{ ...base, width: '100%', height: '100%', objectFit: 'cover' }} src={puede ? safeSrc(fuente) : undefined} poster={safeSrc(bg.poster)} preload="metadata" autoPlay loop muted playsInline />
+    <video className={cls} style={{ ...base, width: '100%', height: '100%', objectFit: 'cover' }} src={safeSrc(puede ? fuente : undefined)} poster={safeSrc(bg.poster)} preload="metadata" autoPlay loop muted playsInline />
   )
 }

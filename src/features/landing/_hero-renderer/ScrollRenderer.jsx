@@ -18,6 +18,7 @@ import { SnapChrome } from "./SnapChrome";
 import { esFondo, estiloCapaEscena, partirCapas, porZ, zIndexCapa } from "./layers";
 import { createBreathing, parallaxFor } from "./snapIdle";
 import { SNAP_DEFAULTS, scrollStepHeight, scrollStepPx, scrollBleedWidth, viewportScale } from "./scroll-contract";
+import { noDejaSaltar, useFuenteQueDejaSaltar } from "./scrubSinRange";
 
 /**
  * Full-bleed del escenario: lo saca del contenedor y lo lleva al ancho real de
@@ -103,11 +104,13 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
   const target = useRef(0);
   const seeking = useRef(false);
   const range = trim || { start: 0, end: 1 };
+  // Sin `Range` no se puede saltar: `src` pasa a ser una copia en memoria (ver scrubSinRange.js).
+  const src = useFuenteQueDejaSaltar(ref, url);
 
   // Si cambia la fuente (en el celular el bp pasa de desktop a mobile DESPUES del primer montaje
   // y se cambia al urlMobile) el seek en vuelo se cancela y 'seeked' nunca llega: sin esto
   // `seeking` queda trabado en true y el video no se mueve mas.
-  useEffect(() => { seeking.current = false; }, [url]);
+  useEffect(() => { seeking.current = false; }, [src]);
 
   useEffect(() => {
     const video = ref.current;
@@ -125,7 +128,7 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
     const video = ref.current;
     if (!video) return;
     const apply = () => {
-      if (!video.duration || !Number.isFinite(video.duration)) return;
+      if (!video.duration || !Number.isFinite(video.duration) || noDejaSaltar(video)) return;
       const p = reverse ? 1 - progress : progress;
       target.current = clamp((range.start + p * Math.max(0, range.end - range.start)) * video.duration, 0, Math.max(0, video.duration - 0.05));
       if (!seeking.current) {
@@ -136,9 +139,9 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
     if (video.readyState >= 1) apply();
     else video.addEventListener("loadedmetadata", apply, { once: true });
     return () => video.removeEventListener("loadedmetadata", apply);
-  }, [progress, range.start, range.end, reverse, url]);
+  }, [progress, range.start, range.end, reverse, src]);
 
-  return <video ref={ref} src={safeSrc(url)} poster={safeSrc(poster)} muted playsInline preload="auto" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
+  return <video ref={ref} src={safeSrc(src, { blob: true })} poster={safeSrc(poster)} muted playsInline preload="auto" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
 }
 
 // ⚠ ACA HUBO UN RECORTE DE 0.62 EN MOVIL y se saco a proposito (sep-2026).

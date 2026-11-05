@@ -170,6 +170,7 @@ const CTRL = /[\u0000-\u001f\u007f-\u009f]/g
 const BLANKS = /[\s\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028\u2029\ufeff]/g
 const HREF_OK = /^(?:https?:\/\/|mailto:|tel:|\/(?![/\\])|#)/i
 const SRC_OK = /^(?:https?:\/\/|\/(?![/\\]))/i
+const BLOB_OK = /^blob:https?:\/\/[^/?#]+\/[\w-]+$/i
 
 /** href seguro (http(s), mailto:, tel:, ruta `/`, ancla `#`) o `undefined` (el <a> queda sin href). */
 export function safeHref(u) {
@@ -180,11 +181,14 @@ export function safeHref(u) {
 }
 
 /** src/poster de <img>/<video>: misma regla que cssUrl (http(s) o `/`), o `undefined`. */
-export function safeSrc(u) {
+export function safeSrc(u, { blob = false } = {}) {
   if (typeof u !== 'string') return undefined
   const s = u.replace(CTRL, '').trim()
   if (!s) return undefined
-  return SRC_OK.test(s.replace(BLANKS, '')) ? s : undefined
+  const sinBlancos = s.replace(BLANKS, '')
+  // Un archivo recién elegido, que todavía no se subió, llega como blob: sólo donde se pide a propósito (el video del scroll), y sólo con forma de blob de verdad.
+  if (blob && BLOB_OK.test(sinBlancos)) return s
+  return SRC_OK.test(sinBlancos) ? s : undefined
 }
 
 /** Longitud simple (radius, etc.): número finito (px) o `1.5em`/`8px`/`50%`; si no → `undefined`. */

@@ -18,7 +18,7 @@ import { curvaDe, entradaSnap, estadoSnap, duracionAcotada, estiloDeReveal, msSa
 export function effectiveProps(el, bp) {
   if (bp === 'mobile' && el.propsMobile) return { ...el.props, ...el.propsMobile }
   if (bp === 'tablet' && el.propsTablet) return { ...el.props, ...el.propsTablet }
-  return el.props
+  return el.props ?? {}
 }
 
 // x/y/w/h salen de datos guardados y se interpolan en left/top/width/height: se fuerzan a
@@ -30,7 +30,7 @@ function cleanBox(b) {
 
 // eslint-disable-next-line react-refresh/only-export-components -- idem effectiveProps: helper puro de geometría usado por CarouselRenderer/ScrollRenderer.
 export function boxAt(el, bp) {
-  return cleanBox(bp === 'tablet' ? (el.pos.tablet ?? el.pos.desktop) : el.pos[bp])
+  return cleanBox(bp === 'tablet' ? (el.pos?.tablet ?? el.pos?.desktop) : el.pos?.[bp])
 }
 
 function inner(el, bp, reveal, accentColor, themePreset, escalonado) {

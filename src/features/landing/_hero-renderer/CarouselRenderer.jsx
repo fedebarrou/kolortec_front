@@ -192,8 +192,8 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
       {slides.map((s, i) => <SlideView key={s.id} slide={s} bp={breakpoint} visible={i === index} slideIndex={i} activeIndex={index} isSlide={isSlide} accentColor={cssColor(theme.colors?.primary)} porMedia={reservaPorMedia} />)}
       {settings.arrows && slides.length > 1 && (
         <>
-          <button aria-label="anterior" onClick={auto.prev} style={arrow('left', accent)}>&#8249;</button>
-          <button aria-label="siguiente" onClick={auto.next} style={arrow('right', accent)}>&#8250;</button>
+          <button aria-label="anterior" onClick={auto.prev} style={arrow('left', accent, breakpoint)}>&#8249;</button>
+          <button aria-label="siguiente" onClick={auto.next} style={arrow('right', accent, breakpoint)}>&#8250;</button>
         </>
       )}
       {settings.dots && slides.length > 1 && (
@@ -209,11 +209,11 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
   )
 }
 
-const arrow = (side, accent) => ({
+const arrow = (side, accent, bp) => ({
   // zIndex: las flechas son chrome y van SIEMPRE arriba del contenido. Sin esto
   // quedaban debajo: los elementos de una escena nacen con z:1 y, como el slide
   // en modo fade no creaba contexto de apilado, ese z competia aca afuera y se
   // comia los clicks. Se arreglo por los dos lados (ver slideStyle).
-  position: 'absolute', top: '50%', [side]: 8, transform: 'translateY(-50%)', zIndex: 5,
+  position: 'absolute', ...(bp === 'mobile' ? { bottom: 8 } : { top: '50%', transform: 'translateY(-50%)' }), [side]: 8, zIndex: 5,
   background: 'rgba(0,0,0,.3)', color: accent, border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', fontSize: 18,
 })
