@@ -446,7 +446,7 @@ function HeaderSection() {
         }
       }}
     >
-      <img alt={t('a11y.logo', 'Logo de Kolortec')} className="h-8 md:h-9 w-auto object-contain" src="/assets/Grupo-Kolortec-1024x150.jpeg" />
+      <img alt={t('a11y.logo', 'Logo de Kolortec')} className="h-6 w-auto object-contain" src="/assets/Grupo-Kolortec-1024x150.jpeg" />
     </Link>
   )
 
