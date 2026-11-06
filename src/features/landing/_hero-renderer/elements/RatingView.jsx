@@ -1,11 +1,15 @@
 import { Star, StarHalf } from 'lucide-react'
 import { cqw } from '../responsive'
-import { cssColor } from '../cssSafe'
+import { cssColor, cssPick } from '../cssSafe'
+
+// D2 (informe Hero 12-nov): las estrellas iban pegadas al borde izquierdo de su caja. Con `align` centro/derecha se vuelven bloque
+// del ancho de las estrellas y se corren con márgenes; sin `align` (o `left`) se dibujan igual que siempre. Mismo cuadro que ButtonView.
+const ALINEAR = { center: { display: 'flex', width: 'fit-content', marginLeft: 'auto', marginRight: 'auto' }, right: { display: 'flex', width: 'fit-content', marginLeft: 'auto' } }
 
 export function RatingView({ p }) {
   const max = Math.max(1, Math.min(10, Math.round(p.max)))
   return (
-    <div data-fit style={{ display: 'inline-flex', alignItems: 'center', gap: cqw(2), color: cssColor(p.color), fontSize: cqw(p.size) }}>
+    <div data-fit style={{ display: 'inline-flex', alignItems: 'center', gap: cqw(2), color: cssColor(p.color), fontSize: cqw(p.size), ...cssPick(ALINEAR, p.align) }}>
       {Array.from({ length: max }).map((_, i) => {
         const full = i + 1 <= p.value
         const half = !full && i + 0.5 <= p.value

@@ -1,6 +1,6 @@
 import { cqw } from '../responsive'
 import { typoStyle } from './typo'
-import { cssColor, cssPick, cssShadow, cssTextAlign } from '../cssSafe'
+import { cssColor, cssPick, cssShadow, cssTextAlign, sombraSegunLetra } from '../cssSafe'
 
 const justify = { top: 'flex-start', center: 'center', bottom: 'flex-end' }
 const items = { left: 'flex-start', center: 'center', right: 'flex-end' }
@@ -40,7 +40,7 @@ export function TextView({ p, accentColor: designAccent, themePreset }) {
   // typoStyle resuelve ese "em gana sobre px legacy" vía el fallback: si
   // letterSpacingEm está ausente, cae al `cqw(p.letterSpacing)` de siempre.
   const typo = typoStyle(p, TEXT_SLOT, { letterSpacing: cqw(p.letterSpacing) })
-  const text = { ...typo, textAlign: cssTextAlign(p.align), textShadow: cssShadow(p.textShadow) || defaultShadow, textWrap: themePreset === 'kolortec' ? undefined : 'balance', whiteSpace: 'pre-line' }
+  const text = { ...typo, textAlign: cssTextAlign(p.align), textShadow: cssShadow(p.textShadow, sombraSegunLetra(typo.color ?? p.color, defaultShadow)), textWrap: themePreset === 'kolortec' ? undefined : 'balance', whiteSpace: 'pre-line' }
   const chrome = {
     background: cssColor(p.bg), borderRadius: cqw(p.radius), padding: cqw(p.padding),
     border: p.borderWidth && cssColor(p.borderColor) ? `${cqw(p.borderWidth)} solid ${cssColor(p.borderColor)}` : undefined,

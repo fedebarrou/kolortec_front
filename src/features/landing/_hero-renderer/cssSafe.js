@@ -126,6 +126,22 @@ export function cssFontFamily(f, fallback) {
  * Se admiten rgb()/rgba()/hsl()/hsla() sin anidar. Si no pasa → `fallback`.
  */
 const SHADOW_TOKEN = /^(?:none|inset|-?\d*\.?\d+(?:px|em|rem|%|cqw)?|#[0-9a-f]{3,8}|[a-z]{3,30}|(?:rgb|rgba|hsl|hsla)\([\d\s.,%/+-]*\))$/i
+/**
+ * D7 (informe Hero 12-nov): la sombra oscura POR DEFECTO sobre una letra oscura no despega el texto, lo ensucia
+ * (título oscuro sobre crema con un halo negro). Con letra oscura no hay sombra por defecto; una sombra elegida se respeta.
+ */
+export function sombraSegunLetra(color, sombra) {
+  const c = typeof color === 'string' ? color.trim() : ''
+  let r, g, b
+  const h = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c)
+  const f = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i.exec(c)
+  if (h) { const x = h[1].length === 3 ? h[1].split('').map((k) => k + k).join('') : h[1]; [r, g, b] = [0, 2, 4].map((i) => parseInt(x.slice(i, i + 2), 16)) }
+  else if (f) [r, g, b] = [f[1], f[2], f[3]].map(Number)
+  else return sombra
+  const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b) < 0.18 ? 'none' : sombra
+}
+
 export function cssShadow(v, fallback) {
   if (typeof v !== 'string') return fallback
   const s = v.trim()
