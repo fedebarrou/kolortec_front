@@ -1,29 +1,23 @@
-# Estado de kolortec — al 2026-10-14
+# Estado de kolortec — al 2026-11-06
 
 > Foto del día. Lo que cambia seguido (deploys, pendientes de producción) vive en tiendita:
 > `tiendita-back/docs/BITACORA.md` y `tiendita-back/docs/PENDIENTES-VPS.md`.
 
 ## En producción
 
-- **Código desplegado:** `22cef7d` (feat/efectos-disenadores), el 2026-10-15 02:27:30Z (14-oct 23:27 ART), deploy
-  **20261014b** (sólo `kolortec_web`; suite local `eslint` + `vite build` en verde, corrida por el hilo principal): texto del
-  pie bajo el logo → «Iluminación profesional para espectáculos. Fabricación propia, soporte técnico local y repuestos en
-  stock» (EN «Professional lighting for live shows. In-house manufacturing, local technical support and spare parts in
-  stock»). Imagen `1f14592ba9c9` (antes `b318835b71ce`). tgz `git archive 22cef7d` = `1998bc5d…8f2b32` (local = remoto);
-  árbol nuevo vs viejo = exactamente `git diff fa3f0b4..22cef7d` (4 archivos), nada sólo-VPS. Afuera: `/?preview=x` 200
-  24710 B pide `index-Cc7ZJ1ox.js` (antes `index-ChDtjRRb.js`); el texto ES vive en el chunk `LanguageProvider-Kiv2_oWH.js`
-  que importa el index (1 «Fabricación propia», 0 «Global leaders», 0 «Líderes globales»); el EN también está en el index.
-  `/` sigue con el cartel (1510 B). Caddyfile `e1c23681…1a1d1a` antes = después; restarts 0. Ventana `ventas-vps`
-  02:25:07Z → cerrada 02:29:16Z, 14 usos (deploy + limpieza).
-  **Rollback 20261014b:** `mv /opt/kolortec /opt/kolortec.fallido-20261014b && mv /opt/kolortec.prev-20261014b /opt/kolortec
-  && docker tag kolortec-web:pre-20261014b kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
-  --no-build kolortec_web` (`pre-20261014b` = `b318835b71ce` = `fa3f0b4`; vuelve a pedir `index-ChDtjRRb.js`).
-- **Limpieza del VPS (20261014b):** borrados los tags `kolortec-web:pre-20261011b/-20261012/-20261012g/h/i/-20261014a`, las
-  carpetas `/opt/kolortec.prev-*` viejas (6) y los paquetes `/opt/_upload/kolortec-*` (7). Quedan sólo `kolortec-web:latest`,
-  `:pre-20261014b`, `/opt/kolortec` y `/opt/kolortec.prev-20261014b`: **no hay rollback más atrás que `fa3f0b4`.**
-  Liberado ~1,04 GB (`df` 64G → 63G usados). Lo de tiendita y otros no se tocó.
-- **Deploy anterior:** `fa3f0b4`, el 2026-10-15 00:38Z, deploy 20261014a: footer y favicon con los logos originales
-  (`Grupo-Kolortec-1024x150.jpeg`, `logo_minimal.png`). Detalle: `tiendita-back/docs/BITACORA.md`.
+- **Código desplegado:** `fcff78b` (main), el 2026-11-06 14:07Z, deploy **20261106** (sólo `kolortec_web`; **sin suite completa,
+  por decisión de Fedev; vite build local verde**): logo del navbar a 24px (`HeaderSection.jsx:449` `h-8 md:h-9` → `h-6`).
+  Imagen `1ef922bb4900` (antes `9d372b618818` = `1223dfd`). Afuera: `/?preview=x` 200 pide `index-BI97VjFz.js` (antes
+  `index-BSDvYkkP.js`) con 1 × `h-6 w-auto object-contain` y 0 × `h-8 md:h-9`; `/` sigue con el cartel (1510 B, igual byte a
+  byte); restarts 0; Caddyfile igual antes/después. tgz `git -c core.autocrlf=false archive fcff78b` (el tgz con autocrlf=true
+  metía CRLF en 222 archivos). Detalle: `tiendita-back/docs/BITACORA.md` (2026-11-06).
+  **Rollback 20261106:** `mv /opt/kolortec /opt/kolortec.fallido-20261106 && mv /opt/kolortec.prev-20261106 /opt/kolortec
+  && docker tag kolortec-web:pre-20261106 kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
+  --no-build kolortec_web` (vuelve a pedir `index-BSDvYkkP.js`).
+- **Restos de rollback en el VPS (no se borró nada):** tags `kolortec-web:pre-20261106/-20261026/-20261020d/-20261020b/-20261014b`,
+  carpetas `/opt/kolortec.prev-` con esos mismos sufijos, y `/opt/_upload/kolortec-20261106-lf.tar.gz`. La limpieza queda para
+  otra sesión, fuera del modo automático.
+- **Deploy anterior:** `1223dfd`, el 2026-10-26 18:53Z, deploy 20261026 «todo junto». Detalle: `tiendita-back/docs/BITACORA.md`.
 - **Dominio:** `kolortec.com.ar` ya responde (200). Muestra el cartel **«Sitio en construcción»**
   porque la cuenta de kolortec en tiendita **no está publicada** (`published=false` en
   `/api/public/web-config`). Con `?preview=<token>` se ve el sitio entero.
