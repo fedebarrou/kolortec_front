@@ -1,8 +1,9 @@
 import { cqw, cqwType } from '../responsive'
 import { typoStyle } from './typo'
-import { cssColor, cssPick, cssTextAlign, safeHref } from '../cssSafe'
+import { cssColor, cssPick, cssShadow, cssTextAlign, safeHref } from '../cssSafe'
 
 const cross = { left: 'flex-start', center: 'center', right: 'flex-end' }
+// V1 (informe Hero 10-nov): la sombra por defecto se puede apagar con `textShadow` (la frase que agrega el chat la apaga), igual que en TextView.
 const SHADOW = '0 2px 18px rgba(0,0,0,.45)'
 const TITLE_GLOW = '0 1px 2px rgba(10,6,24,.78), 0 0 22px rgba(255,250,255,.70), 0 0 60px rgba(196,150,255,.5)'
 const BACKDROP = 'radial-gradient(ellipse 56% 54% at 50% 50%, rgba(8,4,20,.70) 0%, rgba(8,4,20,.44) 46%, rgba(8,4,20,0) 76%)'
@@ -174,8 +175,8 @@ export function MessageView({ p, accentColor: designAccent }) {
         {p.accent && (
           <span style={{ ...z1, display: 'inline-block', background: '#EE5237', color: '#fff', fontWeight: 800, fontSize: cqw(13), letterSpacing: '.08em', padding: `${cqw(4)} ${cqw(11)}`, borderRadius: cqw(99) }}>OFERTA</span>
         )}
-        <div className={p.glow ? 'rl-aura' : undefined} style={{ ...z1, ...titleTypo, textShadow: p.glow ? TITLE_GLOW : SHADOW, WebkitTextStroke: p.glow ? '0.6px rgba(12,6,28,.22)' : undefined, paintOrder: 'stroke fill', textWrap: 'balance', whiteSpace: 'pre-line' }}>{withAccentDot(p.title || 'Tu mensaje acá', p.accentDot, accentColor)}</div>
-        {p.sub && <div style={{ ...z1, ...subTypo, opacity: .92, textShadow: SHADOW, textWrap: 'balance', whiteSpace: 'pre-line' }}>{p.sub}</div>}
+        <div className={p.glow ? 'rl-aura' : undefined} style={{ ...z1, ...titleTypo, textShadow: p.glow ? TITLE_GLOW : cssShadow(p.textShadow, SHADOW), WebkitTextStroke: p.glow ? '0.6px rgba(12,6,28,.22)' : undefined, paintOrder: 'stroke fill', textWrap: 'balance', whiteSpace: 'pre-line' }}>{withAccentDot(p.title || 'Tu mensaje acá', p.accentDot, accentColor)}</div>
+        {p.sub && <div style={{ ...z1, ...subTypo, opacity: .92, textShadow: cssShadow(p.textShadow, SHADOW), textWrap: 'balance', whiteSpace: 'pre-line' }}>{p.sub}</div>}
         {p.cta && (
           <a href={p.ctaHref ? safeHref(p.ctaHref) : '#'} style={{ ...z1, marginTop: cqw(4), display: 'inline-flex', alignItems: 'center', background: '#EE5237', padding: `${cqw(11)} ${cqw(22)}`, borderRadius: cqw(99), textDecoration: 'none', boxShadow: '0 8px 22px rgba(238,82,55,.4)', ...ctaTypo }}>{p.cta}</a>
         )}

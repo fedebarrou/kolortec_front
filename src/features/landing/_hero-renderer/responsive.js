@@ -1,7 +1,9 @@
 export const DESIGN_W = 1440
 export const cqw = (px) => `${(px / DESIGN_W * 100).toFixed(4)}cqw`
+// D1 (informe Hero 10-nov): a 390 el 0,62 dejaba «Ver los productos» en 8,68 px y la frase en 9,92. Piso de 12 px en el celular.
+export const PISO_DE_LETRA = 12
 export const cqwType = (px, minFactor = 0.62, maxFactor = 1.2) =>
-  `clamp(${(px * minFactor).toFixed(2)}px, ${(px / DESIGN_W * 100).toFixed(4)}cqw, ${(px * maxFactor).toFixed(2)}px)`
+  `clamp(${Math.max(PISO_DE_LETRA, px * minFactor).toFixed(2)}px, ${(px / DESIGN_W * 100).toFixed(4)}cqw, ${Math.max(PISO_DE_LETRA, px * maxFactor).toFixed(2)}px)`
 export const MOBILE_BELOW = 768
 // VIS-015 · los cortes de breakpoint, UNA vez por repo (este archivo es copia sincronizada y check-hero-paridad exige el mismo valor en los tres): <768 celular, 768–1023 tablet,
 // desde 1024 escritorio. Los usan las secciones y los HeroSection de la tienda y Kolortec, y los previews del Lab.
