@@ -89,7 +89,12 @@ export function Background({ bg, breakpoint }) {
  *  3. La descarga espera a que la pantalla termine de cargar (`load` + un respiro): el video no compite con el texto y las fotos por el LCP.
  *     `preload="metadata"` y el `poster` cubren el hueco.
  */
-function VideoDeFondo({ bg, cls, base, breakpoint }) {
+/**
+ * `true` recién cuando la pantalla terminó de cargar (`load` + un respiro). Hasta ahí ningún video lleva fuente: el `breakpoint` ya
+ * quedó resuelto (nace 'desktop' y pasa a 'mobile' al montar) y el video no compite por el LCP. Lo usan VideoDeFondo y ScrubVideo:
+ * a 390 el ScrubVideo arrancaba con el de PC y `preload="auto"` bajaba 16 MB antes de cambiar al de celular (informe 08-nov, ALTA 1).
+ */
+export function useTrasCargarLaPantalla() {
   const [puede, setPuede] = useState(false)
   useEffect(() => {
     let tId = 0
@@ -107,6 +112,11 @@ function VideoDeFondo({ bg, cls, base, breakpoint }) {
       if (tId) window.clearTimeout(tId)
     }
   }, [])
+  return puede
+}
+
+function VideoDeFondo({ bg, cls, base, breakpoint }) {
+  const puede = useTrasCargarLaPantalla()
   const fuente = breakpoint === 'mobile' && bg.urlMobile ? bg.urlMobile : bg.url
   return (
     <video className={cls} style={{ ...base, width: '100%', height: '100%', objectFit: 'cover' }} src={safeSrc(puede ? fuente : undefined)} poster={safeSrc(bg.poster)} preload="metadata" autoPlay loop muted playsInline />

@@ -73,6 +73,10 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
   // la foto como elemento `media`) -> scrim -> overlay -> elementos de CONTENIDO
   // (z >= 1). La oscuridad va arriba de la foto y abajo del texto. zIndex explicitos.
   const { fondo, contenido } = partirCapas(slide.elements)
+  // W11 (LCP 2,6-4,9 s a 390 lento): en la página real la escena que se ve al cargar nace en su estado FINAL, sin entrada: con la entrada
+  // (`both`, opacidad 0 + retardo) el texto de la portada no se pintaba hasta que corría la animación y era el LCP. La entrada sigue en las
+  // escenas siguientes y cuando el carrusel vuelve a ésta (gen > 0). El Lab y la vista previa (sin `porMedia`) la siguen mostrando.
+  const sinEntrada = porMedia === true && visible && gen.current === 0
   const pintar = (el) => {
     // CLS (informe 04-nov): `bp` nace 'desktop' en el servidor y pasa a 'mobile' al montar, así que el HTML traía la caja de ESCRITORIO de cada
     // elemento (una forma de 84% de alto) y al hidratar saltaba a la del celular (38%): 301 -> 136 px a 390, CLS 0,066 en ~1 de cada 4 cargas.
@@ -82,7 +86,7 @@ function SlideView({ slide, bp, visible, slideIndex, activeIndex, isSlide, accen
     return (
       <div key={repiteEntrada(el) ? `${el.id}:${gen.current}` : el.id} data-el data-id={el.id} className={porMedia ? 'hc-el' : undefined}
         style={{ position: 'absolute', ...geom, zIndex: zIndexCapa(el) }}>
-        <ElementView el={el} bp={bp} accentColor={accentColor} active={visible} />
+        <ElementView el={el} bp={bp} accentColor={accentColor} active={visible} sinEntrada={sinEntrada} />
       </div>
     )
   }

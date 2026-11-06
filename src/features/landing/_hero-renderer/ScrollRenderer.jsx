@@ -10,7 +10,7 @@
  * el preview del admin (tiendita-front/app/(admin)/admin/hero-lab/_renderer/).
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Background, animProps } from "./Background";
+import { Background, animProps, useTrasCargarLaPantalla } from "./Background";
 import { cssColor, cssFontFamily, cssNumber, safeSrc } from "./cssSafe";
 import { ElementView, boxAt, msSalidaDelPaso } from "./elements/ElementView";
 import { createSnapEngine } from "./snapEngine";
@@ -104,8 +104,10 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
   const target = useRef(0);
   const seeking = useRef(false);
   const range = trim || { start: 0, end: 1 };
+  // Ninguna fuente hasta que cargó la pantalla: antes el `breakpoint` todavía puede ser el de PC (ver useTrasCargarLaPantalla).
+  const puede = useTrasCargarLaPantalla();
   // Sin `Range` no se puede saltar: `src` pasa a ser una copia en memoria (ver scrubSinRange.js).
-  const src = useFuenteQueDejaSaltar(ref, url);
+  const src = useFuenteQueDejaSaltar(ref, puede ? url : null);
 
   // Si cambia la fuente (en el celular el bp pasa de desktop a mobile DESPUES del primer montaje
   // y se cambia al urlMobile) el seek en vuelo se cancela y 'seeked' nunca llega: sin esto
@@ -144,7 +146,7 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
     return () => video.removeEventListener("loadedmetadata", apply);
   }, [progress, range.start, range.end, reverse, src]);
 
-  return <video ref={ref} src={safeSrc(src, { blob: true })} poster={safeSrc(poster)} muted playsInline preload="auto" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
+  return <video ref={ref} src={safeSrc(src || undefined, { blob: true })} poster={safeSrc(poster)} muted playsInline preload={src ? "auto" : "none"} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />;
 }
 
 // ⚠ ACA HUBO UN RECORTE DE 0.62 EN MOVIL y se saco a proposito (sep-2026).

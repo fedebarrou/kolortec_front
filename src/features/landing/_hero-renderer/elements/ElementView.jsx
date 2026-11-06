@@ -109,7 +109,7 @@ export function estaOculto(el, bp, tabletComoEscritorio) {
   return !!(el.hidden?.[bp] ?? (tabletComoEscritorio && bp === 'tablet' ? el.hidden?.desktop : undefined))
 }
 
-export function ElementView({ el, bp, reveal, accentColor, themePreset, snapState, active, tabletComoEscritorio }) {
+export function ElementView({ el, bp, reveal, accentColor, themePreset, snapState, active, tabletComoEscritorio, sinEntrada }) {
   // Paso saliente: false = primer frame (visible); true = ya pintado, ahora ejecuta la salida. Dos rAF = el frame visible llegó a pantalla.
   const [salidaIniciada, setSalidaIniciada] = useState(false)
   useEffect(() => {
@@ -162,6 +162,8 @@ export function ElementView({ el, bp, reveal, accentColor, themePreset, snapStat
     const delayMs = retardoAcotado(el.animation?.delayMs)
     if (saliendo) {
       anim = `hc-out-${exitType} ${Math.min(durMs, EXIT_MAX_MS)}ms ${easing} 0ms both`
+    } else if (sinEntrada) {
+      // W11 · la escena que se ve al cargar la página (CarouselRenderer `sinEntrada`) se pinta ya en su estado final: sin entrada ni escalonado.
     } else if (animType !== 'none' && staggerMs > 0) {
       // Con stagger, la entrada la hace cada hijo (con su retardo escalonado); el contenedor no se anima.
       escalonado = { nombre: `hc-${animType}`, ms: durMs, curva: easing, retardo: delayMs, paso: staggerMs }
