@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { cqw } from '../responsive'
 import { typoStyle } from './typo'
-import { cssColor, cssColorAlpha, cssPick } from '../cssSafe'
+import { cssColor, cssColorAlpha, cssPick, cssShadow, sombraSegunLetra } from '../cssSafe'
 import { estiloEscalonado } from './stagger'
 
 const cross = { left: 'flex-start', center: 'center', right: 'flex-end' }
@@ -70,10 +70,10 @@ export function StatsView({ p, reveal, escalonado }) {
         )}
         {(Array.isArray(p.items) ? p.items : []).filter(Boolean).map((it, i) => (
           <div key={i} data-hero-anim={escalonado ? '' : undefined} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: `0 ${cqw(26)}`, borderLeft: p.divider && i > 0 ? (cssColorAlpha(p.color, '59') ? `1px solid ${cssColorAlpha(p.color, '59')}` : undefined) : undefined, ...estiloEscalonado(escalonado, i, p.items.length) }}>
-            <span style={{ ...numTypo, textShadow: p.glow ? NUM_GLOW : '0 2px 18px rgba(0,0,0,.45)' }}>
+            <span style={{ ...numTypo, textShadow: p.glow ? NUM_GLOW : cssShadow(p.textShadow, sombraSegunLetra(numTypo.color ?? p.color, '0 2px 18px rgba(0,0,0,.45)')) }}>
               {shown(it.value)}
             </span>
-            <span style={{ ...labelTypo, opacity: .76, marginTop: cqw(7), textShadow: '0 1px 10px rgba(10,6,24,.7)' }}>
+            <span style={{ ...labelTypo, opacity: .76, marginTop: cqw(7), textShadow: cssShadow(p.textShadow, sombraSegunLetra(labelTypo.color ?? p.color, '0 1px 10px rgba(10,6,24,.7)')) }}>
               {it.label}
             </span>
           </div>

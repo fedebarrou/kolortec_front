@@ -201,9 +201,9 @@ export function CarouselRenderer({ config, breakpoint, activeIndex, containerHei
         </>
       )}
       {settings.dots && slides.length > 1 && (
-        <div role="tablist" aria-label="slides del carrusel" style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6, zIndex: 5 }}>
+        <div role="tablist" aria-label="diapositivas del carrusel" style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6, zIndex: 5 }}>
           {slides.map((s, i) => (
-            <button key={s.id} type="button" role="tab" aria-selected={i === index} aria-label={`Ir al slide ${i + 1}`}
+            <button key={s.id} type="button" role="tab" aria-selected={i === index} aria-label={`Ir a la diapositiva ${i + 1}`}
               onClick={() => auto.go(i)}
               style={{ appearance: 'none', WebkitAppearance: 'none', width: i === index ? 16 : 6, height: 6, padding: 0, margin: 0, border: 'none', borderRadius: 3, background: i === index ? accent : 'rgba(255,255,255,.5)', cursor: 'pointer' }} />
           ))}

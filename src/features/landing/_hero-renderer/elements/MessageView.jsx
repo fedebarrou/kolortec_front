@@ -3,6 +3,7 @@ import { typoStyle } from './typo'
 import { cssColor, cssPick, cssShadow, cssTextAlign, safeHref, sombraSegunLetra } from '../cssSafe'
 
 const cross = { left: 'flex-start', center: 'center', right: 'flex-end' }
+// H8 (informe Hero 16-nov): ninguna sombra fija; la volanta y el texto de kolortec también deciden con `sombraSegunLetra` (D7).
 // V1 (informe Hero 10-nov): la sombra por defecto se puede apagar con `textShadow` (la frase que agrega el chat la apaga), igual que en TextView.
 const SHADOW = '0 2px 18px rgba(0,0,0,.45)'
 const TITLE_GLOW = '0 1px 2px rgba(10,6,24,.78), 0 0 22px rgba(255,250,255,.70), 0 0 60px rgba(196,150,255,.5)'
@@ -124,11 +125,11 @@ function KolortecMessage({ p, accentColor: designAccent }) {
           </span>
         )}
         {/* kolortec NO usa text-wrap:balance (corta 'CONSTRUIDOS PARA / RENDIR.'); wrap normal. */}
-        <div style={{ marginTop: 12, ...titleTypo, whiteSpace: 'pre-line', textShadow: KOLORTEC_TITLE_SHADOW }}>
+        <div style={{ marginTop: 12, ...titleTypo, whiteSpace: 'pre-line', textShadow: cssShadow(p.textShadow, sombraSegunLetra(titleTypo.color ?? p.color, KOLORTEC_TITLE_SHADOW)) }}>
           {withAccentDot(p.title || 'Tu mensaje acá', p.accentDot, accentColor)}
         </div>
         {p.sub && (
-          <div style={{ marginTop: 16, maxWidth: '42ch', ...(explicitAlign ? alignMargin(explicitAlign) : null), ...subTypo, whiteSpace: 'pre-line', textShadow: KOLORTEC_SUB_SHADOW }}>
+          <div style={{ marginTop: 16, maxWidth: '42ch', ...(explicitAlign ? alignMargin(explicitAlign) : null), ...subTypo, whiteSpace: 'pre-line', textShadow: cssShadow(p.textShadow, sombraSegunLetra(subTypo.color ?? p.subColor ?? p.color, KOLORTEC_SUB_SHADOW)) }}>
             {p.sub}
           </div>
         )}
@@ -169,7 +170,7 @@ export function MessageView({ p, accentColor: designAccent }) {
         {p.eyebrow && (
           <span style={{ ...z1, display: 'inline-flex', alignItems: 'center', gap: 10 }}>
             {p.eyebrowLine && <EyebrowLine accentColor={accentColor} />}
-            <span style={{ ...eyebrowTypo, opacity: .94, textShadow: '0 1px 10px rgba(10,6,24,.7)' }}>{p.eyebrow}</span>
+            <span style={{ ...eyebrowTypo, opacity: .94, textShadow: cssShadow(p.textShadow, sombraSegunLetra(eyebrowTypo.color ?? p.eyebrowColor ?? p.color, '0 1px 10px rgba(10,6,24,.7)')) }}>{p.eyebrow}</span>
           </span>
         )}
         {p.accent && (
