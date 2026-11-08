@@ -163,7 +163,7 @@ export function MessageView({ p, accentColor: designAccent }) {
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: cssPick(cross, p.align) }}>
-      <div data-fit style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: cssPick(cross, p.align), gap: cqw(10), maxWidth: '100%', textAlign: cssTextAlign(p.align) }}>
+      <div data-fit style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: cssPick(cross, p.align), gap: `max(8px, ${cqw(10)})`, maxWidth: '100%', textAlign: cssTextAlign(p.align) }}>
         {p.glow && (
           <span aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '124%', height: '186%', background: BACKDROP, filter: 'blur(9px)', zIndex: 0, pointerEvents: 'none' }} />
         )}
