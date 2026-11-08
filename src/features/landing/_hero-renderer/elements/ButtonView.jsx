@@ -26,8 +26,8 @@ export function ButtonView({ p }) {
     border: ghost ? 'none' : solid ? 'none' : (cssColor(p.color) ? `${cqw(1)} solid ${cssColor(p.color)}` : undefined),
     boxShadow: solid ? '0 8px 22px rgba(0,0,0,.28)' : undefined,
     // D6 (informe Hero 12-nov): a 390 el botón medía 97×24, chico para el dedo. En un escenario de celular (< 768 de ancho,
-    // el mismo corte que `MOBILE_BELOW`) mide al menos 44 de alto; en la compu, nada cambia (el clamp da 0).
-    minHeight: 'clamp(0px, calc((768px - 100cqw) * 1000), 44px)',
+    // el mismo corte que `MOBILE_BELOW`) mide al menos 44 de alto. Informe 21-nov: a 1440 el botón lleno medía 42; ahora 44 en todos los cortes.
+    minHeight: 44,
     // D2 (informe Hero 12-nov): el botón se dibujaba pegado al borde izquierdo de su caja (`inline-flex`), así que bajo un título
     // centrado quedaba corrido. Con `align` centro/derecha se vuelve bloque del ancho de su texto y se corre con márgenes; sin
     // `align` (o `left`) se dibuja igual que siempre.
