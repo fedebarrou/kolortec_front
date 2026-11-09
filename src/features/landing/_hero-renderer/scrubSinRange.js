@@ -103,6 +103,7 @@ export function seguirSinSaltar(video, objetivo, {
   let ultimaRecarga = -Infinity;
   let visto = NaN;
   let quietoDesde = 0;
+  let subioEn = -Infinity;
   let velo = null;
   let oculto = false;
   let alcanzando = true;
@@ -121,8 +122,14 @@ export function seguirSinSaltar(video, objetivo, {
     if (!noDejaSaltar(video) || !video.duration || !Number.isFinite(video.duration)) return;
     const meta = objetivo();
     const t = ahora();
-    if (!(Math.abs(meta - visto) < 0.02)) { visto = meta; quietoDesde = t; }
+    if (!(Math.abs(meta - visto) < 0.02)) { if (meta < visto) subioEn = t; visto = meta; quietoDesde = t; }
     const falta = meta - video.currentTime;
+    // Informe 26-nov defecto 5: mientras el scroll sube, el video no avanza (antes seguía de 27 a 29,9 s alcanzando un objetivo viejo): queda
+    // congelado en su último cuadro y, al soltar, recarga y va al cuadro pedido (abajo) o avanza hasta él si quedó detrás.
+    if (t - subioEn < QUIETO_MS) {
+      if (!video.paused) video.pause?.();
+      return;
+    }
     if (falta < -VUELTA_S) {
       // El scroll volvió para atrás y no se puede saltar: se queda en su cuadro (dentro del recorte) hasta que se suelte el scroll.
       if (!video.paused) video.pause?.();

@@ -134,6 +134,29 @@ export function siguienteDelBucle(t, rango) {
   return t < rango.desde - 0.05 || t >= rango.hasta ? rango.desde : null
 }
 
+/** ¿Se puede saltar a `t`? Sin Range (`php -S`, un disco mal configurado) `seekable` es [0,0] y el salto al inicio del recorte no termina nunca. */
+export function dejaSaltarA(seekable, t) {
+  if (!seekable || !Number.isFinite(t)) return false
+  for (let i = 0; i < seekable.length; i++) {
+    if (seekable.start(i) <= t + 0.05 && seekable.end(i) >= t) return true
+  }
+  return false
+}
+
+/**
+ * Informe 26-nov defecto 1: sin Range el bucle con recorte quedaba quieto en 0 s (`seeking` true para siempre). El bucle nunca puede quedar
+ * quieto: si no se puede saltar al inicio del recorte (o un salto ya se trabó), se reproduce del cuadro 0 hasta el fin del recorte y vuelve al 0,
+ * que siempre se puede. Con Range, el recorte entero como siempre.
+ */
+export function rangoQueSePuede(rango, seekable, trabado = false) {
+  if (!rango) return null
+  if (!trabado && (rango.desde <= 0.05 || dejaSaltarA(seekable, rango.desde))) return rango
+  return { desde: 0, hasta: rango.hasta }
+}
+
+/** Cuánto puede tardar un salto antes de darlo por trabado: ahí se recarga el video (vuelve al cuadro 0 y sigue) y ya no se salta al inicio. */
+export const SALTO_TRABADO_MS = 1000
+
 function VideoDeFondo({ bg, cls, base, breakpoint, trim }) {
   const puede = useTrasCargarLaPantalla()
   const fuente = breakpoint === 'mobile' && bg.urlMobile ? bg.urlMobile : bg.url
@@ -142,13 +165,29 @@ function VideoDeFondo({ bg, cls, base, breakpoint, trim }) {
   useEffect(() => {
     const v = ref.current
     if (!v || !puede) return undefined
-    let cb = 0, vivo = true
-    const rango = () => rangoDelBucle({ start: ts, end: te }, v.duration)
+    let cb = 0, vivo = true, trabado = false, saltoEn = 0, vigia = 0
+    const rango = () => rangoQueSePuede(rangoDelBucle({ start: ts, end: te }, v.duration), v.seekable, trabado)
     const revisar = () => {
+      if (!vivo) return
+      if (saltoEn && v.seeking && Date.now() - saltoEn >= SALTO_TRABADO_MS) {
+        // El salto no terminó (servidor sin Range): se recarga, que vuelve al cuadro 0, y desde ahí el bucle va de 0 al fin del recorte.
+        trabado = true; saltoEn = 0
+        try { v.load?.() } catch { /* sin fuente */ }
+        v.play?.()?.catch?.(() => {})
+        return
+      }
+      if (!v.seeking) saltoEn = 0
       const r = rango()
       v.loop = !r // sin recorte, el bucle nativo; con recorte, lo cierra este control (al llegar al fin vuelve al inicio)
-      const ir = siguienteDelBucle(v.currentTime, r)
-      if (ir !== null) { try { v.currentTime = ir } catch { /* sin metadatos todavía */ } }
+      const ir = saltoEn ? null : siguienteDelBucle(v.currentTime, r)
+      if (ir !== null) {
+        try {
+          v.currentTime = ir
+          saltoEn = Date.now()
+          // Un salto trabado no dispara timeupdate ni cuadros: el vigía vuelve a mirar pasado el plazo.
+          window.clearTimeout(vigia); vigia = window.setTimeout(revisar, SALTO_TRABADO_MS + 50)
+        } catch { /* sin metadatos todavía */ }
+      }
       if (r && v.ended) v.play?.()?.catch?.(() => {})
     }
     // Más fino que timeupdate (~4 por segundo): cada cuadro, donde el navegador lo ofrece; si no, timeupdate alcanza.
@@ -160,6 +199,7 @@ function VideoDeFondo({ bg, cls, base, breakpoint, trim }) {
     revisar()
     return () => {
       vivo = false
+      window.clearTimeout(vigia)
       if (cb && typeof v.cancelVideoFrameCallback === 'function') v.cancelVideoFrameCallback(cb)
       v.removeEventListener('loadedmetadata', revisar)
       v.removeEventListener('timeupdate', revisar)
