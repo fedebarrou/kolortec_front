@@ -16,6 +16,8 @@ const z1 = { position: 'relative', zIndex: 1 }
 // la store, que no tiene _editor/).
 const TITLE_SLOT = { font: 'fontFamily', weight: 'titleWeight', size: 'titleSize', lh: 'titleLineHeight', ls: 'titleLetterSpacingEm', color: 'color', transform: 'titleTransform' }
 const SUB_SLOT = { font: 'subFontFamily', weight: 'subWeight', size: 'subSize', lh: 'subLineHeight', ls: 'subLetterSpacingEm', color: 'subColor', transform: 'subTransform' }
+/** Alto de la caja del glifo (Schibsted/Hanken: 1,245 em medido en la tienda), con margen: el interlineado menor se compensa hasta acá. */
+const ALTO_DEL_GLIFO_EM = 1.3
 const EYEBROW_SLOT = { font: 'eyebrowFontFamily', weight: 'eyebrowWeight', size: 'eyebrowSize', lh: 'eyebrowLineHeight', ls: 'eyebrowLetterSpacingEm', color: 'eyebrowColor', transform: 'eyebrowTransform' }
 const CTA_SLOT = { font: 'ctaFontFamily', weight: 'ctaWeight', size: 'ctaSize', ls: 'ctaLetterSpacingEm', color: 'ctaTextColor', transform: 'ctaTransform' }
 
@@ -157,6 +159,9 @@ export function MessageView({ p, accentColor: designAccent }) {
   // — mismo orden que el código de siempre.
   const subFontFamilyFallback = p.fontFamily || '"Hanken Grotesk", sans-serif'
   const subTypo = typoStyle(p, SUB_SLOT, { fontFamily: subFontFamilyFallback, fontWeight: 500, fontSize: cqwType(17), lineHeight: 1.3, color: cssColor(p.color) })
+  // Hero 23-nov (criterio 9): con interlineado 1,05 el glifo del título se sale 0,1 em de su renglón y la bajada quedaba a 5,7 px
+  // VISIBLES (la caja decía 8). Se devuelve lo que se come el glifo, en em de cada uno: ≥ 8 px entre lo que se ve. Sólo con bajada.
+  const holgura = (lh) => { const n = parseFloat(lh); return p.sub && n > 0 ? `${Math.max(0, (ALTO_DEL_GLIFO_EM - n) / 2).toFixed(3)}em` : undefined }
   const eyebrowFontFamilyFallback = p.subFontFamily || '"Archivo", system-ui, sans-serif'
   const eyebrowTypo = typoStyle(p, EYEBROW_SLOT, { fontFamily: eyebrowFontFamilyFallback, fontWeight: 800, fontSize: cqwType(13), letterSpacing: '.32em', textTransform: 'uppercase', color: cssColor(p.color) })
   const ctaTypo = typoStyle(p, CTA_SLOT, { fontWeight: 700, fontSize: cqwType(15), color: '#fff' })
@@ -176,8 +181,8 @@ export function MessageView({ p, accentColor: designAccent }) {
         {p.accent && (
           <span style={{ ...z1, display: 'inline-block', background: '#EE5237', color: '#fff', fontWeight: 800, fontSize: cqw(13), letterSpacing: '.08em', padding: `${cqw(4)} ${cqw(11)}`, borderRadius: cqw(99) }}>OFERTA</span>
         )}
-        <div className={p.glow ? 'rl-aura' : undefined} style={{ ...z1, ...titleTypo, textShadow: p.glow ? TITLE_GLOW : cssShadow(p.textShadow, sombraSegunLetra(titleTypo.color ?? p.color, SHADOW)), WebkitTextStroke: p.glow ? '0.6px rgba(12,6,28,.22)' : undefined, paintOrder: 'stroke fill', textWrap: 'balance', whiteSpace: 'pre-line' }}>{withAccentDot(p.title || 'Tu mensaje acá', p.accentDot, accentColor)}</div>
-        {p.sub && <div style={{ ...z1, ...subTypo, opacity: .92, textShadow: cssShadow(p.textShadow, sombraSegunLetra(subTypo.color ?? p.subColor ?? p.color, SHADOW)), textWrap: 'balance', whiteSpace: 'pre-line' }}>{p.sub}</div>}
+        <div className={p.glow ? 'rl-aura' : undefined} style={{ ...z1, ...titleTypo, textShadow: p.glow ? TITLE_GLOW : cssShadow(p.textShadow, sombraSegunLetra(titleTypo.color ?? p.color, SHADOW)), WebkitTextStroke: p.glow ? '0.6px rgba(12,6,28,.22)' : undefined, paintOrder: 'stroke fill', textWrap: 'balance', whiteSpace: 'pre-line', paddingBottom: holgura(titleTypo.lineHeight) }}>{withAccentDot(p.title || 'Tu mensaje acá', p.accentDot, accentColor)}</div>
+        {p.sub && <div style={{ ...z1, ...subTypo, paddingTop: holgura(subTypo.lineHeight), opacity: .92, textShadow: cssShadow(p.textShadow, sombraSegunLetra(subTypo.color ?? p.subColor ?? p.color, SHADOW)), textWrap: 'balance', whiteSpace: 'pre-line' }}>{p.sub}</div>}
         {p.cta && (
           <a href={p.ctaHref ? safeHref(p.ctaHref) : '#'} style={{ ...z1, marginTop: cqw(4), display: 'inline-flex', alignItems: 'center', background: '#EE5237', padding: `${cqw(11)} ${cqw(22)}`, borderRadius: cqw(99), textDecoration: 'none', boxShadow: '0 8px 22px rgba(238,82,55,.4)', ...ctaTypo }}>{p.cta}</a>
         )}
