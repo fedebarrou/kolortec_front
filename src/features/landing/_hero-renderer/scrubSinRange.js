@@ -4,12 +4,19 @@
  *
  * Qué hace entonces, sin avisarle nada a quien mira la web: lo baja entero UNA vez a la memoria, con tope, porque un blob sí deja saltar. Si pesa
  * más que el tope o el servidor no lo deja leer (CORS), el video NO corre solo (V1, 06-nov-2026: en bucle ignoraba «con el scroll» y el recorte):
- * `seguirSinSaltar` lo hace avanzar reproduciendo hasta donde va el scroll, dentro del recorte, y lo frena ahí. Lo único que no puede es volver
- * para atrás: al subir, queda quieto en el último cuadro al que llegó.
+ * `seguirSinSaltar` lo hace avanzar reproduciendo hasta donde va el scroll, dentro del recorte, y lo frena ahí.
+ *
+ * Volver para atrás sin Range (video 10-nov, defecto 3: con `scrollY` 0 quedaba en 29,91 s): medido en Chrome, sin Range `seekable` es [0,0] y
+ * el blob falla por CORS (el storage local no manda `Access-Control-Allow-Origin`), así que la copia en memoria no llega. Entonces, si el scroll
+ * quedó más de VUELTA_S detrás del video, se RECARGA (vuelve al cuadro 0, que sí se puede) y se avanza otra vez hasta el objetivo, a hasta 8x.
+ * Con Range nada de esto corre: el seek normal manda.
  */
 import { useEffect, useState } from "react";
 
 export const TOPE_EN_MEMORIA_BYTES = 40 * 1024 * 1024;
+
+/** Las url que ya no se pudieron bajar (CORS, error, más que el tope): no se piden de nuevo, así la consola no repite el error en cada montaje. */
+const SIN_COPIA = new Set();
 
 /** Espera un momento después de `loadedmetadata`: Safari tarda en informar lo que se puede saltar. */
 const ESPERA_MS = 300;
@@ -52,18 +59,35 @@ export async function bajarConTope(url, tope = TOPE_EN_MEMORIA_BYTES, { signal, 
 export const VELOCIDAD_MAXIMA = 8;
 /** Margen para darlo por alcanzado. */
 const LLEGO_S = 0.04;
+/** Cuánto detrás del video tiene que quedar el scroll para recargar y volver (menos que esto, se queda: recargar cuesta la bajada). */
+export const VUELTA_S = 0.5;
+/** Una recarga a la vez: mientras vuelve a cargar, el scroll puede seguir subiendo sin pedir otra. */
+const ENTRE_RECARGAS_MS = 1200;
 
 /**
  * Sin `Range` ni copia en memoria: avanza el video reproduciéndolo hasta `objetivo()` (en segundos, ya dentro del recorte) y lo pausa al llegar.
  * Mientras se pueda saltar no hace nada: el seek normal manda. Devuelve la función que lo apaga.
  */
-export function seguirSinSaltar(video, objetivo, { cuadro = (f) => requestAnimationFrame(f), cancelar = (id) => cancelAnimationFrame(id) } = {}) {
+export function seguirSinSaltar(video, objetivo, {
+  cuadro = (f) => requestAnimationFrame(f),
+  cancelar = (id) => cancelAnimationFrame(id),
+  recargar = (v) => v.load?.(),
+  ahora = () => (typeof performance !== "undefined" ? performance.now() : Date.now()),
+} = {}) {
   if (!video) return () => {};
   let id = 0;
+  let ultimaRecarga = -Infinity;
   const paso = () => {
     id = cuadro(paso);
     if (!noDejaSaltar(video) || !video.duration || !Number.isFinite(video.duration)) return;
     const falta = objetivo() - video.currentTime;
+    if (falta < -VUELTA_S && ahora() - ultimaRecarga > ENTRE_RECARGAS_MS) {
+      // El scroll volvió para atrás y no se puede saltar: al cuadro 0 recargando, y desde ahí se avanza hasta el objetivo.
+      ultimaRecarga = ahora();
+      video.pause?.();
+      recargar(video);
+      return;
+    }
     if (falta > LLEGO_S) {
       const velocidad = Math.min(VELOCIDAD_MAXIMA, Math.max(1, Math.round(falta * 2)));
       if (video.playbackRate !== velocidad) video.playbackRate = velocidad;
@@ -88,9 +112,10 @@ export function useFuenteQueDejaSaltar(ref, url) {
 
     const revisar = () => {
       espera = setTimeout(async () => {
-        if (!vivo || !noDejaSaltar(video)) return;
+        if (!vivo || !noDejaSaltar(video) || SIN_COPIA.has(url)) return;
         const blob = await bajarConTope(url, TOPE_EN_MEMORIA_BYTES, { signal: corte.signal }).catch(() => null);
         if (!vivo) return;
+        if (!blob) SIN_COPIA.add(url);
         if (blob) {
           creada = URL.createObjectURL(blob);
           setCopia({ url, blob: creada });
