@@ -208,7 +208,8 @@ function ScrollBackdrop({ config, progress, breakpoint, scrubAlways = false }) {
     return conAnim(<ScrubVideo url={videoUrlFor(globalBg, breakpoint)} poster={globalBg.poster} progress={progress} trim={config.settings.videoTrim} reverse={config.settings.reverseVideo} />);
   }
   // Este camino SI pasa por Background, que ya se pone la clase solo.
-  return <Background bg={globalBg} breakpoint={breakpoint} />;
+  // «solo, en bucle»: el bucle respeta el recorte igual que el scrub (informe 25-nov defecto 1).
+  return <Background bg={globalBg} breakpoint={breakpoint} trim={globalBg?.type === "video" ? config.settings.videoTrim : null} />;
 }
 
 /* ── Modo CONTINUO (histórico) ─────────────────────────────────────────────── */

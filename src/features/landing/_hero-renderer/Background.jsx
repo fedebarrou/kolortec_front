@@ -16,7 +16,7 @@
  * globals.css del store).
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cssAngle, cssColor, cssFit, cssPosition, cssUrl, safeSrc } from './cssSafe'
 
 const ANIM_TYPES = ['ken-burns', 'drift', 'zoom-out', 'light-sweep']
@@ -64,7 +64,7 @@ export function animProps(bg) {
   return { className: `kt-bg-anim kt-bg-anim--${a.type}`, style }
 }
 
-export function Background({ bg, breakpoint }) {
+export function Background({ bg, breakpoint, trim = null }) {
   const anim = animProps(bg)
   const cls = anim ? anim.className : undefined
   const base = { position: 'absolute', inset: 0, ...(anim ? anim.style : null) }
@@ -78,7 +78,7 @@ export function Background({ bg, breakpoint }) {
     const src = bg.poster || bg.urls[0] || ''
     return src ? <div className={cls} style={{ ...base, backgroundImage: cssUrl(src), backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} /> : null
   }
-  return <VideoDeFondo bg={bg} cls={cls} base={base} breakpoint={breakpoint} />
+  return <VideoDeFondo bg={bg} cls={cls} base={base} breakpoint={breakpoint} trim={trim} />
 }
 
 /**
@@ -115,10 +115,58 @@ export function useTrasCargarLaPantalla() {
   return puede
 }
 
-function VideoDeFondo({ bg, cls, base, breakpoint }) {
+/**
+ * El recorte del bucle («solo, en bucle», informe 25-nov defecto 1): `{ desde, hasta }` en segundos, o null si no hay recorte que respetar
+ * (sin trim, sin duración o el video entero) y alcanza con el `loop` nativo. Mismo saneo que ScrubVideo: 0 ≤ start < end ≤ 1.
+ */
+export function rangoDelBucle(trim, duracion) {
+  if (!trim || !Number.isFinite(duracion) || duracion <= 0) return null
+  const s = Number(trim.start), e = Number(trim.end)
+  const start = Number.isFinite(s) ? Math.min(Math.max(s, 0), 1) : 0
+  const end = Number.isFinite(e) ? Math.min(Math.max(e, 0), 1) : 1
+  if (end <= start || (start <= 0 && end >= 1)) return null
+  return { desde: start * duracion, hasta: end * duracion }
+}
+
+/** Dónde tiene que estar el video ahora: fuera del recorte (antes del inicio o en/después del fin) vuelve al inicio; adentro, null (sigue). */
+export function siguienteDelBucle(t, rango) {
+  if (!rango || !Number.isFinite(t)) return null
+  return t < rango.desde - 0.05 || t >= rango.hasta ? rango.desde : null
+}
+
+function VideoDeFondo({ bg, cls, base, breakpoint, trim }) {
   const puede = useTrasCargarLaPantalla()
   const fuente = breakpoint === 'mobile' && bg.urlMobile ? bg.urlMobile : bg.url
+  const ref = useRef(null)
+  const ts = trim?.start, te = trim?.end
+  useEffect(() => {
+    const v = ref.current
+    if (!v || !puede) return undefined
+    let cb = 0, vivo = true
+    const rango = () => rangoDelBucle({ start: ts, end: te }, v.duration)
+    const revisar = () => {
+      const r = rango()
+      v.loop = !r // sin recorte, el bucle nativo; con recorte, lo cierra este control (al llegar al fin vuelve al inicio)
+      const ir = siguienteDelBucle(v.currentTime, r)
+      if (ir !== null) { try { v.currentTime = ir } catch { /* sin metadatos todavía */ } }
+      if (r && v.ended) v.play?.()?.catch?.(() => {})
+    }
+    // Más fino que timeupdate (~4 por segundo): cada cuadro, donde el navegador lo ofrece; si no, timeupdate alcanza.
+    const porCuadro = () => { if (!vivo) return; revisar(); cb = v.requestVideoFrameCallback(porCuadro) }
+    if (typeof v.requestVideoFrameCallback === 'function') cb = v.requestVideoFrameCallback(porCuadro)
+    v.addEventListener('loadedmetadata', revisar)
+    v.addEventListener('timeupdate', revisar)
+    v.addEventListener('ended', revisar)
+    revisar()
+    return () => {
+      vivo = false
+      if (cb && typeof v.cancelVideoFrameCallback === 'function') v.cancelVideoFrameCallback(cb)
+      v.removeEventListener('loadedmetadata', revisar)
+      v.removeEventListener('timeupdate', revisar)
+      v.removeEventListener('ended', revisar)
+    }
+  }, [puede, fuente, ts, te])
   return (
-    <video className={cls} style={{ ...base, width: '100%', height: '100%', objectFit: 'cover' }} src={safeSrc(puede ? fuente : undefined)} poster={safeSrc(bg.poster)} preload="metadata" autoPlay loop muted playsInline />
+    <video ref={ref} className={cls} style={{ ...base, width: '100%', height: '100%', objectFit: 'cover' }} src={safeSrc(puede ? fuente : undefined)} poster={safeSrc(bg.poster)} preload="metadata" autoPlay loop muted playsInline />
   )
 }
