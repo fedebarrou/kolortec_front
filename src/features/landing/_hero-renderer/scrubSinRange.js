@@ -9,6 +9,7 @@
  * Volver para atrás sin Range (video 10-nov, defecto 3: con `scrollY` 0 quedaba en 29,91 s): medido en Chrome, sin Range `seekable` es [0,0] y
  * el blob falla por CORS (el storage local no manda `Access-Control-Allow-Origin`), así que la copia en memoria no llega. Entonces, si el scroll
  * quedó más de VUELTA_S detrás del video, se RECARGA (vuelve al cuadro 0, que sí se puede) y se avanza otra vez hasta el objetivo, a hasta 8x.
+ * Volver no recarga en cada paso del scroll: espera a que se suelte, y mientras alcanza el objetivo tapa el video (ver seguirSinSaltar).
  * Con Range nada de esto corre: el seek normal manda.
  */
 import { useEffect, useState } from "react";
@@ -63,39 +64,87 @@ const LLEGO_S = 0.04;
 export const VUELTA_S = 0.5;
 /** Una recarga a la vez: mientras vuelve a cargar, el scroll puede seguir subiendo sin pedir otra. */
 const ENTRE_RECARGAS_MS = 1200;
+/** Video 25-nov, defecto 4: cuánto tiene que quedarse quieto el scroll para darlo por soltado. Recién ahí se recarga: cada recarga baja el video entero. */
+export const QUIETO_MS = 250;
+
+/** Una foto del cuadro que se ve, encima del video, mientras recarga y avanza desde el cuadro 0: así no se ven los cuadros de antes del recorte. */
+export function congelarCuadro(video) {
+  const doc = video?.ownerDocument;
+  if (!doc?.createElement || !video.parentNode || !video.videoWidth || !video.videoHeight) return null;
+  const lienzo = doc.createElement("canvas");
+  lienzo.width = video.videoWidth;
+  lienzo.height = video.videoHeight;
+  try { lienzo.getContext("2d")?.drawImage(video, 0, 0, lienzo.width, lienzo.height); } catch { return null; }
+  lienzo.setAttribute("aria-hidden", "true");
+  lienzo.setAttribute("data-scrub-congelado", "");
+  lienzo.style.cssText = video.style?.cssText || "";
+  lienzo.style.pointerEvents = "none";
+  video.parentNode.insertBefore(lienzo, video.nextSibling);
+  return lienzo;
+}
 
 /**
  * Sin `Range` ni copia en memoria: avanza el video reproduciéndolo hasta `objetivo()` (en segundos, ya dentro del recorte) y lo pausa al llegar.
  * Mientras se pueda saltar no hace nada: el seek normal manda. Devuelve la función que lo apaga.
+ *
+ * Video 25-nov, defecto 4: al volver para atrás espera a que el scroll se suelte (QUIETO_MS) y recarga UNA vez, no en cada paso (antes bajaba el
+ * video entero hasta 3 veces por subida). Y desde que carga o recarga hasta llegar al objetivo, el video no se ve: encima queda la foto del último
+ * cuadro (al recargar) o el video transparente (al cargar por primera vez, cuando el cuadro 0 todavía está fuera del recorte).
  */
 export function seguirSinSaltar(video, objetivo, {
   cuadro = (f) => requestAnimationFrame(f),
   cancelar = (id) => cancelAnimationFrame(id),
   recargar = (v) => v.load?.(),
   ahora = () => (typeof performance !== "undefined" ? performance.now() : Date.now()),
+  congelar = congelarCuadro,
 } = {}) {
   if (!video) return () => {};
   let id = 0;
   let ultimaRecarga = -Infinity;
+  let visto = NaN;
+  let quietoDesde = 0;
+  let velo = null;
+  let oculto = false;
+  let alcanzando = true;
+  const tapar = (conFoto) => {
+    if (velo || oculto) return;
+    velo = conFoto ? congelar(video) : null;
+    if (!velo && video.style) { video.style.opacity = "0"; oculto = true; }
+  };
+  const destapar = () => {
+    if (velo) { velo.remove?.(); velo = null; }
+    if (oculto && video.style) video.style.opacity = "";
+    oculto = false;
+  };
   const paso = () => {
     id = cuadro(paso);
     if (!noDejaSaltar(video) || !video.duration || !Number.isFinite(video.duration)) return;
-    const falta = objetivo() - video.currentTime;
-    if (falta < -VUELTA_S && ahora() - ultimaRecarga > ENTRE_RECARGAS_MS) {
-      // El scroll volvió para atrás y no se puede saltar: al cuadro 0 recargando, y desde ahí se avanza hasta el objetivo.
-      ultimaRecarga = ahora();
-      video.pause?.();
+    const meta = objetivo();
+    const t = ahora();
+    if (!(Math.abs(meta - visto) < 0.02)) { visto = meta; quietoDesde = t; }
+    const falta = meta - video.currentTime;
+    if (falta < -VUELTA_S) {
+      // El scroll volvió para atrás y no se puede saltar: se queda en su cuadro (dentro del recorte) hasta que se suelte el scroll.
+      if (!video.paused) video.pause?.();
+      if (t - quietoDesde < QUIETO_MS || t - ultimaRecarga <= ENTRE_RECARGAS_MS) return;
+      ultimaRecarga = t;
+      tapar(true);
+      alcanzando = true;
       recargar(video);
       return;
     }
     if (falta > LLEGO_S) {
+      if (alcanzando) tapar(false);
       const velocidad = Math.min(VELOCIDAD_MAXIMA, Math.max(1, Math.round(falta * 2)));
       if (video.playbackRate !== velocidad) video.playbackRate = velocidad;
       if (video.paused) video.play?.()?.catch?.(() => {});
-    } else if (!video.paused) video.pause?.();
+    } else {
+      if (!video.paused) video.pause?.();
+      if (alcanzando) { alcanzando = false; destapar(); }
+    }
   };
   id = cuadro(paso);
-  return () => { cancelar(id); video.pause?.(); };
+  return () => { cancelar(id); video.pause?.(); destapar(); };
 }
 
 /** La fuente para el <video>: la misma `url`, o su copia en memoria si el servidor no deja saltar. Baja una sola vez por url. */
