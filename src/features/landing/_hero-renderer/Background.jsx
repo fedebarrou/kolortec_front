@@ -116,6 +116,30 @@ export function useTrasCargarLaPantalla() {
 }
 
 /**
+ * X (pilares 04-dic): `true` cuando el video está a una pantalla o menos de verse (y ya no vuelve a `false`). Hasta ahí no lleva fuente:
+ * a 390 la tienda bajaba 9-16 MB de videos que estaban debajo de la primera pantalla. Mira la `<section>` que lo contiene (no el video:
+ * en el scroll y en el carrusel los pasos se corren dentro de un contenedor recortado y el video puede estar «fuera» con la sección en
+ * pantalla). Con una pantalla de margen, el video atado al scroll empieza a cargar antes de llegar; el de arriba de todo, enseguida.
+ * Sin IntersectionObserver, `true` (como antes).
+ */
+export function useCercaDeVerse(ref, activo = true) {
+  const [cerca, setCerca] = useState(false)
+  useEffect(() => {
+    if (!activo || cerca) return undefined
+    const el = ref.current
+    if (!el) return undefined
+    if (typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') { setCerca(true); return undefined }
+    const blanco = (typeof el.closest === 'function' && el.closest('section')) || el
+    const io = new window.IntersectionObserver((entradas) => {
+      if (entradas.some((e) => e.isIntersecting)) { setCerca(true); io.disconnect() }
+    }, { rootMargin: '100% 0px 100% 0px' })
+    io.observe(blanco)
+    return () => io.disconnect()
+  }, [ref, activo, cerca])
+  return activo && cerca
+}
+
+/**
  * El recorte del bucle («solo, en bucle», informe 25-nov defecto 1): `{ desde, hasta }` en segundos, o null si no hay recorte que respetar
  * (sin trim, sin duración o el video entero) y alcanza con el `loop` nativo. Mismo saneo que ScrubVideo: 0 ≤ start < end ≤ 1.
  */
@@ -158,9 +182,11 @@ export function rangoQueSePuede(rango, seekable, trabado = false) {
 export const SALTO_TRABADO_MS = 1000
 
 function VideoDeFondo({ bg, cls, base, breakpoint, trim }) {
-  const puede = useTrasCargarLaPantalla()
-  const fuente = breakpoint === 'mobile' && bg.urlMobile ? bg.urlMobile : bg.url
   const ref = useRef(null)
+  // X (pilares 04-dic): el bucle debajo de la primera pantalla no baja nada hasta estar a una pantalla de verse.
+  const cerca = useCercaDeVerse(ref)
+  const puede = useTrasCargarLaPantalla() && cerca
+  const fuente = breakpoint === 'mobile' && bg.urlMobile ? bg.urlMobile : bg.url
   const ts = trim?.start, te = trim?.end
   useEffect(() => {
     const v = ref.current

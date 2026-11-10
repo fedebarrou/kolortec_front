@@ -10,7 +10,7 @@
  * el preview del admin (tiendita-front/app/(admin)/admin/hero-lab/_renderer/).
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Background, animProps, useTrasCargarLaPantalla } from "./Background";
+import { Background, animProps, useCercaDeVerse, useTrasCargarLaPantalla } from "./Background";
 import { cssColor, cssFontFamily, cssNumber, safeSrc } from "./cssSafe";
 import { ElementView, boxAt, msSalidaDelPaso } from "./elements/ElementView";
 import { createSnapEngine } from "./snapEngine";
@@ -105,7 +105,10 @@ function ScrubVideo({ url, poster, progress, trim, reverse }) {
   const seeking = useRef(false);
   const range = trim || { start: 0, end: 1 };
   // Ninguna fuente hasta que cargó la pantalla: antes el `breakpoint` todavía puede ser el de PC (ver useTrasCargarLaPantalla).
-  const puede = useTrasCargarLaPantalla();
+  // X (pilares 04-dic): debajo de la primera pantalla, ninguna fuente (`preload` queda en "none") hasta estar a una pantalla de verse:
+  // así empieza a cargar antes de llegar y el scrub no salta; el de la portada de arriba, enseguida.
+  const cerca = useCercaDeVerse(ref);
+  const puede = useTrasCargarLaPantalla() && cerca;
   // Sin `Range` no se puede saltar: `src` pasa a ser una copia en memoria (ver scrubSinRange.js).
   const src = useFuenteQueDejaSaltar(ref, puede ? url : null);
 
