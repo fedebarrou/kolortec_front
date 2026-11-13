@@ -1,5 +1,6 @@
 import { useHideBootScreen } from '../hooks/useHideBootScreen'
 import { useLanguage } from '../i18n/LanguageProvider'
+import Seo from '../seo/Seo'
 
 /**
  * MaintenancePage — página "en construcción" que se muestra cuando la cuenta despublicó su web
@@ -15,6 +16,7 @@ function MaintenancePage() {
 
   return (
     <main
+      data-pagina="en-construccion"
       style={{
         margin: 0,
         minHeight: '100vh',
@@ -27,6 +29,15 @@ function MaintenancePage() {
         padding: 24,
       }}
     >
+      {/* noindex: el cartel responde 200 y, sin esto, Google podía indexar «Sitio en construcción» como la home de
+          Kolortec y dejarlo ahí semanas después de publicar. Al publicarse la cuenta esta página deja de mostrarse y
+          cada página real trae su propio <Seo> indexable. */}
+      <Seo
+        title={`Kolortec — ${t('pages.maintenance', 'Sitio en construcción')}`}
+        description={t('footer.about', 'Iluminación profesional para live shows. Fabricación propia, soporte técnico local y repuestos en stock')}
+        path="/"
+        noindex
+      />
       <div style={{ maxWidth: 520 }}>
         <img
           alt="Kolortec"
