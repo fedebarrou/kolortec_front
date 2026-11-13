@@ -22,6 +22,8 @@
     "check:stock-barra": "node scripts/check-stock-barra.mjs",
     "check:innovaciones": "node scripts/check-innovaciones-grilla.mjs",
     "check:innovaciones-navegador": "node scripts/check-innovaciones-navegador.mjs",
+    "check:quitar-fondo": "node scripts/check-quitar-fondo.mjs",
+    "check:innovaciones-fondo": "node scripts/check-innovaciones-fondo-navegador.mjs",
     "check:media": "node scripts/check-media.mjs",
     "check:volver": "node scripts/check-volver-categoria.mjs",
     "check:filtros": "node scripts/check-filtros.mjs",

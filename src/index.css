@@ -1351,7 +1351,7 @@ html {
   }
 
   /* Imagen de la ficha (44×44) y del recuadro (84×84): cuadradas, enteras (object-fit: contain, lo pone
-     InnovacionIcono) sobre negro. */
+     InnovacionIcono) y SIN fondo: ni negro del sitio ni el del archivo (13-nov-2026), apoyadas sobre la ficha. */
   .kt-innov-img {
     flex: none;
     width: var(--innov-img-ficha);

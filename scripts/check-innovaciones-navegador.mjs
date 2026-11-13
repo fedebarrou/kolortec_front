@@ -154,7 +154,11 @@ async function abrir(browser, { slug, viewport, lang, antes }) {
   const cors = { 'access-control-allow-origin': BASE, 'access-control-allow-credentials': 'true', 'access-control-allow-methods': 'GET,POST,OPTIONS' }
   page.on('request', (req) => {
     const url = req.url()
-    if (url === IMG_URL) return req.respond({ status: 200, contentType: 'image/png', body: PNG })
+    // InnovacionIcono pide primero la imagen con `?cors=<host>` para leerle los píxeles. Acá se contesta SIN la cabecera
+    // de CORS (como en localhost): ese pedido falla y se cae al archivo tal cual, que es lo que este check mide. Antes
+    // sólo se interceptaba la url exacta y el pedido con `?cors=` salía a la red (joan REG-003). La imagen ya sin fondo
+    // la prueba check-innovaciones-fondo-navegador.mjs.
+    if (url === IMG_URL || url.startsWith(IMG_URL + '?')) return req.respond({ status: 200, contentType: 'image/png', body: PNG })
     if (url === IMG_404 || url.startsWith(IMG_404 + '?')) return req.respond({ status: 404, contentType: 'text/plain', body: 'no está' })
     if (!/\/api\/public\//.test(url) && HOST_PROD.test(url)) {
       prodLeak.push(url)
