@@ -149,7 +149,7 @@ async function abrir(browser, { slug, viewport, lang, antes }) {
   const page = await browser.newPage()
   await page.setViewport(viewport)
   if (antes) await page.evaluateOnNewDocument(antes)
-  if (lang) await page.evaluateOnNewDocument((l) => window.localStorage.setItem('kolortec-lang', l), lang)
+  if (lang) await page.evaluateOnNewDocument((l) => window.localStorage.setItem('kolortec-lang-elegido', l), lang)
   await page.setRequestInterception(true)
   const cors = { 'access-control-allow-origin': BASE, 'access-control-allow-credentials': 'true', 'access-control-allow-methods': 'GET,POST,OPTIONS' }
   page.on('request', (req) => {

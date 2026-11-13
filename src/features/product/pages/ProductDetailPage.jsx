@@ -34,6 +34,7 @@ import { vienesDeSuCategoria } from '../helpers/origenFicha.js'
 import StockBarra from '../../../shared/components/StockBarra'
 import { SITE } from '../../../shared/seo/Seo'
 import { productJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
+import { tituloSeoProducto } from '../../../shared/seo/titulo-producto'
 import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
 
 function formatPrice(value, moneda) {
@@ -134,11 +135,15 @@ function ProductDetailPage() {
   // Si tocan la flecha ANTES de que lleguen, se espera la lista con un tope corto (CATEGORIAS_ESPERA_MS) y, si no llegó a
   // tiempo, se sigue con la categoría del producto: sin la espera, un producto huérfano mandaba a /products/<inexistente>.
   const categoriasRef = useRef({ estado: 'cargando', slugs: null, promesa: null })
+  // slug → nombre de la categoría, para el título SEO y las migas (el producto sólo trae el slug). Es estado y no
+  // referencia porque el <title> tiene que volver a pintarse cuando llega la lista.
+  const [nombresCategoria, setNombresCategoria] = useState(null)
   useEffect(() => {
     let mounted = true
     categoriasRef.current.promesa = loadCategories().then(({ list, available }) => {
       if (!mounted) return
       categoriasRef.current = { ...categoriasRef.current, estado: available ? 'ok' : 'caida', slugs: available ? new Set(list.map((c) => c.slug)) : null }
+      if (available) setNombresCategoria(new Map(list.map((c) => [c.slug, c.name || ''])))
     })
     return () => { mounted = false }
   }, [])
@@ -693,16 +698,19 @@ function ProductDetailPage() {
     category: product.category,
     url: productUrl,
   })
+  // Nombre de la categoría (si la lista ya llegó y la categoría existe): entra en el <title> y en las migas.
+  const categoriaNombre = (product.category && nombresCategoria?.get(String(product.category))) || ''
   const breadcrumbLd = breadcrumbJsonLd([
     { name: 'Inicio', url: `${SITE}/` },
     { name: 'Productos', url: `${SITE}/products` },
+    ...(categoriaNombre ? [{ name: categoriaNombre, url: `${SITE}/products/${product.category}` }] : []),
     { name: product.name, url: productUrl },
   ])
 
   return (
     <section className="kt-detail-page" style={{ '--kt-detail-top': `${stickyTop}px` }}>
       <Seo
-        title={product.seoTitle}
+        title={tituloSeoProducto(product.name, categoriaNombre)}
         description={product.seoDescription}
         path={productPath}
         image={product.ogImage}

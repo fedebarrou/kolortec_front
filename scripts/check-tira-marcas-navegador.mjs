@@ -148,6 +148,70 @@ async function caso(browser, nombre, marcas, viewport) {
   await page.close()
 }
 
+// ---- sin saltos en marcha --------------------------------------------------------------------------------
+// Segundo pedido de Fedev (13-nov-2026): «sigue habiendo saltos de los elementos, como un corte». Con muchas marcas la
+// mayoría queda fuera de pantalla hacia los costados; con loading=lazy cada logo cargaba recién al asomarse, sin ancho
+// reservado, y aparecía de golpe empujando a los que ya se veían. Dos cosas se miran:
+//   · con la tira todavía DEBAJO de la pantalla ya están cargados todos los logos (los de los costados también);
+//   · ya en pantalla, cuadro a cuadro durante unos segundos, ningún item visible cambia de ancho ni se corre distinto
+//     que el resto de la pista.
+const muchasMarcas = Array.from({ length: 28 }, (_, i) => {
+  const k = ['ancho', 'cuadrado', 'alto'][i % 3] // sin el LENTO: acá no se prueba la demora sino la carga anticipada
+  return { id: `m${i}`, nombre: `Marca ${i}`, logo_url: `https://logos.test/${k}.svg?n=${i}`, link: null, orden: i + 1, escala: 1, name_position: 'no' }
+})
+
+async function casoSinSaltos(browser, viewport) {
+  console.log(`\nmuchas marcas, sin saltos en marcha · ${viewport.width}px`)
+  const page = await abrir(browser, { marcas: muchasMarcas, viewport })
+  // la tira queda 500px por debajo del borde inferior de la pantalla
+  const pos = await page.evaluate(() => {
+    const s = document.querySelector('.kt-partners-strip')
+    const top = s.getBoundingClientRect().top + scrollY
+    scrollTo(0, Math.max(0, top - innerHeight - 500))
+    return { top, scrollY, alto: innerHeight }
+  })
+  await espera(2500)
+  const antes = await page.evaluate(() => {
+    const s = document.querySelector('.kt-partners-strip')
+    const imgs = [...s.querySelectorAll('img')]
+    return { fueraDePantalla: s.getBoundingClientRect().top >= innerHeight, imgs: imgs.length, cargadas: imgs.filter((i) => i.complete && i.naturalWidth > 0).length, estado: s.dataset.logos }
+  })
+  ok(antes.fueraDePantalla, 'la tira todavía no entró en pantalla', JSON.stringify(pos))
+  ok(antes.imgs >= muchasMarcas.length * 2, 'la tira tiene todas las marcas y sus copias', `${antes.imgs} imágenes`)
+  ok(antes.cargadas === antes.imgs, 'antes de verse ya cargaron TODOS los logos (también los de los costados)', `${antes.cargadas}/${antes.imgs} · ${antes.estado}`)
+
+  await page.evaluate(() => document.querySelector('.kt-partners-strip').scrollIntoView({ block: 'center' }))
+  const r = await page.evaluate((ms) => new Promise((fin) => {
+    const track = document.querySelector('.kt-partners-strip .kt-marquee-track')
+    const items = [...track.children]
+    let previo = null
+    let cuadros = 0
+    const saltos = []
+    const t0 = performance.now()
+    const paso = (ahora) => {
+      const xs = items.map((el) => { const b = el.getBoundingClientRect(); return [b.x, b.width] })
+      if (previo) {
+        const ds = xs.map((v, k) => v[0] - previo[k][0]).sort((a, b) => a - b)
+        const pista = ds[Math.floor(ds.length / 2)] // lo que se movió la pista entera en este cuadro
+        xs.forEach((v, k) => {
+          const visible = v[0] < innerWidth && v[0] + v[1] > 0
+          const corrimiento = v[0] - previo[k][0] - pista
+          const cambio = v[1] - previo[k][1]
+          if (visible && (Math.abs(corrimiento) > 1 || Math.abs(cambio) > 1)) saltos.push(`#${k} a los ${Math.round(ahora - t0)}ms: se corre ${corrimiento.toFixed(1)}px, ancho ${cambio.toFixed(1)}px`)
+        })
+      }
+      previo = xs
+      cuadros += 1
+      if (ahora - t0 < ms) requestAnimationFrame(paso)
+      else fin({ cuadros, saltos })
+    }
+    requestAnimationFrame(paso)
+  }), 6000)
+  ok(r.cuadros > 60, 'se siguió la tira cuadro a cuadro', `${r.cuadros} cuadros`)
+  ok(r.saltos.length === 0, 'en 6 segundos ningún item visible salta ni cambia de ancho', r.saltos.slice(0, 4).join(' · '))
+  await page.close()
+}
+
 // ---- corrida ---------------------------------------------------------------------------------------------
 let browser = null
 try {
@@ -156,6 +220,7 @@ try {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     await caso(browser, 'marcas con logo', marcasConLogo, viewport)
     await caso(browser, 'marcas de sólo texto', marcasSinLogo, viewport)
+    await casoSinSaltos(browser, viewport)
   }
   ok(prodLeak.length === 0, 'PROD_LEAK: ningún pedido salió hacia producción', prodLeak.slice(0, 3).join(' · '))
 } catch (e) {

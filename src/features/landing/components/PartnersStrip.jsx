@@ -1,4 +1,4 @@
-import { useMemo, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
@@ -64,7 +64,7 @@ const useProporcion = (src) => useSyncExternalStore(suscribir, () => proporcione
  * carga no se conoce la proporción: se pinta a la altura base (83 × escala) y al
  * cargar toma su medida final.
  */
-function Mark({ logo, alt = '' }) {
+function Mark({ logo, alt = '', cargarYa = false }) {
   const src = logo.logo
   const proporcion = useProporcion(src)
   if (src) {
@@ -74,7 +74,7 @@ function Mark({ logo, alt = '' }) {
         className="kt-clientlogo-img"
         src={src}
         alt={alt}
-        loading="lazy"
+        loading={cargarYa ? 'eager' : 'lazy'}
         decoding="async"
         style={{ width: w ?? 'auto', height: h }}
         onLoad={(e) => {
@@ -109,10 +109,35 @@ function PartnersStrip({ logos }) {
   // más rápida cuantas más marcas hubiera cargadas.
   const duration = marqueeDuration(clientLogos.length, 7, 38)
 
-  if (clientLogos.length === 0) return null
+  // Los logos se piden TODOS JUNTOS cuando la tira está por entrar en pantalla, no de a uno al asomarse.
+  // Un logo sin cargar no tiene ancho (no se conoce su proporción); con `loading="lazy"` cada uno cargaba recién al
+  // llegar al borde y aparecía de golpe —hasta 250px— empujando a los vecinos que ya se veían: «saltos de los
+  // elementos» (Fedev, 13-nov-2026; medido cuadro a cuadro contra las 43 marcas reales). Con la tira todavía a
+  // ~1500px de la pantalla se cargan todos, y cuando se la ve ya tienen su medida final.
+  // No se piden al abrir la página: la tira está al fondo de la home y serían decenas de imágenes compitiendo con el
+  // hero. Sin IntersectionObserver (navegador viejo, pre-render) se cargan de entrada.
+  const seccionRef = useRef(null)
+  const [cerca, setCerca] = useState(() => typeof IntersectionObserver === 'undefined')
+  const hayMarcas = clientLogos.length > 0
+  useEffect(() => {
+    const el = seccionRef.current
+    if (!el || cerca) return undefined
+    const io = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) setCerca(true)
+      },
+      { rootMargin: '1500px 0px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [cerca, hayMarcas])
+
+  if (!hayMarcas) return null
 
   return (
     <section
+      ref={seccionRef}
+      data-logos={cerca ? 'cargando-todos' : 'en-espera'}
       className="kt-partners-strip w-full bg-[#050505] px-6 pb-[clamp(56px,7vw,96px)] lg:px-40"
       aria-label={t('landing.partners.aria', 'Marcas que trabajan con Kolortec')}
     >
@@ -133,7 +158,7 @@ function PartnersStrip({ logos }) {
             const { mostrarNombre, itemClass, alt, title, ariaLabel } = decidirNombreMarca(logo)
             const contenido = (
               <>
-                <Mark logo={logo} alt={alt} />
+                <Mark logo={logo} alt={alt} cargarYa={cerca} />
                 {mostrarNombre && <span>{logo.name}</span>}
               </>
             )
