@@ -150,7 +150,7 @@ function FooterSection() {
             loading="lazy"
             decoding="async"
           />
-          <p>{t('footer.about', 'Professional lighting for live shows. In-house manufacturing, local technical support and spare parts in stock')}</p>
+          <p>{sinTraducirLiveShow(t('footer.about', 'Professional lighting for live shows. In-house manufacturing, local technical support and spare parts in stock'))}</p>
         </div>
 
         {contactos.length > 0 ? (
@@ -189,7 +189,7 @@ function FooterSection() {
           <ul>
             {supportItems.map((it) => (
               <li key={`footer-support-${it.key}`}>
-                {it.to ? <Link to={it.to}>{it.label}</Link> : <span>{it.label}</span>}
+                {it.to ? <Link to={it.to}>{it.label}</Link> : <span translate={it.key === 'liveshow' ? 'no' : undefined}>{it.label}</span>}
               </li>
             ))}
           </ul>
@@ -235,6 +235,15 @@ function FooterSection() {
       />
     </footer>
   )
+}
+
+// «Live show» no se traduce nunca (pedido de Fedev, 13-nov-2026). En translations.js ya va
+// igual en los dos idiomas; esto lo marca translate="no" para que tampoco lo cambie el
+// traductor automático del navegador.
+function sinTraducirLiveShow(texto) {
+  return String(texto).split(/(live\s*shows?)/i).map((parte, i) => (
+    i % 2 ? <span key={i} translate="no">{parte}</span> : parte
+  ))
 }
 
 // Lista blanca, no lista negra: con `%` un email como a@b.com%3Fbcc%3Dx@y.com

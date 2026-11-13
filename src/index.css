@@ -547,10 +547,17 @@ html {
     );
   }
 
+  /* La separación entre items es una VARIABLE porque el keyframe la necesita: una
+     vuelta = media pista + medio gap (ver kt-marquee-scroll). Si el gap se cambia
+     con `gap:` a secas, el keyframe sigue restando el valor viejo y la tira pega
+     un salto en cada vuelta — pasaba en celular (gap 0.6rem contra 0.25rem fijos).
+     Para cambiar la separación se cambia --kt-marquee-gap, nunca `gap`. Y el
+     track NO lleva padding horizontal: entra en el -50% y corre la costura. */
   .kt-marquee-track {
+    --kt-marquee-gap: 0.5rem;
     display: flex;
     width: max-content;
-    gap: 0.5rem;
+    gap: var(--kt-marquee-gap);
     animation: kt-marquee-scroll var(--kt-marquee-duration, 68s) linear infinite;
   }
 
@@ -631,10 +638,6 @@ html {
     min-height: 150px;
     font-size: 0.8rem;
     letter-spacing: 0.2em;
-  }
-
-  .kt-marquee-item-clientlogo:first-child {
-    border-left: none;
   }
 
   .kt-marquee-item-clientlogo:hover {
@@ -2909,7 +2912,7 @@ html {
       transform: translateX(0);
     }
     100% {
-      transform: translateX(calc(-50% - 0.25rem));
+      transform: translateX(calc(-50% - var(--kt-marquee-gap, 0.5rem) / 2));
     }
   }
 
@@ -3719,8 +3722,7 @@ html {
        movimiento. Se deja el track animado y el contenedor recortado, que es lo
        que hace que se lea como un carrusel. */
     .kt-marquee-track {
-      gap: 0.6rem;
-      padding-inline: 0.25rem;
+      --kt-marquee-gap: 0.6rem;
     }
   }
 

@@ -41,7 +41,7 @@ export function useMarqueeNudge(containerRef) {
     const duracion = Number(anim.effect?.getComputedTiming?.().duration) || 0
     if (!duracion) return
     // Recorrido de una vuelta del keyframe: la mitad del track más medio gap
-    // (translateX(calc(-50% - 0.25rem))).
+    // (translateX(calc(-50% - var(--kt-marquee-gap) / 2))).
     const recorrido = track.scrollWidth / 2 + gap / 2
     if (recorrido <= 0) return
     const paso = ((item.getBoundingClientRect().width + gap) / recorrido) * duracion * dir + restanteRef.current

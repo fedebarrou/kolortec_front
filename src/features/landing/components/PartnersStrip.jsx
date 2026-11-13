@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
@@ -37,10 +37,25 @@ function renderShape(shape, index) {
   }
 }
 
-// Proporción natural ya medida por logo. La tira REPITE cada marca varias veces: la
-// primera copia que carga la anota y las demás nacen con la medida final, sin
-// saltar de tamaño.
+// Proporción natural ya medida por logo, COMPARTIDA entre todas las copias. La tira
+// REPITE cada marca varias veces y el loop sólo es invisible si cada copia mide
+// exactamente lo mismo que las demás en todo momento. Antes cada copia guardaba su
+// propia medida al cargar SU imagen — y las copias son loading=lazy: las que están
+// fuera de pantalla no cargan, se quedaban con otro ancho y la vuelta del keyframe
+// caía corrida (hasta ~100px: el «corte» entre el fin y el inicio). Ahora la primera
+// copia que carga avisa y TODAS toman la medida final en el mismo render.
 const proporciones = new Map()
+const oyentes = new Set()
+const suscribir = (fn) => {
+  oyentes.add(fn)
+  return () => oyentes.delete(fn)
+}
+function anotarProporcion(src, r) {
+  if (proporciones.get(src) === r) return
+  proporciones.set(src, r)
+  oyentes.forEach((fn) => fn())
+}
+const useProporcion = (src) => useSyncExternalStore(suscribir, () => proporciones.get(src) ?? null, () => null)
 
 /**
  * El logo ya no mide un alto fijo: se iguala por ÁREA con medirLogo() (la misma
@@ -51,7 +66,7 @@ const proporciones = new Map()
  */
 function Mark({ logo, alt = '' }) {
   const src = logo.logo
-  const [proporcion, setProporcion] = useState(() => proporciones.get(src) ?? null)
+  const proporcion = useProporcion(src)
   if (src) {
     const { w, h } = medirLogo({ proporcion, escala: logo.escala, contexto: 'tira' })
     return (
@@ -64,10 +79,7 @@ function Mark({ logo, alt = '' }) {
         style={{ width: w ?? 'auto', height: h }}
         onLoad={(e) => {
           const r = proporcionNatural(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
-          if (r) {
-            proporciones.set(src, r)
-            setProporcion(r)
-          }
+          if (r) anotarProporcion(src, r)
         }}
       />
     )
@@ -87,7 +99,7 @@ function PartnersStrip({ logos }) {
   const clientLogos = useMemo(() => (Array.isArray(logos) ? logos : []), [logos])
   // La lista se REPITE hasta llenar la tira (par de veces: el keyframe desplaza
   // -50% y la segunda mitad tiene que ser idéntica a la primera para que la
-  // costura no se vea). Duplicarla una sola vez alcanzaba con muchas marcas, pero
+  // costura no se vea; lo prueba scripts/check-tira-marcas-navegador.mjs). Duplicarla una sola vez alcanzaba con muchas marcas, pero
   // con 3 o 4 cargadas el track medía menos que la pantalla y la tira giraba medio
   // vacía. De última las marcas se repiten, que es lo que se espera de un carrusel
   // de logos. Las copias son decorativas (aria-hidden): no se leen N veces.
