@@ -5,7 +5,21 @@
 
 ## En producción
 
-- **Código desplegado:** `9830c6b` (main), el 2026-11-14 00:01Z, deploy **20261113** (sólo `kolortec_web`; **sin suite
+- **Código desplegado:** `be670b1` (main), el 2026-11-14 20:39Z, deploy **20261114** (sólo `kolortec_web`, `--no-deps`;
+  **desplegado sin suite completa, por decisión de Fedev**; vite build local verde). Trae `0d4320c` (innovaciones siempre con
+  recuadro + grilla; «Liveshow» sin traducir y debajo de relacionados), `e2a506c` (flechas de la foto fijas) y `be670b1`
+  (tilde en «Especificación Técnica»). Antes de tocar: `/opt/kolortec` idéntico a `git archive 9830c6b` (693 archivos,
+  sha256 uno a uno; sin `.env` ni nada sólo-VPS); disco 77 %. tgz `/opt/_upload/kolortec-20261114-lf.tar.gz` sha256
+  `805b42bc…` (67.906.845 B, igual local y VPS; contenido == `git archive be670b1`, 694 archivos). Imagen `779bfeab5942`
+  (antes `c0d38a28aaec` = `9830c6b`, etiquetada `kolortec-web:pre-20261114`). Restarts 0, `nginx -t` OK, 0 errores en el log,
+  Caddyfile sha256 `344df18a…` igual. Afuera: `/` 200 cartel 1510 B idéntico byte a byte al de ayer; `/?preview=x` 200 pide
+  `index-DPVQEnkv.js` (antes `index-DlFlWmB2.js`); el texto «Especificación Técnica» está en el chunk
+  `LanguageProvider-BUcaWK8S.js` (200, 2 apariciones), no en `index-*.js`; `/rentals?preview=x` 301 → `/sumate?preview=x`.
+  Ventana `peligro.py` 20:36:00Z → 20:41:25Z, 6 usos en `~/.claude/pinky-produccion-registro.jsonl`. Disco después 78 %.
+  **Rollback 20261114:** `mv /opt/kolortec /opt/kolortec.fallido-20261114 && mv /opt/kolortec.prev-20261114 /opt/kolortec
+  && docker tag kolortec-web:pre-20261114 kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
+  --no-build kolortec_web` (vuelve a `c0d38a28aaec`, pide `index-DlFlWmB2.js`).
+- **Deploy anterior:** `9830c6b` (main), el 2026-11-14 00:01Z, deploy **20261113** (sólo `kolortec_web`; **sin suite
   completa, por decisión de Fedev**; vite build, `nginx -t` y redirecciones probados en local). Trae las 8 redirecciones 301
   de `deploy/nginx-spa.conf` (+ `absolute_redirect off`, Cache-Control), quitafondo de innovaciones, tira de marcas y SEO.
   Imagen `c0d38a28aaec` (antes `1ef922bb4900` = `fcff78b`). Afuera: `/?preview=x` 200 pide `index-DlFlWmB2.js` (antes
@@ -18,10 +32,11 @@
   **Rollback 20261113:** `mv /opt/kolortec /opt/kolortec.fallido-20261113 && mv /opt/kolortec.prev-20261113 /opt/kolortec
   && docker tag kolortec-web:pre-20261113 kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
   --no-build kolortec_web` (vuelve a pedir `index-BI97VjFz.js`). Detalle: `tiendita-back/docs/BITACORA.md` (2026-11-14).
-- **Restos de rollback en el VPS (no se borró nada):** tags `kolortec-web:pre-20261113/-20261106/-20261026/-20261020d/-20261020b/-20261014b`,
-  carpetas `/opt/kolortec.prev-` con esos mismos sufijos, y `/opt/_upload/kolortec-20261106-lf.tar.gz` y
-  `kolortec-20261113-lf.tar.gz`. La limpieza queda para otra sesión, fuera del modo automático.
-- **Deploy anterior:** `fcff78b`, el 2026-11-06 14:07Z, deploy **20261106** (sólo `kolortec_web`; **sin suite completa,
+- **Restos de rollback en el VPS (no se borró nada):** tags `kolortec-web:pre-20261114/-20261113/-20261106/-20261026/-20261020d/-20261020b/-20261014b`,
+  carpetas `/opt/kolortec.prev-` con esos mismos sufijos, y en `/opt/_upload` los tgz `kolortec-20261106-lf.tar.gz`,
+  `kolortec-20261113-lf.tar.gz` y `kolortec-20261114-lf.tar.gz`. Disco 78 % (22 GB libres de 96). La limpieza queda para
+  otra sesión, fuera del modo automático.
+- **Antes:** `fcff78b`, el 2026-11-06 14:07Z, deploy **20261106** (sólo `kolortec_web`; **sin suite completa,
   por decisión de Fedev; vite build local verde**): logo del navbar a 24px (`HeaderSection.jsx:449` `h-8 md:h-9` → `h-6`).
   Imagen `1ef922bb4900` (antes `9d372b618818` = `1223dfd`). Afuera: `/?preview=x` 200 pide `index-BI97VjFz.js` (antes
   `index-BSDvYkkP.js`) con 1 × `h-6 w-auto object-contain` y 0 × `h-8 md:h-9`; `/` sigue con el cartel (1510 B, igual byte a
