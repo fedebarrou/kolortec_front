@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import MediaViewer from './MediaViewer'
-import { contarYFiltrar, formatearDuracion, hayMedia, mostrarVerLos, videoFrameSrc } from '../helpers/mediaHelpers'
+import { NOMBRE_LIVESHOW, contarYFiltrar, formatearDuracion, hayMedia, mostrarVerLos, videoFrameSrc } from '../helpers/mediaHelpers'
 
 /**
- * ProductMedia — «En obra»: las fotos y videos de trabajos reales ASOCIADOS a este
+ * ProductMedia — «Liveshow» (antes «En obra»): las fotos y videos de trabajos reales ASOCIADOS a este
  * producto (GET /public/galeria?producto_id=X → contentService.getProductMedia).
  *
  * Mockup C congelado: docs/diseno/mockups/2026-10-17-media-producto/c.html. Decisión,
@@ -46,12 +46,12 @@ function ProductMedia({ items, productName, consultaHref }) {
     { id: 'image', label: t('productDetail.media.filterPhotos', 'Fotos'), n: fotos },
     { id: 'video', label: t('productDetail.media.filterVideos', 'Videos'), n: videos },
   ]
-  const titulo = t('productDetail.media.title', 'En obra')
+  const titulo = NOMBRE_LIVESHOW // no se traduce: ver mediaHelpers
 
   return (
     <section className="kt-media kt-detail-tech-shell kt-detail-shell-short kt-detail-anim" id="media" aria-label={titulo}>
       <h3 className="kt-detail-tech-title text-[clamp(2.1rem,3.3vw,3.1rem)] leading-[1.05]">
-        {titulo}
+        <span translate="no">{titulo}</span>
         <span className="kt-title-dot">.</span>
       </h3>
       <p className="kt-detail-downloads-copy mt-4 text-[clamp(0.95rem,1.4vw,1.15rem)]">

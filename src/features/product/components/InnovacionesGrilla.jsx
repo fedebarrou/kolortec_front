@@ -4,8 +4,8 @@ import { POR_PAGINA, paginar, paginaDesdeScroll, conGuiones, primeraConDescripci
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 
 /**
- * InnovacionesGrilla — las innovaciones de la ficha cuando son MUCHAS (5 o más; hasta 4 va la lista de
- * siempre, la decide ProductDetailPage con usaGrilla). Mockup docs/diseno/mockups/2026-10-21-innovaciones-imagen,
+ * InnovacionesGrilla — las innovaciones de la ficha, SIEMPRE (desde una sola; hasta el 14-nov-2026 las de 4 o
+ * menos iban en una lista, ver usaGrilla). Mockup docs/diseno/mockups/2026-10-21-innovaciones-imagen,
  * opción C1 «Panel de detalle ARRIBA» (elegida por Fedev, 21-oct-2026); reemplaza al globo flotante.
  *
  * Un solo DOM, dos presentaciones por CSS (.kt-innov-* en index.css, corte en 768px como el resto del repo):
@@ -44,6 +44,13 @@ const plantilla = (texto, vars) => texto.replace(/\{(\w+)\}/g, (_, k) => String(
 
 // El contenido de las innovaciones se carga SIEMPRE en español (aunque la página esté en otro idioma): se silabea
 // siempre y esos elementos llevan lang="es"; la interfaz de alrededor (textos, hint) sigue con el idioma de la página.
+// Texto de ayuda con la cantidad. Con UNA sola innovación (desde el 14-nov-2026 también va en grilla) se dice en
+// singular: «1 innovación», «1 innovation» — sin sumar una clave de traducción por cada variante.
+function ayuda(texto, n) {
+  const frase = plantilla(texto, { n })
+  return n === 1 ? frase.replace(/^1 innovaciones/, '1 innovación').replace(/^1 innovations/, '1 innovation') : frase
+}
+
 const titulo = conGuiones
 const inicialDe = (texto) => Array.from((texto || '').trim())[0]?.toUpperCase() || '·'
 
@@ -52,7 +59,7 @@ function Imagen({ item, clase }) {
   // Imagen rota (404, red): cae a la inicial, igual que sin imagen. Se guarda CUÁL falló, así un cambio de imagen reintenta.
   const [rota, setRota] = useState(null)
   if (item.image && rota !== item.image) {
-    return <InnovacionIcono src={item.image} tamano={clase} relleno="" cuadrado onError={() => setRota(item.image)} />
+    return <InnovacionIcono src={item.image} tamano={clase} onError={() => setRota(item.image)} />
   }
   return (
     <span className={`kt-innov-inicial ${clase}`} aria-hidden="true">
@@ -178,23 +185,26 @@ function InnovacionesGrilla({ items, arriba: arribaProp }) {
   return (
     <div ref={raizRef} className={`kt-innov kt-reveal-item${clavable ? ' kt-innov--clavable' : ''}`} lang={lang}>
       <p className="kt-innov-hint">
-        {itemSel ? (
+        {itemSel && items.length > 1 ? (
           <>
             <span className="kt-innov-hint-mouse">
-              {plantilla(t('productDetail.innovations.hintMouse', '{n} innovaciones · pasá el mouse para ver el detalle'), { n: items.length })}
+              {ayuda(t('productDetail.innovations.hintMouse', '{n} innovaciones · pasá el mouse para ver el detalle'), items.length)}
             </span>
             <span className="kt-innov-hint-tap">
-              {plantilla(t('productDetail.innovations.hintTap', '{n} innovaciones · tocá una para ver el detalle'), { n: items.length })}
+              {ayuda(t('productDetail.innovations.hintTap', '{n} innovaciones · tocá una para ver el detalle'), items.length)}
             </span>
             <span className="kt-innov-hint-tactil">
-              {plantilla(t('productDetail.innovations.hintTouch', '{n} innovaciones · deslizá para ver más · tocá una para ver el detalle'), { n: items.length })}
+              {/* Con una sola página no hay nada que deslizar (pasa siempre con 6 o menos): se invita sólo a tocar. */}
+              {total > 1
+                ? ayuda(t('productDetail.innovations.hintTouch', '{n} innovaciones · deslizá para ver más · tocá una para ver el detalle'), items.length)
+                : ayuda(t('productDetail.innovations.hintTap', '{n} innovaciones · tocá una para ver el detalle'), items.length)}
             </span>
           </>
         ) : celu && total > 1 ? (
-          // Sin ninguna descripción no hay detalle que ver: sólo se cuenta (y, si el carrusel tiene más páginas, se invita a deslizar).
-          plantilla(t('productDetail.innovations.hintSwipe', '{n} innovaciones · deslizá para ver más'), { n: items.length })
+          // Sin ninguna descripción no hay detalle que ver, y con una sola innovación el detalle ya está a la vista: sólo se cuenta (y, si el carrusel tiene más páginas, se invita a deslizar).
+          ayuda(t('productDetail.innovations.hintSwipe', '{n} innovaciones · deslizá para ver más'), items.length)
         ) : (
-          plantilla(t('productDetail.innovations.hintCount', '{n} innovaciones'), { n: items.length })
+          ayuda(t('productDetail.innovations.hintCount', '{n} innovaciones'), items.length)
         )}
       </p>
 

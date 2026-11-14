@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
-import { videoFrameSrc } from '../helpers/mediaHelpers'
+import { NOMBRE_LIVESHOW, videoFrameSrc } from '../helpers/mediaHelpers'
 
 /**
- * MediaViewer — el visor de «En obra» (mockup C: lightbox con tira de miniaturas).
+ * MediaViewer — el visor de «Liveshow» (antes «En obra»; mockup C: lightbox con tira de miniaturas).
  *
  * Capa a pantalla completa. Se cierra con Esc, la X o tocando afuera; flechas del
  * teclado, botones y deslizar pasan de ítem (dentro del filtro activo, con vuelta).
@@ -112,7 +112,7 @@ function MediaViewer({ items, index, onIndex, onClose, consultaHref, label }) {
       className="kt-media-viewer"
       role="dialog"
       aria-modal="true"
-      aria-label={`${label} · ${t('productDetail.media.title', 'En obra')}`}
+      aria-label={`${label} · ${NOMBRE_LIVESHOW}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}

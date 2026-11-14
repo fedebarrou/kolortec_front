@@ -112,7 +112,7 @@ const productoReal = { ...producto(9), id: 'real9', slug: 'real9', innovaciones:
 // Las 9 reales + 5 fotos: arma la galería (#gallery, las miniaturas debajo de la imagen principal), que es lo que en producción
 // quedaba POR ENCIMA del globo viejo (21-oct). Todas con la misma URL de prueba, que el interceptor contesta con un PNG.
 const productoGaleria = { ...productoReal, id: 'gal9', slug: 'gal9', img_url: IMG_URL, media: Array.from({ length: 5 }, (_, i) => ({ id: `m${i}`, kind: 'image', tipo: 'imagen', url: IMG_URL })) }
-const PRODUCTOS = [...[4, 5, 13, 20].map(producto), productoRoto, productoSinDesc, productoReal, productoGaleria]
+const PRODUCTOS = [...[1, 4, 5, 13, 20].map(producto), productoRoto, productoSinDesc, productoReal, productoGaleria]
 // ficha n-ésima de las que son botón (las innovaciones 3.ª y 4.ª no lo son) → número de innovación (1-based)
 const numeroDeBoton = (k) => (k < 2 ? k + 1 : k + 3)
 const descEsperada = (k) => (numeroDeBoton(k) === 9 ? DESC_LARGA.trim() : `Descripción de la innovación ${numeroDeBoton(k)}.`)
@@ -160,6 +160,14 @@ async function abrir(browser, { slug, viewport, lang, antes }) {
     // la prueba check-innovaciones-fondo-navegador.mjs.
     if (url === IMG_URL || url.startsWith(IMG_URL + '?')) return req.respond({ status: 200, contentType: 'image/png', body: PNG })
     if (url === IMG_404 || url.startsWith(IMG_404 + '?')) return req.respond({ status: 404, contentType: 'text/plain', body: 'no está' })
+    // El traductor (casos en inglés) se contesta acá con un 503: no es una fuga —nunca sale— y contarlo como tal dejaba
+    // el check en rojo desde que hay casos con lang=en. Con el 503 la ficha prueba su traductor de RESPALDO (MyMemory,
+    // dynamicTranslationService.js): también se contesta acá, así el check no depende de un tercero ni le manda nada
+    // (sekh SEC-001 / joan REG-001). Sin ninguno de los dos, la ficha deja el texto original.
+    if (/^https:\/\/translate\.soytiendita\.store\//.test(url) || /^https:\/\/api\.mymemory\.translated\.net\//.test(url)) {
+      if (req.method() === 'OPTIONS') return req.respond({ status: 204, headers: cors, body: '' })
+      return req.respond({ status: 503, headers: cors, contentType: 'application/json', body: '{}' })
+    }
     if (!/\/api\/public\//.test(url) && HOST_PROD.test(url)) {
       prodLeak.push(url)
       return req.abort()
@@ -261,22 +269,31 @@ async function main() {
   await levantar()
   const browser = await puppeteer.launch({ channel: 'chrome', headless: true })
   try {
-    console.log('4 innovaciones → lista de siempre')
-    let page = await abrir(browser, { slug: 'p4', viewport: COMPU })
-    ok((await page.$('.kt-innov')) === null, 'no hay grilla')
-    ok((await page.$('.kt-innov-detalle')) === null, 'no hay recuadro de detalle')
-    ok((await page.$$('.kt-innov-ficha')).length === 0, 'no hay fichas de grilla')
-    ok(await page.evaluate(() => /Descripción de la innovación 2./i.test(document.body.innerText) && /Descripción de la innovación 1./i.test(document.body.innerText)), "la lista muestra las descripciones completas")
-    // ra VIS-004: la lista de ≤4 lee los MISMOS tokens que el recuadro (se comparan abajo, en el escenario de 20)
-    const estilosLista = await page.evaluate(() => {
-      const a = [...document.querySelectorAll('article')].find((x) => x.textContent.includes('Descripción de la innovación 2.'))
-      const g = (e) => { const c = getComputedStyle(e); return { size: c.fontSize, lh: c.lineHeight, peso: c.fontWeight, color: c.color } }
-      const [tit, txt] = a.querySelectorAll(':scope > div > span')
-      return { titulo: g(tit), texto: g(txt) }
-    })
-    ok(estilosLista.titulo.size === '15px' && estilosLista.titulo.lh === '22.5px' && estilosLista.titulo.peso === '700', 'lista de 4: título 15px / 1.5 / 700 (tokens --innov-titulo-*)', JSON.stringify(estilosLista))
-    ok(estilosLista.texto.size === '13.5px' && parseFloat(estilosLista.texto.lh).toFixed(2) === (13.5 * 1.55).toFixed(2), 'lista de 4: descripción 13.5px / 1.55 (tokens --innov-texto-*)', JSON.stringify(estilosLista))
-    await page.close()
+    // Pedido de Fedev, 14-nov-2026: el recuadro grande + la grilla van SIEMPRE, también con 1 a 4 innovaciones
+    // (antes iban en una lista con la descripción de cada una).
+    for (const [slug, n, viewport] of [['p1', 1, COMPU], ['p1', 1, CELU], ['p4', 4, COMPU], ['p4', 4, CELU]]) {
+      console.log(`${n} innovación(es) · ${viewport.width}px → recuadro + grilla (ya no hay lista)`)
+      const page = await abrir(browser, { slug, viewport })
+      ok((await page.$('.kt-innov')) !== null, `con ${n}: hay grilla`)
+      ok((await page.$$('.kt-innov-ficha')).length === n, `con ${n}: ${n} ficha(s)`)
+      ok((await page.$('.kt-innov-detalle')) !== null, `con ${n}: hay recuadro de detalle`)
+      ok((await page.$('.kt-innov-nav')) === null || await page.$eval('.kt-innov-nav', (x) => getComputedStyle(x).display === 'none'), `con ${n}: una sola página, sin puntos`)
+      const v = await page.evaluate(() => {
+        const d = document.querySelector('.kt-innov-detalle'), g = document.querySelector('.kt-innov-ficha')
+        const visible = [...d.querySelectorAll('*')].filter((e) => getComputedStyle(e).visibility !== 'hidden' && e.children.length === 0).map((e) => e.textContent).join(' ')
+        return { texto: visible, arriba: d.getBoundingClientRect().bottom <= g.getBoundingClientRect().top + 1, sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth,
+          listaVieja: [...document.querySelectorAll('article')].some((a) => /Descripción de la innovación/.test(a.textContent) && !a.closest('.kt-innov')) }
+      })
+      ok(/Descripción de la innovación 1\./i.test(v.texto), `con ${n}: el recuadro muestra en grande la primera con su descripción`, v.texto.slice(0, 120))
+      ok(v.arriba, `con ${n}: el recuadro va arriba de la grilla`)
+      ok(!v.listaVieja, `con ${n}: no queda la lista de antes`)
+      ok(v.sw <= v.cw, `con ${n}: sin desborde horizontal`, `${v.sw} > ${v.cw}`)
+      const h = (await hint(page)).trim()
+      ok(!/deslizá/.test(h), `con ${n}: la ayuda no invita a deslizar (hay una sola página)`, h)
+      ok(n === 1 ? h === '1 innovación' : new RegExp(`^${n} innovaciones ·`).test(h), `con ${n}: la ayuda cuenta bien (con una sola: «1 innovación» y nada más, el detalle ya está a la vista)`, h)
+      await page.close()
+    }
+    let page
 
     console.log('5 innovaciones → recuadro + grilla (1 sola página, sin puntos)')
     page = await abrir(browser, { slug: 'p5', viewport: CELU })
@@ -332,8 +349,6 @@ async function main() {
       ok(m.pad === '16px/16px' && m.gap === '16px', 'recuadro: padding 16 y gap 16', JSON.stringify(m))
       ok(m.titFs === '15px' && m.titMay === 'uppercase' && m.titPeso === '700', 'recuadro: título de 15px en mayúsculas, peso 700', JSON.stringify(m))
       ok(m.titLh === '22.5px' && m.titColor === m.ink, 'recuadro: título con line-height 1.5 (22.5px) en --ink (ra VIS-005)', JSON.stringify(m))
-      ok(m.titFs === estilosLista.titulo.size && m.titLh === estilosLista.titulo.lh && m.titPeso === estilosLista.titulo.peso && m.titColor === estilosLista.titulo.color, 'recuadro y lista de 4: el TÍTULO se ve igual (tamaño, line-height, peso y color, tokens compartidos)', JSON.stringify({ m, estilosLista }))
-      ok(m.txtFs === estilosLista.texto.size && m.txtLh === estilosLista.texto.lh && m.txtColor === estilosLista.texto.color, 'recuadro y lista de 4: la DESCRIPCIÓN se ve igual (tamaño, line-height y color, tokens compartidos)', JSON.stringify({ m, estilosLista }))
       ok(m.txtFs === '13.5px' && parseFloat(m.txtLh).toFixed(2) === (13.5 * 1.55).toFixed(2) && m.txtColor === m.soft, 'recuadro: descripción de 13.5px / 1.55 en --soft', JSON.stringify(m))
       ok(m.minH === '118px', 'recuadro: piso de alto de 118px en compu (--innov-detalle-alto)', JSON.stringify(m))
       ok(['12px', '13px'].includes(m.fichaFs) && m.fichaPeso === '700' && m.fichaMay === 'uppercase', 'ficha: 12/13px, peso 700, mayúsculas', JSON.stringify(m))

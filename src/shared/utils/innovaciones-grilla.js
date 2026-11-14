@@ -2,19 +2,20 @@
  * innovaciones-grilla — cómo se muestran las innovaciones de la ficha (mockup 2026-10-20-innovaciones, opción B;
  * detalle en un recuadro arriba: mockup 2026-10-21-innovaciones-imagen, opción C1).
  *
- * Hasta 4 innovaciones: lista completa con descripción, como siempre. Desde la 5.ª: grilla de fichas
- * compactas (compu) / carrusel de páginas de 6 (celular, 2 columnas × 3 filas), con el detalle de la
- * señalada en un recuadro fijo arriba de la grilla.
+ * SIEMPRE, desde la primera innovación: grilla de fichas compactas (compu) / carrusel de páginas de 6
+ * (celular, 2 columnas × 3 filas), con el detalle de la señalada en grande en un recuadro fijo arriba de la
+ * grilla (pedido de Fedev, 14-nov-2026: «que se vean como lo último que hicimos, arriba de todo en grande el
+ * que seleccionamos»). Antes, hasta 4 innovaciones iban en una lista con la descripción de cada una.
  * FUNCIONES PURAS (sin DOM ni React) para probarlas en node: scripts/check-innovaciones-grilla.mjs.
  */
 
-/** Hasta esta cantidad (inclusive) se muestran como siempre: la grilla aparece desde la 5.ª. */
-export const UMBRAL_LISTA = 4
+/** Hasta esta cantidad (inclusive) NO hay grilla. Es 0: con una sola innovación ya va el recuadro + grilla. */
+export const UMBRAL_LISTA = 0
 
 /** Fichas por página del carrusel de celular (2 columnas × 3 filas). */
 export const POR_PAGINA = 6
 
-/** ¿Se muestra la grilla/carrusel? Con 4 o menos (o nada), no. */
+/** ¿Se muestra la grilla/carrusel? Con una innovación o más, sí; sin ninguna (o cantidad inválida), no. */
 export function usaGrilla(cantidad) {
   return Number.isFinite(cantidad) && cantidad > UMBRAL_LISTA
 }

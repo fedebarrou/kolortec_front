@@ -5,7 +5,7 @@
  *
  * Complementa a check-quitar-fondo.mjs (la función pura): acá se prueba en un navegador real lo que sólo existe con
  * canvas, CORS y CSS, en las DOS presentaciones de la ficha de producto, con la API pública mockeada por intercepción:
- *   · lista de siempre (hasta 4 innovaciones, ícono redondo normalizado) y grilla + recuadro (5 o más, imagen cuadrada);
+ *   · recuadro + grilla (imagen cuadrada) con 4 y con 6 innovaciones — desde el 14-nov-2026 ya no hay lista para las de 4 o menos;
  *   · archivo con fondo negro y con fondo blanco, servidos CON CORS → la imagen que se muestra tiene las esquinas
  *     transparentes y el dibujo opaco;
  *   · una «foto» (sin fondo liso) → queda entera, no se agujerea;
@@ -145,7 +145,7 @@ async function caso(browser, slug, viewport, iconoEsperado) {
   // KT_CAPTURA=carpeta: deja una captura de cada caso, para MIRAR cómo queda (lo visual se decide viendo).
   if (process.env.KT_CAPTURA) {
     await page.addStyleTag({ content: '.kt-reveal-item{opacity:1!important;transform:none!important;transition:none!important}' })
-    const zona = await page.$(slug === 'grilla' ? '.kt-innov' : 'img[data-icono]')
+    const zona = await page.$('.kt-innov')
     await zona.evaluate((e) => (e.closest('.grid') || e).scrollIntoView({ block: 'center' }))
     await espera(300)
     await page.screenshot({ path: `${process.env.KT_CAPTURA}/innov-${slug}-${viewport.width}.png` })
@@ -173,7 +173,7 @@ async function caso(browser, slug, viewport, iconoEsperado) {
   ok(mios.some((p) => p.conCors) && planos.length === 0, 'las imágenes legibles se piden sólo con CORS, no dos veces', planos.map((p) => p.imagen).join(' · '))
   const sin = de('SIN CORS')
   ok(sin.length > 0 && sin.every((x) => !x.esData && x.src.startsWith('https://imagenes.test/sincors')), 'sin CORS: se muestra el archivo tal cual, sin romperse', sin.map((x) => `${x.icono}/${x.src}`).join(' · '))
-  if (iconoEsperado === 'cuadrado') {
+  if (slug === 'grilla') { // sólo ese producto trae la innovación oscura y la que no tiene imagen
     const oscuros = de('OSCURO')
     ok(oscuros.length > 0 && oscuros.every((x) => !x.esData && x.fondo === 'original'), 'dibujo oscuro sobre fondo claro: NO se le quita el fondo (si no, no se vería)', oscuros.map((x) => `${x.fondo}/${x.src}`).join(' · '))
     ok(m.filter((x) => x.fondo === 'quitado').length >= 3, 'grilla: las fichas y el recuadro marcan data-fondo="quitado"', `${m.filter((x) => x.fondo === 'quitado').length}`)
@@ -187,7 +187,7 @@ try {
   await levantar()
   browser = await puppeteer.launch({ channel: 'chrome', headless: true })
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
-    await caso(browser, 'lista', viewport, 'normalizado')
+    await caso(browser, 'lista', viewport, 'cuadrado') // 4 innovaciones: desde el 14-nov-2026 también van en grilla
     await caso(browser, 'grilla', viewport, 'cuadrado')
   }
   ok(prodLeak.length === 0, 'PROD_LEAK: ningún pedido salió hacia producción', prodLeak.slice(0, 3).join(' · '))

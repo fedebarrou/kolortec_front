@@ -22,9 +22,9 @@ import ProductBlogs from '../components/ProductBlogs'
 import ProductMedia from '../components/ProductMedia'
 import ProductReviews from '../components/ProductReviews'
 import ReferenceMaterial from '../components/ReferenceMaterial'
-import InnovacionIcono from '../components/InnovacionIcono'
 import InnovacionesGrilla from '../components/InnovacionesGrilla'
 import { usaGrilla } from '../../../shared/utils/innovaciones-grilla'
+import { NOMBRE_LIVESHOW } from '../helpers/mediaHelpers'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { useRevealSections } from '../../../shared/hooks/useRevealSections'
@@ -229,7 +229,7 @@ function ProductDetailPage() {
     return () => { mounted = false }
   }, [product?.id])
   const productBlogs = blogsByProduct.id && blogsByProduct.id === product?.id ? blogsByProduct.posts : []
-  // «En obra»: fotos y videos de trabajos reales asociados al producto
+  // «Liveshow» (antes «En obra»): fotos y videos de trabajos reales asociados al producto
   // (/public/galeria?producto_id=). Mismo patrón que las notas: el id va adentro del
   // estado para descartar lo que no es de este producto; sin media → [] y no hay
   // sección ni lengüeta.
@@ -335,7 +335,7 @@ function ProductDetailPage() {
   const soloKit = presentaciones.length === 0 && !!product?.presentacion?.texto
   const etiquetaPresentacion = (o) => o.label ?? t('productDetail.loose', 'Suelto')
   // Consulta por WhatsApp de ESTE producto (con su presentación): la usan el CTA de la
-  // barra de secciones y el botón «Consultar por este equipo» del visor de «En obra».
+  // barra de secciones y el botón «Consultar por este equipo» del visor de «Liveshow».
   const consultaHref = product
     ? `${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}${presentacionElegida ? ` (${presentacionElegida.label ?? 'Suelto'})` : soloKit ? ` (${product.presentacion.texto})` : ''}`)}`
     : ''
@@ -412,11 +412,12 @@ function ProductDetailPage() {
     // #gallery no existe en el DOM y el tab llevaba a la nada.
     if (galleryImages.length > 1) list.push({ id: 'gallery', label: t('productDetail.tabs.gallery', 'Fotos') })
     if ((product?.videos?.length ?? 0) > 0) list.push({ id: 'video', label: t('productDetail.tabs.video', 'Video') })
-    // `nuevo`: la lengüeta se pinta con el color de marca (mockup C).
-    if (productMedia.length > 0) list.push({ id: 'media', label: t('productDetail.tabs.media', 'En obra'), nuevo: true })
     if ((product?.downloads?.length ?? 0) > 0) list.push({ id: 'downloads', label: t('productDetail.tabs.downloads', 'Descargas') })
     if ((product?.accessories?.length ?? 0) > 0) list.push({ id: 'accessories', label: t('productDetail.tabs.accessories', 'Accesorios') })
     if ((product?.technicalSpecs?.length ?? 0) > 0) list.push({ id: 'technical-specs', label: t('productDetail.tabs.technicalSpecs', 'Especificaciones') })
+    // Última, en el mismo orden que la página (la sección va debajo de «También te puede interesar»).
+    // `nuevo`: la lengüeta se pinta con el color de marca (mockup C).
+    if (productMedia.length > 0) list.push({ id: 'media', label: NOMBRE_LIVESHOW, sinTraducir: true, nuevo: true })
     return list
   }, [t, product, galleryImages.length, productMedia.length])
 
@@ -533,7 +534,7 @@ function ProductDetailPage() {
   }, [tabs])
 
   // Reveal de las secciones de la ficha (.kt-detail-anim). El hook engancha cada sección en
-  // cuanto se monta —«Video», «En obra», «Notas relacionadas» llegan con SU propio fetch, después
+  // cuanto se monta —«Video», «Liveshow», «Notas relacionadas» llegan con SU propio fetch, después
   // del primer render—, así que ya no hay deps a mano que olvidar (VIS-001).
 
   // El filtro viejo era /software|firmware/i SOBRE EL LABEL, y los documentos
@@ -752,7 +753,7 @@ function ProductDetailPage() {
                     goToSection(tab.id)
                   }}
                 >
-                  {tab.label}
+                  {tab.sinTraducir ? <span translate="no">{tab.label}</span> : tab.label}
                 </button>
               ))}
             </div>
@@ -814,7 +815,7 @@ function ProductDetailPage() {
                   activeTab === tab.id ? 'border-primary text-[#f4f7fb]' : `border-transparent ${tab.nuevo ? 'text-primary' : 'text-[#c6ccd7]'}`
                 }`}
               >
-                {tab.label}
+                {tab.sinTraducir ? <span translate="no">{tab.label}</span> : tab.label}
               </button>
             ))}
           </div>
@@ -929,32 +930,11 @@ function ProductDetailPage() {
                 <StockBarra nivel={presentacionElegida ? presentacionElegida.stockNivel : product.stockNivel} className="mt-4" />
                 {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
                     Si no hay innovaciones cargadas, no se muestra nada acá. */}
-                {product.innovations.length > 0 ? (
+                {usaGrilla(product.innovations.length) ? (
                   <div className="mt-8 grid gap-4 border-t border-[#2a2a2a] pt-6">
-                    {/* Sin `.slice(0, 4)`: recortaba desde la quinta innovación
-                        sin avisar ni dar forma de ver el resto. Hoy el máximo
-                        cargado son 4, así que el corte no se veía —pero cuando
-                        el tenant cargue la quinta, desaparecía en silencio. */}
-                    {usaGrilla(product.innovations.length) ? (
-                      <InnovacionesGrilla items={product.innovations} arriba={stickyTop} />
-                    ) : product.innovations.map((inn) => (
-                      <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
-                        {/* REDONDAS (pedido del cliente, oct-2026) y como ÍCONO: entera,
-                            centrada y del mismo tamaño que las demás, suba lo que
-                            suba el cliente. El encuadre lo hace InnovacionIcono. */}
-                        {inn.image ? (
-                          <InnovacionIcono src={inn.image} />
-                        ) : (
-                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                        )}
-                        <div className="grid gap-0.5">
-                          <span className="text-[length:var(--innov-titulo-size)] font-[weight:var(--innov-titulo-peso)] leading-[var(--innov-titulo-lh)] text-[color:var(--innov-titulo-color)]">{inn.title}</span>
-                          {inn.description ? (
-                            <span className="text-[length:var(--innov-texto-size)] leading-[var(--innov-texto-lh)] text-[color:var(--innov-texto-color)]">{inn.description}</span>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))}
+                    {/* Siempre recuadro de detalle en grande + grilla, también con una sola innovación (pedido de
+                        Fedev, 14-nov-2026). Antes, hasta 4 iban en una lista. Sin `.slice`: se muestran todas. */}
+                    <InnovacionesGrilla items={product.innovations} arriba={stickyTop} />
                   </div>
                 ) : null}
 
@@ -1104,14 +1084,6 @@ function ProductDetailPage() {
               })()}
             </section>
             </>
-            ) : null}
-
-            {/* «En obra»: pegada a «Video del producto». Sin media no se dibuja nada. */}
-            {productMedia.length > 0 ? (
-              <>
-              <div className="kt-graphene-separator" aria-hidden="true" />
-              <ProductMedia items={productMedia} productName={product.name} consultaHref={consultaHref} />
-              </>
             ) : null}
 
             {product.downloads.length > 0 ? (
@@ -1345,7 +1317,16 @@ function ProductDetailPage() {
               </>
             ) : null}
 
-            {/* Orden del cierre pedido por el cliente: relacionados → notas →
+            {/* «Liveshow» (antes «En obra»): debajo de «También te puede interesar» (pedido de Fedev, 14-nov-2026;
+                antes iba pegada a «Video del producto»). Sin media no se dibuja nada. */}
+            {productMedia.length > 0 ? (
+              <>
+              <div className="kt-graphene-separator" aria-hidden="true" />
+              <ProductMedia items={productMedia} productName={product.name} consultaHref={consultaHref} />
+              </>
+            ) : null}
+
+            {/* Orden del cierre pedido por el cliente: relacionados → Liveshow → notas →
                 comentarios. Va de lo más comercial (otros equipos) a lo más
                 editorial (cómo se usa) y termina en la voz de otros clientes. */}
             {productBlogs.length > 0 ? (
