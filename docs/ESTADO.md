@@ -32,10 +32,14 @@
   **Rollback 20261113:** `mv /opt/kolortec /opt/kolortec.fallido-20261113 && mv /opt/kolortec.prev-20261113 /opt/kolortec
   && docker tag kolortec-web:pre-20261113 kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
   --no-build kolortec_web` (vuelve a pedir `index-BI97VjFz.js`). Detalle: `tiendita-back/docs/BITACORA.md` (2026-11-14).
-- **Restos de rollback en el VPS (no se borró nada):** tags `kolortec-web:pre-20261114/-20261113/-20261106/-20261026/-20261020d/-20261020b/-20261014b`,
-  carpetas `/opt/kolortec.prev-` con esos mismos sufijos, y en `/opt/_upload` los tgz `kolortec-20261106-lf.tar.gz`,
-  `kolortec-20261113-lf.tar.gz` y `kolortec-20261114-lf.tar.gz`. Disco 78 % (22 GB libres de 96). La limpieza queda para
-  otra sesión, fuera del modo automático.
+- **Rollbacks de kolortec disponibles en el VPS (tras la limpieza del 2026-11-14 20:50–20:58Z, pedida por Fedev):**
+  sólo los dos de arriba — tags `kolortec-web:pre-20261114` (`c0d38a28aaec`) y `:pre-20261113` (`1ef922bb4900`), carpetas
+  `/opt/kolortec.prev-20261114` y `.prev-20261113`, tgz `/opt/_upload/kolortec-20261113-lf.tar.gz` y `-20261114-lf.tar.gz`.
+  Se borraron los de 20261106, 20261026, 20261020d, 20261020b y 20261014b (tags, carpetas y el tgz de 20261106): ya no se
+  puede volver a `fcff78b` ni antes desde el VPS. En la misma limpieza se borraron los rollbacks viejos de tiendita (se
+  conservaron los 2 más recientes por grupo), el caché de build colgado (8 GB) y nada más. Disco 78 % → 62 % (22 → 37 GB
+  libres). Contenedores, ids de imagen, restarts y códigos HTTP de los 20 dominios del Caddyfile iguales antes y después;
+  Caddyfile sha256 `344df18a…` igual. Ventana `peligro.py` 20:49:39Z → 20:58:19Z, 14 usos en el registro.
 - **Antes:** `fcff78b`, el 2026-11-06 14:07Z, deploy **20261106** (sólo `kolortec_web`; **sin suite completa,
   por decisión de Fedev; vite build local verde**): logo del navbar a 24px (`HeaderSection.jsx:449` `h-8 md:h-9` → `h-6`).
   Imagen `1ef922bb4900` (antes `9d372b618818` = `1223dfd`). Afuera: `/?preview=x` 200 pide `index-BI97VjFz.js` (antes
@@ -67,4 +71,3 @@
 | Meta App Review de `instagram_business_basic` | Enviada el 2026-10-03. Si la rechazan por el screencast, regrabar el flujo completo (login → Permitir → @usuario → carrusel en la web) |
 | Textos de cada pieza del 3D, para volver a prender el zoom con descripción | Kolortec |
 | (Opcional) agrandar el 3D cerrado en celular | Fede |
-| Borrar restos de rollback en el VPS: imágenes `kolortec-web:pre-20261003`, `:pre-20261003b` y carpetas `/opt/kolortec.prev-20261003`, `/opt/kolortec.prev-20261003b` | Cuando el deploy esté asentado |
