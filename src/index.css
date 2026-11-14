@@ -1148,6 +1148,23 @@ html {
     aspect-ratio: 4 / 5;
   }
 
+  /* Visor con la proporción de la primera foto (ProductDetailPage la pone en el envoltorio y marca data-fija):
+     al pasar de foto el visor no cambia de alto, así que las flechas y las miniaturas no saltan. Cada foto entra
+     entera adentro (contain), también mientras carga. El tope de alto pasa de la foto al visor. */
+  .kt-detail-stage[data-fija] {
+    /* width explícito: con el ancho en auto, el tope de alto achicaba también el ANCHO (la proporción se
+       transfiere) y el visor quedaba angosto y pegado a la izquierda con una foto vertical. */
+    width: 100%;
+    max-height: 760px;
+  }
+
+  .kt-detail-stage[data-fija] img,
+  .kt-detail-stage[data-fija] img:not([data-cargada]) {
+    height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+  }
+
   .kt-detail-name {
     margin: 0;
     font-size: clamp(4.6rem, 9vw, 8.6rem);
@@ -3683,6 +3700,10 @@ html {
 
     .kt-detail-image img {
       height: auto;
+      max-height: 520px;
+    }
+
+    .kt-detail-stage[data-fija] {
       max-height: 520px;
     }
 

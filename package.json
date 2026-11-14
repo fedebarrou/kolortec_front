@@ -25,6 +25,7 @@
     "check:sitemap-rutas": "node scripts/check-sitemap-rutas.mjs",
     "check:quitar-fondo": "node scripts/check-quitar-fondo.mjs",
     "check:innovaciones-fondo": "node scripts/check-innovaciones-fondo-navegador.mjs",
+    "check:ficha-flechas": "node scripts/check-ficha-flechas-navegador.mjs",
     "check:media": "node scripts/check-media.mjs",
     "check:volver": "node scripts/check-volver-categoria.mjs",
     "check:filtros": "node scripts/check-filtros.mjs",

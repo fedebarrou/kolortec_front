@@ -581,6 +581,20 @@ function ProductDetailPage() {
     setCurrentVideoIndex(0)
   }
 
+  // Proporción del visor de fotos (ancho / alto): la de la PRIMERA foto que carga de este producto, y se mantiene
+  // al pasar de foto. Antes el visor medía lo que medía la foto del momento, así que con fotos de proporciones
+  // distintas las flechas y las miniaturas saltaban en cada paso (pedido de Fedev, 14-nov-2026). Las demás fotos
+  // entran enteras adentro (object-fit: contain). Va con su clave: al cambiar de producto se vuelve a medir.
+  const [proporcionVisor, setProporcionVisor] = useState({ key: null, valor: 0 })
+  const proporcionFoto = proporcionVisor.key === galleryKey ? proporcionVisor.valor : 0
+  const alCargarFoto = (event) => {
+    const img = event.currentTarget
+    img.dataset.cargada = '1'
+    if (!proporcionFoto && img.naturalWidth > 0 && img.naturalHeight > 0) {
+      setProporcionVisor({ key: galleryKey, valor: img.naturalWidth / img.naturalHeight })
+    }
+  }
+
   // Centra la miniatura en la tira sin mover el scroll de la PÁGINA
   // (scrollIntoView movía las dos cosas).
   const centrarMiniatura = (index) => {
@@ -832,11 +846,17 @@ function ProductDetailPage() {
               >
                 {/* Envoltorio con el alto de la FOTO: la <figure> se estira al alto
                     de la columna derecha (grid stretch) y las flechas, centradas
-                    contra ella, quedaban ~100px por debajo del medio de la imagen. */}
-                <div className="relative">
+                    contra ella, quedaban ~100px por debajo del medio de la imagen.
+                    Con `data-fija` el envoltorio ya tiene la proporción de la primera foto y no cambia
+                    al pasar de foto: las flechas se quedan donde están (ver proporcionFoto). */}
+                <div
+                  className="kt-detail-stage relative"
+                  data-fija={proporcionFoto ? '1' : undefined}
+                  style={proporcionFoto ? { aspectRatio: String(proporcionFoto) } : undefined}
+                >
                   <button
                     type="button"
-                    className="block w-full cursor-zoom-in border-0 bg-transparent p-0"
+                    className="block h-full w-full cursor-zoom-in border-0 bg-transparent p-0"
                     onClick={() => setGalleryLightboxIndex(activeImageIndex)}
                     aria-label={`Abrir imagen principal de ${product.name}`}
                   >
@@ -846,7 +866,7 @@ function ProductDetailPage() {
                       key={galleryImages[activeImageIndex] || product.heroImage}
                       src={galleryImages[activeImageIndex] || product.heroImage}
                       alt={product.name}
-                      onLoad={(e) => { e.currentTarget.dataset.cargada = '1' }}
+                      onLoad={alCargarFoto}
                     />
                   </button>
                   {galleryImages.length > 1 ? (
