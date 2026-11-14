@@ -863,13 +863,13 @@ export const translations = {
         video: 'Video del Producto',
         downloads: 'Descargas',
         accessories: 'Productos Relacionados',
-        technicalSpecs: 'Especificacion Tecnica',
+        technicalSpecs: 'Especificación Técnica',
       },
       sections: {
         video: 'Video del Producto',
         downloads: 'Descargas',
         accessories: 'Productos Relacionados',
-        technicalSpecs: 'Especificacion Tecnica',
+        technicalSpecs: 'Especificación Técnica',
       },
       downloads: {
         pending: 'Listo, ya podés descargar',
