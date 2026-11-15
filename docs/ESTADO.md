@@ -9,7 +9,7 @@
   **desplegado sin suite completa, por decisión de Fedev**; vite build local verde). Trae `0d4320c` (innovaciones siempre con
   recuadro + grilla; «Liveshow» sin traducir y debajo de relacionados), `e2a506c` (flechas de la foto fijas) y `be670b1`
   (tilde en «Especificación Técnica»). Antes de tocar: `/opt/kolortec` idéntico a `git archive 9830c6b` (693 archivos,
-  sha256 uno a uno; sin `.env` ni nada sólo-VPS); disco 77 %. tgz `/opt/_upload/kolortec-20261114-lf.tar.gz` sha256
+  sha256 uno a uno; sin `.env` ni nada sólo-VPS); disco 77 %. tgz `/opt/_upload/kolortec-20261114-lf.tar.gz` (borrado el 15-nov) sha256
   `805b42bc…` (67.906.845 B, igual local y VPS; contenido == `git archive be670b1`, 694 archivos). Imagen `779bfeab5942`
   (antes `c0d38a28aaec` = `9830c6b`, etiquetada `kolortec-web:pre-20261114`). Restarts 0, `nginx -t` OK, 0 errores en el log,
   Caddyfile sha256 `344df18a…` igual. Afuera: `/` 200 cartel 1510 B idéntico byte a byte al de ayer; `/?preview=x` 200 pide
@@ -34,12 +34,31 @@
   --no-build kolortec_web` (vuelve a pedir `index-BI97VjFz.js`). Detalle: `tiendita-back/docs/BITACORA.md` (2026-11-14).
 - **Rollbacks de kolortec disponibles en el VPS (tras la limpieza del 2026-11-14 20:50–20:58Z, pedida por Fedev):**
   sólo los dos de arriba — tags `kolortec-web:pre-20261114` (`c0d38a28aaec`) y `:pre-20261113` (`1ef922bb4900`), carpetas
-  `/opt/kolortec.prev-20261114` y `.prev-20261113`, tgz `/opt/_upload/kolortec-20261113-lf.tar.gz` y `-20261114-lf.tar.gz`.
+  `/opt/kolortec.prev-20261114` y `.prev-20261113`. (Los tgz `/opt/_upload/kolortec-2026111{3,4}-lf.tar.gz` **ya no
+  existen**: se borraron en la limpieza profunda del 2026-11-15, ver abajo. Para rearmar uno: `git -c core.autocrlf=false
+  archive` del commit.)
   Se borraron los de 20261106, 20261026, 20261020d, 20261020b y 20261014b (tags, carpetas y el tgz de 20261106): ya no se
   puede volver a `fcff78b` ni antes desde el VPS. En la misma limpieza se borraron los rollbacks viejos de tiendita (se
   conservaron los 2 más recientes por grupo), el caché de build colgado (8 GB) y nada más. Disco 78 % → 62 % (22 → 37 GB
   libres). Contenedores, ids de imagen, restarts y códigos HTTP de los 20 dominios del Caddyfile iguales antes y después;
   Caddyfile sha256 `344df18a…` igual. Ventana `peligro.py` 20:49:39Z → 20:58:19Z, 14 usos en el registro.
+- **Limpieza profunda del VPS, 2026-11-15 02:17–02:26Z (pedida por Fedev: «hacé todo, incluso quitá manual-creator»).**
+  Disco 60,7 → 26,2 GB usados (62 % → 27 %, 37 → 71 GB libres). Se quitó: caché de build (25 GB, −19,9 GB de disco);
+  **manual-creator dado de baja con su base, por decisión de Fedev** (6 contenedores `ops`, 4 imágenes, volúmenes
+  `ops_clamav/minio/postgres/redis_data`, releases en `/opt`; −2,9 GB); rollbacks únicos `giro-app:pre-6dc0cf7`/`:5ebd9f4`,
+  `modelate_web:anterior`/`pre-20261023`, `fedev_web:pre-20261023`, `repartia-web:pre-20261023` y `/opt/fedev.pre-20261023`
+  (−9,9 GB): **giro, modelate, fedev y repartia quedan SIN rollback en el VPS hasta su próximo deploy**; volumen MySQL
+  huérfano `201f59…` (restore de prueba del 12-oct: esquemas `mysql`, `performance_schema`, `sys` y `r` con tablas de
+  tiendita) y 4 anónimos vacíos; `/root/archivo-20260929`, `/root/apt-rollback-20261023`, `/opt/modelate.viejo`,
+  `/opt/nfc-cloud.viejo`; `/opt/_upload/*` (tgz de kolortec 13 y 14-nov) y `/opt/tiendita/_upload/*`; dumps: 39
+  `tiendita-db-*` de `/opt/backups` (incluido el `…CON-TOKENS-vence-20261115`; quedan `20261027b-0403` y `20261028-0540`),
+  `herocreator-20260802`, `/opt/bw-backups`, y en `/root/backups` los `bw_db` de mayo/junio y `herocreator-final`.
+  Quedaron: `/opt/manual-creator-backups` y `/opt/backups/manual-creator-db-20260831…` (últimas copias de su base), la red
+  `ops_internal` (la usa `nfc_web`), `/root/backups/kolortec-hero-20261112*.sql`, imágenes `clamav/clamav:stable` y
+  `redis:7.4-alpine` ya sin uso. Caddyfile intacto (`344df18a…`): `sitiodeprueba.online` → `manual_creator_web:3000`
+  sigue dando 502. **El rollback de kolortec sigue siendo `kolortec-web:pre-20261114` + `/opt/kolortec.prev-20261114`.**
+  25 contenedores con mismo id de imagen, StartedAt y restarts; 29 dominios del Caddyfile con el mismo código desde afuera.
+  Ventana `peligro.py` 02:17:03Z → 02:26:07Z, 17 usos en el registro.
 - **Antes:** `fcff78b`, el 2026-11-06 14:07Z, deploy **20261106** (sólo `kolortec_web`; **sin suite completa,
   por decisión de Fedev; vite build local verde**): logo del navbar a 24px (`HeaderSection.jsx:449` `h-8 md:h-9` → `h-6`).
   Imagen `1ef922bb4900` (antes `9d372b618818` = `1223dfd`). Afuera: `/?preview=x` 200 pide `index-BI97VjFz.js` (antes
