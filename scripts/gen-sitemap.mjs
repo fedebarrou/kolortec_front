@@ -23,7 +23,11 @@ import { listStaticRoutes, listGuideRoutes } from '../src/data/routes.mjs'
    NO figuraban. O sea que a Google le daba una lista de URLs rotas y le escondia el
    catalogo entero. Medido contra produccion el 2026-09-02.
    Ahora se piden a la API publica, que es la misma fuente que consume el sitio. */
-const API = process.env.VITE_API_BASE_URL || 'https://api.soytiendita.store/api'
+// El sitio pide la API same-origin (`/_tiendita/api`, base RELATIVA): en Node un fetch relativo no arma URL, el script
+// salía con error y el `|| true` del prebuild dejaba el sitemap viejo commiteado sin avisar (heimdall INF-041, 16-nov-2026).
+// Acá se usa SIEMPRE una base absoluta: SITEMAP_API_BASE_URL, o la del build si ya es absoluta, o la API pública.
+const BASE_BUILD = process.env.VITE_API_BASE_URL || ''
+const API = process.env.SITEMAP_API_BASE_URL || (/^https?:\/\//.test(BASE_BUILD) ? BASE_BUILD : 'https://api.soytiendita.store/api')
 
 async function pedir(ruta, host) {
   const res = await fetch(`${API}/public/${ruta}`, { headers: { 'X-Account-Host': host, Accept: 'application/json' } })
