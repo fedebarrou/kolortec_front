@@ -863,13 +863,13 @@ export const translations = {
         video: 'Video del Producto',
         downloads: 'Descargas',
         accessories: 'Productos Relacionados',
-        technicalSpecs: 'Especificacion Tecnica',
+        technicalSpecs: 'Especificación Técnica',
       },
       sections: {
         video: 'Video del Producto',
         downloads: 'Descargas',
         accessories: 'Productos Relacionados',
-        technicalSpecs: 'Especificacion Tecnica',
+        technicalSpecs: 'Especificación Técnica',
       },
       downloads: {
         pending: 'Listo, ya podés descargar',
@@ -982,7 +982,8 @@ export const translations = {
     },
     footer: {
       about:
-        'Iluminación profesional para espectáculos. Fabricación propia, soporte técnico local y repuestos en stock',
+        // «live shows» NO se traduce (pedido de Fedev, 13-nov-2026): es el término del rubro, va igual en los dos idiomas.
+        'Iluminación profesional para live shows. Fabricación propia, soporte técnico local y repuestos en stock',
       productsTitle: 'Productos',
       productsLinks: ['Floods Serie X', 'Spots de Precision', 'Washes Arquitecturales', 'Equipos Portatiles'],
       companyTitle: 'Empresa',

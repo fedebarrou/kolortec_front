@@ -1,7 +1,15 @@
 /**
- * Helpers de «En obra» (ProductMedia / MediaViewer). Viven aparte de los componentes
+ * Helpers de «Liveshow» (ProductMedia / MediaViewer; antes «En obra»). Viven aparte de los componentes
  * porque react-refresh exige que un archivo de componente exporte sólo componentes.
  */
+
+/**
+ * Nombre de la sección de fotos y videos de trabajos reales. «Liveshow» NO se traduce nunca, igual que
+ * «Ready to Work» (pedido de Fedev, 14-nov-2026: «siempre queda en inglés; a veces lo traducís al español y
+ * queda "en obra"»). Por eso es una constante y no pasa por t(): no hay clave que alguien pueda traducir.
+ * Donde se dibuja va con translate="no" para que tampoco lo cambie el traductor del navegador.
+ */
+export const NOMBRE_LIVESHOW = 'Liveshow'
 
 /** Segundos → «m:ss». Vacío si no se conoce (el video todavía no cargó sus metadatos). */
 export function formatearDuracion(seg) {

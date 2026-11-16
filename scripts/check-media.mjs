@@ -1,5 +1,5 @@
 /**
- * check-media.mjs — «En obra» (media asociada al producto): lógica, tokens y recorrido real.
+ * check-media.mjs — «Liveshow» (antes «En obra»: media asociada al producto): lógica, tokens y recorrido real.
  *
  * Tres capas, de la más barata a la más cara:
  *
@@ -298,7 +298,7 @@ async function e2e() {
       const u = r.url()
       const m = API_PROD.exec(u)
       // El traductor también es de producción: se contesta 503 desde acá (la ficha cae a su texto original).
-      if (/^https:\/\/translate\.soytiendita\.store\//.test(u)) {
+      if (/^https:\/\/translate\.soytiendita\.store\//.test(u) || /^https:\/\/api\.mymemory\.translated\.net\//.test(u)) { // + el traductor de respaldo
         if (r.method() === 'OPTIONS') return r.respond({ status: 204, headers: cors, body: '' })
         return r.respond({ status: 503, headers: cors, contentType: 'application/json', body: '{}' })
       }
@@ -355,13 +355,25 @@ async function e2e() {
           visibles: [...sec.querySelectorAll('.kt-media-card')].filter(vis).length,
           more: more && vis(more) ? more.textContent.trim() : null,
           chipBorde: getComputedStyle(sec.querySelector('.kt-media-chip:not([aria-pressed="true"])')).borderTopColor,
-          tab: [...document.querySelectorAll('button, a')].some((b) => /en obra/i.test(b.textContent)),
+          tab: [...document.querySelectorAll('button, a')].some((b) => /^\s*liveshow\s*$/i.test(b.textContent)),
+          // «Liveshow» no se traduce nunca (Fedev, 14-nov-2026): título y lengüeta fijos, marcados translate="no".
+          titulo: (sec.querySelector('h3 [translate="no"]') || {}).textContent || '',
+          tabNoTraduce: [...document.querySelectorAll('button [translate="no"], a [translate="no"]')].some((x) => /^liveshow$/i.test(x.textContent)),
+          quedaEnObra: /en obra/i.test(document.body.innerText),
+          // Orden (Fedev, 14-nov-2026): debajo de «También te puede interesar» y de todo lo anterior de la ficha.
+          hayRelacionados: !!document.getElementById('related'),
+          antes: ['video', 'downloads', 'accessories', 'technical-specs', 'related'].filter((id) => document.getElementById(id) && !(document.getElementById(id).compareDocumentPosition(sec) & Node.DOCUMENT_POSITION_FOLLOWING)),
+          ultimaLengueta: (() => { const bs = [...document.querySelectorAll('button')].filter((b) => /^\s*liveshow\s*$/i.test(b.textContent)); return bs.length >= 2 && bs.every((b) => b === b.parentElement.querySelector(':scope > button:last-of-type')) })(),
         }
       })
       reporta(f.chips.length === 3 && /todo · 7/i.test(f.chips[0]), `3 chips, el primero «Todo · 7»: ${f.chips.join(' / ')}`)
       reporta(/fotos · 4/i.test(f.chips[1] || '') && /videos · 3/i.test(f.chips[2] || ''), 'chip Fotos · 4 y Videos · 3')
       reporta(f.cards === 7, `7 tarjetas en el DOM (hay ${f.cards})`)
-      reporta(f.tab, 'la lengüeta «En obra» existe')
+      reporta(f.tab, 'la lengüeta «Liveshow» existe')
+      reporta(/^liveshow$/i.test(f.titulo) && f.tabNoTraduce, `título y lengüeta dicen «Liveshow» y van con translate="no" (título: «${f.titulo}»)`)
+      reporta(!f.quedaEnObra, 'en la ficha ya no aparece «En obra»')
+      reporta(f.hayRelacionados && f.antes.length === 0, `«Liveshow» va debajo de «También te puede interesar» (relacionados: ${f.hayRelacionados}; quedaron después: ${f.antes.join(', ') || 'ninguna'})`)
+      reporta(f.ultimaLengueta, 'la lengüeta «Liveshow» es la última de sus barras (compu y celular)')
       reporta(f.chipBorde === 'rgb(107, 107, 107)', `VIS-003 borde del chip inactivo = --line-control (medido ${f.chipBorde})`)
       if (ancho < 640) {
         reporta(f.visibles === 6 && f.more === 'Ver los 7', `celular: 6 visibles y «Ver los 7» (medido ${f.visibles} / ${f.more})`)
@@ -417,7 +429,7 @@ async function e2e() {
       const p = await pagina(browser, 1440, 900)
       await p.goto(`${BASE}/producto/vacio`, { waitUntil: 'networkidle0', timeout: 60000 })
       await pausa(1200)
-      const r = await p.evaluate(() => ({ seccion: !!document.querySelector('#media'), tab: [...document.querySelectorAll('button, a')].some((b) => /en obra/i.test(b.textContent)) }))
+      const r = await p.evaluate(() => ({ seccion: !!document.querySelector('#media'), tab: [...document.querySelectorAll('button, a')].some((b) => /^\s*liveshow\s*$/i.test(b.textContent)) }))
       reporta(!r.seccion && !r.tab, `sin media: ni sección ni lengüeta (medido ${JSON.stringify(r)})`)
       await p.close()
     }

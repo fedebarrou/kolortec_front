@@ -21,8 +21,10 @@ export function listStaticRoutes() {
     { path: '/soporte/guias', priority: 0.8, changefreq: 'weekly' },
     { path: '/garantias', priority: 0.7, changefreq: 'monthly' },
     { path: '/contacto', priority: 0.6, changefreq: 'monthly' },
-    { path: '/distribuidores', priority: 0.7, changefreq: 'monthly' },
-    { path: '/rentals', priority: 0.7, changefreq: 'monthly' },
+    /* /sumate y NO /distribuidores ni /rentals: esas dos hoy redirigen a /sumate (App.jsx). Un sitemap que lista
+       redirecciones le hace gastar rastreo a Google en URLs que no son la página, y dejaba afuera la que sí lo es.
+       Lo cuida scripts/check-sitemap-rutas.mjs. */
+    { path: '/sumate', priority: 0.7, changefreq: 'monthly' },
     /* Legales: prioridad baja porque no se buscan en un buscador, pero SÍ van
        al sitemap. Un legal indexable es lo que permite demostrar qué decía el
        sitio en una fecha dada, y los enlaza el pie de todas las páginas. */

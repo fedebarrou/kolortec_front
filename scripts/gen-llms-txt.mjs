@@ -45,10 +45,12 @@ function buildLlmsTxt() {
   sections.push('## Páginas principales')
   sections.push(line('- [Inicio](', SITE, '/): Resumen del fabricante, líneas y posicionamiento Ready to Work.'))
   sections.push(line('- [Catálogo de productos](', SITE, '/products): Categorías y modelos por aplicación.'))
-  sections.push(line('- [Soporte técnico](', SITE, '/soporte): Manuales, firmware y contacto directo con service de fábrica.'))
-  sections.push(line('- [Guía de mantenimiento](', SITE, '/garantias): Garantía 12 meses + política de soporte.'))
-  sections.push(line('- [Programa de rentals](', SITE, '/rentals): Para casas de alquiler y productoras (uptime, repuestos).'))
-  sections.push(line('- [Programa de distribuidores](', SITE, '/distribuidores): Red de partners B2B con margen y respaldo.'))
+  /* Sólo páginas REALES: /soporte, /rentals y /distribuidores redirigen (App.jsx) a /descargas y /sumate. Lo cuida
+     scripts/check-sitemap-rutas.mjs. */
+  sections.push(line('- [Descargas y soporte técnico](', SITE, '/descargas): Manuales, firmware y librerías de cada equipo.'))
+  sections.push(line('- [Guías técnicas](', SITE, '/soporte/guias): Diagnóstico, mantenimiento y reparación de iluminación profesional.'))
+  sections.push(line('- [Garantía](', SITE, '/garantias): Garantía 12 meses + política de soporte.'))
+  sections.push(line('- [Sumate: rentals y distribuidores](', SITE, '/sumate): Programa para casas de alquiler, productoras y red de distribuidores.'))
   sections.push(line('- [Contacto](', SITE, '/contacto): Formulario directo a equipo comercial.'))
   sections.push('')
 

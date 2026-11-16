@@ -13,14 +13,13 @@ let ok = 0
 const caso = (nombre, fn) => { fn(); ok += 1; console.log(`  ✔ ${nombre}`) }
 const lista = (n) => Array.from({ length: n }, (_, i) => ({ title: `I${i + 1}` }))
 
-caso('constantes del mockup: umbral 4, páginas de 6', () => {
-  assert.equal(UMBRAL_LISTA, 4)
+// Pedido de Fedev, 14-nov-2026: recuadro + grilla SIEMPRE, también con una sola innovación (antes, hasta 4 iban en lista).
+caso('constantes: sin umbral de lista (0), páginas de 6', () => {
+  assert.equal(UMBRAL_LISTA, 0)
   assert.equal(POR_PAGINA, 6)
 })
-for (const n of [0, 1, 2, 3, 4]) {
-  caso(`${n} innovaciones → lista de siempre (sin grilla)`, () => assert.equal(usaGrilla(n), false))
-}
-for (const n of [5, 6, 7, 20, 100]) {
+caso('0 innovaciones → no se dibuja nada', () => assert.equal(usaGrilla(0), false))
+for (const n of [1, 2, 3, 4, 5, 6, 7, 20, 100]) {
   caso(`${n} innovaciones → grilla`, () => assert.equal(usaGrilla(n), true))
 }
 caso('cantidad inválida → sin grilla', () => {

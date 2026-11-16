@@ -22,9 +22,9 @@ import ProductBlogs from '../components/ProductBlogs'
 import ProductMedia from '../components/ProductMedia'
 import ProductReviews from '../components/ProductReviews'
 import ReferenceMaterial from '../components/ReferenceMaterial'
-import InnovacionIcono from '../components/InnovacionIcono'
 import InnovacionesGrilla from '../components/InnovacionesGrilla'
 import { usaGrilla } from '../../../shared/utils/innovaciones-grilla'
+import { NOMBRE_LIVESHOW } from '../helpers/mediaHelpers'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
 import { useRevealSections } from '../../../shared/hooks/useRevealSections'
@@ -34,6 +34,7 @@ import { vienesDeSuCategoria } from '../helpers/origenFicha.js'
 import StockBarra from '../../../shared/components/StockBarra'
 import { SITE } from '../../../shared/seo/Seo'
 import { productJsonLd, breadcrumbJsonLd } from '../../../shared/seo/jsonLd'
+import { tituloSeoProducto } from '../../../shared/seo/titulo-producto'
 import { autoTranslateText, getAutoTranslatedTextTarget } from '../../../shared/services/dynamicTranslationService'
 
 function formatPrice(value, moneda) {
@@ -134,11 +135,15 @@ function ProductDetailPage() {
   // Si tocan la flecha ANTES de que lleguen, se espera la lista con un tope corto (CATEGORIAS_ESPERA_MS) y, si no llegó a
   // tiempo, se sigue con la categoría del producto: sin la espera, un producto huérfano mandaba a /products/<inexistente>.
   const categoriasRef = useRef({ estado: 'cargando', slugs: null, promesa: null })
+  // slug → nombre de la categoría, para el título SEO y las migas (el producto sólo trae el slug). Es estado y no
+  // referencia porque el <title> tiene que volver a pintarse cuando llega la lista.
+  const [nombresCategoria, setNombresCategoria] = useState(null)
   useEffect(() => {
     let mounted = true
     categoriasRef.current.promesa = loadCategories().then(({ list, available }) => {
       if (!mounted) return
       categoriasRef.current = { ...categoriasRef.current, estado: available ? 'ok' : 'caida', slugs: available ? new Set(list.map((c) => c.slug)) : null }
+      if (available) setNombresCategoria(new Map(list.map((c) => [c.slug, c.name || ''])))
     })
     return () => { mounted = false }
   }, [])
@@ -224,7 +229,7 @@ function ProductDetailPage() {
     return () => { mounted = false }
   }, [product?.id])
   const productBlogs = blogsByProduct.id && blogsByProduct.id === product?.id ? blogsByProduct.posts : []
-  // «En obra»: fotos y videos de trabajos reales asociados al producto
+  // «Liveshow» (antes «En obra»): fotos y videos de trabajos reales asociados al producto
   // (/public/galeria?producto_id=). Mismo patrón que las notas: el id va adentro del
   // estado para descartar lo que no es de este producto; sin media → [] y no hay
   // sección ni lengüeta.
@@ -330,7 +335,7 @@ function ProductDetailPage() {
   const soloKit = presentaciones.length === 0 && !!product?.presentacion?.texto
   const etiquetaPresentacion = (o) => o.label ?? t('productDetail.loose', 'Suelto')
   // Consulta por WhatsApp de ESTE producto (con su presentación): la usan el CTA de la
-  // barra de secciones y el botón «Consultar por este equipo» del visor de «En obra».
+  // barra de secciones y el botón «Consultar por este equipo» del visor de «Liveshow».
   const consultaHref = product
     ? `${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, estoy interesado en ${product.name}${presentacionElegida ? ` (${presentacionElegida.label ?? 'Suelto'})` : soloKit ? ` (${product.presentacion.texto})` : ''}`)}`
     : ''
@@ -407,11 +412,12 @@ function ProductDetailPage() {
     // #gallery no existe en el DOM y el tab llevaba a la nada.
     if (galleryImages.length > 1) list.push({ id: 'gallery', label: t('productDetail.tabs.gallery', 'Fotos') })
     if ((product?.videos?.length ?? 0) > 0) list.push({ id: 'video', label: t('productDetail.tabs.video', 'Video') })
-    // `nuevo`: la lengüeta se pinta con el color de marca (mockup C).
-    if (productMedia.length > 0) list.push({ id: 'media', label: t('productDetail.tabs.media', 'En obra'), nuevo: true })
     if ((product?.downloads?.length ?? 0) > 0) list.push({ id: 'downloads', label: t('productDetail.tabs.downloads', 'Descargas') })
     if ((product?.accessories?.length ?? 0) > 0) list.push({ id: 'accessories', label: t('productDetail.tabs.accessories', 'Accesorios') })
     if ((product?.technicalSpecs?.length ?? 0) > 0) list.push({ id: 'technical-specs', label: t('productDetail.tabs.technicalSpecs', 'Especificaciones') })
+    // Última, en el mismo orden que la página (la sección va debajo de «También te puede interesar»).
+    // `nuevo`: la lengüeta se pinta con el color de marca (mockup C).
+    if (productMedia.length > 0) list.push({ id: 'media', label: NOMBRE_LIVESHOW, sinTraducir: true, nuevo: true })
     return list
   }, [t, product, galleryImages.length, productMedia.length])
 
@@ -528,7 +534,7 @@ function ProductDetailPage() {
   }, [tabs])
 
   // Reveal de las secciones de la ficha (.kt-detail-anim). El hook engancha cada sección en
-  // cuanto se monta —«Video», «En obra», «Notas relacionadas» llegan con SU propio fetch, después
+  // cuanto se monta —«Video», «Liveshow», «Notas relacionadas» llegan con SU propio fetch, después
   // del primer render—, así que ya no hay deps a mano que olvidar (VIS-001).
 
   // El filtro viejo era /software|firmware/i SOBRE EL LABEL, y los documentos
@@ -573,6 +579,20 @@ function ProductDetailPage() {
     setPrevGalleryKey(galleryKey)
     setActiveImageIndex(0)
     setCurrentVideoIndex(0)
+  }
+
+  // Proporción del visor de fotos (ancho / alto): la de la PRIMERA foto que carga de este producto, y se mantiene
+  // al pasar de foto. Antes el visor medía lo que medía la foto del momento, así que con fotos de proporciones
+  // distintas las flechas y las miniaturas saltaban en cada paso (pedido de Fedev, 14-nov-2026). Las demás fotos
+  // entran enteras adentro (object-fit: contain). Va con su clave: al cambiar de producto se vuelve a medir.
+  const [proporcionVisor, setProporcionVisor] = useState({ key: null, valor: 0 })
+  const proporcionFoto = proporcionVisor.key === galleryKey ? proporcionVisor.valor : 0
+  const alCargarFoto = (event) => {
+    const img = event.currentTarget
+    img.dataset.cargada = '1'
+    if (!proporcionFoto && img.naturalWidth > 0 && img.naturalHeight > 0) {
+      setProporcionVisor({ key: galleryKey, valor: img.naturalWidth / img.naturalHeight })
+    }
   }
 
   // Centra la miniatura en la tira sin mover el scroll de la PÁGINA
@@ -693,16 +713,19 @@ function ProductDetailPage() {
     category: product.category,
     url: productUrl,
   })
+  // Nombre de la categoría (si la lista ya llegó y la categoría existe): entra en el <title> y en las migas.
+  const categoriaNombre = (product.category && nombresCategoria?.get(String(product.category))) || ''
   const breadcrumbLd = breadcrumbJsonLd([
     { name: 'Inicio', url: `${SITE}/` },
     { name: 'Productos', url: `${SITE}/products` },
+    ...(categoriaNombre ? [{ name: categoriaNombre, url: `${SITE}/products/${product.category}` }] : []),
     { name: product.name, url: productUrl },
   ])
 
   return (
     <section className="kt-detail-page" style={{ '--kt-detail-top': `${stickyTop}px` }}>
       <Seo
-        title={product.seoTitle}
+        title={tituloSeoProducto(product.name, categoriaNombre)}
         description={product.seoDescription}
         path={productPath}
         image={product.ogImage}
@@ -744,7 +767,7 @@ function ProductDetailPage() {
                     goToSection(tab.id)
                   }}
                 >
-                  {tab.label}
+                  {tab.sinTraducir ? <span translate="no">{tab.label}</span> : tab.label}
                 </button>
               ))}
             </div>
@@ -806,7 +829,7 @@ function ProductDetailPage() {
                   activeTab === tab.id ? 'border-primary text-[#f4f7fb]' : `border-transparent ${tab.nuevo ? 'text-primary' : 'text-[#c6ccd7]'}`
                 }`}
               >
-                {tab.label}
+                {tab.sinTraducir ? <span translate="no">{tab.label}</span> : tab.label}
               </button>
             ))}
           </div>
@@ -823,11 +846,17 @@ function ProductDetailPage() {
               >
                 {/* Envoltorio con el alto de la FOTO: la <figure> se estira al alto
                     de la columna derecha (grid stretch) y las flechas, centradas
-                    contra ella, quedaban ~100px por debajo del medio de la imagen. */}
-                <div className="relative">
+                    contra ella, quedaban ~100px por debajo del medio de la imagen.
+                    Con `data-fija` el envoltorio ya tiene la proporción de la primera foto y no cambia
+                    al pasar de foto: las flechas se quedan donde están (ver proporcionFoto). */}
+                <div
+                  className="kt-detail-stage relative"
+                  data-fija={proporcionFoto ? '1' : undefined}
+                  style={proporcionFoto ? { aspectRatio: String(proporcionFoto) } : undefined}
+                >
                   <button
                     type="button"
-                    className="block w-full cursor-zoom-in border-0 bg-transparent p-0"
+                    className="block h-full w-full cursor-zoom-in border-0 bg-transparent p-0"
                     onClick={() => setGalleryLightboxIndex(activeImageIndex)}
                     aria-label={`Abrir imagen principal de ${product.name}`}
                   >
@@ -837,7 +866,7 @@ function ProductDetailPage() {
                       key={galleryImages[activeImageIndex] || product.heroImage}
                       src={galleryImages[activeImageIndex] || product.heroImage}
                       alt={product.name}
-                      onLoad={(e) => { e.currentTarget.dataset.cargada = '1' }}
+                      onLoad={alCargarFoto}
                     />
                   </button>
                   {galleryImages.length > 1 ? (
@@ -921,32 +950,11 @@ function ProductDetailPage() {
                 <StockBarra nivel={presentacionElegida ? presentacionElegida.stockNivel : product.stockNivel} className="mt-4" />
                 {/* Contenido principal reservado para INNOVACIONES (la ficha técnica va en su tab).
                     Si no hay innovaciones cargadas, no se muestra nada acá. */}
-                {product.innovations.length > 0 ? (
+                {usaGrilla(product.innovations.length) ? (
                   <div className="mt-8 grid gap-4 border-t border-[#2a2a2a] pt-6">
-                    {/* Sin `.slice(0, 4)`: recortaba desde la quinta innovación
-                        sin avisar ni dar forma de ver el resto. Hoy el máximo
-                        cargado son 4, así que el corte no se veía —pero cuando
-                        el tenant cargue la quinta, desaparecía en silencio. */}
-                    {usaGrilla(product.innovations.length) ? (
-                      <InnovacionesGrilla items={product.innovations} arriba={stickyTop} />
-                    ) : product.innovations.map((inn) => (
-                      <article key={inn.title} className="kt-reveal-item flex items-start gap-3.5">
-                        {/* REDONDAS (pedido del cliente, oct-2026) y como ÍCONO: entera,
-                            centrada y del mismo tamaño que las demás, suba lo que
-                            suba el cliente. El encuadre lo hace InnovacionIcono. */}
-                        {inn.image ? (
-                          <InnovacionIcono src={inn.image} />
-                        ) : (
-                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                        )}
-                        <div className="grid gap-0.5">
-                          <span className="text-[length:var(--innov-titulo-size)] font-[weight:var(--innov-titulo-peso)] leading-[var(--innov-titulo-lh)] text-[color:var(--innov-titulo-color)]">{inn.title}</span>
-                          {inn.description ? (
-                            <span className="text-[length:var(--innov-texto-size)] leading-[var(--innov-texto-lh)] text-[color:var(--innov-texto-color)]">{inn.description}</span>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))}
+                    {/* Siempre recuadro de detalle en grande + grilla, también con una sola innovación (pedido de
+                        Fedev, 14-nov-2026). Antes, hasta 4 iban en una lista. Sin `.slice`: se muestran todas. */}
+                    <InnovacionesGrilla items={product.innovations} arriba={stickyTop} />
                   </div>
                 ) : null}
 
@@ -1096,14 +1104,6 @@ function ProductDetailPage() {
               })()}
             </section>
             </>
-            ) : null}
-
-            {/* «En obra»: pegada a «Video del producto». Sin media no se dibuja nada. */}
-            {productMedia.length > 0 ? (
-              <>
-              <div className="kt-graphene-separator" aria-hidden="true" />
-              <ProductMedia items={productMedia} productName={product.name} consultaHref={consultaHref} />
-              </>
             ) : null}
 
             {product.downloads.length > 0 ? (
@@ -1337,7 +1337,16 @@ function ProductDetailPage() {
               </>
             ) : null}
 
-            {/* Orden del cierre pedido por el cliente: relacionados → notas →
+            {/* «Liveshow» (antes «En obra»): debajo de «También te puede interesar» (pedido de Fedev, 14-nov-2026;
+                antes iba pegada a «Video del producto»). Sin media no se dibuja nada. */}
+            {productMedia.length > 0 ? (
+              <>
+              <div className="kt-graphene-separator" aria-hidden="true" />
+              <ProductMedia items={productMedia} productName={product.name} consultaHref={consultaHref} />
+              </>
+            ) : null}
+
+            {/* Orden del cierre pedido por el cliente: relacionados → Liveshow → notas →
                 comentarios. Va de lo más comercial (otros equipos) a lo más
                 editorial (cómo se usa) y termina en la voz de otros clientes. */}
             {productBlogs.length > 0 ? (

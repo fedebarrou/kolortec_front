@@ -458,7 +458,7 @@ function JoinPage() {
           className="kt-marquee border-y border-[rgba(244,223,51,0.18)] bg-[#070707]"
           style={{ '--kt-marquee-duration': '50s' }}
         >
-          <div className="kt-marquee-track" style={{ gap: 0 }}>
+          <div className="kt-marquee-track" style={{ '--kt-marquee-gap': '0px' }}>
             {[...PARTNERS, ...PARTNERS].map((p, i) => {
               const isClone = i >= PARTNERS.length
               return (
@@ -470,7 +470,7 @@ function JoinPage() {
                   aria-label={isClone ? undefined : `${visitSiteLabel}: ${p.name} (${p.region})`}
                   aria-hidden={isClone || undefined}
                   tabIndex={isClone ? -1 : 0}
-                  className="kt-marquee-item group inline-flex h-[88px] shrink-0 items-center gap-4 whitespace-nowrap border-l border-[rgba(244,223,51,0.18)] px-6 transition first:border-l-0 hover:bg-[#0d0d0d] sm:gap-5 sm:px-8"
+                  className="kt-marquee-item group inline-flex h-[88px] shrink-0 items-center gap-4 whitespace-nowrap border-l border-[rgba(244,223,51,0.18)] px-6 transition hover:bg-[#0d0d0d] sm:gap-5 sm:px-8"
                 >
                   <span
                     aria-hidden="true"

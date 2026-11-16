@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useLanguage } from '../../../shared/i18n/LanguageProvider'
 import { buildMarqueeLoop, marqueeDuration } from '../../../shared/utils/marquee'
 import { useMarqueeFill } from '../../../shared/hooks/useMarqueeFill'
@@ -37,10 +37,25 @@ function renderShape(shape, index) {
   }
 }
 
-// Proporción natural ya medida por logo. La tira REPITE cada marca varias veces: la
-// primera copia que carga la anota y las demás nacen con la medida final, sin
-// saltar de tamaño.
+// Proporción natural ya medida por logo, COMPARTIDA entre todas las copias. La tira
+// REPITE cada marca varias veces y el loop sólo es invisible si cada copia mide
+// exactamente lo mismo que las demás en todo momento. Antes cada copia guardaba su
+// propia medida al cargar SU imagen — y las copias son loading=lazy: las que están
+// fuera de pantalla no cargan, se quedaban con otro ancho y la vuelta del keyframe
+// caía corrida (hasta ~100px: el «corte» entre el fin y el inicio). Ahora la primera
+// copia que carga avisa y TODAS toman la medida final en el mismo render.
 const proporciones = new Map()
+const oyentes = new Set()
+const suscribir = (fn) => {
+  oyentes.add(fn)
+  return () => oyentes.delete(fn)
+}
+function anotarProporcion(src, r) {
+  if (proporciones.get(src) === r) return
+  proporciones.set(src, r)
+  oyentes.forEach((fn) => fn())
+}
+const useProporcion = (src) => useSyncExternalStore(suscribir, () => proporciones.get(src) ?? null, () => null)
 
 /**
  * El logo ya no mide un alto fijo: se iguala por ÁREA con medirLogo() (la misma
@@ -49,9 +64,9 @@ const proporciones = new Map()
  * carga no se conoce la proporción: se pinta a la altura base (83 × escala) y al
  * cargar toma su medida final.
  */
-function Mark({ logo, alt = '' }) {
+function Mark({ logo, alt = '', cargarYa = false }) {
   const src = logo.logo
-  const [proporcion, setProporcion] = useState(() => proporciones.get(src) ?? null)
+  const proporcion = useProporcion(src)
   if (src) {
     const { w, h } = medirLogo({ proporcion, escala: logo.escala, contexto: 'tira' })
     return (
@@ -59,15 +74,12 @@ function Mark({ logo, alt = '' }) {
         className="kt-clientlogo-img"
         src={src}
         alt={alt}
-        loading="lazy"
+        loading={cargarYa ? 'eager' : 'lazy'}
         decoding="async"
         style={{ width: w ?? 'auto', height: h }}
         onLoad={(e) => {
           const r = proporcionNatural(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
-          if (r) {
-            proporciones.set(src, r)
-            setProporcion(r)
-          }
+          if (r) anotarProporcion(src, r)
         }}
       />
     )
@@ -87,7 +99,7 @@ function PartnersStrip({ logos }) {
   const clientLogos = useMemo(() => (Array.isArray(logos) ? logos : []), [logos])
   // La lista se REPITE hasta llenar la tira (par de veces: el keyframe desplaza
   // -50% y la segunda mitad tiene que ser idéntica a la primera para que la
-  // costura no se vea). Duplicarla una sola vez alcanzaba con muchas marcas, pero
+  // costura no se vea; lo prueba scripts/check-tira-marcas-navegador.mjs). Duplicarla una sola vez alcanzaba con muchas marcas, pero
   // con 3 o 4 cargadas el track medía menos que la pantalla y la tira giraba medio
   // vacía. De última las marcas se repiten, que es lo que se espera de un carrusel
   // de logos. Las copias son decorativas (aria-hidden): no se leen N veces.
@@ -97,10 +109,35 @@ function PartnersStrip({ logos }) {
   // más rápida cuantas más marcas hubiera cargadas.
   const duration = marqueeDuration(clientLogos.length, 7, 38)
 
-  if (clientLogos.length === 0) return null
+  // Los logos se piden TODOS JUNTOS cuando la tira está por entrar en pantalla, no de a uno al asomarse.
+  // Un logo sin cargar no tiene ancho (no se conoce su proporción); con `loading="lazy"` cada uno cargaba recién al
+  // llegar al borde y aparecía de golpe —hasta 250px— empujando a los vecinos que ya se veían: «saltos de los
+  // elementos» (Fedev, 13-nov-2026; medido cuadro a cuadro contra las 43 marcas reales). Con la tira todavía a
+  // ~1500px de la pantalla se cargan todos, y cuando se la ve ya tienen su medida final.
+  // No se piden al abrir la página: la tira está al fondo de la home y serían decenas de imágenes compitiendo con el
+  // hero. Sin IntersectionObserver (navegador viejo, pre-render) se cargan de entrada.
+  const seccionRef = useRef(null)
+  const [cerca, setCerca] = useState(() => typeof IntersectionObserver === 'undefined')
+  const hayMarcas = clientLogos.length > 0
+  useEffect(() => {
+    const el = seccionRef.current
+    if (!el || cerca) return undefined
+    const io = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) setCerca(true)
+      },
+      { rootMargin: '1500px 0px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [cerca, hayMarcas])
+
+  if (!hayMarcas) return null
 
   return (
     <section
+      ref={seccionRef}
+      data-logos={cerca ? 'cargando-todos' : 'en-espera'}
       className="kt-partners-strip w-full bg-[#050505] px-6 pb-[clamp(56px,7vw,96px)] lg:px-40"
       aria-label={t('landing.partners.aria', 'Marcas que trabajan con Kolortec')}
     >
@@ -121,7 +158,7 @@ function PartnersStrip({ logos }) {
             const { mostrarNombre, itemClass, alt, title, ariaLabel } = decidirNombreMarca(logo)
             const contenido = (
               <>
-                <Mark logo={logo} alt={alt} />
+                <Mark logo={logo} alt={alt} cargarYa={cerca} />
                 {mostrarNombre && <span>{logo.name}</span>}
               </>
             )
