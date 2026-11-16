@@ -7,7 +7,7 @@ services:
     build:
       context: ..
       args:
-        VITE_API_BASE_URL: https://api.soytiendita.store/api
+        VITE_API_BASE_URL: /_tiendita/api
     image: kolortec-web
     container_name: kolortec_web
     restart: unless-stopped

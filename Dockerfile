@@ -8,7 +8,7 @@ RUN npm ci
 COPY . .
 # API de tiendita (build-time, Vite lo inlinea). El tenant se resuelve por dominio
 # en runtime (accountHost.js); el fallback de cuenta queda vacío en prod.
-ARG VITE_API_BASE_URL=https://api.soytiendita.store/api
+ARG VITE_API_BASE_URL=/_tiendita/api
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ARG VITE_TIENDITA_ACCOUNT_HOST=
 ENV VITE_TIENDITA_ACCOUNT_HOST=$VITE_TIENDITA_ACCOUNT_HOST
