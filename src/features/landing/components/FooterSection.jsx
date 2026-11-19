@@ -118,7 +118,7 @@ function FooterSection() {
                 <button
                   key={`${src}-${index}`}
                   type="button"
-                  className="kt-marquee-item kt-marquee-item-square m-0 cursor-pointer border-0 bg-transparent p-0"
+                  className="kt-marquee-item kt-marquee-item-footer m-0 cursor-pointer border-0 bg-transparent p-0"
                   onClick={() => setLightboxIndex(index % galleryImages.length)}
                   aria-label={`${t('footer.openImage', 'Abrir imagen')} ${(index % galleryImages.length) + 1}`}
                 >

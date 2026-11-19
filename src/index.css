@@ -674,9 +674,11 @@ html {
   /* Galeria del footer e Instagram. Subidas: a 240px de tope, en un monitor
      ancho entraban diez fotos por pantalla y no se veia lo que hay adentro de
      ninguna — que es todo el punto de una tira de fotos. */
-  .kt-marquee-item-square {
+  /* Galeria del pie: 4:5 (el formato de Instagram), pedido del cliente. Era 1:1;
+     se mantiene el ANCHO que tenia y solo crece el alto. */
+  .kt-marquee-item-footer {
     width: clamp(210px, 19vw, 340px);
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 5;
   }
 
   .kt-marquee-item-portrait {

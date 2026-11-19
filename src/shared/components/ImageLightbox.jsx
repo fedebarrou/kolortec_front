@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLanguage } from '../i18n/LanguageProvider'
+import { aItemDeGaleria } from '../utils/igMedia'
 
 function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Imagen' }) {
   const { t } = useLanguage()
-  const safeImages = useMemo(() => images?.filter(Boolean) ?? [], [images])
+  // Cada entrada es la url de una foto o { src, video }: con `video` (el .mp4 de
+  // un reel) se muestra un reproductor en vez de la tapa.
+  const safeImages = useMemo(() => (images ?? []).map(aItemDeGaleria).filter(Boolean), [images])
   const [offset, setOffset] = useState(0)
+  // .mp4 que no cargó (las urls de Instagram vencen): se muestra la tapa en vez
+  // de un reproductor negro. Cubre el celular, donde no hubo hover que lo detecte antes.
+  const [videosRotos, setVideosRotos] = useState(() => new Set())
 
   const handleClose = useCallback(() => {
     setOffset(0)
@@ -20,6 +26,9 @@ function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Ima
 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') handleClose()
+      // Con el foco en el reproductor las flechas adelantan/retroceden el video:
+      // no tienen que cambiar además de publicación.
+      if (event.target?.tagName === 'VIDEO') return
       if (event.key === 'ArrowRight') {
         setOffset((prev) => prev + 1)
       }
@@ -39,7 +48,7 @@ function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Ima
   if (!isOpen || safeImages.length === 0) return null
 
   const activeIndex = ((initialIndex + offset) % safeImages.length + safeImages.length) % safeImages.length
-  const currentImage = safeImages[activeIndex]
+  const actual = safeImages[activeIndex]
   const goNext = () => setOffset((prev) => prev + 1)
   const goPrev = () => setOffset((prev) => prev - 1)
 
@@ -69,7 +78,22 @@ function ImageLightbox({ images, initialIndex = 0, isOpen, onClose, label = 'Ima
 
         <figure className="relative m-0 h-full w-full">
           <div className="absolute inset-x-4 bottom-2 top-[44px] md:inset-x-6 md:top-[48px]">
-            <img src={currentImage} alt={`${label} ${activeIndex + 1}`} className="h-full w-full object-contain" />
+            {actual.video && !videosRotos.has(actual.video) ? (
+              <video
+                key={actual.video}
+                src={actual.video}
+                poster={actual.src}
+                className="h-full w-full object-contain"
+                controls
+                autoPlay
+                loop
+                playsInline
+                onError={() => setVideosRotos((prev) => (prev.has(actual.video) ? prev : new Set(prev).add(actual.video)))}
+                aria-label={`${label} ${activeIndex + 1}`}
+              />
+            ) : (
+              <img src={actual.src} alt={`${label} ${activeIndex + 1}`} className="h-full w-full object-contain" />
+            )}
           </div>
           <figcaption className="pointer-events-none absolute bottom-2 rounded-full bg-black/55 px-2.5 py-1 text-[0.75rem] font-bold uppercase tracking-[0.08em] text-[#d7dbe2]">
             {activeIndex + 1} / {safeImages.length}

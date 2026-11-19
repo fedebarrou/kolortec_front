@@ -23,6 +23,7 @@ import { setProtectedTermsLoader } from './dynamicTranslationService.js'
 import { normalizarEscala } from '../utils/marcas-tamano.js'
 import { normalizarNamePosition } from '../utils/marcas-nombre.js'
 import { textoSinMarcas } from '../../features/guides/helpers/inlineMarks.js'
+import { mapIgItems } from '../utils/igMedia.js'
 
 // Valores admitidos de `slide.scrim`. 'kolortec' = 4 capas NEGRAS (look original);
 // 'kolortec-light' = las mismas capas en crema, para escenas sobre fondo claro.
@@ -394,14 +395,13 @@ function mapServicios(raw) {
 function mapGallery(igData, galeriaData) {
   // Try Instagram first. `connected` = hay un Instagram REAL asociado al tenant (no galería).
   if (igData && igData.connected && Array.isArray(igData.data) && igData.data.length > 0) {
-    const images = igData.data
-      // preview_url lo arma tiendita (thumbnail del video o la foto). media_url de un
-      // VIDEO/REEL es el .mp4: como <img> salía rota.
-      .map((item) => item.preview_url || item.thumbnail_url || item.media_url)
-      .filter(Boolean)
+    // `items` lleva además el .mp4 de los reels (ver igMedia.js) para que el
+    // carrusel los reproduzca; `images` sigue siendo la lista de tapas/fotos.
+    const items = mapIgItems(igData.data)
     return {
       ...defaultLandingContent.gallery,
-      images,
+      images: items.map((item) => item.src),
+      items,
       connected: true,
     }
   }
