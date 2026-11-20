@@ -5,7 +5,28 @@
 
 ## En producción
 
-- **Código desplegado:** `0adc558` (main), el 2026-11-20 10:42Z, deploy **20261120** (sólo `kolortec_web`, `--no-deps`).
+- **Código desplegado:** `10c736d` (main), el 2026-11-20 11:52Z, deploy **20261120b** (segundo del día; sólo `kolortec_web`,
+  `--no-deps`). Trae `10c736d`: los tres rojos de la suite arreglados — las 10 claves `productDetail.media.*` en inglés y
+  español (la galería de fotos y videos de la ficha ya no muestra español en inglés), el import de `customFonts` con `.js`,
+  `alturaDelHero` sin el `heroFrame` que no usaba y la excepción de fast refresh en `msSalidaDelPaso`. **Suite corrida en
+  local y VERDE** antes de desplegar (lint, check-i18n-parity, check-lineas, check-ig-video, check-hero-altura,
+  check-capas-hero, vite build); joan aprobó el diff. No se corrieron los checks que necesitan un vite en 5173
+  (check-blog-marcas, check-filtros, la parte E2E de check-media, check-volver-categoria). Antes de tocar: `/opt/kolortec`
+  idéntico a `git archive 0adc558` (697 archivos); disco 35 %. tgz `/opt/_upload/kolortec-20261120b-lf.tar.gz` sha256
+  `0fa350cd…` (67.917.237 B, igual local y VPS). Imagen `2255c73871ab` (antes `7600c1575873` = `0adc558`, etiquetada
+  `kolortec-web:pre-20261120b`). Restarts 0, `nginx -t` OK, 0 errores en el log; los mismos 25 contenedores y el Caddyfile
+  (`2eb2a5dd…`) igual antes y después. Afuera (repetido desde la PC): `/` 200 cartel 1510 B; `/?preview=x` 200 pide
+  `index-YZZVdLvn.js` (antes `index-CHZf2KIf.js`) e `index-CU1HKS18.css` (sin cambio); «Ask about this unit» y «Real work
+  with» están en `LanguageProvider-JrnGkYDP.js`; siguen el pie 4:5 en el CSS y `data-ig-video` en `HomePage-BZ1hcrJq.js`.
+  **No se abrió en un navegador contra producción.** Ventana abierta por Fedev 11:49:05Z, 6 usos 11:50:08Z → 11:51:58Z,
+  cerrada 11:58:52Z.
+  **Rollback 20261120b:** `mv /opt/kolortec /opt/kolortec.fallido-20261120b && mv /opt/kolortec.prev-20261120b /opt/kolortec
+  && docker tag kolortec-web:pre-20261120b kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
+  --no-build kolortec_web` (vuelve a `7600c1575873`, pide `index-CHZf2KIf.js`).
+  **Pendiente de decidir (Fedev):** el compose de kolortec y el de tiendita comparten nombre de proyecto (`deploy`), por eso
+  `compose up` avisa huérfanos de tiendita. Hoy no rompe nada, pero un `--remove-orphans` desde `/opt/kolortec/deploy`
+  bajaría tiendita: conviene fijar `name:` en el compose.
+- **Deploy anterior:** `0adc558` (main), el 2026-11-20 10:42Z, deploy **20261120** (sólo `kolortec_web`, `--no-deps`).
   Trae `9e8f2b7` (los reels de Instagram se reproducen al apoyar el mouse y en el visor; galería del pie 4:5 con el mismo
   ancho) y `0adc558` (el reel que Instagram entrega sin `.mp4` por derechos de autor no se muestra; reaparece solo cuando
   vuelve a llegar el video). **Suite:** se corrió en local antes de desplegar y dio ROJO en tres pasos que no son de este
@@ -29,7 +50,7 @@
   **Visto en el VPS y no tocado:** tag `kolortec-web:pre-20261116` (= `779bfeab5942`) que este archivo no registraba; el
   Caddyfile ahora es sha256 `2eb2a5dd…` (el 14-nov era `344df18a…`; cambió antes de este deploy, igual antes y después);
   `compose up` avisa contenedores huérfanos de tiendita porque comparten el proyecto `deploy` (no se usó `--remove-orphans`).
-- **Deploy anterior:** `be670b1` (main), el 2026-11-14 20:39Z, deploy **20261114** (sólo `kolortec_web`, `--no-deps`;
+- **Deploy 20261114:** `be670b1` (main), el 2026-11-14 20:39Z, deploy **20261114** (sólo `kolortec_web`, `--no-deps`;
   **desplegado sin suite completa, por decisión de Fedev**; vite build local verde). Trae `0d4320c` (innovaciones siempre con
   recuadro + grilla; «Liveshow» sin traducir y debajo de relacionados), `e2a506c` (flechas de la foto fijas) y `be670b1`
   (tilde en «Especificación Técnica»). Antes de tocar: `/opt/kolortec` idéntico a `git archive 9830c6b` (693 archivos,
