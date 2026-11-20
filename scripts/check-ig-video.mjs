@@ -2,7 +2,7 @@
  * check-ig-video.mjs — los reels de Instagram se reproducen y la galería del pie es 4:5.
  *
  *  1) UNIDAD  — src/shared/utils/igMedia.js: un VIDEO con media_url conserva el .mp4; uno SIN media_url
- *               (Instagram no lo manda en reels con audio con derechos) queda como imagen; la tapa de un
+ *               (Instagram no lo manda en reels con derechos de autor) NO se muestra y reaparece si vuelve; la tapa de un
  *               video nunca es el .mp4; una foto no tiene video.
  *  2) FUENTES — el carrusel y el lightbox usan <video>, contentService pasa `items`, y la galería del
  *               pie usa la clase 4:5 con el ancho de siempre.
@@ -33,11 +33,14 @@ const FEED = [
 
 function unidad(mod) {
   const items = mod.mapIgItems(FEED)
-  assert.equal(items.length, 4, 'el video sin tapa y el null se descartan')
+  assert.equal(items.length, 3, 'el reel sin .mp4, el video sin tapa y el null se descartan')
   assert.deepEqual(items[0], { src: 'https://cdn/a.jpg', video: 'https://cdn/a.mp4', permalink: 'https://ig/a' }, 'reel con .mp4')
-  assert.equal(items[1].video, null, 'reel sin media_url queda como imagen')
-  assert.equal(items[2].video, null, 'una foto no tiene video')
-  assert.equal(items[3].src, 'https://cdn/e.jpg', 'álbum: usa media_url como foto')
+  assert.ok(!items.some((i) => i.permalink === 'https://ig/b'), 'reel sin media_url (derechos de autor) no se muestra')
+  assert.equal(items[1].video, null, 'una foto no tiene video')
+  assert.equal(items[2].src, 'https://cdn/e.jpg', 'álbum: usa media_url como foto')
+  // Sin lista negra: el mismo reel, cuando Instagram vuelve a mandar el .mp4, reaparece.
+  const resuelto = mod.mapIgItems([{ ...FEED[1], media_url: 'https://cdn/b.mp4' }])
+  assert.deepEqual(resuelto, [{ src: 'https://cdn/b.jpg', video: 'https://cdn/b.mp4', permalink: 'https://ig/b' }], 'resuelto en Instagram → reaparece')
   assert.ok(items.every((i) => !/\.mp4$/.test(i.src)), 'la tapa nunca es el .mp4')
   assert.deepEqual(mod.mapIgItems(undefined), [])
   assert.deepEqual(mod.aItemDeGaleria('https://cdn/x.jpg'), { src: 'https://cdn/x.jpg', video: null })

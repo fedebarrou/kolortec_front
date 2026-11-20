@@ -7,8 +7,11 @@
  * tapa. Antes el front se quedaba SÓLO con la tapa: los reels salían como fotos
  * fijas, sin forma de reproducirlos.
  *
- * Ojo: Instagram NO manda `media_url` en algunos reels (audio con derechos).
- * Esos quedan como imagen — no hay .mp4 que reproducir.
+ * Ojo: Instagram NO manda `media_url` cuando el reel tiene material con
+ * derechos de autor (típicamente el audio). Esos reels NO se muestran (regla del
+ * dueño, 20-nov-2026: «siempre que estén ilegal los sacamos»). No hay lista
+ * negra: si la marca lo resuelve en Instagram, el .mp4 vuelve a llegar y el
+ * reel reaparece solo.
  */
 
 /** @returns {{ src: string, video: string|null, permalink: string }[]} */
@@ -19,6 +22,7 @@ export function mapIgItems(data) {
       if (!item) return null
       const esVideo = String(item.media_type || '').toUpperCase() === 'VIDEO'
       const video = esVideo && item.media_url ? item.media_url : null
+      if (esVideo && !video) return null
       // La tapa de un video NUNCA es media_url: es el .mp4 y como <img> sale rota.
       // Ojo con preview_url: tiendita lo arma como `thumbnail_url ?: media_url`, así
       // que en un video SIN tapa viene igual al .mp4. Ese video se descarta: la tira
