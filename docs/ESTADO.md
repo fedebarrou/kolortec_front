@@ -1,11 +1,35 @@
-# Estado de kolortec — al 2026-11-14
+# Estado de kolortec — al 2026-11-20
 
 > Foto del día. Lo que cambia seguido (deploys, pendientes de producción) vive en tiendita:
 > `tiendita-back/docs/BITACORA.md` y `tiendita-back/docs/PENDIENTES-VPS.md`.
 
 ## En producción
 
-- **Código desplegado:** `be670b1` (main), el 2026-11-14 20:39Z, deploy **20261114** (sólo `kolortec_web`, `--no-deps`;
+- **Código desplegado:** `0adc558` (main), el 2026-11-20 10:42Z, deploy **20261120** (sólo `kolortec_web`, `--no-deps`).
+  Trae `9e8f2b7` (los reels de Instagram se reproducen al apoyar el mouse y en el visor; galería del pie 4:5 con el mismo
+  ancho) y `0adc558` (el reel que Instagram entrega sin `.mp4` por derechos de autor no se muestra; reaparece solo cuando
+  vuelve a llegar el video). **Suite:** se corrió en local antes de desplegar y dio ROJO en tres pasos que no son de este
+  cambio y ya estaban en producción (`npm run lint`: 2 errores en `heroAltura.js` y `ElementView.jsx`;
+  `check-i18n-parity.mjs`: 14 claves `productDetail.media.*` sin resolver; `check-lineas.mjs` no arranca por el import sin
+  extensión de `customFonts` en `contentService.js`); `check:ig-video` y `npx vite build` verdes. Se le avisó a Fedev con la
+  recomendación de desplegar igual; **abrió la ventana sin contestar esa pregunta en palabras** y se tomó como un sí. Los
+  tres rojos quedan pendientes. Antes de tocar: `/opt/kolortec` idéntico a `git archive be670b1` (694 archivos, sha256 uno a
+  uno; sin `.env` ni nada sólo-VPS); disco 34 %. tgz `/opt/_upload/kolortec-20261120-lf.tar.gz` sha256 `ca25bcf1…`
+  (67.915.721 B, igual local y VPS, 697 archivos). Imagen `7600c1575873` (antes `779bfeab5942` = `be670b1`, etiquetada
+  `kolortec-web:pre-20261120`). Restarts 0, `nginx -t` OK, 0 errores en el log; los mismos 25 contenedores antes y después.
+  Afuera (repetido desde la PC): `/` 200 cartel 1510 B; `/?preview=x` 200 pide `index-CHZf2KIf.js` (antes
+  `index-DPVQEnkv.js`) e `index-CU1HKS18.css`; el CSS trae `.kt-marquee-item-footer{aspect-ratio:4/5;width:clamp(210px,19vw,340px)}`
+  y 0 apariciones de `kt-marquee-item-square`; `data-ig-video` está en el chunk `HomePage-Cell8Xog.js` y la clase del pie
+  en `index-CHZf2KIf.js`; `/rentals?preview=x` 301 → `/sumate?preview=x`. **No se volvió a abrir en un navegador contra
+  producción** (la reproducción se probó en local contra el API real antes del deploy). Ventana `peligro.py` abierta por
+  Fedev, 6 usos 10:39:20Z → 10:43:15Z; venció sola 11:23Z.
+  **Rollback 20261120:** `mv /opt/kolortec /opt/kolortec.fallido-20261120 && mv /opt/kolortec.prev-20261120 /opt/kolortec
+  && docker tag kolortec-web:pre-20261120 kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
+  --no-build kolortec_web` (vuelve a `779bfeab5942`, pide `index-DPVQEnkv.js`).
+  **Visto en el VPS y no tocado:** tag `kolortec-web:pre-20261116` (= `779bfeab5942`) que este archivo no registraba; el
+  Caddyfile ahora es sha256 `2eb2a5dd…` (el 14-nov era `344df18a…`; cambió antes de este deploy, igual antes y después);
+  `compose up` avisa contenedores huérfanos de tiendita porque comparten el proyecto `deploy` (no se usó `--remove-orphans`).
+- **Deploy anterior:** `be670b1` (main), el 2026-11-14 20:39Z, deploy **20261114** (sólo `kolortec_web`, `--no-deps`;
   **desplegado sin suite completa, por decisión de Fedev**; vite build local verde). Trae `0d4320c` (innovaciones siempre con
   recuadro + grilla; «Liveshow» sin traducir y debajo de relacionados), `e2a506c` (flechas de la foto fijas) y `be670b1`
   (tilde en «Especificación Técnica»). Antes de tocar: `/opt/kolortec` idéntico a `git archive 9830c6b` (693 archivos,
