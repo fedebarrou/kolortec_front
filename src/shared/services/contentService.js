@@ -17,7 +17,7 @@ import { defaultLandingContent } from '../../features/landing/data/landingData.j
 import { resolveAccountHost } from './accountHost.js'
 import { DEMO_MODE } from '../../config.js'
 import { normalizeScrollDesign, completarAjustes } from '../../features/landing/_hero-renderer/scroll-contract.js'
-import { mapCustomFonts } from '../utils/customFonts'
+import { mapCustomFonts } from '../utils/customFonts.js'
 import { safeSrc } from '../../features/landing/_hero-renderer/cssSafe.js'
 import { setProtectedTermsLoader } from './dynamicTranslationService.js'
 import { normalizarEscala } from '../utils/marcas-tamano.js'

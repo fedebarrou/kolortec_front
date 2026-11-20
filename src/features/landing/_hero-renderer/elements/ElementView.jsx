@@ -93,6 +93,7 @@ const STAGGER_MAX_MS = 600
 // El escalonado no existe acá (el panel no lo ofrece en este modo).
 
 /** Cuánto (ms) debe seguir montado el paso saliente en «Por pasos»: lo que tarda su salida más lenta (piso 700, techo 2000). */
+// eslint-disable-next-line react-refresh/only-export-components -- idem effectiveProps: helper puro de tiempos que usa ScrollRenderer; el archivo no se parte.
 export function msSalidaDelPaso(elementos) {
   return msSalidaSnap(elementos, ANIM_TYPES)
 }

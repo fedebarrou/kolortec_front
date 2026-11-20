@@ -21,7 +21,9 @@ export function eligioAltoMovil(settings) {
  *   · escritorio / tablet: «Pantalla completa» (también por compat) → el viewport entero; modo Encabezado → undefined.
  * ANTES el celular tenía 65svh clavado en código e ignoraba aspectMobile, heightMobile y el modo.
  */
-export function alturaDelHero({ breakpoint, settings, heroFrame }) {
+// HeroSection sigue pasando `heroFrame` (el marco de la cuenta) y check-hero-altura lo exige: acá se IGNORA a propósito
+// —su mobile_height_vh ya no decide el alto—, por eso no se desestructura.
+export function alturaDelHero({ breakpoint, settings }) {
   if (breakpoint === 'mobile') {
     if (heroPantallaCompletaElegida(settings)) return ALTO_PANTALLA
     if (eligioAltoMovil(settings)) return undefined
