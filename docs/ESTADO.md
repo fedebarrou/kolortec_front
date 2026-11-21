@@ -1,11 +1,34 @@
-# Estado de kolortec — al 2026-11-20
+# Estado de kolortec — al 2026-11-21
 
 > Foto del día. Lo que cambia seguido (deploys, pendientes de producción) vive en tiendita:
 > `tiendita-back/docs/BITACORA.md` y `tiendita-back/docs/PENDIENTES-VPS.md`.
 
 ## En producción
 
-- **Código desplegado:** `10c736d` (main), el 2026-11-20 11:52Z, deploy **20261120b** (segundo del día; sólo `kolortec_web`,
+- **Código desplegado:** `0899c8a` (main), el 2026-11-21 02:50Z, deploy **20261120c** (tercero de la jornada del 20-nov;
+  sólo `kolortec_web`, `--no-deps`, sin `--remove-orphans`). Trae `0899c8a`: «Guía de mantenimiento» lleva al blog;
+  `/garantias` deja de ser página y redirige a `/soporte/guias` (`App.jsx` + `location = /garantias { return 301
+  /soporte/guias$is_args$args; }` en `deploy/nginx-spa.conf`); sale del sitemap y de `llms.txt`; se borra
+  `src/features/warranty/`. **Desplegado SIN suite completa, por decisión de Fedev** («Deploy sin suite»); en local
+  pasaron `check-sitemap-rutas.mjs` (12 casos), paridad de traducciones, eslint y `vite build`; joan (navegador) y heimdall
+  (regla de nginx) aprobaron. Antes de tocar: `/opt/kolortec` idéntico a `git archive 10c736d` (697 archivos, sha256 uno a
+  uno); disco 36 %. tgz `/opt/_upload/kolortec-20261120c-lf.tar.gz` sha256 `ee518831…f1c4` (67.908.914 B, igual local y
+  VPS); árbol nuevo idéntico a `git archive 0899c8a` (694 archivos, 0 con CRLF). Imagen `31c4a6ac794b` (antes `2255c73871ab`
+  = `10c736d`, etiquetada `kolortec-web:pre-20261120c`). Restarts 0, `nginx -t` OK, 0 errores en el log; los mismos 25
+  contenedores (sha256 de la lista de nombres `32a31a12…` igual antes y después) y el Caddyfile (`2eb2a5dd…`) igual.
+  Afuera (desde la PC, 02:51Z): `/garantias?preview=x` 301 `Location: /soporte/guias?preview=x` (`Server: nginx`,
+  `Cache-Control: max-age=86400`); `/garantias?preview=x&x=1` 301 → `/soporte/guias?preview=x&x=1`;
+  `/soporte/guias?preview=x` 200 24.757 B con `index-BqdQkDPx.js`; `/?preview=x` pide `index-BqdQkDPx.js` (antes
+  `index-YZZVdLvn.js`) e `index-DqcD8IiO.css` (antes `index-CU1HKS18.css`); `/sitemap.xml` 200 y `/llms.txt` 200 con 0
+  apariciones de `garantias` (antes 1 y 1). **Sin `?preview` el 301 no se ve:** `/garantias`, `/garantias?x=1` y
+  `/soporte/guias` dan 200 1510 B con `Server: Caddy`, porque el cartel «Sitio en construcción» lo sirve Caddy antes de
+  llegar al contenedor; pasa lo mismo con `/rentals`, que ya tenía su 301. El 301 sin preview recién va a verse cuando se
+  publique la cuenta. **No se abrió en un navegador contra producción.** Ventana abierta por Fedev 02:48:54Z (vence
+  03:33:54Z), 8 usos 02:49:12Z → 02:51:39Z; al escribir esto seguía abierta y la cierra Fedev.
+  **Rollback 20261120c:** `mv /opt/kolortec /opt/kolortec.fallido-20261120c && mv /opt/kolortec.prev-20261120c /opt/kolortec
+  && docker tag kolortec-web:pre-20261120c kolortec-web:latest && cd /opt/kolortec/deploy && docker compose up -d --no-deps
+  --no-build kolortec_web` (vuelve a `2255c73871ab` = `10c736d`, pide `index-YZZVdLvn.js`).
+- **Deploy 20261120b:** `10c736d` (main), el 2026-11-20 11:52Z, deploy **20261120b** (segundo del día; sólo `kolortec_web`,
   `--no-deps`). Trae `10c736d`: los tres rojos de la suite arreglados — las 10 claves `productDetail.media.*` en inglés y
   español (la galería de fotos y videos de la ficha ya no muestra español en inglés), el import de `customFonts` con `.js`,
   `alturaDelHero` sin el `heroFrame` que no usaba y la excepción de fast refresh en `msSalidaDelPaso`. **Suite corrida en
@@ -26,7 +49,7 @@
   **Pendiente de decidir (Fedev):** el compose de kolortec y el de tiendita comparten nombre de proyecto (`deploy`), por eso
   `compose up` avisa huérfanos de tiendita. Hoy no rompe nada, pero un `--remove-orphans` desde `/opt/kolortec/deploy`
   bajaría tiendita: conviene fijar `name:` en el compose.
-- **Deploy anterior:** `0adc558` (main), el 2026-11-20 10:42Z, deploy **20261120** (sólo `kolortec_web`, `--no-deps`).
+- **Deploy 20261120:** `0adc558` (main), el 2026-11-20 10:42Z, deploy **20261120** (sólo `kolortec_web`, `--no-deps`).
   Trae `9e8f2b7` (los reels de Instagram se reproducen al apoyar el mouse y en el visor; galería del pie 4:5 con el mismo
   ancho) y `0adc558` (el reel que Instagram entrega sin `.mp4` por derechos de autor no se muestra; reaparece solo cuando
   vuelve a llegar el video). **Suite:** se corrió en local antes de desplegar y dio ROJO en tres pasos que no son de este
