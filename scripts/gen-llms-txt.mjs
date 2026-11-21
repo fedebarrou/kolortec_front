@@ -49,7 +49,6 @@ function buildLlmsTxt() {
      scripts/check-sitemap-rutas.mjs. */
   sections.push(line('- [Descargas y soporte técnico](', SITE, '/descargas): Manuales, firmware y librerías de cada equipo.'))
   sections.push(line('- [Guías técnicas](', SITE, '/soporte/guias): Diagnóstico, mantenimiento y reparación de iluminación profesional.'))
-  sections.push(line('- [Garantía](', SITE, '/garantias): Garantía 12 meses + política de soporte.'))
   sections.push(line('- [Sumate: rentals y distribuidores](', SITE, '/sumate): Programa para casas de alquiler, productoras y red de distribuidores.'))
   sections.push(line('- [Contacto](', SITE, '/contacto): Formulario directo a equipo comercial.'))
   sections.push('')

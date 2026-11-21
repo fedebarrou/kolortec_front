@@ -16,8 +16,9 @@
  *
  * Hasta sep-2026 acá vivía `5491155555555`, un relleno (55-5555): la fila
  * social y el "Consulta" de la ficha linkeaban a un número inexistente EN
- * PRODUCCIÓN. En `maintenanceGuides.js` hay otro más, `5491168985633`, que
- * quedó sin confirmar; si el cliente dice que ése es el bueno, se cambia acá.
+ * PRODUCCIÓN. La vieja página /garantias (borrada el 20-nov-2026, quedó en el
+ * historial de git) usaba otro más, `5491168985633`, que quedó sin confirmar;
+ * si el cliente dice que ése es el bueno, se cambia acá.
  *
  * `E164` va sin '+' ni separadores porque así lo exige wa.me; `VISIBLE` es lo
  * único que se lee en pantalla y tiene que quedar en sincronía con el otro.

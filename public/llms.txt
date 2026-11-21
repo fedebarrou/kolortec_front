@@ -9,7 +9,6 @@ Kolortec diseña y fabrica luminarias profesionales con foco en durabilidad y so
 - [Catálogo de productos](https://kolortec.com.ar/products): Categorías y modelos por aplicación.
 - [Descargas y soporte técnico](https://kolortec.com.ar/descargas): Manuales, firmware y librerías de cada equipo.
 - [Guías técnicas](https://kolortec.com.ar/soporte/guias): Diagnóstico, mantenimiento y reparación de iluminación profesional.
-- [Garantía](https://kolortec.com.ar/garantias): Garantía 12 meses + política de soporte.
 - [Sumate: rentals y distribuidores](https://kolortec.com.ar/sumate): Programa para casas de alquiler, productoras y red de distribuidores.
 - [Contacto](https://kolortec.com.ar/contacto): Formulario directo a equipo comercial.
 

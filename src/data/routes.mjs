@@ -19,7 +19,6 @@ export function listStaticRoutes() {
     { path: '/servicios', priority: 0.7, changefreq: 'monthly' },
     { path: '/descargas', priority: 0.9, changefreq: 'weekly' },
     { path: '/soporte/guias', priority: 0.8, changefreq: 'weekly' },
-    { path: '/garantias', priority: 0.7, changefreq: 'monthly' },
     { path: '/contacto', priority: 0.6, changefreq: 'monthly' },
     /* /sumate y NO /distribuidores ni /rentals: esas dos hoy redirigen a /sumate (App.jsx). Un sitemap que lista
        redirecciones le hace gastar rastreo a Google en URLs que no son la página, y dejaba afuera la que sí lo es.

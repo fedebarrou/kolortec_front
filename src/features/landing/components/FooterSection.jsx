@@ -68,11 +68,12 @@ function FooterSection() {
       }))
     : [{ key: 'all', label: t('a11y.allProducts', 'Ver productos'), to: '/products' }]
   const libraryLinks = t('footer.libraryLinks', ['Manuales', 'Librerias'])
-  // /garantias no estaba enlazada desde ningún lado (página huérfana) y es
+  // «Guía de Mantenimiento» va al blog (/soporte/guias). Antes iba a /garantias,
+  // una segunda página de guías que el cliente vio como «otro blog» (20-nov). Es
   // exactamente lo que esta columna promete: material de soporte.
   const supportItems = [
     ...libraryLinks.map((label) => ({ key: `lib-${label}`, label, to: '/descargas' })),
-    { key: 'garantias', label: t('pageTitle.warranty', 'Guía de Mantenimiento'), to: '/garantias' },
+    { key: 'guias', label: t('pageTitle.warranty', 'Guía de Mantenimiento'), to: '/soporte/guias' },
     // Liveshow (pedido del cliente, 11-oct): todavía sin página — se arma más
     // adelante una de "liveroom". Sin `to` se muestra como texto, no como un
     // link que no lleva a ningún lado. Cuando exista, ponerle el `to`.

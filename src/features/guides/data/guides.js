@@ -158,7 +158,7 @@ export const guides = [
     ],
     cta: {
       label: 'Plan de mantenimiento Kolortec',
-      href: '/garantias',
+      href: '/soporte/guias',
     },
   },
   {

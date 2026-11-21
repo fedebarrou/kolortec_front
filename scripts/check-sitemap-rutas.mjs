@@ -97,6 +97,14 @@ caso('cada redirección de App.jsx tiene su 301 en deploy/nginx-spa.conf, al mis
   assert.deepEqual([...deNginx.keys()].filter((p) => estaticas.includes(p)), [])
 })
 
+// ── un solo blog: «Guía de mantenimiento» lleva a las guías del blog (20-nov-2026) ──────────────────────────────────
+caso('«Guía de mantenimiento» lleva al blog y /garantias no es otra página de guías', () => {
+  assert.match(app, /<Route\s+path="\/garantias"\s+element=\{<Navigate\s+to="\/soporte\/guias"/)
+  const pie = leer('src/features/landing/components/FooterSection.jsx')
+  assert.match(pie, /t\('pageTitle\.warranty'[^)]*\),\s*to:\s*'\/soporte\/guias'/)
+  assert.doesNotMatch(pie, /to:\s*'\/garantias'/)
+})
+
 // ── idioma: español salvo elección explícita ────────────────────────────────────────────────────────────────────────
 caso('el idioma inicial no sale del navegador y sólo se guarda al elegirlo', () => {
   const lp = leer('src/shared/i18n/LanguageProvider.jsx').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')

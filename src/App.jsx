@@ -12,7 +12,6 @@ const LinePage = lazy(() => import('./features/catalog/pages/LinePage'))
 const ProductDetailPage = lazy(() => import('./features/product/pages/ProductDetailPage'))
 const ServicesPage = lazy(() => import('./features/services/pages/ServicesPage'))
 const SupportPage = lazy(() => import('./features/support/pages/SupportPage'))
-const GarantiasPage = lazy(() => import('./features/warranty/pages/GarantiasPage'))
 const ContactPage = lazy(() => import('./features/contact/pages/ContactPage'))
 const JoinPage = lazy(() => import('./features/join/pages/JoinPage'))
 const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
@@ -102,7 +101,12 @@ function App() {
             descargas. Siguen colgando de /soporte/guias. */}
         <Route path="/soporte/guias" element={<GuidesIndexPage />} />
         <Route path="/soporte/guias/:slug" element={<GuideDetailPage />} />
-        <Route path="/garantias" element={<GarantiasPage />} />
+        {/* /garantias era una SEGUNDA página de guías («Guía de mantenimiento»: cinco
+            guías fijas en el código, abiertas en un modal) al lado del blog. El
+            cliente lo leyó como dos blogs distintos. Las cinco ya están cargadas en
+            el blog con el mismo slug, así que la URL vieja redirige en vez de
+            romper los links que existan afuera. */}
+        <Route path="/garantias" element={<Navigate to="/soporte/guias" replace />} />
         {/* Legales. Los alias en singular/plural y las grafías sin tilde
             existen porque son URLs que la gente teclea a mano y que otros
             sitios enlazan de memoria; caer en el 404 desde un pie de página
